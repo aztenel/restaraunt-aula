@@ -34,7 +34,13 @@ import {
   PaymentsEvents,
   RefundEventPayload,
 } from '../../payments/public';
-import { ReservationCreatedPayload, ReservationEvents, ReservationStatus, ReservationStatusChangedPayload } from '../../reservation/public';
+import {
+  ReservationCreatedPayload,
+  ReservationEvents,
+  ReservationRescheduledPayload,
+  ReservationStatus,
+  ReservationStatusChangedPayload,
+} from '../../reservation/public';
 
 export const kzt = (amount: number): MoneyJson => ({ amount, currency: 'KZT' });
 
@@ -319,6 +325,42 @@ export class ReportingEvents {
         publicToken: null,
         occurredAt: r.at.toISOString(),
       } satisfies ReservationStatusChangedPayload,
+      { aggregateId: r.reservationId, branchId: r.branchId },
+    );
+  }
+
+  async reservationRescheduled(r: {
+    reservationId: string;
+    branchId: string;
+    from: { venueId: string; start: Date; end: Date; guests: number };
+    to: { venueId: string; start: Date; end: Date; guests: number };
+    at: Date;
+  }): Promise<void> {
+    const slot = (s: { venueId: string; start: Date; end: Date; guests: number }) => ({
+      venueId: s.venueId,
+      venueName: { ru: 'VIP-зал' },
+      venueTypeCode: 'vip',
+      start: s.start.toISOString(),
+      end: s.end.toISOString(),
+      guests: s.guests,
+    });
+    await this.bus.publish(
+      ReservationEvents.ReservationRescheduled,
+      {
+        reservationId: r.reservationId,
+        number: `R-${r.reservationId.slice(-6)}`,
+        branchId: r.branchId,
+        kind: 'regular',
+        status: 'confirmed',
+        from: slot(r.from),
+        to: slot(r.to),
+        customer: { customerId: null, phone: '+77010000000', name: 'Гость' },
+        banquetRequestId: null,
+        reason: null,
+        locale: 'ru',
+        publicToken: null,
+        occurredAt: r.at.toISOString(),
+      } satisfies ReservationRescheduledPayload,
       { aggregateId: r.reservationId, branchId: r.branchId },
     );
   }

@@ -23,7 +23,7 @@ import { SalesFactsRepository } from '../infrastructure/sales-facts.repository';
  * отрицательная строка выручки в день возврата; продажа сертификата — выручка при продаже.
  */
 @Injectable()
-export class PaymentsProjectionHandler {
+export class ReportingPaymentsProjection {
   constructor(
     private readonly payments: PaymentFactsRepository,
     private readonly certificates: CertificateFactsRepository,

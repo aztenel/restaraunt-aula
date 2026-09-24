@@ -52,7 +52,7 @@ export async function BranchCard({ branch, locale }: { branch: PublicBranch; loc
               href={whatsappHref(branch.whatsapp)}
               target="_blank"
               rel="noopener noreferrer"
-              className={buttonClasses('ghost', 'sm', 'w-11 px-0 text-whatsapp')}
+              className={buttonClasses('ghostWhatsapp', 'sm', 'w-11 px-0')}
               aria-label={`${common('writeWhatsapp')}: ${name}`}
             >
               <WhatsAppIcon />

@@ -82,7 +82,7 @@ export function CartView() {
             <button
               type="button"
               onClick={() => cart.remove(line.key)}
-              className={buttonClasses('ghost', 'sm', 'w-11 px-0 text-terracotta-600')}
+              className={buttonClasses('ghostDanger', 'sm', 'w-11 px-0')}
               aria-label={t('remove')}
             >
               <TrashIcon size={18} />

@@ -87,7 +87,7 @@ export function UsersPage() {
       <PaginatedTable<StaffUser>
         rowKey="id"
         data={usersQuery.data}
-        loading={usersQuery.isFetching}
+        loading={usersQuery.isLoading || usersQuery.isPlaceholderData}
         page={page}
         perPage={perPage}
         onPageChange={(p, pp) => {
@@ -141,7 +141,6 @@ export function UsersPage() {
           {
             title: t('common.actions'),
             key: 'actions',
-            fixed: 'right',
             render: (_, user) => (
               <Space size={4} wrap>
                 <Tooltip title={t('common.edit')}>

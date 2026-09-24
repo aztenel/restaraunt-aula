@@ -93,7 +93,7 @@ export default async function HomePage({ params }: { params: LocaleParams }) {
             </Link>
             <Link
               href={routes.booking()}
-              className={buttonClasses('outline', 'lg', 'border-cream-200/60 text-cream-50 hover:bg-earth-700')}
+              className={buttonClasses('outlineLight', 'lg')}
             >
               <CalendarIcon />
               {t('ctaBooking')}
@@ -175,7 +175,7 @@ export default async function HomePage({ params }: { params: LocaleParams }) {
               <Link href={routes.banquets()} className={buttonClasses('secondary')}>
                 {t('banquetCta')}
               </Link>
-              <Link href={routes.certificates()} className={buttonClasses('ghost', 'md', 'text-cream-50 hover:bg-earth-600')}>
+              <Link href={routes.certificates()} className={buttonClasses('ghostLight', 'md')}>
                 <GiftIcon />
                 {common('certificates')}
               </Link>

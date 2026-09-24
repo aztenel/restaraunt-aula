@@ -77,7 +77,20 @@ export abstract class VenueAvailability {
 export const ReservationEvents = {
   ReservationCreated: 'reservation.reservation_created',
   ReservationStatusChanged: 'reservation.reservation_status_changed',
+  /** Перенос брони / банкетной занятости: другое место, время или число гостей (статус не меняется). */
+  ReservationRescheduled: 'reservation.reservation_rescheduled',
 } as const;
+
+/** Источник брони: витрина, оператор в админке, банкетный модуль. */
+export type ReservationSource = 'web' | 'admin' | 'banquet';
+
+/** Статусы, при которых бронь занимает место (участвуют в проверке пересечений). */
+export const BLOCKING_RESERVATION_STATUSES: readonly ReservationStatus[] = [
+  ReservationStatus.Pending,
+  ReservationStatus.AwaitingDeposit,
+  ReservationStatus.Confirmed,
+  ReservationStatus.Arrived,
+];
 
 export interface ReservationEventCustomer {
   customerId: string | null;
@@ -122,6 +135,31 @@ export interface ReservationStatusChangedPayload {
   deposit: MoneyJson | null;
   /** Депозит удержан (поздняя отмена / неявка) или возвращён. */
   depositOutcome: 'none' | 'refunded' | 'retained';
+  reason: string | null;
+  locale: Locale;
+  publicToken: string | null;
+  occurredAt: string;
+}
+
+export interface ReservationSlotSnapshot {
+  venueId: string;
+  venueName: Translatable;
+  venueTypeCode: string;
+  start: string;
+  end: string;
+  guests: number;
+}
+
+export interface ReservationRescheduledPayload {
+  reservationId: string;
+  number: string;
+  branchId: string;
+  kind: ReservationKind;
+  status: ReservationStatus;
+  from: ReservationSlotSnapshot;
+  to: ReservationSlotSnapshot;
+  customer: ReservationEventCustomer;
+  banquetRequestId: string | null;
   reason: string | null;
   locale: Locale;
   publicToken: string | null;

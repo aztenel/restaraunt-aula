@@ -7,20 +7,21 @@ import { useNotifyError } from '@/shared/api/useNotifyError';
 import { formatDateTime } from '@/shared/lib/dates';
 import { initialFormValues, isValidJson, toSavePayload, type IntegrationFormValues } from './integration-form';
 
-function ConfigField({ field }: { field: IntegrationField }) {
+/** Поле настройки по типу; value/onChange/checked пробрасываются из Form.Item. */
+function ConfigField({ field, ...control }: { field: IntegrationField } & Record<string, unknown>) {
   switch (field.type) {
     case 'number':
-      return <InputNumber style={{ width: '100%' }} />;
+      return <InputNumber {...control} style={{ width: '100%' }} />;
     case 'boolean':
-      return <Switch />;
+      return <Switch {...control} />;
     case 'select':
-      return <Select allowClear options={(field.options ?? []).map((o) => ({ value: o, label: o }))} />;
+      return <Select {...control} allowClear options={(field.options ?? []).map((o) => ({ value: o, label: o }))} />;
     case 'json':
-      return <Input.TextArea rows={4} style={{ fontFamily: 'monospace' }} />;
+      return <Input.TextArea {...control} rows={4} style={{ fontFamily: 'monospace' }} />;
     case 'url':
-      return <Input inputMode="url" placeholder="https://" />;
+      return <Input {...control} inputMode="url" placeholder="https://" />;
     default:
-      return <Input />;
+      return <Input {...control} />;
   }
 }
 

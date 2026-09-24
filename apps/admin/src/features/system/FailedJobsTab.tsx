@@ -52,7 +52,7 @@ export function FailedJobsTab() {
         rowKey="id"
         size="small"
         data={jobs.data}
-        loading={jobs.isFetching}
+        loading={jobs.isLoading || jobs.isPlaceholderData}
         page={page}
         perPage={jobs.data?.perPage ?? 50}
         pageSizeOptions={[50]}
@@ -68,7 +68,7 @@ export function FailedJobsTab() {
           ),
         }}
         columns={[
-          { title: t('system.jobs.failedAt'), dataIndex: 'failedAt', render: (v: string) => formatDateTime(v), width: 150 },
+          { title: t('system.jobs.failedAt'), dataIndex: 'failedAt', render: (v: string) => formatDateTime(v), width: 150, fixed: 'left' },
           { title: t('system.jobs.topic'), key: 'topic', render: (_, j) => (<div><Typography.Text code>{j.topic}</Typography.Text><br /><Typography.Text type="secondary">{j.kind}{j.handler ? ` · ${j.handler}` : ''}</Typography.Text></div>) },
           { title: t('system.jobs.attempts'), dataIndex: 'attempts', width: 90 },
           { title: t('system.jobs.error'), dataIndex: 'error', render: (v: string) => <Typography.Text type="danger" ellipsis={{ tooltip: v }} style={{ maxWidth: 360 }}>{v}</Typography.Text> },

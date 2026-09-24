@@ -8,6 +8,7 @@ import { EventBus } from '../../shared/infrastructure/events/event-bus';
 import { newId } from '../../shared/kernel/ids';
 import { ReportingModule } from './reporting.module';
 import { globalProviders } from './testing/global-providers';
+import { seedReporting } from './infrastructure/seed';
 import { local, ReportingEvents, testOrder } from './testing/events';
 
 function binary(res: any, cb: (err: Error | null, body: Buffer) => void) {
@@ -24,6 +25,9 @@ async function workbook(body: Buffer): Promise<ExcelJS.Workbook> {
 
 const PLOV = newId();
 const TEA = newId();
+
+/** Сейчас: 01.10.2026 11:00 (Asia/Almaty). */
+const NOW = new Date('2026-10-01T06:00:00.000Z');
 
 describe('Reporting (integration)', () => {
   let t: TestApp;
@@ -42,6 +46,7 @@ describe('Reporting (integration)', () => {
   afterAll(async () => t.close());
   beforeEach(async () => {
     await t.reset();
+    t.clock.set(NOW);
     fakes.notifier.clear();
     branchA = await createBranch(t, { code: 'GL' });
     branchB = await createBranch(t, { code: 'GV' });
@@ -266,6 +271,18 @@ describe('Reporting (integration)', () => {
       expect(branch.body).toMatchObject({ sessions: 2, orderedSessions: 1, conversion: 0.5 });
     });
 
+    it('purges raw storefront events after the retention period', async () => {
+      const sessionId = newId();
+      await t.http().post('/api/v1/public/analytics/events').send({ sessionId, type: 'page_view', path: '/' });
+      const count = async () =>
+        (await sql<{ n: number }>`select count(*)::int as n from reporting.storefront_events`.execute(t.database.rootConnection())).rows[0]!.n;
+      await t.runSchedule('reporting.purge_storefront_events');
+      expect(await count()).toBe(1);
+      t.clock.advance(401 * 86_400_000);
+      await t.runSchedule('reporting.purge_storefront_events');
+      expect(await count()).toBe(0);
+    });
+
     it('rate-limits storefront tracking', async () => {
       const sessionId = newId();
       let last = 0;
@@ -343,6 +360,15 @@ describe('Reporting (integration)', () => {
         guests: 4,
         at: local('2026-09-29', '10:00'),
       });
+      // Перенос брони с v1 на v2 (другое время) — снимает вторую накладку.
+      const moved = await ev.reservationCreated({ branchId: branchA, venueId: v1.id, start: local('2026-10-01', '19:00'), end: local('2026-10-01', '20:00'), guests: 2, at: booked });
+      await ev.reservationRescheduled({
+        reservationId: moved,
+        branchId: branchA,
+        from: { venueId: v1.id, start: local('2026-10-01', '19:00'), end: local('2026-10-01', '20:00'), guests: 2 },
+        to: { venueId: v2.id, start: local('2026-10-01', '15:00'), end: local('2026-10-01', '16:00'), guests: 3 },
+        at: local('2026-09-29', '12:00'),
+      });
       await ev.reservationCreated({
         branchId: branchA,
         venueId: t1.id,
@@ -357,7 +383,7 @@ describe('Reporting (integration)', () => {
       const res = await get(`hall-load?from=2026-10-01&to=2026-10-02&branchId=${branchA}`, owner);
       expect(res.status).toBe(200);
       const row = (weekday: string, type: string) => res.body.rows.find((r: any) => r.weekday === weekday && r.venueTypeCode === type);
-      expect(row('thu', 'vip')).toMatchObject({ venues: 2, openMinutes: 1680, bookedMinutes: 300, load: 0.1786, reservations: 2, guests: 16 });
+      expect(row('thu', 'vip')).toMatchObject({ venues: 2, openMinutes: 1680, bookedMinutes: 360, openHours: 28, bookedHours: 6, load: 0.2143, reservations: 3, guests: 19 });
       expect(row('thu', 'vip').venueTypeName).toEqual({ ru: 'VIP-зал' });
       expect(row('fri', 'table')).toMatchObject({ venues: 1, openMinutes: 840, bookedMinutes: 60, load: 0.0714 });
       expect(res.body.weekdays.map((w: any) => w.weekday)).toEqual(['thu', 'fri']);
@@ -519,6 +545,30 @@ describe('Reporting (integration)', () => {
       expect(dashboard.body.last7Days).toMatchObject({ from: '2026-09-25', to: '2026-10-01', revenue: { amount: 12_700_000 }, banquetRequests: 0 });
       const file = await get('dashboard/export', owner).buffer(true).parse(binary);
       expect((await workbook(file.body)).getWorksheet('Показатели')!.rowCount).toBe(34);
+    });
+  });
+
+  describe('seed', () => {
+    it('is idempotent: demo aggregator volumes only in demo mode', async () => {
+      const logs: string[] = [];
+      const ctx = {
+        app: t.app,
+        branches: { greenline: branchA, 'garden-view': branchB },
+        legalEntityId: newId(),
+        ownerUserId: newId(),
+        demo: false,
+        log: (m: string) => logs.push(m),
+      };
+      await seedReporting(ctx);
+      const count = async () =>
+        (await sql<{ n: number }>`select count(*)::int as n from reporting.aggregator_volumes`.execute(t.database.rootConnection())).rows[0]!.n;
+      expect(await count()).toBe(0);
+      await seedReporting({ ...ctx, demo: true });
+      expect(await count()).toBe(12);
+      await seedReporting({ ...ctx, demo: true });
+      expect(await count()).toBe(12);
+      const own = await get(`own-channel?from=2026-07-01&to=2026-09-30&branchId=${branchA}`, owner);
+      expect(own.body.months.map((m: any) => m.aggregatorOrders)).toEqual([680, 625, 571]);
     });
   });
 });

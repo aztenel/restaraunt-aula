@@ -95,7 +95,8 @@ export class ApplyChannelStatuses {
       error: update.error ?? 'provider reported delivery failure',
       externalId: update.externalId,
       durationMs: null,
-      occurredAt: update.occurredAt ?? this.clock.now(),
+      // Время получения статуса: журнал попыток упорядочен по времени обработки.
+      occurredAt: this.clock.now(),
     });
     await this.deliveries.save(record.id, {
       status: state.status,

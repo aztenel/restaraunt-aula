@@ -1,0 +1,226 @@
+import { ValidationError } from '../../../shared/kernel/errors';
+import {
+  addMinutes,
+  isHhMm,
+  isIsoDate,
+  OpeningHours,
+  openingRangesForDate,
+  TimeRange,
+  toLocalDate,
+  toLocalTime,
+  zonedTimeToUtc,
+} from '../../../shared/kernel/time';
+import { capacityFits } from './venue';
+import { VenueRules } from './venue-rules';
+
+/**
+ * Свободные места. Бронь занимает интервал [начало, конец + буфер уборки); место свободно,
+ * если этот интервал не пересекается с занятостью других броней (включая банкеты) и
+ * весь интервал [начало, конец) лежит в часах работы филиала (в его часовом поясе).
+ */
+export interface BusyInterval {
+  reservationId: string;
+  venueId: string;
+  start: Date;
+  /** Конец занятости (конец брони + её буфер уборки). */
+  blockedUntil: Date;
+}
+
+export interface VenueCandidate {
+  venueId: string;
+  capacityMin: number;
+  capacityMax: number;
+  rules: VenueRules;
+}
+
+export interface BookingWindow {
+  now: Date;
+  timezone: string;
+  openingHours: OpeningHours;
+  /** Бронь не раньше чем через N минут (витрина); null — только «не в прошлом». */
+  minLeadMinutes: number | null;
+  /** Не дальше N дней вперёд (витрина); null — без ограничения. */
+  maxDaysAhead: number | null;
+  /** Проверять часы работы. */
+  enforceOpeningHours: boolean;
+}
+
+/** Причина, по которой время недоступно (витрина показывает соответствующий текст). */
+export type SlotRejection = 'past' | 'too_soon' | 'too_far' | 'closed';
+
+export const MAX_ALTERNATIVES = 6;
+export const DEFAULT_SLOT_STEP_MINUTES = 30;
+
+export function assertLocalDateTime(date: string, time: string): void {
+  if (!isIsoDate(date) || !isHhMm(time)) {
+    throw new ValidationError('reservation.invalid_datetime', 'Expected date YYYY-MM-DD and time HH:mm', { date, time });
+  }
+}
+
+/** Интервал брони по локальной дате/времени филиала. */
+export function slotRange(date: string, time: string, timezone: string, durationMinutes: number): TimeRange {
+  assertLocalDateTime(date, time);
+  assertDuration(durationMinutes);
+  const start = zonedTimeToUtc(date, time, timezone);
+  return new TimeRange(start, addMinutes(start, durationMinutes));
+}
+
+/** Интервал занятости места: [начало, конец + буфер уборки). */
+export function blockedRange(range: TimeRange, cleanupMinutes: number): TimeRange {
+  return new TimeRange(range.start, addMinutes(range.end, cleanupMinutes));
+}
+
+/** Пересекается ли занятость места с другими бронями этого места. */
+export function isVenueFree(venueId: string, blocked: TimeRange, busy: readonly BusyInterval[], excludeReservationId?: string | null): boolean {
+  return !busy.some(
+    (b) =>
+      b.venueId === venueId &&
+      b.reservationId !== excludeReservationId &&
+      b.start.getTime() < blocked.end.getTime() &&
+      blocked.start.getTime() < b.blockedUntil.getTime(),
+  );
+}
+
+/** Лежит ли [start, end) целиком в одном интервале работы (с учётом работы после полуночи). */
+export function fitsOpeningRanges(range: TimeRange, openingRanges: readonly TimeRange[]): boolean {
+  return openingRanges.some((r) => r.start.getTime() <= range.start.getTime() && range.end.getTime() <= r.end.getTime());
+}
+
+/** Интервалы работы, в которые может попасть бронь с началом в локальную дату date. */
+export function openingRangesFor(openingHours: OpeningHours, date: string, timezone: string): TimeRange[] {
+  return openingRangesForDate(openingHours, date, timezone);
+}
+
+/** Проверка времени брони: не в прошлом, не раньше lead, не дальше maxDaysAhead, в часы работы. */
+export function checkBookingWindow(range: TimeRange, window: BookingWindow, openingRanges?: readonly TimeRange[]): SlotRejection | null {
+  const now = window.now.getTime();
+  if (range.start.getTime() < now) return 'past';
+  if (window.minLeadMinutes !== null && range.start.getTime() < addMinutes(window.now, window.minLeadMinutes).getTime()) return 'too_soon';
+  if (window.maxDaysAhead !== null && range.start.getTime() > addMinutes(window.now, window.maxDaysAhead * 1440).getTime()) return 'too_far';
+  if (window.enforceOpeningHours) {
+    const ranges = openingRanges ?? openingRangesFor(window.openingHours, toLocalDate(range.start, window.timezone), window.timezone);
+    if (!fitsOpeningRanges(range, ranges)) return 'closed';
+  }
+  return null;
+}
+
+export interface VenueSlot {
+  venueId: string;
+  range: TimeRange;
+  blocked: TimeRange;
+  durationMinutes: number;
+}
+
+function assertDuration(durationMinutes: number): void {
+  if (!Number.isInteger(durationMinutes) || durationMinutes < 15 || durationMinutes > 1440) {
+    throw new ValidationError('reservation.invalid_duration', 'Duration must be an integer number of minutes in [15, 1440]', {
+      durationMinutes,
+    });
+  }
+}
+
+/** Слот конкретного места с началом start: длительность — из запроса или правила места. */
+export function venueSlotAt(candidate: VenueCandidate, start: Date, durationOverride?: number | null): VenueSlot {
+  const durationMinutes = durationOverride ?? candidate.rules.durationMinutes;
+  assertDuration(durationMinutes);
+  const range = new TimeRange(start, addMinutes(start, durationMinutes));
+  return { venueId: candidate.venueId, range, blocked: blockedRange(range, candidate.rules.cleanupMinutes), durationMinutes };
+}
+
+export interface FreeVenuesResult {
+  free: VenueSlot[];
+  /** Почему нет мест (если free пуст). */
+  reason: SlotRejection | 'no_capacity' | 'occupied' | null;
+}
+
+/**
+ * Реально свободные места на время: вместимость подходит, время в окне брони и в часах работы,
+ * занятость [начало, конец + буфер) не пересекается с другими бронями места.
+ */
+export function findFreeVenues(input: {
+  candidates: readonly VenueCandidate[];
+  busy: readonly BusyInterval[];
+  guests: number;
+  date: string;
+  time: string;
+  durationMinutes?: number | null;
+  window: BookingWindow;
+}): FreeVenuesResult {
+  const fitting = input.candidates.filter((c) => capacityFits(input.guests, c.capacityMin, c.capacityMax));
+  if (fitting.length === 0) return { free: [], reason: 'no_capacity' };
+  assertLocalDateTime(input.date, input.time);
+  const ranges = openingRangesFor(input.window.openingHours, input.date, input.window.timezone);
+  const start = zonedTimeToUtc(input.date, input.time, input.window.timezone);
+  const free: VenueSlot[] = [];
+  let rejection: SlotRejection | null = null;
+  for (const candidate of fitting) {
+    const slot = venueSlotAt(candidate, start, input.durationMinutes);
+    const rejected = checkBookingWindow(slot.range, input.window, ranges);
+    if (rejected) {
+      rejection ??= rejected;
+      continue;
+    }
+    if (isVenueFree(candidate.venueId, slot.blocked, input.busy)) free.push(slot);
+  }
+  if (free.length > 0) return { free, reason: null };
+  return { free, reason: rejection ?? 'occupied' };
+}
+
+export interface AlternativeTime {
+  date: string;
+  time: string;
+  start: Date;
+  venueIds: string[];
+}
+
+function minutesOf(time: string): number {
+  const [h, m] = time.split(':').map(Number) as [number, number];
+  return h * 60 + m;
+}
+
+function hhmm(minutes: number): string {
+  return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+}
+
+/**
+ * Альтернативное время в тот же день, если на запрошенное мест нет: сетка с шагом места
+ * (минимальный среди подходящих), ближайшие к запрошенному времени варианты.
+ */
+export function suggestAlternatives(input: {
+  candidates: readonly VenueCandidate[];
+  busy: readonly BusyInterval[];
+  guests: number;
+  date: string;
+  time: string;
+  durationMinutes?: number | null;
+  window: BookingWindow;
+  limit?: number;
+}): AlternativeTime[] {
+  const fitting = input.candidates.filter((c) => capacityFits(input.guests, c.capacityMin, c.capacityMax));
+  if (fitting.length === 0) return [];
+  const step = Math.min(...fitting.map((c) => c.rules.slotStepMinutes || DEFAULT_SLOT_STEP_MINUTES));
+  const requested = minutesOf(input.time);
+  const ranges = openingRangesFor(input.window.openingHours, input.date, input.window.timezone);
+  const found: AlternativeTime[] = [];
+  for (let minutes = 0; minutes < 1440; minutes += step) {
+    if (minutes === requested) continue;
+    const time = hhmm(minutes);
+    const start = zonedTimeToUtc(input.date, time, input.window.timezone);
+    const venueIds: string[] = [];
+    for (const candidate of fitting) {
+      const slot = venueSlotAt(candidate, start, input.durationMinutes);
+      if (checkBookingWindow(slot.range, input.window, ranges)) continue;
+      if (isVenueFree(candidate.venueId, slot.blocked, input.busy)) venueIds.push(candidate.venueId);
+    }
+    if (venueIds.length > 0) found.push({ date: input.date, time, start, venueIds });
+  }
+  return found
+    .sort((a, b) => Math.abs(minutesOf(a.time) - requested) - Math.abs(minutesOf(b.time) - requested) || minutesOf(a.time) - minutesOf(b.time))
+    .slice(0, input.limit ?? MAX_ALTERNATIVES)
+    .sort((a, b) => a.start.getTime() - b.start.getTime());
+}
+
+/** Локальные дата и время начала брони (для текстов и витрины). */
+export function localDateTime(at: Date, timezone: string): { date: string; time: string } {
+  return { date: toLocalDate(at, timezone), time: toLocalTime(at, timezone) };
+}

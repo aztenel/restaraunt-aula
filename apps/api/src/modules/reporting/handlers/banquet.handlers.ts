@@ -44,7 +44,7 @@ function identity(p: {
  * выручка при held (итог сметы), счета и акты для выгрузки в учёт.
  */
 @Injectable()
-export class BanquetProjectionHandler {
+export class ReportingBanquetProjection {
   constructor(
     private readonly banquets: BanquetFactsRepository,
     private readonly payments: PaymentFactsRepository,

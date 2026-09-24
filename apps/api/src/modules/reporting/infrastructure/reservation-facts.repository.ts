@@ -124,6 +124,22 @@ export class ReservationFactsRepository {
       .execute();
   }
 
+  /** Перенос: другое место, время или число гостей (снимок на момент события, статус не меняется). */
+  async applyRescheduled(f: ReservationFact, venueName: Translatable): Promise<void> {
+    await this.db()
+      .insertInto(T)
+      .values({ ...this.row(f), venue_name: JSON.stringify(venueName) })
+      .onConflict((oc) =>
+        oc.column('reservation_id').doUpdateSet({
+          ...this.newerSet(),
+          venue_name: sql`case when excluded.status_at >= ${sql.ref(`${T}.status_at`)} then excluded.venue_name else ${sql.ref(
+            `${T}.venue_name`,
+          )} end` as never,
+        }),
+      )
+      .execute();
+  }
+
   // ---------------------------------------------------------------- отчёты
 
   /** Брони, занимавшие место (для загрузки залов и накладок), с началом в периоде. */

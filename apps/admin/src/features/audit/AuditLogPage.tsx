@@ -119,7 +119,7 @@ export function AuditLogPage() {
         rowKey="id"
         size="small"
         data={log.data}
-        loading={log.isFetching}
+        loading={log.isLoading || log.isPlaceholderData}
         page={page}
         perPage={perPage}
         onPageChange={(p, pp) => {
@@ -145,7 +145,7 @@ export function AuditLogPage() {
           ),
         }}
         columns={[
-          { title: t('audit.time'), dataIndex: 'occurredAt', render: (v: string) => formatDateTimeSeconds(v), width: 170 },
+          { title: t('audit.time'), dataIndex: 'occurredAt', render: (v: string) => formatDateTimeSeconds(v), width: 170, fixed: 'left' },
           {
             title: t('audit.actor'),
             key: 'actor',

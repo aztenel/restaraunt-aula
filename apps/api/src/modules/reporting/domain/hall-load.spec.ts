@@ -46,6 +46,7 @@ describe('computeHallLoad', () => {
     const thuVip = load.rows.find((r) => r.weekday === 'thu' && r.venueTypeCode === 'vip')!;
     expect(thuVip).toMatchObject({ venues: 2, openMinutes: 2 * 14 * 60, bookedMinutes: 7 * 60, reservations: 2, guests: 20 });
     expect(thuVip.load).toBe(0.25);
+    expect(thuVip).toMatchObject({ openHours: 28, bookedHours: 7 });
     expect(thuVip.venueTypeName).toEqual({ ru: 'VIP-зал' });
     const friTable = load.rows.find((r) => r.weekday === 'fri' && r.venueTypeCode === 'table')!;
     expect(friTable.load).toBe(0.0714);

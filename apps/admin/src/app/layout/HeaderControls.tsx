@@ -79,7 +79,7 @@ export function LanguageSwitcher() {
       onChange={(lng) => void i18n.changeLanguage(lng)}
       suffixIcon={<GlobalOutlined />}
       variant="borderless"
-      style={{ width: 96 }}
+      style={{ width: 124 }}
       options={ADMIN_LANGUAGES.map((lng) => ({ value: lng, label: t(`languages.${lng}`) }))}
     />
   );

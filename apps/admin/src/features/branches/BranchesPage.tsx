@@ -101,7 +101,6 @@ export function BranchesPage() {
           {
             title: t('common.actions'),
             key: 'actions',
-            fixed: 'right',
             render: (_, b) => (
               <Button size="small" icon={<EditOutlined />} onClick={() => setEditing(b)}>
                 {t('common.edit')}

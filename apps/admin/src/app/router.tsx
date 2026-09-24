@@ -11,6 +11,7 @@ import { LoginPage } from '@/features/auth/LoginPage';
 import { NotFoundPage } from '@/features/common/NotFoundPage';
 import { RouteError } from '@/features/common/RouteError';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
+import { PageLoader } from '@/shared/ui/PageLoader';
 import { AdminLayout } from './layout/AdminLayout';
 import { sectionByKey, type SectionKey } from './navigation';
 
@@ -72,6 +73,8 @@ export const routes: RouteObject[] = [
       </RequireAuth>
     ),
     errorElement: <RouteError />,
+    // Первый рендер ленивого раздела при открытии по прямой ссылке.
+    HydrateFallback: PageLoader,
     children: [
       { index: true, element: <DashboardPage /> },
       ...(Object.keys(SECTION_PAGES) as Array<Exclude<SectionKey, 'dashboard'>>).map(sectionRoute),

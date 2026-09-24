@@ -26,11 +26,11 @@ import { CashFlowReport, CertificatesReport } from './application/reports/paymen
 import { AverageCheckReport, OwnChannelReport, RevenueReport } from './application/reports/sales.queries';
 import { BanquetFunnelReport, HallLoadReport } from './application/reports/venues.queries';
 import { PurgeStorefrontEvents, RecordStorefrontEvent } from './application/storefront.actions';
-import { BanquetProjectionHandler } from './handlers/banquet.handlers';
-import { OrderingProjectionHandler } from './handlers/ordering.handlers';
-import { PaymentsProjectionHandler } from './handlers/payments.handlers';
+import { ReportingBanquetProjection } from './handlers/banquet.handlers';
+import { ReportingOrderingProjection } from './handlers/ordering.handlers';
+import { ReportingPaymentsProjection } from './handlers/payments.handlers';
 import { ReportingJobs } from './handlers/reporting.jobs';
-import { ReservationProjectionHandler } from './handlers/reservation.handlers';
+import { ReportingReservationProjection } from './handlers/reservation.handlers';
 import { AccountingExportsController } from './http/admin/accounting-exports.controller';
 import { AggregatorVolumesController } from './http/admin/aggregator-volumes.controller';
 import { DailyReportsController } from './http/admin/daily-reports.controller';
@@ -72,10 +72,10 @@ import { StorefrontEventsRepository } from './infrastructure/storefront-events.r
     DailyReportRepository,
     AccountingExportRepository,
     // Подписчики на события, задачи и расписания
-    OrderingProjectionHandler,
-    PaymentsProjectionHandler,
-    ReservationProjectionHandler,
-    BanquetProjectionHandler,
+    ReportingOrderingProjection,
+    ReportingPaymentsProjection,
+    ReportingReservationProjection,
+    ReportingBanquetProjection,
     ReportingJobs,
     // Отчёты (запросы)
     ReportScopes,

@@ -310,6 +310,8 @@ export class HallLoadRowDto {
   @ApiProperty({ description: 'Активных мест этого типа' }) venues: number;
   @ApiProperty({ description: 'Доступно: часы работы × места, минут' }) openMinutes: number;
   @ApiProperty({ description: 'Занято бронями, минут' }) bookedMinutes: number;
+  @ApiProperty({ description: 'Доступно, часов (1 знак после запятой)' }) openHours: number;
+  @ApiProperty({ description: 'Занято, часов (1 знак после запятой)' }) bookedHours: number;
   @ApiProperty({ nullable: true, type: Number, description: `bookedMinutes / openMinutes. ${RATIO}` }) load: number | null;
   @ApiProperty() reservations: number;
   @ApiProperty() guests: number;
@@ -319,6 +321,8 @@ export class HallLoadWeekdayDto {
   @ApiProperty({ enum: WEEKDAYS }) weekday: string;
   @ApiProperty() openMinutes: number;
   @ApiProperty() bookedMinutes: number;
+  @ApiProperty() openHours: number;
+  @ApiProperty() bookedHours: number;
   @ApiProperty({ nullable: true, type: Number, description: RATIO }) load: number | null;
   @ApiProperty() reservations: number;
   @ApiProperty() guests: number;

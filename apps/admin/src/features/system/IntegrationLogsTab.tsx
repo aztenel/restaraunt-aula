@@ -47,7 +47,7 @@ export function IntegrationLogsTab() {
         rowKey="id"
         size="small"
         data={logs.data}
-        loading={logs.isFetching}
+        loading={logs.isLoading || logs.isPlaceholderData}
         page={page}
         perPage={logs.data?.perPage ?? 50}
         pageSizeOptions={[50]}
@@ -67,7 +67,7 @@ export function IntegrationLogsTab() {
           ),
         }}
         columns={[
-          { title: t('audit.time'), dataIndex: 'occurred_at', render: (v: string) => formatDateTimeSeconds(v), width: 170 },
+          { title: t('audit.time'), dataIndex: 'occurred_at', render: (v: string) => formatDateTimeSeconds(v), width: 170, fixed: 'left' },
           { title: t('system.logs.integration'), dataIndex: 'integration', render: (v: string) => <Typography.Text code>{v}</Typography.Text> },
           { title: t('system.logs.direction'), dataIndex: 'direction', render: (v: string) => <Tag>{t(`system.logs.directions.${v === 'inbound' ? 'inbound' : 'outbound'}`)}</Tag> },
           { title: t('system.logs.operation'), dataIndex: 'operation' },

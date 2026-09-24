@@ -23,6 +23,9 @@ function binary(res: any, cb: (err: Error | null, body: Buffer) => void) {
   res.on('end', () => cb(null, Buffer.concat(chunks)));
 }
 
+/** Сейчас: 01.10.2026 11:00 (Asia/Almaty). */
+const NOW = new Date('2026-10-01T06:00:00.000Z');
+
 describe('Reporting: daily report (integration)', () => {
   let t: TestApp;
   let fakes: Fakes;
@@ -40,6 +43,7 @@ describe('Reporting: daily report (integration)', () => {
   afterAll(async () => t.close());
   beforeEach(async () => {
     await t.reset();
+    t.clock.set(NOW);
     fakes.notifier.clear();
     branchA = await createBranch(t, { code: 'GL' });
     branchB = await createBranch(t, { code: 'GV' });

@@ -480,8 +480,8 @@ export class DeliveryRepository {
       .selectFrom('notifications.delivery_attempts')
       .selectAll()
       .where('delivery_id', '=', deliveryId)
-      .orderBy('occurred_at')
       .orderBy('attempt_no')
+      .orderBy('occurred_at')
       .orderBy('id')
       .execute();
     return rows.map((r) => ({

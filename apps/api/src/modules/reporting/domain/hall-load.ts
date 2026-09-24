@@ -43,6 +43,9 @@ export interface HallLoadRow {
   venues: number;
   openMinutes: number;
   bookedMinutes: number;
+  /** Часы с одним знаком после запятой (для отображения). */
+  openHours: number;
+  bookedHours: number;
   load: number | null;
   reservations: number;
   guests: number;
@@ -52,6 +55,8 @@ export interface HallLoadWeekday {
   weekday: Weekday;
   openMinutes: number;
   bookedMinutes: number;
+  openHours: number;
+  bookedHours: number;
   load: number | null;
   reservations: number;
   guests: number;
@@ -82,6 +87,11 @@ export function openMinutesOnDate(hours: OpeningHours, date: string): number {
   return total;
 }
 
+/** Минуты -> часы с одним знаком после запятой. */
+export function hoursOf(minutes: number): number {
+  return Math.round(minutes / 6) / 10;
+}
+
 function durationMinutes(r: LoadReservation): number {
   return Math.max(0, Math.round((r.end.getTime() - r.start.getTime()) / 60_000));
 }
@@ -109,6 +119,8 @@ export function computeHallLoad(input: {
         venues: 0,
         openMinutes: 0,
         bookedMinutes: 0,
+        openHours: 0,
+        bookedHours: 0,
         load: null,
         reservations: 0,
         guests: 0,
@@ -147,7 +159,7 @@ export function computeHallLoad(input: {
   }
 
   const sortedRows = [...rows.values()]
-    .map((r) => ({ ...r, load: ratio(r.bookedMinutes, r.openMinutes) }))
+    .map((r) => ({ ...r, openHours: hoursOf(r.openMinutes), bookedHours: hoursOf(r.bookedMinutes), load: ratio(r.bookedMinutes, r.openMinutes) }))
     .sort((a, b) => WEEKDAYS.indexOf(a.weekday) - WEEKDAYS.indexOf(b.weekday) || a.venueTypeCode.localeCompare(b.venueTypeCode));
 
   const weekdays: HallLoadWeekday[] = WEEKDAYS.filter((w) => weekdaysWithDates.has(w)).map((weekday) => {
@@ -158,6 +170,8 @@ export function computeHallLoad(input: {
       weekday,
       openMinutes,
       bookedMinutes,
+      openHours: hoursOf(openMinutes),
+      bookedHours: hoursOf(bookedMinutes),
       load: ratio(bookedMinutes, openMinutes),
       reservations: items.reduce((a, r) => a + r.reservations, 0),
       guests: items.reduce((a, r) => a + r.guests, 0),

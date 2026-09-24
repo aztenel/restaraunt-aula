@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { OnEvent } from '../../../shared/infrastructure/events/decorators';
 import { EventEnvelope } from '../../../shared/infrastructure/events/types';
 import { Money } from '../../../shared/kernel/money';
-import { ReservationCreatedPayload, ReservationEvents, ReservationStatusChangedPayload } from '../../reservation/public';
+import {
+  ReservationCreatedPayload,
+  ReservationEvents,
+  ReservationRescheduledPayload,
+  ReservationStatusChangedPayload,
+} from '../../reservation/public';
 import { localDateOf } from '../domain/period';
 import { RESERVATION_STATUS_RANK } from '../domain/revenue';
 import { ReservationFact, ReservationFactsRepository } from '../infrastructure/reservation-facts.repository';
@@ -35,7 +40,7 @@ function fact(p: ReservationPayload, status: string, at: Date, banquetRequestId:
 
 /** Проекция броней из событий Reservation: загрузка залов, накладки, число броней и гостей. */
 @Injectable()
-export class ReservationProjectionHandler {
+export class ReportingReservationProjection {
   constructor(private readonly reservations: ReservationFactsRepository) {}
 
   @OnEvent(ReservationEvents.ReservationCreated)
@@ -48,6 +53,33 @@ export class ReservationProjectionHandler {
       bookedAt: at,
       bookedDate: localDateOf(at),
     });
+  }
+
+  /** Перенос брони или банкетной занятости: место, интервал и гости — из нового слота. */
+  @OnEvent(ReservationEvents.ReservationRescheduled)
+  async onRescheduled(e: EventEnvelope<ReservationRescheduledPayload>): Promise<void> {
+    const p = e.payload;
+    const slot = p.to;
+    await this.reservations.applyRescheduled(
+      fact(
+        {
+          reservationId: p.reservationId,
+          number: p.number,
+          branchId: p.branchId,
+          venueId: slot.venueId,
+          venueTypeCode: slot.venueTypeCode,
+          kind: p.kind,
+          start: slot.start,
+          end: slot.end,
+          guests: slot.guests,
+          deposit: null,
+        },
+        p.status,
+        new Date(p.occurredAt),
+        p.banquetRequestId,
+      ),
+      slot.venueName,
+    );
   }
 
   @OnEvent(ReservationEvents.ReservationStatusChanged)

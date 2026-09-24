@@ -29,7 +29,7 @@ function stamp(status: string, at: Date): StatusStamp {
  * к событиям не по порядку. Выручка — при OrderCompleted (docs/decisions.md «Отчётность»).
  */
 @Injectable()
-export class OrderingProjectionHandler {
+export class ReportingOrderingProjection {
   constructor(
     private readonly orders: OrderFactsRepository,
     private readonly sales: SalesFactsRepository,
