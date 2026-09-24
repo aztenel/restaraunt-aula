@@ -1,0 +1,45 @@
+{
+  "name": "@aula/admin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AULA: админ-панель (React + Vite SPA) — единый интерфейс на все филиалы",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5173",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --port 5173",
+    "lint": "eslint src",
+    "typecheck": "tsc -b --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@ant-design/icons": "6.3.4",
+    "@aula/api-client": "workspace:*",
+    "@geoman-io/leaflet-geoman-free": "2.20.2",
+    "@sentry/react": "9.47.1",
+    "@tanstack/react-query": "5.103.2",
+    "antd": "5.29.3",
+    "dayjs": "1.11.23",
+    "i18next": "25.10.10",
+    "leaflet": "1.9.4",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-i18next": "15.7.4",
+    "react-leaflet": "5.0.0",
+    "react-router": "7.18.4",
+    "recharts": "3.10.1"
+  },
+  "devDependencies": {
+    "@testing-library/react": "16.3.3",
+    "@types/leaflet": "1.9.22",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "5.2.0",
+    "eslint": "9.39.5",
+    "jsdom": "26.1.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.70.1",
+    "vite": "7.3.6",
+    "vitest": "3.2.7"
+  }
+}

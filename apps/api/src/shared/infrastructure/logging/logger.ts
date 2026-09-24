@@ -1,3 +1,4 @@
+import { RequestMethod } from '@nestjs/common';
 import { LoggerModule } from 'nestjs-pino';
 import { RequestContext } from '../context/request-context';
 import { Config } from '../config/config';
@@ -24,6 +25,7 @@ export const LOG_REDACT_PATHS = [
 
 export function loggerModule(config: Config) {
   return LoggerModule.forRoot({
+    forRoutes: [{ path: '{*path}', method: RequestMethod.ALL }],
     pinoHttp: {
       level: config.observability.logLevel,
       redact: { paths: LOG_REDACT_PATHS, censor: '[redacted]' },

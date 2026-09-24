@@ -22,5 +22,5 @@ export function buildOpenApiDocument(app: INestApplication, release: string): Op
 
 export function setupSwagger(app: INestApplication, release: string): void {
   const document = buildOpenApiDocument(app, release);
-  SwaggerModule.setup('docs', app, document, { jsonDocumentUrl: 'docs/openapi.json' });
+  SwaggerModule.setup('api/v1/docs', app, document, { jsonDocumentUrl: 'api/v1/docs/openapi.json' });
 }

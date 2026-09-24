@@ -25,7 +25,7 @@ describe('Identity (integration)', () => {
     const res = await login(user.email);
     expect(res.status).toBe(200);
     expect(res.body.accessToken).toBeTruthy();
-    const cookie = res.headers['set-cookie'];
+    const cookie = res.headers['set-cookie'] as unknown as string[];
     expect(String(cookie)).toContain('aula_rt=');
 
     const me = await t.http().get('/api/v1/admin/auth/me').set('authorization', `Bearer ${res.body.accessToken}`);
@@ -33,12 +33,12 @@ describe('Identity (integration)', () => {
     expect(me.body.branchPermissions[branchId]).toContain('orders.manage');
     expect(me.body.globalPermissions).toEqual([]);
 
-    const refreshed = await t.http().post('/api/v1/admin/auth/refresh').set('cookie', cookie);
+    const refreshed = await t.http().post('/api/v1/admin/auth/refresh').set('Cookie', cookie);
     expect(refreshed.status).toBe(200);
     // Повторное использование старого refresh-токена — отказ и отзыв всех сессий.
-    const reused = await t.http().post('/api/v1/admin/auth/refresh').set('cookie', cookie);
+    const reused = await t.http().post('/api/v1/admin/auth/refresh').set('Cookie', cookie);
     expect(reused.status).toBe(403);
-    const afterReuse = await t.http().post('/api/v1/admin/auth/refresh').set('cookie', refreshed.headers['set-cookie']);
+    const afterReuse = await t.http().post('/api/v1/admin/auth/refresh').set('Cookie', refreshed.headers['set-cookie'] as unknown as string[]);
     expect(afterReuse.status).toBe(403);
   });
 
