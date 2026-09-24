@@ -35,7 +35,7 @@ export async function createPosTestApp(): Promise<PosTestContext> {
     module: PosTestFakesModule,
     global: true,
     providers: fakeList,
-    exports: fakeList.map((p) => (p as { provide: never }).provide),
+    exports: fakeList.map((p) => (p as unknown as { provide: never }).provide),
   };
   const t = await createTestApp({
     imports: [fakesModule, PosModule],

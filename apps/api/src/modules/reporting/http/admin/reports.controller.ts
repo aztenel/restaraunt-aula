@@ -95,7 +95,7 @@ export class ReportsController {
     private readonly xlsx: XlsxBuilder,
   ) {}
 
-  private async export<V extends { branchId: string | null }>(report: string, view: V, sheets: (v: V) => XlsxSheet[]): Promise<StreamableFile> {
+  private async export<V extends { branchId: string | null }>(report: string, view: V, sheets: (v: V) => XlsxSheet<any>[]): Promise<StreamableFile> {
     return xlsxFile(await this.xlsx.build(sheets(view)), fileName(report, view));
   }
 
@@ -202,8 +202,7 @@ export class ReportsController {
   @XlsxResponse()
   async cancelledOrdersExport(@CurrentActor() actor: Actor, @Query() q: ReportQueryDto): Promise<StreamableFile> {
     // Выгрузка — все отменённые заказы периода (до 10 000 строк).
-    const view = await this.cancelledOrders.execute(actor, { ...q, page: 1, perPage: 10_000 });
-    return this.export('cancelled_orders', view, cancelledOrdersSheets);
+    return this.export('cancelled_orders', await this.cancelledOrders.executeForExport(actor, q), cancelledOrdersSheets);
   }
 
   @Reports()

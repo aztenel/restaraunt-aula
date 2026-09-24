@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Actor } from '../../../../shared/kernel/actor';
 import { Money } from '../../../../shared/kernel/money';
-import { Page, pageOf, pageRequest } from '../../../../shared/kernel/pagination';
+import { Page, pageOf, PageRequest, pageRequest } from '../../../../shared/kernel/pagination';
 import { Translatable } from '../../../../shared/kernel/translatable';
 import { ratio } from '../../domain/amounts';
 import { datesOf, ReportPeriod } from '../../domain/period';
@@ -117,6 +117,9 @@ export class TopDishesReport {
 
 // ---------------------------------------------------------------- Отменённые заказы и причины
 
+/** Максимум строк списка в выгрузке XLSX. */
+export const EXPORT_MAX_ROWS = 10_000;
+
 export interface CancelledOrdersReportView extends ReportHeader {
   placed: number;
   cancelled: number;
@@ -140,8 +143,14 @@ export class CancelledOrdersReport {
     return this.build(this.scopes.period(query), scope, query.page, query.perPage);
   }
 
-  async build(period: ReportPeriod, scope: ReportScope, page?: number, perPage?: number): Promise<CancelledOrdersReportView> {
-    const req = pageRequest(page, perPage);
+  /** Для выгрузки в XLSX: все отменённые заказы периода (до EXPORT_MAX_ROWS). */
+  async executeForExport(actor: Actor, query: PeriodQuery): Promise<CancelledOrdersReportView> {
+    const scope = await this.scopes.resolve(actor, query.branchId);
+    return this.build(this.scopes.period(query), scope, { page: 1, perPage: EXPORT_MAX_ROWS });
+  }
+
+  async build(period: ReportPeriod, scope: ReportScope, page?: number | PageRequest, perPage?: number): Promise<CancelledOrdersReportView> {
+    const req = typeof page === 'object' ? page : pageRequest(page, perPage);
     const reasons = await this.orders.cancelledByReason(period, scope.branchIds);
     const counts = await this.orders.counts(period, scope.branchIds);
     const list = await this.orders.cancelledPage(period, scope.branchIds, req);

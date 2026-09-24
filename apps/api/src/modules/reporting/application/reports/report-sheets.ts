@@ -63,7 +63,7 @@ function paramsSheet(title: string, h: { from?: string; to?: string; branchId: s
   };
 }
 
-export function revenueSheets(v: RevenueReportView): XlsxSheet[] {
+export function revenueSheets(v: RevenueReportView): XlsxSheet<any>[] {
   return [
     {
       name: 'Выручка по дням',
@@ -79,7 +79,7 @@ export function revenueSheets(v: RevenueReportView): XlsxSheet[] {
   ];
 }
 
-export function averageCheckSheets(v: AverageCheckReportView): XlsxSheet[] {
+export function averageCheckSheets(v: AverageCheckReportView): XlsxSheet<any>[] {
   return [
     {
       name: 'Средний чек',
@@ -98,7 +98,7 @@ export function averageCheckSheets(v: AverageCheckReportView): XlsxSheet[] {
   ];
 }
 
-export function conversionSheets(v: ConversionReportView): XlsxSheet[] {
+export function conversionSheets(v: ConversionReportView): XlsxSheet<any>[] {
   return [
     {
       name: 'Воронка витрины',
@@ -129,7 +129,7 @@ export function conversionSheets(v: ConversionReportView): XlsxSheet[] {
   ];
 }
 
-export function topDishesSheets(v: TopDishesReportView): XlsxSheet[] {
+export function topDishesSheets(v: TopDishesReportView): XlsxSheet<any>[] {
   return [
     {
       name: 'Топ блюд',
@@ -147,7 +147,7 @@ export function topDishesSheets(v: TopDishesReportView): XlsxSheet[] {
   ];
 }
 
-export function hallLoadSheets(v: HallLoadReportView): XlsxSheet[] {
+export function hallLoadSheets(v: HallLoadReportView): XlsxSheet<any>[] {
   return [
     {
       name: 'Загрузка по типам',
@@ -196,7 +196,7 @@ export function hallLoadSheets(v: HallLoadReportView): XlsxSheet[] {
   ];
 }
 
-export function banquetFunnelSheets(v: BanquetFunnelReportView): XlsxSheet[] {
+export function banquetFunnelSheets(v: BanquetFunnelReportView): XlsxSheet<any>[] {
   const STAGE_LABELS: Record<string, string> = {
     new: 'Новая',
     in_progress: 'В работе',
@@ -246,7 +246,7 @@ export function banquetFunnelSheets(v: BanquetFunnelReportView): XlsxSheet[] {
   ];
 }
 
-export function cancelledOrdersSheets(v: CancelledOrdersReportView): XlsxSheet[] {
+export function cancelledOrdersSheets(v: CancelledOrdersReportView): XlsxSheet<any>[] {
   return [
     {
       name: 'Причины',
@@ -277,7 +277,7 @@ export function cancelledOrdersSheets(v: CancelledOrdersReportView): XlsxSheet[]
   ];
 }
 
-export function cashFlowSheets(v: CashFlowReportView): XlsxSheet[] {
+export function cashFlowSheets(v: CashFlowReportView): XlsxSheet<any>[] {
   const moneyCols = [
     { header: 'Поступило, ₸', key: 'received', format: 'money' as const },
     { header: 'Возвращено, ₸', key: 'refunded', format: 'money' as const },
@@ -301,7 +301,7 @@ export function cashFlowSheets(v: CashFlowReportView): XlsxSheet[] {
   ];
 }
 
-export function certificatesSheets(v: CertificatesReportView): XlsxSheet[] {
+export function certificatesSheets(v: CertificatesReportView): XlsxSheet<any>[] {
   const rows: Row[] = [
     { metric: 'Выпущено', count: v.issued.count, amount: v.issued.nominal },
     { metric: 'Выпущено (цена продажи)', count: v.issued.count, amount: v.issued.price },
@@ -332,7 +332,7 @@ export function certificatesSheets(v: CertificatesReportView): XlsxSheet[] {
   ];
 }
 
-export function ownChannelSheets(v: OwnChannelReportView): XlsxSheet[] {
+export function ownChannelSheets(v: OwnChannelReportView): XlsxSheet<any>[] {
   return [
     {
       name: 'Доля своего канала',
@@ -368,7 +368,7 @@ function kpiRows(label: string, k: DashboardView['today']): Row[] {
   ];
 }
 
-export function dashboardSheets(v: DashboardView): XlsxSheet[] {
+export function dashboardSheets(v: DashboardView): XlsxSheet<any>[] {
   return [
     {
       name: 'Показатели',
@@ -385,7 +385,7 @@ export function dashboardSheets(v: DashboardView): XlsxSheet[] {
   ];
 }
 
-export function goalsSheets(v: GoalsReportView): XlsxSheet[] {
+export function goalsSheets(v: GoalsReportView): XlsxSheet<any>[] {
   return [
     {
       name: 'Цели',
@@ -409,7 +409,7 @@ export function goalsSheets(v: GoalsReportView): XlsxSheet[] {
 }
 
 /** Дневной отчёт (сводка в JSON-форме: деньги — { amount, currency }). */
-export function dailySheets(summary: DailySummary | DailySummaryJson, scopeName: string): XlsxSheet[] {
+export function dailySheets(summary: DailySummary | DailySummaryJson, scopeName: string): XlsxSheet<any>[] {
   const s = summary as DailySummaryJson;
   const r = s.revenue;
   return [
