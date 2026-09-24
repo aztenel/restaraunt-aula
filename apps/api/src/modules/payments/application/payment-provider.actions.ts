@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { AuditLog } from '../../../shared/infrastructure/audit/audit-log';
 import { Database } from '../../../shared/infrastructure/database/database';
 import { JobQueue } from '../../../shared/infrastructure/events/event-bus';
 import { ExternalServiceError } from '../../../shared/infrastructure/integrations/external-http';
@@ -6,6 +7,7 @@ import { Clock } from '../../../shared/kernel/clock';
 import { DomainError } from '../../../shared/kernel/errors';
 import { PaymentRepository } from '../infrastructure/payment.repository';
 import { InitiateJobPayload, PaymentJobs } from './create-payment.action';
+import { paymentAuditState } from './payment-events';
 import { PaymentGatewayRegistry, toGatewayPayment } from './payment-gateway.registry';
 import { ApplyGatewayStatus, CancelPayment, FailPayment } from './payment-status.actions';
 
@@ -37,6 +39,7 @@ export class InitiatePayment {
     private readonly database: Database,
     private readonly failPayment: FailPayment,
     private readonly cancelPayment: CancelPayment,
+    private readonly audit: AuditLog,
     private readonly clock: Clock,
   ) {}
 
@@ -55,8 +58,18 @@ export class InitiatePayment {
         const locked = await this.payments.findById(payment.id, { forUpdate: true });
         // Пока ходили к провайдеру, платёж могли отменить — ссылку не сохраняем.
         if (!locked || locked.status !== 'created') return;
+        const before = paymentAuditState(locked);
         locked.markInitiated(result);
         await this.payments.save(locked);
+        await this.audit.record({
+          action: 'payment.initiated',
+          entityType: 'payment',
+          entityId: locked.id,
+          branchId: locked.branchId,
+          before,
+          after: { ...paymentAuditState(locked), expiresAt: locked.expiresAt?.toISOString() ?? null },
+          meta: { attempt },
+        });
       });
     } catch (error) {
       if (isRetryable(error) && attempt < INITIATE_MAX_ATTEMPTS) {

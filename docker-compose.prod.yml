@@ -103,7 +103,11 @@ services:
     env_file:
       - ./env/web.env
     environment:
+      # SSR ходит в API напрямую по внутренней сети, минуя Caddy.
+      API_INTERNAL_URL: http://api:3000
       RELEASE: ${TAG}
+      SENTRY_RELEASE: ${TAG}
+      SENTRY_ENVIRONMENT: ${DEPLOY_ENV}
     restart: unless-stopped
     expose:
       - "3001"

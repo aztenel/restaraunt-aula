@@ -16,9 +16,11 @@
 **/playwright-report
 **/blob-report
 
-# Локальные данные разработчика
-**/storage
-**/tmp
+# Локальные данные разработчика (не путать с исходниками src/shared/infrastructure/storage/)
+storage
+apps/*/storage
+tmp
+apps/*/tmp
 **/*.log
 .deploy
 env

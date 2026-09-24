@@ -6,7 +6,7 @@ import { Money } from '../../../shared/kernel/money';
 import { Page, PageRequest, pageRequest } from '../../../shared/kernel/pagination';
 import { Permission } from '../../../shared/kernel/permissions';
 import { Payment } from '../domain/payment';
-import { RefundMode, reservedRefundTotal } from '../domain/refund';
+import { RefundMode } from '../domain/refund';
 import { PaymentListRow, PaymentRepository, PaymentSearchFilter } from '../infrastructure/payment.repository';
 import { mapRefund, RefundListRow, RefundRepository } from '../infrastructure/refund.repository';
 import { WebhookEventRepository } from '../infrastructure/webhook-event.repository';
@@ -76,8 +76,8 @@ export class PaymentQueries {
     const branches = actor.scopeBranches(Permission.PaymentsView, filter.branchId);
     const search: PaymentSearchFilter = { ...filter, branches };
     const result = await this.payments.search(search, page);
-    const items = await Promise.all(result.items.map((row) => this.adminView(actor, row)));
-    return { ...result, items };
+    const reserved = await this.refunds.reservedByPayment(result.items.map((r) => r.payment.id));
+    return { ...result, items: result.items.map((row) => this.adminView(actor, row, reserved.get(row.payment.id) ?? 0)) };
   }
 
   async details(actor: Actor, paymentId: string): Promise<PaymentDetailsView> {
@@ -88,8 +88,9 @@ export class PaymentQueries {
     const refundRows = await this.refunds.listRowsForPayment(paymentId);
     const events = await this.webhookEvents.listForPayment(paymentId);
     const log = await this.integrationLog.search({ correlationId: paymentId }, pageRequest(1, 100));
+    const reserved = await this.refunds.reservedByPayment([paymentId]);
     return {
-      payment: await this.adminView(actor, listRow),
+      payment: this.adminView(actor, listRow, reserved.get(paymentId) ?? 0),
       refunds: refundRows.map((r) => ({
         refund: mapRefund(r),
         mode: r.mode as RefundMode,
@@ -137,10 +138,9 @@ export class PaymentQueries {
     return { ...result, items: result.items.map((r) => ({ ...r, mode: r.refund.mode })) };
   }
 
-  private async adminView(actor: Actor, row: PaymentListRow): Promise<PaymentAdminView> {
+  private adminView(actor: Actor, row: PaymentListRow, reservedAmount: number): PaymentAdminView {
     const payment: Payment = row.payment;
-    const reserved = reservedRefundTotal(await this.refunds.listForPayment(payment.id), payment.amount.currency);
-    const refundable = payment.refundableRemainder(reserved);
+    const refundable = payment.refundableRemainder(Money.of(reservedAmount, payment.amount.currency));
     return {
       ...row,
       refundable,

@@ -4,6 +4,9 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { MapContainer, Marker, TileLayer, Tooltip } from 'react-leaflet';
 
+/** Тайлы OSM; для production — свой или коммерческий тайл-сервер (NEXT_PUBLIC_MAP_TILES_URL). */
+const TILES_URL = process.env.NEXT_PUBLIC_MAP_TILES_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+
 // Метка — SVG через divIcon: стандартные PNG-иконки Leaflet ломаются при сборке бандлером.
 const pinIcon = L.divIcon({
   className: '',
@@ -26,7 +29,7 @@ export default function BranchMapLeaflet({ lat, lng, label }: { lat: number; lng
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        url={TILES_URL}
         maxZoom={19}
       />
       <Marker position={[lat, lng]} icon={pinIcon} title={label} alt={label}>

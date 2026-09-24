@@ -8,7 +8,7 @@ import { BranchDirectory, BranchInfo } from '../../identity/public';
 import { allergenLabel, AllergenCode } from '../domain/allergens';
 import { isRequiredGroup } from '../domain/modifiers';
 import { normalizeSearchQuery } from '../domain/search';
-import { buildSeo, menuItemJsonLd, MenuItemLd, menuJsonLd, SeoMeta } from '../domain/seo';
+import { buildSeo, menuItemJsonLd, MenuItemLd, menuJsonLd, priceRange, restaurantJsonLd, SeoMeta } from '../domain/seo';
 import { isPromotionVisible } from '../domain/content';
 import { displayAvailability, effectiveAvailability } from '../domain/stop-list';
 import { CategoryRecord, CategoryRepository } from '../infrastructure/category.repository';
@@ -100,7 +100,10 @@ export interface PublicMenu {
   locale: Locale;
   seo: SeoMeta;
   categories: Array<PublicCategory & { dishes: PublicDishCard[] }>;
+  /** schema.org Menu. */
   structuredData: Record<string, unknown>;
+  /** schema.org Restaurant филиала с меню (hasMenu). */
+  restaurantStructuredData: Record<string, unknown>;
 }
 
 export interface PublicCategoryPage {
@@ -261,6 +264,12 @@ export class StorefrontQueries {
       dishes: sectionRows.map((r) => this.card(r, ctx)),
     }));
     const branchName = translate(branch.name, locale);
+    const menuLd = menuJsonLd({
+      name: branchName,
+      locale,
+      url: null,
+      sections: sections.map((s) => ({ name: s.name, description: s.description, items: s.dishes.map((d) => this.itemLd(d)) })),
+    });
     return {
       branch: this.branchRef(branch, locale),
       locale,
@@ -280,11 +289,18 @@ export class StorefrontQueries {
         locale,
       ),
       categories: sections,
-      structuredData: menuJsonLd({
+      structuredData: menuLd,
+      restaurantStructuredData: restaurantJsonLd({
         name: branchName,
         locale,
-        url: null,
-        sections: sections.map((s) => ({ name: s.name, description: s.description, items: s.dishes.map((d) => this.itemLd(d)) })),
+        telephone: branch.phone,
+        address: translate(branch.address, locale),
+        lat: branch.location.lat,
+        lng: branch.location.lng,
+        openingHours: branch.openingHours,
+        acceptsReservations: branch.settings.acceptsReservations,
+        priceRange: priceRange(rows.map((r) => r.item.price)),
+        menu: menuLd,
       }),
     };
   }

@@ -6,7 +6,7 @@
 # Переменные VITE_* встраиваются при сборке, поэтому образ собирается под окружение
 # с build-args из ops/build-env/<env>.env (см. .github/workflows/deploy.yml).
 #
-#   docker build -f apps/admin/Dockerfile --build-arg VITE_API_URL=https://admin.aula.kz -t aula-admin:dev .
+#   docker build -f apps/admin/Dockerfile --build-arg VITE_SENTRY_ENVIRONMENT=staging -t aula-admin:dev .
 
 ARG NODE_IMAGE=node:22-bookworm-slim
 ARG CADDY_IMAGE=caddy:2.11-alpine
@@ -30,10 +30,11 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     pnpm install --frozen-lockfile --offline --store-dir /pnpm/store --filter "@aula/admin..."
 
 # Публичные параметры сборки (попадают в браузер).
+# Пустой VITE_API_URL — тот же origin (Caddy: /api/v1/* на домене админки → api).
 ARG VITE_API_URL
 ARG VITE_SENTRY_DSN
+ARG VITE_SENTRY_ENVIRONMENT
 ARG VITE_MAP_TILES_URL
-ARG VITE_ENVIRONMENT
 ARG RELEASE=dev
 ENV VITE_RELEASE=${RELEASE}
 
@@ -55,11 +56,11 @@ RUN apk add --no-cache libcap \
 COPY ops/caddy/admin-static.Caddyfile /etc/caddy/Caddyfile
 COPY --from=build /repo/apps/admin/dist /srv
 
-USER app
+USER 10001:10001
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget -q -O /dev/null http://127.0.0.1:8080/healthz || exit 1
+  CMD ["wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/healthz"]
 
 ARG RELEASE=dev
 LABEL org.opencontainers.image.title="aula-admin" \

@@ -71,10 +71,21 @@ export abstract class PhoneVerification {
 
 export const CustomersEvents = {
   CustomerCreated: 'customers.customer_created',
+  /**
+   * Гость обезличен по требованию (закон РК о ПД): телефон, имя, почта стёрты, агрегаты сохранены.
+   * Модули, хранящие снимки контактов гостя (заказы, брони, заявки), могут обезличить их у себя
+   * по customerId. В payload нет персональных данных.
+   */
+  CustomerAnonymized: 'customers.customer_anonymized',
 } as const;
 
 export interface CustomerCreatedPayload {
   customerId: string;
   phone: string;
+  occurredAt: string;
+}
+
+export interface CustomerAnonymizedPayload {
+  customerId: string;
   occurredAt: string;
 }

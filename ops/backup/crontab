@@ -1,0 +1,7 @@
+# Расписание бэкапа AULA (cron в контейнере aula-backup, время — часовой пояс TZ контейнера, Asia/Almaty).
+# 03:30 — минимум заказов и броней; до утренней подготовки филиалов бэкап гарантированно завершён.
+# Переопределяется переменной BACKUP_CRON в env/backup.env. Вывод — в логи контейнера (docker logs).
+SHELL=/bin/bash
+PATH=/opt/backup:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+30 3 * * * root . /run/backup.env && /opt/backup/backup.sh >/proc/1/fd/1 2>/proc/1/fd/2

@@ -186,16 +186,15 @@ export class FailRefund {
 /**
  * Запрос возврата (контракт requestRefund и админка). Сумма по умолчанию — весь невозвращённый остаток;
  * вместе с ожидающими и прошедшими возвратами не превышает сумму платежа (под блокировкой платежа).
- * Идемпотентно по ключу. Исполнение зависит от способа оплаты:
- * online — задача payments.refund к провайдеру; сертификат — сразу обратно на сертификат;
- * при получении / перевод — ждёт ручного подтверждения финансиста.
+ * Идемпотентно по ключу. Возврат создаётся в статусе pending; исполнение зависит от способа оплаты:
+ * online — задача payments.refund к провайдеру; сертификат — задача payments.refund, сумма возвращается
+ * на сертификат (движение в журнале); при получении / перевод — ждёт ручного подтверждения финансиста.
  */
 @Injectable()
 export class RequestRefund {
   constructor(
     private readonly payments: PaymentRepository,
     private readonly refunds: RefundRepository,
-    private readonly completeRefund: CompleteRefund,
     private readonly database: Database,
     private readonly jobs: JobQueue,
     private readonly audit: AuditLog,
@@ -240,13 +239,12 @@ export class RequestRefund {
         meta: { refundId: refund.id },
         actor,
       });
-      if (refund.mode === 'gateway') {
+      // Провайдер и сертификат — задачей payments.refund; наличные/перевод — ждут финансиста.
+      if (refund.mode !== 'manual') {
         await this.jobs.enqueue(PaymentJobs.Refund, { refundId: refund.id } satisfies RefundJobPayload, {
           aggregateId: payment.id,
           branchId: payment.branchId,
         });
-      } else if (refund.mode === 'certificate') {
-        await this.completeRefund.execute(refund.id, {});
       }
       return (await this.refunds.findById(refund.id))!.toView();
     });
@@ -261,7 +259,7 @@ export class RequestRefund {
 }
 
 /**
- * Задача payments.refund: возврат через провайдера. Повторы с экспоненциальной задержкой; после
+ * Задача payments.refund: возврат через провайдера (или обратно на сертификат). Повторы с экспоненциальной задержкой; после
  * REFUND_MAX_ATTEMPTS неудач (или неповторяемой ошибки) — RefundFailed и оповещение персоналу.
  * Аренда (claimed_at) не даёт двум воркерам вернуть деньги дважды.
  */
@@ -284,17 +282,36 @@ export class ProcessRefund {
     const refund = await this.refunds.findById(input.refundId);
     const payment = refund ? await this.payments.findById(refund.paymentId) : null;
     if (!refund || !payment) return;
-    try {
-      const result = await this.registry.get(payment.provider).refund(toGatewayPayment(payment), refund.amount, refund.id);
-      await this.completeRefund.execute(refund.id, { externalRefundId: result.externalRefundId });
-    } catch (error) {
-      if (isRetryable(error) && attempt < REFUND_MAX_ATTEMPTS) {
-        this.logger.warn({ refundId: refund.id, attempt, err: errorMessage(error) }, 'Refund failed, will retry');
-        await this.refunds.release(refund.id);
-        throw error;
+    let externalRefundId = refund.snapshot().externalRefundId;
+    // Провайдер уже принял возврат в прошлой попытке (сбой был при фиксации) — второй раз не возвращаем.
+    if (refund.mode === 'gateway' && !externalRefundId) {
+      try {
+        const result = await this.registry.get(payment.provider).refund(toGatewayPayment(payment), refund.amount, refund.id);
+        externalRefundId = result.externalRefundId ?? `accepted:${refund.id}`;
+        await this.refunds.recordProviderAccepted(refund.id, externalRefundId);
+      } catch (error) {
+        if (isRetryable(error) && attempt < REFUND_MAX_ATTEMPTS) {
+          this.logger.warn({ refundId: refund.id, attempt, err: errorMessage(error) }, 'Refund failed, will retry');
+          await this.refunds.release(refund.id);
+          throw error;
+        }
+        this.logger.error({ refundId: refund.id, attempt, err: errorMessage(error) }, 'Refund failed permanently');
+        await this.failRefund.execute(refund.id, { reason: errorMessage(error), notifyStaff: true });
+        return;
       }
-      this.logger.error({ refundId: refund.id, attempt, err: errorMessage(error) }, 'Refund failed permanently');
-      await this.failRefund.execute(refund.id, { reason: errorMessage(error), notifyStaff: true });
+    }
+    try {
+      // Сертификат: сумма возвращается движением по журналу сертификата (без внешних вызовов).
+      await this.completeRefund.execute(refund.id, { externalRefundId });
+    } catch (error) {
+      if (refund.mode === 'certificate' && !isRetryable(error)) {
+        // Вернуть на сертификат нельзя (нарушено правило домена) — возврат не прошёл, персоналу — оповещение.
+        await this.failRefund.execute(refund.id, { reason: errorMessage(error), notifyStaff: true });
+        return;
+      }
+      // Фиксация не удалась (БД) — повтор задачи; деньги у провайдера повторно не запрашиваются.
+      await this.refunds.release(refund.id);
+      throw error;
     }
   }
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Money } from '../../../shared/kernel/money';
-import { buildSeo, decimalPrice, menuItemJsonLd, menuJsonLd, truncateText } from './seo';
+import { buildSeo, decimalPrice, menuItemJsonLd, menuJsonLd, priceRange, restaurantJsonLd, splitAddress, truncateText } from './seo';
 
 describe('seo', () => {
   it('explicit SEO fields win, otherwise name + suffix and description fallbacks', () => {
@@ -58,5 +58,36 @@ describe('seo', () => {
     });
     const menu = menuJsonLd({ name: 'Меню', locale: 'ru', url: null, sections: [{ name: 'Горячее', description: '', items: [item] }] });
     expect(menu).toMatchObject({ '@context': 'https://schema.org', '@type': 'Menu', hasMenuSection: [{ '@type': 'MenuSection', name: 'Горячее' }] });
+  });
+
+  it('builds Restaurant JSON-LD with address, geo, opening hours and menu', () => {
+    const ld = restaurantJsonLd({
+      name: 'AULA GreenLine Aqua',
+      locale: 'ru',
+      telephone: '+77172000000',
+      address: 'Астана, ул. Е-899, 1/1',
+      lat: 51.0762,
+      lng: 71.4125,
+      openingHours: { mon: [{ open: '10:00', close: '00:00' }], sat: [{ open: '11:00', close: '02:00' }] },
+      acceptsReservations: true,
+      priceRange: priceRange([Money.tenge(1900), Money.tenge(12900), Money.tenge(5900)]),
+      menu: { '@context': 'https://schema.org', '@type': 'Menu', name: 'Меню' },
+    });
+    expect(ld).toMatchObject({
+      '@type': 'Restaurant',
+      address: { '@type': 'PostalAddress', addressCountry: 'KZ', addressLocality: 'Астана', streetAddress: 'ул. Е-899, 1/1' },
+      geo: { latitude: 51.0762, longitude: 71.4125 },
+      servesCuisine: ['Казахская', 'Европейская', 'Халал'],
+      priceRange: '1 900–12 900 KZT',
+      hasMenu: { '@type': 'Menu', name: 'Меню' },
+      openingHoursSpecification: [
+        { dayOfWeek: 'https://schema.org/Monday', opens: '10:00', closes: '00:00' },
+        { dayOfWeek: 'https://schema.org/Saturday', opens: '11:00', closes: '02:00' },
+      ],
+    });
+    expect((ld.hasMenu as Record<string, unknown>)['@context']).toBeUndefined();
+    expect(priceRange([])).toBeNull();
+    expect(splitAddress('Астана, пр. Кабанбай батыра, 56')).toEqual({ locality: 'Астана', street: 'пр. Кабанбай батыра, 56' });
+    expect(splitAddress('пр. Мангилик Ел 1')).toEqual({ locality: null, street: 'пр. Мангилик Ел 1' });
   });
 });

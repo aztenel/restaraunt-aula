@@ -1,0 +1,37 @@
+# Откат на предыдущую версию одной командой (ТЗ, «Инфраструктура и эксплуатация»).
+# Actions → Rollback → Run workflow: окружение и (необязательно) тег.
+# Без тега — .deploy/previous_tag на сервере. Миграции не выполняются (только вперёд, expand/contract).
+# Для production действует защита окружения (подтверждение). Аварийно то же самое делается на сервере:
+#   cd /opt/aula && ops/deploy/rollback.sh
+
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Окружение
+        type: choice
+        options:
+          - staging
+          - production
+        required: true
+      tag:
+        description: Тег версии (пусто — предыдущая версия)
+        type: string
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  rollback:
+    name: Rollback
+    uses: ./.github/workflows/deploy-remote.yml
+    with:
+      environment: ${{ inputs.environment }}
+      action: rollback
+      tag: ${{ inputs.tag }}
+      sync-files: false
+    secrets: inherit

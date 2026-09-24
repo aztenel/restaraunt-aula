@@ -1,4 +1,5 @@
 import { Money } from '../../../shared/kernel/money';
+import { OpeningHours, Weekday, WEEKDAYS } from '../../../shared/kernel/time';
 import { Locale, translate, Translatable } from '../../../shared/kernel/translatable';
 
 /**
@@ -123,4 +124,83 @@ export function menuJsonLd(input: {
       hasMenuItem: s.items.map(menuItemJsonLd),
     })),
   };
+}
+
+const SCHEMA_DAYS: Record<Weekday, string> = {
+  mon: 'https://schema.org/Monday',
+  tue: 'https://schema.org/Tuesday',
+  wed: 'https://schema.org/Wednesday',
+  thu: 'https://schema.org/Thursday',
+  fri: 'https://schema.org/Friday',
+  sat: 'https://schema.org/Saturday',
+  sun: 'https://schema.org/Sunday',
+};
+
+/** Кухня сети для микроразметки Restaurant. */
+export const SERVES_CUISINE: Record<Locale, string[]> = {
+  ru: ['Казахская', 'Европейская', 'Халал'],
+  kk: ['Қазақ', 'Еуропа', 'Халал'],
+  en: ['Kazakh', 'European', 'Halal'],
+};
+
+export interface RestaurantLd {
+  name: string;
+  locale: Locale;
+  telephone: string;
+  /** Адрес филиала одной строкой: «Астана, ул. Е-899, 1/1» (город — до первой запятой). */
+  address: string;
+  lat: number;
+  lng: number;
+  openingHours: OpeningHours;
+  acceptsReservations: boolean;
+  priceRange?: string | null;
+  menu?: Record<string, unknown> | null;
+}
+
+/** «Астана, ул. Е-899, 1/1» -> город и улица (город — первая часть до запятой, если частей больше одной). */
+export function splitAddress(address: string): { locality: string | null; street: string } {
+  const parts = address.split(',').map((p) => p.trim());
+  if (parts.length < 2 || !parts[0]) return { locality: null, street: address.trim() };
+  return { locality: parts[0], street: parts.slice(1).join(', ') };
+}
+
+/** schema.org Restaurant (страница филиала / меню филиала): адрес, координаты, часы, кухня, меню. */
+export function restaurantJsonLd(input: RestaurantLd): Record<string, unknown> {
+  const hours = WEEKDAYS.flatMap((day) =>
+    (input.openingHours[day] ?? []).map((interval) => ({
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: SCHEMA_DAYS[day],
+      opens: interval.open,
+      closes: interval.close,
+    })),
+  );
+  const { ['@context']: _ctx, ...menu } = input.menu ?? {};
+  const { locality, street } = splitAddress(input.address);
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Restaurant',
+    name: input.name,
+    telephone: input.telephone,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: street,
+      ...(locality ? { addressLocality: locality } : {}),
+      addressCountry: 'KZ',
+    },
+    geo: { '@type': 'GeoCoordinates', latitude: input.lat, longitude: input.lng },
+    servesCuisine: SERVES_CUISINE[input.locale],
+    acceptsReservations: input.acceptsReservations,
+    currenciesAccepted: 'KZT',
+    ...(input.priceRange ? { priceRange: input.priceRange } : {}),
+    ...(hours.length > 0 ? { openingHoursSpecification: hours } : {}),
+    ...(input.menu ? { hasMenu: menu } : {}),
+  };
+}
+
+/** Диапазон цен для Restaurant.priceRange: '1 900–12 900 KZT' (без float). */
+export function priceRange(prices: readonly Money[]): string | null {
+  if (prices.length === 0) return null;
+  const amounts = prices.map((p) => p.amount);
+  const fmt = (tiyn: number) => String(Math.trunc(tiyn / 100)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return `${fmt(Math.min(...amounts))}–${fmt(Math.max(...amounts))} KZT`;
 }

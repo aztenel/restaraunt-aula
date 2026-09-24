@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { Money } from '../../../shared/kernel/money';
-import { normalizeAllergens } from './allergens';
 import { assertMenuPrice, normalizeSku, optionalText, requiredText, validateDishAttributes } from './dish';
 
 describe('dish rules', () => {
@@ -32,11 +31,6 @@ describe('dish rules', () => {
     const current = validateDishAttributes({ weightGrams: 300, calories: 500, spicyLevel: 2, allergens: ['milk'] });
     expect(validateDishAttributes({ isVegetarian: true }, current)).toMatchObject({ weightGrams: 300, spicyLevel: 2, allergens: ['milk'] });
     expect(validateDishAttributes({ weightGrams: null }, current).weightGrams).toBeNull();
-  });
-
-  it('normalizes allergens to reference codes', () => {
-    expect(normalizeAllergens(['Milk', 'gluten', 'milk'])).toEqual(['gluten', 'milk']);
-    expect(() => normalizeAllergens(['bread'])).toThrow(/Unknown allergen/);
   });
 
   it('validates POS sku', () => {

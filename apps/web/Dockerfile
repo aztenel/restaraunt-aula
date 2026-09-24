@@ -33,18 +33,30 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     pnpm install --frozen-lockfile --offline --store-dir /pnpm/store --filter "@aula/web..."
 
 # Публичные параметры сборки (попадают в браузер; секретов здесь быть не может).
+# Пустой NEXT_PUBLIC_API_URL — браузер ходит в API на том же origin (Caddy: /api/v1/* → api).
 ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_SITE_URL
-ARG NEXT_PUBLIC_ENVIRONMENT
 ARG NEXT_PUBLIC_GA_ID
 ARG NEXT_PUBLIC_YM_ID
 ARG NEXT_PUBLIC_SENTRY_DSN
+ARG NEXT_PUBLIC_SENTRY_ENVIRONMENT
 ARG NEXT_PUBLIC_MAP_PROVIDER
+# Публичные браузерные ключи карт (ограничиваются по домену у провайдера), не секреты.
+# hadolint ignore=DL3064
 ARG NEXT_PUBLIC_YANDEX_MAPS_API_KEY
+# hadolint ignore=DL3064
 ARG NEXT_PUBLIC_2GIS_API_KEY
 ARG NEXT_PUBLIC_MAP_TILES_URL
+# Хосты картинок для next/image (images.remotePatterns вычисляются в next.config.ts при сборке).
+ARG API_PUBLIC_URL
+ARG S3_PUBLIC_URL
+ARG IMAGE_HOSTS
+# Sentry: организация/проект для загрузки source maps (сам токен — BuildKit-секрет ниже).
+ARG SENTRY_ORG
+ARG SENTRY_PROJECT
 ARG RELEASE=dev
-ENV NEXT_PUBLIC_RELEASE=${RELEASE}
+ENV NEXT_PUBLIC_RELEASE=${RELEASE} \
+    SENTRY_RELEASE=${RELEASE}
 
 # SENTRY_AUTH_TOKEN (необязательно) — загрузка source maps в Sentry; передаётся как BuildKit-секрет
 # и не остаётся в слоях образа: docker build --secret id=sentry_auth_token,env=SENTRY_AUTH_TOKEN ...
@@ -55,8 +67,8 @@ RUN --mount=type=secret,id=sentry_auth_token,required=false \
 
 # Раскладка standalone: при outputFileTracingRoot = корень монорепо сервер лежит в apps/web/server.js,
 # иначе — в корне standalone. Нормализуем в /out с точкой входа /out/server.js.
+WORKDIR /repo/apps/web/.next/standalone
 RUN set -eu; \
-    cd apps/web/.next/standalone; \
     if [ -f apps/web/server.js ]; then app_dir=apps/web; \
     elif [ -f server.js ]; then app_dir=.; \
     else echo "Нет .next/standalone/**/server.js: задайте output: 'standalone' в apps/web/next.config" >&2; exit 1; fi; \
@@ -66,6 +78,7 @@ RUN set -eu; \
     cp -a /repo/apps/web/.next/static "/out/${app_dir}/.next/static"; \
     cp -a /repo/apps/web/public "/out/${app_dir}/public"; \
     if [ "${app_dir}" != "." ]; then printf "require('./%s/server.js');\n" "${app_dir}" > /out/server.js; fi
+WORKDIR /repo
 
 # ---------------------------------------------------------------------------
 FROM ${NODE_IMAGE} AS runtime
@@ -81,12 +94,14 @@ ENV NODE_ENV=production \
 WORKDIR /app
 COPY --from=build /out ./
 
-USER node
+# Пользователь node (uid 1000) из базового образа.
+USER 1000:1000
 EXPOSE 3001
 
-# Сервер Next.js отвечает (любой статус < 500). Рекомендуемый лёгкий маршрут — GET /api/health в apps/web.
+# Сервер Next.js отвечает (любой статус < 500). Лёгкий маршрут без обращения к API — GET /api/health
+# (app/api/health/route.ts); пока его нет, 404 тоже считается «жив».
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||3001)+'/api/health',{redirect:'manual'}).then(r=>process.exit(r.status<500?0:1),()=>process.exit(1))"
+  CMD ["node", "-e", "fetch('http://127.0.0.1:'+(process.env.PORT||3001)+'/api/health',{redirect:'manual'}).then(r=>process.exit(r.status<500?0:1),()=>process.exit(1))"]
 
 ARG RELEASE=dev
 ENV RELEASE=${RELEASE}

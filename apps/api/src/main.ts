@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
-import { Config } from './shared/infrastructure/config/config';
+import { Config, loadEnvFileIfPresent } from './shared/infrastructure/config/config';
 import { setupSwagger } from './shared/infrastructure/http/swagger';
 import { buildValidationPipe } from './shared/infrastructure/http/validation';
 import { initSentry } from './shared/infrastructure/logging/sentry';
@@ -29,6 +29,7 @@ export function configureHttpApp(app: NestExpressApplication, config: Config): v
 }
 
 async function bootstrap(): Promise<void> {
+  loadEnvFileIfPresent();
   const config = new Config();
   initSentry(config, 'api');
   const app = await NestFactory.create<NestExpressApplication>(AppModule.forRoot(config), { bufferLogs: true });

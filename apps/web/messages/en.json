@@ -1,0 +1,250 @@
+{
+  "Metadata": {
+    "homeTitle": "AULA — Kazakh cuisine restaurant in Astana: menu, delivery, reservations, banquets",
+    "homeDescription": "AULA, a chain of Kazakh cuisine restaurants in Astana. Menu with branch prices, delivery and pickup, table and VIP room reservations, banquets and catering, gift certificates."
+  },
+  "Common": {
+    "skipToContent": "Skip to content",
+    "openNow": "Open",
+    "closedNow": "Closed",
+    "call": "Call",
+    "whatsapp": "WhatsApp",
+    "writeWhatsapp": "Message on WhatsApp",
+    "details": "Details",
+    "menu": "Menu",
+    "loading": "Loading…",
+    "comingSoon": "Coming soon",
+    "backHome": "Back to home",
+    "retry": "Retry",
+    "route": "Get directions",
+    "openInGoogleMaps": "Open in Google Maps",
+    "apiUnavailable": "We couldn’t load the data. Please refresh the page a little later.",
+    "certificates": "Gift certificates"
+  },
+  "Nav": {
+    "home": "Home",
+    "menu": "Menu",
+    "booking": "Book",
+    "banquets": "Banquets",
+    "cart": "Cart",
+    "certificates": "Certificates",
+    "branches": "Locations",
+    "mainNavigation": "Main navigation",
+    "mobileNavigation": "Quick navigation"
+  },
+  "Header": {
+    "homeAria": "AULA — home",
+    "branch": "Location",
+    "chooseBranch": "Choose a location",
+    "branchHint": "Prices and availability depend on the location",
+    "cartAria": "Cart: {count, plural, =0 {empty} one {# item} other {# items}}",
+    "language": "Language"
+  },
+  "Languages": {
+    "kk": "Қазақша",
+    "ru": "Русский",
+    "en": "English"
+  },
+  "Footer": {
+    "branches": "Our locations",
+    "info": "Information",
+    "legalEntity": "Express kitchen LLP",
+    "offer": "Public offer",
+    "privacy": "Privacy policy",
+    "personalData": "Consent to personal data processing",
+    "delivery": "Delivery and payment",
+    "rights": "© {year} AULA. All rights reserved.",
+    "tagline": "Kazakh cuisine and hospitality in Astana",
+    "paymentNote": "Pay online or on delivery"
+  },
+  "Home": {
+    "heroEyebrow": "Kazakh cuisine restaurant · Astana",
+    "heroTitle": "AULA dastarkhan — the taste of Kazakh hospitality",
+    "heroSubtitle": "Beshbarmak, baursaks and dishes from family recipes. Order delivery, book a table or celebrate in a VIP room.",
+    "ctaMenu": "View menu",
+    "ctaBooking": "Book a table",
+    "quickTitle": "How can we help",
+    "quickMenuTitle": "Menu and delivery",
+    "quickMenuText": "City-wide delivery and pickup from the nearest location",
+    "quickBookingTitle": "Book a table",
+    "quickBookingText": "Tables, VIP rooms and yurts for time with your loved ones",
+    "quickBanquetsTitle": "Banquets and catering",
+    "quickBanquetsText": "Toi, anniversary, corporate party — a quote within 30 minutes",
+    "quickCertificatesTitle": "Gift certificates",
+    "quickCertificatesText": "Give an evening at AULA for any amount",
+    "branchesTitle": "Our locations",
+    "branchesSubtitle": "Choose the nearest one: each location has its own menu and prices",
+    "branchesUnavailable": "The list of locations is temporarily unavailable. Call us or refresh the page later.",
+    "noBranches": "Locations are coming soon.",
+    "featuresTitle": "Why guests choose AULA",
+    "featureCuisineTitle": "Authentic Kazakh cuisine",
+    "featureCuisineText": "Traditional recipes, fresh meat and homemade dough every day",
+    "featureHalalTitle": "Halal",
+    "featureHalalText": "Our products and kitchen meet halal standards",
+    "featureHallsTitle": "Rooms for every occasion",
+    "featureHallsText": "Cosy tables, VIP rooms and yurts for family and business gatherings",
+    "featureDeliveryTitle": "Our own delivery",
+    "featureDeliveryText": "Hot dishes to your table — pay online or on delivery",
+    "banquetTitle": "Planning a toi or an anniversary?",
+    "banquetText": "Leave a request — our banquet manager will contact you within 30 minutes and prepare a quote.",
+    "banquetCta": "Leave a request"
+  },
+  "Branches": {
+    "title": "AULA locations",
+    "subtitle": "Addresses, opening hours and contacts",
+    "metaTitle": "AULA locations in Astana — addresses, opening hours, phones",
+    "metaDescription": "Addresses of AULA restaurants in Astana, opening hours, phone and WhatsApp for reservations, map.",
+    "branchMetaTitle": "{name} — address, opening hours, menu",
+    "branchMetaDescription": "Kazakh cuisine restaurant {name}: {address}. Opening hours, phone and WhatsApp, menu with location prices, table reservations.",
+    "hours": "Opening hours",
+    "contacts": "Contacts",
+    "map": "On the map",
+    "mapAria": "Map: {name}",
+    "services": "Services",
+    "delivery": "Delivery",
+    "pickup": "Pickup",
+    "reservations": "Reservations",
+    "menuCta": "Location menu",
+    "bookCta": "Book",
+    "today": "Today",
+    "dayOff": "Closed",
+    "nextDay": "until {time} the next day",
+    "todayHours": "Today: {hours}",
+    "closedToday": "Closed today",
+    "allBranches": "All locations"
+  },
+  "Weekdays": {
+    "mon": "Monday",
+    "tue": "Tuesday",
+    "wed": "Wednesday",
+    "thu": "Thursday",
+    "fri": "Friday",
+    "sat": "Saturday",
+    "sun": "Sunday"
+  },
+  "Menu": {
+    "title": "Menu",
+    "metaTitle": "{branch} menu — prices, delivery and pickup",
+    "metaDescription": "Menu of the Kazakh cuisine restaurant {branch} with location prices: beshbarmak, baursaks, shashlik and more. Delivery and pickup in Astana.",
+    "chooseBranchTitle": "Choose a location",
+    "chooseBranchText": "Prices and availability depend on the location. Choose where to order from:",
+    "chooseBranchMetaTitle": "AULA menu — choose a location",
+    "chooseBranchMetaDescription": "AULA restaurants menu: choose a location to see prices and order delivery or pickup.",
+    "noBranches": "Locations are coming soon.",
+    "placeholderTitle": "The menu is coming to the website soon",
+    "placeholderText": "We are moving our menu to the website. Meanwhile, you can order by phone or via the location’s WhatsApp.",
+    "branchLabel": "Location: {branch}",
+    "whatsappText": "Hello! I would like to place an order."
+  },
+  "Cart": {
+    "title": "Cart",
+    "metaDescription": "AULA order cart: delivery and pickup in Astana.",
+    "emptyTitle": "Your cart is empty",
+    "emptyText": "Add dishes from the menu — we will deliver them hot or have them ready for pickup.",
+    "toMenu": "Go to menu",
+    "items": "{count, plural, one {# item} other {# items}}",
+    "clear": "Clear cart",
+    "checkout": "Checkout",
+    "quantity": "Quantity",
+    "increase": "Add one more",
+    "decrease": "Remove one",
+    "remove": "Remove",
+    "totalsNote": "We will calculate the total with location prices, delivery and promo code at checkout.",
+    "dishPending": "Dish"
+  },
+  "Checkout": {
+    "title": "Checkout",
+    "metaDescription": "Checkout at AULA: delivery or pickup, pay online or on delivery.",
+    "placeholderTitle": "Online ordering is coming soon",
+    "placeholderText": "Ordering on the website will be available shortly. For now, you can order by phone or via the location’s WhatsApp.",
+    "whatsappText": "Hello! I would like to order delivery.",
+    "steps": {
+      "cart": "Cart",
+      "details": "Details",
+      "payment": "Payment",
+      "status": "Status"
+    }
+  },
+  "Order": {
+    "title": "Order",
+    "placeholderTitle": "Order status",
+    "placeholderText": "Your order status will be shown here in real time."
+  },
+  "Booking": {
+    "title": "Table and room reservations",
+    "subtitle": "Tables, VIP rooms and yurts",
+    "metaTitle": "Book a table at AULA — tables, VIP rooms, yurts",
+    "metaDescription": "Book a table, a VIP room or a yurt at AULA, a Kazakh cuisine restaurant in Astana.",
+    "placeholderTitle": "Online booking is coming soon",
+    "placeholderText": "For now, you can book a table by phone or via the WhatsApp of the chosen location — we reply within minutes.",
+    "whatsappText": "Hello! I would like to book a table."
+  },
+  "BookingStatus": {
+    "title": "Your reservation",
+    "placeholderTitle": "Reservation details",
+    "placeholderText": "Reservation details will be shown here: date, time, room, confirmation and deposit status."
+  },
+  "Banquets": {
+    "title": "Banquets and catering",
+    "subtitle": "Toi, anniversary, wedding, corporate party or outside catering",
+    "metaTitle": "Banquets and toi at AULA — rooms, menu, quote",
+    "metaDescription": "Banquets, toi, anniversaries and corporate parties at AULA, Astana. Outside catering. A quote and a manager reply within 30 minutes.",
+    "placeholderTitle": "Online requests are coming soon",
+    "placeholderText": "Our banquet manager replies within 30 minutes: we will choose a room and menu and prepare a quote. Meanwhile, message us on WhatsApp or call the location.",
+    "whatsappText": "Hello! I would like to discuss a banquet."
+  },
+  "BanquetQuote": {
+    "title": "Banquet quote",
+    "placeholderTitle": "Quote",
+    "placeholderText": "The quote will be shown here: items, discounts and total — with an option to approve it online."
+  },
+  "BanquetInvoice": {
+    "title": "Invoice",
+    "placeholderTitle": "Invoice",
+    "placeholderText": "The banquet prepayment invoice will be shown here, with an option to pay online."
+  },
+  "Certificates": {
+    "title": "Gift certificates",
+    "subtitle": "For an amount or a set — give your loved ones an evening at AULA",
+    "metaTitle": "AULA gift certificate — for an amount or a set",
+    "metaDescription": "A gift certificate to AULA Kazakh cuisine restaurant: for any amount or a set of dishes. A great gift for holidays, birthdays or partners.",
+    "placeholderTitle": "Online certificate sales start soon",
+    "placeholderText": "A certificate for any amount can be purchased at an AULA location — call or message us.",
+    "whatsappText": "Hello! I would like to buy a gift certificate."
+  },
+  "CertificateOrder": {
+    "title": "Your certificate",
+    "placeholderTitle": "Purchase status",
+    "placeholderText": "The payment and delivery status of the certificate will be shown here."
+  },
+  "InfoPage": {
+    "placeholderTitle": "Page in preparation",
+    "placeholderText": "The text of this page will be published soon.",
+    "titles": {
+      "offer": "Public offer",
+      "privacy": "Privacy policy",
+      "personal-data": "Consent to personal data processing",
+      "delivery": "Delivery and payment"
+    }
+  },
+  "Payment": {
+    "title": "Payment result",
+    "placeholderTitle": "Checking your payment",
+    "placeholderText": "As soon as the payment is confirmed, we will take you to your order page."
+  },
+  "NotFound": {
+    "title": "Page not found",
+    "text": "The link may be outdated or the address may contain a typo.",
+    "home": "Back to home",
+    "menu": "Open menu"
+  },
+  "Error": {
+    "title": "Something went wrong",
+    "text": "We already know about the problem. Please try refreshing the page.",
+    "retry": "Try again",
+    "home": "Back to home"
+  },
+  "Map": {
+    "loading": "Loading map…"
+  }
+}

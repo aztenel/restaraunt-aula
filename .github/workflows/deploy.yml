@@ -1,0 +1,144 @@
+# Деплой по тегу (ТЗ: «развёртывание через CI/CD по тегу»):
+#
+#   git tag -a v1.4.0 -m "Релиз 1.4.0" && git push origin v1.4.0
+#
+#   CI (ci.yml) → образы в GHCR → staging (автоматически) → production (ручное подтверждение)
+#
+# Образы (ghcr.io/<владелец>/...):
+#   aula-api:<тег>, aula-backup:<тег>                        — общие для всех окружений;
+#   aula-web:<тег>-<окружение>, aula-admin:<тег>-<окружение> — NEXT_PUBLIC_* / VITE_* встраиваются при сборке,
+#                                                              параметры — ops/build-env/<окружение>.env.
+#
+# Настройки GitHub (Settings → Environments, см. docs/operations.md):
+#   staging, production: secrets SSH_PRIVATE_KEY, SSH_KNOWN_HOSTS;
+#                        variables DEPLOY_HOST, DEPLOY_USER, DEPLOY_PORT, DEPLOY_PATH, PUBLIC_URL, HEALTHCHECK_URL.
+#   production: Required reviewers (ручное подтверждение), Deployment tags: v*.
+#   Секрет репозитория SENTRY_AUTH_TOKEN (необязательно) — загрузка source maps витрины.
+
+name: Deploy
+
+on:
+  push:
+    tags: ["v*"]
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci.yml
+
+  images:
+    name: Образ ${{ matrix.image }}${{ matrix.env && format(' ({0})', matrix.env) || '' }}
+    needs: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - image: aula-api
+            context: .
+            file: apps/api/Dockerfile
+            env: ""
+          - image: aula-backup
+            context: ops/backup
+            file: ops/backup/Dockerfile
+            env: ""
+          - image: aula-web
+            context: .
+            file: apps/web/Dockerfile
+            env: staging
+          - image: aula-web
+            context: .
+            file: apps/web/Dockerfile
+            env: production
+          - image: aula-admin
+            context: .
+            file: apps/admin/Dockerfile
+            env: staging
+          - image: aula-admin
+            context: .
+            file: apps/admin/Dockerfile
+            env: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Имя образа и параметры сборки
+        id: meta
+        env:
+          OWNER: ${{ github.repository_owner }}
+          IMAGE: ${{ matrix.image }}
+          ENV_NAME: ${{ matrix.env }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Тег '$TAG' не похож на версию (vMAJOR.MINOR.PATCH[-suffix])"
+            exit 1
+          fi
+          registry="ghcr.io/${OWNER,,}"
+          ref="$registry/$IMAGE:$TAG${ENV_NAME:+-$ENV_NAME}"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+          echo "Образ: $ref"
+          {
+            echo "build_args<<__BUILD_ARGS__"
+            echo "RELEASE=$TAG"
+            if [ -n "$ENV_NAME" ]; then
+              grep -E '^[A-Z][A-Z0-9_]*=' "ops/build-env/$ENV_NAME.env" || true
+            fi
+            echo "__BUILD_ARGS__"
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Вход в GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Сборка и публикация
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          push: true
+          tags: ${{ steps.meta.outputs.ref }}
+          build-args: ${{ steps.meta.outputs.build_args }}
+          secrets: |
+            sentry_auth_token=${{ secrets.SENTRY_AUTH_TOKEN }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ github.ref_name }}
+          cache-from: type=gha,scope=${{ matrix.image }}${{ matrix.env && format('-{0}', matrix.env) || '' }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}${{ matrix.env && format('-{0}', matrix.env) || '' }}
+
+  staging:
+    name: Staging
+    needs: images
+    uses: ./.github/workflows/deploy-remote.yml
+    with:
+      environment: staging
+      action: deploy
+      tag: ${{ github.ref_name }}
+    secrets: inherit
+
+  production:
+    name: Production
+    needs: staging
+    uses: ./.github/workflows/deploy-remote.yml
+    with:
+      environment: production
+      action: deploy
+      tag: ${{ github.ref_name }}
+    secrets: inherit

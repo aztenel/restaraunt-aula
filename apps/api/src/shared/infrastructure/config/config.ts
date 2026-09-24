@@ -1,4 +1,12 @@
+import { existsSync } from 'node:fs';
 import { z } from 'zod';
+
+/** Локальная разработка: подхватить apps/api/.env, если он есть (в контейнерах переменные задаёт окружение). */
+export function loadEnvFileIfPresent(path = '.env'): void {
+  if (process.env.NODE_ENV !== 'test' && existsSync(path)) {
+    process.loadEnvFile(path);
+  }
+}
 
 /**
  * Конфигурация из переменных окружения. Валидируется при старте: приложение не запускается

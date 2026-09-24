@@ -26,6 +26,7 @@ WORKDIR /repo
 # build: зависимости строго по lockfile, компиляция tsc, prod-сборка через pnpm deploy
 # ---------------------------------------------------------------------------
 FROM base AS build
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # 1) Скачать пакеты только по lockfile: слой кэшируется, пока не меняется pnpm-lock.yaml.
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
@@ -43,7 +44,7 @@ RUN pnpm --filter @aula/api build \
  && test -f apps/api/dist/worker.js \
  && test -f apps/api/dist/cli/migrate.js \
  && test -f apps/api/dist/cli/seed.js \
- && find apps/api/dist -path '*/migrations/*.sql' | grep -q . \
+ && test -n "$(find apps/api/dist -path '*/migrations/*.sql' -print -quit)" \
  && test -d apps/api/dist/assets/fonts
 
 # 4) Только production-зависимости в отдельный каталог.
@@ -71,13 +72,14 @@ WORKDIR /app
 # Файлы принадлежат root и доступны процессу только на чтение.
 COPY --from=build /out ./
 
-USER node
+# Пользователь node (uid 1000) из базового образа.
+USER 1000:1000
 EXPOSE 3000
 
 # Жив ли процесс API. Готовность (БД + Redis) — /api/v1/health/ready, её проверяют деплой и мониторинг.
 # Для worker/migrate/seed healthcheck отключается в docker-compose (HTTP они не слушают).
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/v1/health/live').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"
+  CMD ["node", "-e", "fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/v1/health/live').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
 
 # Версия релиза (тег git) — для Sentry и /health/live. docker-compose.prod.yml также задаёт RELEASE=${TAG}.
 ARG RELEASE=dev

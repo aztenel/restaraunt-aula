@@ -25,6 +25,8 @@ export type { Currency, FormatMoneyOptions, Money, ParseFixedError, ParseFixedOp
 export { DEFAULT_LOCALE, LOCALES, REQUIRED_CONTENT_LOCALES, isLocale, missingLocales, translate } from './i18n';
 export type { Locale, Translatable } from './i18n';
 
+export { ALL_PERMISSIONS, Permission } from './permissions';
+
 export { STAFF_ROLES, WEEKDAYS } from './types';
 export type * from './types';
 

@@ -1,0 +1,132 @@
+# Переиспользуемый workflow: выполнить деплой или откат на сервере окружения по SSH.
+# Вызывается из deploy.yml (деплой по тегу) и rollback.yml (ручной откат).
+# Защита окружения production (ручное подтверждение) применяется к этой задаче.
+
+name: Remote deploy
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: staging | production
+        type: string
+        required: true
+      action:
+        description: deploy | rollback
+        type: string
+        required: true
+      tag:
+        description: Тег версии (для rollback пусто — .deploy/previous_tag на сервере)
+        type: string
+        required: false
+        default: ""
+      sync-files:
+        description: Синхронизировать docker-compose.prod.yml и ops/ из тега на сервер
+        type: boolean
+        required: false
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  remote:
+    name: ${{ inputs.action }} → ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ vars.PUBLIC_URL }}
+    concurrency:
+      group: remote-${{ inputs.environment }}
+      cancel-in-progress: false
+    env:
+      ACTION: ${{ inputs.action }}
+      TAG: ${{ inputs.tag }}
+      DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ vars.DEPLOY_USER }}
+      DEPLOY_PORT: ${{ vars.DEPLOY_PORT || '22' }}
+      DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/opt/aula' }}
+    steps:
+      - name: Проверить параметры
+        run: |
+          case "$ACTION" in deploy|rollback) ;; *) echo "::error::action: deploy | rollback"; exit 1 ;; esac
+          if [ -n "$TAG" ] && ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Некорректный тег '$TAG'"; exit 1
+          fi
+          if [ "$ACTION" = deploy ] && [ -z "$TAG" ]; then
+            echo "::error::Для деплоя нужен тег"; exit 1
+          fi
+          if [ -z "$DEPLOY_HOST" ] || [ -z "$DEPLOY_USER" ]; then
+            echo "::error::Не заданы variables DEPLOY_HOST / DEPLOY_USER окружения ${{ inputs.environment }}"; exit 1
+          fi
+          if ! [[ "$DEPLOY_PATH" =~ ^/[A-Za-z0-9._/-]+$ ]]; then
+            echo "::error::Некорректный DEPLOY_PATH"; exit 1
+          fi
+
+      - uses: actions/checkout@v4
+        if: inputs.sync-files
+        with:
+          ref: ${{ inputs.tag }}
+
+      - name: SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          if [ -z "$SSH_PRIVATE_KEY" ] || [ -z "$SSH_KNOWN_HOSTS" ]; then
+            echo "::error::Не заданы secrets SSH_PRIVATE_KEY / SSH_KNOWN_HOSTS окружения"; exit 1
+          fi
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          cat > ~/.ssh/config <<EOF
+          Host aula-target
+            HostName $DEPLOY_HOST
+            User $DEPLOY_USER
+            Port $DEPLOY_PORT
+            IdentityFile ~/.ssh/deploy_key
+            IdentitiesOnly yes
+            StrictHostKeyChecking yes
+            ServerAliveInterval 30
+          EOF
+
+      - name: Синхронизировать compose и ops/ на сервер
+        if: inputs.sync-files
+        run: |
+          # Переменные подставляются на раннере намеренно (значения проверены на первом шаге).
+          # shellcheck disable=SC2029
+          ssh aula-target "mkdir -p '$DEPLOY_PATH/ops'"
+          rsync -az --delete ops/ "aula-target:$DEPLOY_PATH/ops/"
+          rsync -az docker-compose.prod.yml docker-compose.monitoring.yml "aula-target:$DEPLOY_PATH/"
+
+      - name: Выполнить на сервере
+        run: |
+          # shellcheck disable=SC2029
+          if [ "$ACTION" = deploy ]; then
+            ssh aula-target "cd '$DEPLOY_PATH' && ops/deploy/deploy.sh '$TAG'"
+          else
+            ssh aula-target "cd '$DEPLOY_PATH' && ops/deploy/rollback.sh ${TAG:+'$TAG'}"
+          fi
+
+      - name: Проверка снаружи (через DNS, TLS и Caddy)
+        if: vars.HEALTHCHECK_URL != ''
+        env:
+          HEALTHCHECK_URL: ${{ vars.HEALTHCHECK_URL }}
+        run: |
+          curl --fail --silent --show-error --retry 10 --retry-delay 6 --retry-all-errors --max-time 10 \
+            "$HEALTHCHECK_URL"
+          echo
+          echo "OK: $HEALTHCHECK_URL"
+
+      - name: Итог
+        if: always()
+        run: |
+          {
+            echo "### ${ACTION} → ${{ inputs.environment }}"
+            echo ""
+            echo "- Тег: \`${TAG:-previous_tag}\`"
+            echo "- Сервер: \`${DEPLOY_HOST}:${DEPLOY_PATH}\`"
+            echo "- Результат: ${{ job.status }}"
+          } >> "$GITHUB_STEP_SUMMARY"

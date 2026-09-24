@@ -19,11 +19,11 @@ export const MINOR_UNITS_PER_MAJOR = 100;
 const CURRENCY_SYMBOL: Record<Currency, string> = { KZT: '₸' };
 
 /** Узкий неразрывный пробел — разделитель разрядов («2 500»), не переносится на новую строку. */
-export const GROUP_SEPARATOR = ' ';
+export const GROUP_SEPARATOR = '\u202F';
 /** Неразрывный пробел между числом и знаком валюты. */
-export const CURRENCY_SEPARATOR = ' ';
+export const CURRENCY_SEPARATOR = '\u00A0';
 /** Типографский минус для отрицательных сумм (возвраты, скидки). */
-export const MINUS_SIGN = '−';
+export const MINUS_SIGN = '\u2212';
 
 function groupDigits(digits: string): string {
   let out = '';
@@ -99,7 +99,7 @@ export interface ParseFixedOptions {
 export function parseFixed2(input: string, options: ParseFixedOptions = {}): ParseFixedResult {
   const cleaned = input
     .trim()
-    .replace(/[\s   ₸%]/g, '')
+    .replace(/[\s\u00A0\u202F\u2009₸%]/g, '')
     .replace(MINUS_SIGN, '-');
   if (cleaned === '' || cleaned === '-') return { ok: false, error: 'empty' };
   const match = /^(-)?(\d*)(?:[.,](\d*))?$/.exec(cleaned);

@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { AuditLog } from '../../../shared/infrastructure/audit/audit-log';
 import { Database } from '../../../shared/infrastructure/database/database';
 import { EventBus } from '../../../shared/infrastructure/events/event-bus';
+import { Actor } from '../../../shared/kernel/actor';
 import { Clock } from '../../../shared/kernel/clock';
 import { NotFoundError } from '../../../shared/kernel/errors';
 import { Money } from '../../../shared/kernel/money';
@@ -106,10 +107,12 @@ export class MarkCollected {
     private readonly clock: Clock,
   ) {}
 
-  async execute(paymentId: string): Promise<'applied' | 'ignored'> {
+  /** actor задан — вызов из админки: право payments.manual в филиале платежа. */
+  async execute(paymentId: string, actor?: Actor): Promise<'applied' | 'ignored'> {
     return this.database.transaction(async () => {
       const now = this.clock.now();
       const payment = await lockPayment(this.payments, paymentId);
+      actor?.assertCan(Permission.PaymentsManual, payment.branchId);
       const before = paymentAuditState(payment);
       if (payment.collect(now) === 'ignored') return 'ignored';
       await this.payments.save(payment);

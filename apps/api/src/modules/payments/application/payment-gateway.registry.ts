@@ -58,7 +58,7 @@ export class PaymentGatewayRegistry {
     const routing = await this.settings.get(ROUTING_SETTINGS_KEY, RoutingSettingsSchema);
     let name: string | null = null;
     if (routing) {
-      name = (branchId ? routing.branchOverrides[branchId] : undefined) ?? routing.defaultProvider;
+      name = (branchId ? (routing.branchOverrides ?? {})[branchId] : undefined) ?? routing.defaultProvider;
     } else if (!this.config.isProduction) {
       name = [...this.byName.values()].find((g) => g.devFallback)?.provider ?? null;
     }

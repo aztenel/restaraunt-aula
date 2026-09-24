@@ -1,0 +1,45 @@
+# Владельцы кода: их approve обязателен для слияния в main (Require review from Code Owners).
+# Команды — заглушки: замените на команды GitHub-организации клиента (Settings → Teams).
+# Последнее совпавшее правило имеет приоритет.
+
+# По умолчанию — техлиды
+*                                               @aula-kz/tech-leads
+
+# Backend: модули и платформа
+/apps/api/                                      @aula-kz/backend
+/apps/api/src/shared/                           @aula-kz/backend @aula-kz/tech-leads
+/apps/api/src/modules/identity/                 @aula-kz/backend
+/apps/api/src/modules/catalog/                  @aula-kz/backend
+/apps/api/src/modules/ordering/                 @aula-kz/backend
+/apps/api/src/modules/reservation/              @aula-kz/backend
+/apps/api/src/modules/banquet/                  @aula-kz/backend
+/apps/api/src/modules/payments/                 @aula-kz/backend @aula-kz/tech-leads
+/apps/api/src/modules/customers/                @aula-kz/backend
+/apps/api/src/modules/notifications/            @aula-kz/backend
+/apps/api/src/modules/reporting/                @aula-kz/backend
+/apps/api/src/modules/pos/                      @aula-kz/backend
+# Миграции (только вперёд, expand/contract) и правила границ модулей
+/apps/api/src/**/migrations/                    @aula-kz/backend @aula-kz/tech-leads
+/apps/api/eslint.config.mjs                     @aula-kz/tech-leads
+/apps/api/src/architecture.spec.ts              @aula-kz/tech-leads
+
+# Frontend
+/apps/web/                                      @aula-kz/frontend
+/apps/admin/                                    @aula-kz/frontend
+/packages/api-client/                           @aula-kz/frontend @aula-kz/backend
+/docs/openapi.json                              @aula-kz/backend @aula-kz/frontend
+
+# Инфраструктура, CI/CD, эксплуатация
+/.github/                                       @aula-kz/devops
+/ops/                                           @aula-kz/devops
+/docker-compose*.yml                            @aula-kz/devops
+/**/Dockerfile                                  @aula-kz/devops
+/.dockerignore                                  @aula-kz/devops
+/docs/operations.md                             @aula-kz/devops
+/docs/infrastructure.md                         @aula-kz/devops
+/ops/build-env/                                 @aula-kz/devops @aula-kz/frontend
+
+# Требования и решения
+/docs/spec/                                     @aula-kz/tech-leads
+/docs/decisions.md                              @aula-kz/tech-leads
+/.github/CODEOWNERS                             @aula-kz/tech-leads

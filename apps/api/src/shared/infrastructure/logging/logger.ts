@@ -34,7 +34,7 @@ export function loggerModule(config: Config) {
         const ctx = RequestContext.current();
         return { requestId: ctx?.requestId, userId: ctx?.actor?.userId ?? undefined };
       },
-      autoLogging: { ignore: (req) => (req.url ?? '').startsWith('/health') || req.url === '/metrics' },
+      autoLogging: { ignore: (req) => /^\/api\/v1\/(health|metrics)/.test(req.url ?? '') },
       transport:
         config.env.NODE_ENV === 'development'
           ? { target: 'pino-pretty', options: { singleLine: true, translateTime: 'SYS:HH:MM:ss' } }

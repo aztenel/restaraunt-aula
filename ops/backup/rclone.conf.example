@@ -1,0 +1,89 @@
+# Пример конфигурации rclone для бэкапов AULA. На сервере: /opt/aula/env/rclone.conf (chmod 600),
+# монтируется в контейнер backup как /config/rclone.conf. Реальный файл в git не хранится.
+#
+# Требования ТЗ и решения:
+#   - копия в другом регионе или у другого провайдера → два независимых хранилища (primary и offsite);
+#   - персональные данные граждан РК → оба хранилища на территории Казахстана (закон РК о ПД);
+#   - дампы содержат ПД гостей → шифрование на стороне клиента (rclone crypt): провайдер хранилища
+#     видит только зашифрованные данные.
+#
+# Пароли crypt задаются в «замаскированном» виде: rclone obscure 'пароль'.
+# ВАЖНО: без паролей crypt бэкапы НЕ расшифровать. Храните их в менеджере паролей клиента
+# (юрлицо клиента, не разработчик) и отдельно от серверов.
+#
+# Имена remote используются в env/backup.env:
+#   BACKUP_FILES_SOURCE=app-s3:aula-production
+#   BACKUP_PRIMARY_REMOTE=backup-primary:production
+#   BACKUP_OFFSITE_REMOTE=backup-offsite:production
+# Проверка: docker compose run --rm backup rclone lsd backup-primary:
+
+# --- Источник файлов: бакет приложения (тот же, что S3_* в env/api.env). Ключ только на чтение. ---
+[app-s3]
+type = s3
+provider = Other
+endpoint = https://s3.primary-provider.example.kz
+region = kz-1
+access_key_id = APP_BUCKET_READONLY_KEY
+secret_access_key = APP_BUCKET_READONLY_SECRET
+force_path_style = true
+no_check_bucket = true
+
+# --- Основное хранилище бэкапов (тот же провайдер, ОТДЕЛЬНЫЙ бакет и ключ; включите версионирование/object lock) ---
+[backup-primary-s3]
+type = s3
+provider = Other
+endpoint = https://s3.primary-provider.example.kz
+region = kz-1
+access_key_id = BACKUP_PRIMARY_KEY
+secret_access_key = BACKUP_PRIMARY_SECRET
+force_path_style = true
+no_check_bucket = true
+
+[backup-primary]
+type = crypt
+remote = backup-primary-s3:aula-backups
+filename_encryption = standard
+directory_name_encryption = true
+password = OBSCURED_PASSWORD_1
+password2 = OBSCURED_SALT_1
+
+# --- Внешняя копия у ДРУГОГО провайдера в РК (другая площадка/регион) ---
+[backup-offsite-s3]
+type = s3
+provider = Other
+endpoint = https://s3.second-provider.example.kz
+region = kz-2
+access_key_id = BACKUP_OFFSITE_KEY
+secret_access_key = BACKUP_OFFSITE_SECRET
+force_path_style = true
+no_check_bucket = true
+
+[backup-offsite]
+type = crypt
+remote = backup-offsite-s3:aula-backups
+filename_encryption = standard
+directory_name_encryption = true
+password = OBSCURED_PASSWORD_2
+password2 = OBSCURED_SALT_2
+
+# --- Только для STAGING: чтение бэкапов production для квартальной проверки восстановления ---
+# (ключи S3 только на чтение; те же пароли crypt, что у production). В env/backup.env staging:
+#   VERIFY_SOURCE_PRIMARY=prod-backup-primary:production
+#   VERIFY_SOURCE_OFFSITE=prod-backup-offsite:production
+#
+# [prod-backup-primary-s3]
+# type = s3
+# provider = Other
+# endpoint = https://s3.primary-provider.example.kz
+# access_key_id = PROD_BACKUP_PRIMARY_READONLY_KEY
+# secret_access_key = PROD_BACKUP_PRIMARY_READONLY_SECRET
+# force_path_style = true
+# no_check_bucket = true
+#
+# [prod-backup-primary]
+# type = crypt
+# remote = prod-backup-primary-s3:aula-backups
+# password = OBSCURED_PASSWORD_1
+# password2 = OBSCURED_SALT_1
+#
+# [prod-backup-offsite-s3] / [prod-backup-offsite] — аналогично для внешнего хранилища.

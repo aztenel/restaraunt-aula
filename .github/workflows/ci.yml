@@ -1,0 +1,255 @@
+# CI AULA: условия приёмки кода из ТЗ (правила 1, 9, 10, 12). Ветка не мержится без зелёного CI:
+# в защите ветки main обязательной проверкой указывается задача «CI OK» (см. CONTRIBUTING.md).
+#
+#   install → lint (вкл. границы модулей) ─┐
+#           → typecheck ───────────────────┼→ build → docker (api, web, admin, backup; без публикации)
+#           → unit                         │
+#           → integration (PostgreSQL 16 + Redis 7)
+#           → openapi (дрейф docs/openapi.json и клиента)
+#   ci-ok ← все задачи
+#
+# Вызывается также из deploy.yml (workflow_call): тег выкатывается только при зелёном CI.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_call:
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  FORCE_COLOR: "1"
+
+jobs:
+  install:
+    name: Зависимости (frozen lockfile)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+
+  lint:
+    name: Lint + границы модулей
+    needs: install
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+
+      # ТЗ, правило 1: модуль не обращается к внутренностям другого модуля. Проверяет
+      # eslint-plugin-boundaries (apps/api/eslint.config.mjs, правило boundaries/element-types = error).
+      - name: Границы модулей (eslint-plugin-boundaries)
+        working-directory: apps/api
+        run: |
+          set +e
+          pnpm exec eslint "src/**/*.ts" --format json --output-file "$RUNNER_TEMP/eslint.json"
+          code=$?
+          set -e
+          if [ "$code" -gt 1 ]; then
+            echo "::error::ESLint завершился с ошибкой конфигурации (код $code)"
+            exit "$code"
+          fi
+          node - "$RUNNER_TEMP/eslint.json" <<'JS'
+          const results = JSON.parse(require('node:fs').readFileSync(process.argv[2], 'utf8'));
+          const cwd = process.cwd();
+          let count = 0;
+          for (const file of results) {
+            for (const m of file.messages) {
+              if (!String(m.ruleId).startsWith('boundaries/')) continue;
+              count += 1;
+              const path = `apps/api/${file.filePath.slice(cwd.length + 1)}`;
+              console.log(`::error file=${path},line=${m.line},col=${m.column}::${m.message}`);
+            }
+          }
+          console.log(`Нарушений границ модулей: ${count}`);
+          process.exit(count > 0 ? 1 : 0);
+          JS
+
+      - name: Границы модулей нельзя отключать комментариями
+        run: |
+          if grep -rnE "eslint-disable.*boundaries" apps/api/src; then
+            echo "::error::Отключение правил boundaries/* в коде запрещено (ТЗ, правило 1). Используйте публичный контракт modules/<m>/public или события."
+            exit 1
+          fi
+
+      - name: ESLint (все пакеты)
+        run: pnpm lint
+
+  typecheck:
+    name: Typecheck
+    needs: install
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: tsc --noEmit (все пакеты)
+        run: pnpm typecheck
+
+  unit:
+    name: Unit-тесты
+    needs: install
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      # Включает src/architecture.spec.ts: обращение к чужой схеме БД в SQL валит сборку.
+      - name: API (домен, архитектурные проверки)
+        run: pnpm --filter @aula/api run test:unit
+      - name: Витрина и админка
+        run: pnpm -r --filter "!@aula/api" run test
+
+  integration:
+    name: Интеграционные тесты (PostgreSQL 16 + Redis 7)
+    needs: install
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: aula
+          POSTGRES_PASSWORD: aula
+          POSTGRES_DB: aula
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aula -d aula"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      NODE_ENV: test
+      TEST_DATABASE_URL: postgres://aula:aula@localhost:5432/aula_test
+      REDIS_URL: redis://localhost:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      # Заказ, оплата, бронь, банкетная заявка и HTTP-сценарии модулей на реальном PostgreSQL (ТЗ, правило 10).
+      - name: API (vitest --project integration)
+        run: pnpm --filter @aula/api run test:integration
+
+  openapi:
+    name: OpenAPI актуален
+    needs: install
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: aula
+          POSTGRES_PASSWORD: aula
+          POSTGRES_DB: aula
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aula -d aula"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Сгенерировать docs/openapi.json и типы @aula/api-client
+        run: pnpm openapi
+      - name: Проверить, что сгенерированное закоммичено
+        run: |
+          changes="$(git status --porcelain -- docs/openapi.json packages/api-client/src)"
+          if [ -n "$changes" ]; then
+            echo "$changes"
+            git --no-pager diff --stat -- docs/openapi.json packages/api-client/src
+            echo "::error::OpenAPI устарел: выполните 'pnpm openapi' и закоммитьте docs/openapi.json и packages/api-client/src/schema.d.ts"
+            exit 1
+          fi
+
+  build:
+    name: Сборка api / web / admin
+    needs: [lint, typecheck]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: pnpm build (все пакеты)
+        run: pnpm build
+
+  docker:
+    name: Docker-образ ${{ matrix.image }}
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: aula-api
+            context: .
+            file: apps/api/Dockerfile
+          - image: aula-web
+            context: .
+            file: apps/web/Dockerfile
+          - image: aula-admin
+            context: .
+            file: apps/admin/Dockerfile
+          - image: aula-backup
+            context: ops/backup
+            file: ops/backup/Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: docker build (без публикации)
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          push: false
+          tags: ${{ matrix.image }}:ci
+          build-args: |
+            RELEASE=ci-${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+  ci-ok:
+    name: CI OK
+    if: always()
+    needs: [install, lint, typecheck, unit, integration, openapi, build, docker]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Все проверки пройдены
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Результаты задач: $RESULTS"
+          for r in $RESULTS; do
+            if [ "$r" != "success" ]; then
+              echo "::error::Не все проверки CI успешны"
+              exit 1
+            fi
+          done

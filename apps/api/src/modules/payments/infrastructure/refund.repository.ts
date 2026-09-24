@@ -71,6 +71,21 @@ export class RefundRepository {
     return rows.map(mapRefund);
   }
 
+  /** Сумма «занятых» возвратов (ожидающие + прошедшие) по платежам — одним запросом для списков. */
+  async reservedByPayment(paymentIds: string[]): Promise<Map<string, number>> {
+    const map = new Map<string, number>();
+    if (paymentIds.length === 0) return map;
+    const rows = await this.db()
+      .selectFrom('payments.refunds')
+      .select((eb) => ['payment_id', eb.fn.sum<number>('refund_amount').as('reserved')])
+      .where('payment_id', 'in', paymentIds)
+      .where('status', '!=', 'failed')
+      .groupBy('payment_id')
+      .execute();
+    for (const r of rows) map.set(r.payment_id, Number(r.reserved));
+    return map;
+  }
+
   async listRowsForPayment(paymentId: string): Promise<Array<Selectable<RefundsTable>>> {
     return this.db().selectFrom('payments.refunds').selectAll().where('payment_id', '=', paymentId).orderBy('created_at').execute();
   }
@@ -133,11 +148,22 @@ export class RefundRepository {
       .set({ claimed_at: now, attempts: sql`attempts + 1` })
       .where('id', '=', id)
       .where('status', '=', 'pending')
-      .where('mode', '=', 'gateway')
+      .where('mode', 'in', ['gateway', 'certificate'])
       .where((eb) => eb.or([eb('claimed_at', 'is', null), eb('claimed_at', '<', new Date(now.getTime() - leaseMs))]))
       .returning('attempts')
       .executeTakeFirst();
     return row ? Number(row.attempts) : null;
+  }
+
+  /** Провайдер принял возврат: фиксируется сразу (вне транзакции), чтобы повтор задачи не вернул деньги дважды. */
+  async recordProviderAccepted(id: string, externalRefundId: string): Promise<void> {
+    await this.database
+      .rootConnection()
+      .updateTable('payments.refunds')
+      .set({ external_refund_id: externalRefundId })
+      .where('id', '=', id)
+      .where('status', '=', 'pending')
+      .execute();
   }
 
   /** Снять аренду после неудачной попытки (задача уйдёт на повтор). */

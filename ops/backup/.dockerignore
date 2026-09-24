@@ -1,0 +1,9 @@
+# Контекст сборки образа aula-backup: только скрипты. Настройки и секреты в образ не попадают.
+*
+!Dockerfile
+!lib.sh
+!backup.sh
+!restore.sh
+!verify-restore.sh
+!entrypoint.sh
+!crontab

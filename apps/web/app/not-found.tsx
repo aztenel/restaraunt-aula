@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { Logo } from '@/components/brand/Logo';
 import { OrnamentDivider } from '@/components/brand/Ornament';
 import { fontVariables } from '@/lib/fonts';
@@ -22,16 +23,16 @@ export default function RootNotFound() {
             Бет табылмады
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <a href="/ru" className="inline-flex min-h-12 items-center rounded-full bg-earth-700 px-6 font-semibold text-cream-50">
+            <Link href="/ru" className="inline-flex min-h-12 items-center rounded-full bg-earth-700 px-6 font-semibold text-cream-50">
               На главную
-            </a>
-            <a
+            </Link>
+            <Link
               href="/kk"
               lang="kk"
               className="inline-flex min-h-12 items-center rounded-full border border-earth-300 px-6 font-semibold text-earth-800"
             >
               Басты бет
-            </a>
+            </Link>
           </div>
         </main>
       </body>

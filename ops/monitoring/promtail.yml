@@ -1,0 +1,54 @@
+# Promtail: собирает логи контейнеров production-стека (проект compose "aula") через Docker API и
+# отправляет в Loki. Логи API/worker — JSON (pino): уровень становится меткой level, requestId —
+# структурированными метаданными (поиск запроса по X-Request-Id из ответа API или Sentry).
+# Примечание: Promtail в режиме LTS; при обновлении Loki — миграция на Grafana Alloy (alloy convert).
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+  log_level: warn
+
+positions:
+  filename: /promtail/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 15s
+        filters:
+          - name: label
+            values: ["com.docker.compose.project=aula"]
+    relabel_configs:
+      - source_labels: [__meta_docker_container_label_com_docker_compose_service]
+        target_label: service
+      - source_labels: [__meta_docker_container_name]
+        regex: "/(.*)"
+        target_label: container
+      - target_label: project
+        replacement: aula
+    pipeline_stages:
+      - match:
+          selector: '{service=~"api|worker|migrate"}'
+          stages:
+            - json:
+                expressions:
+                  level: level
+                  requestId: requestId
+            - template:
+                source: level
+                template: '{{ if eq .Value "10" }}trace{{ else if eq .Value "20" }}debug{{ else if eq .Value "30" }}info{{ else if eq .Value "40" }}warn{{ else if eq .Value "50" }}error{{ else if eq .Value "60" }}fatal{{ else }}{{ .Value }}{{ end }}'
+            - labels:
+                level:
+            - structured_metadata:
+                requestId:
+      - match:
+          selector: '{service="caddy"}'
+          stages:
+            - json:
+                expressions:
+                  level: level
+            - labels:
+                level:

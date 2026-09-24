@@ -93,6 +93,11 @@ describe('Payment', () => {
     expect(p.collect(now)).toBe('applied');
     expect(p.collect(now)).toBe('ignored');
     expect(() => Payment.create(input(), now).collect(now)).toThrow(ConflictError);
+    const cancelled = Payment.create(input({ method: 'on_receipt', provider: 'on_receipt' }), now);
+    cancelled.cancel('order cancelled', now);
+    expect(() => cancelled.collect(now)).toThrow(InvalidStateTransitionError);
+    // Поздняя оплата после отмены — только для онлайн-платежей.
+    expect(cancelled.confirmPaid(now, null)).toBe('ignored');
   });
 
   it('plans refunds within the refundable remainder', () => {

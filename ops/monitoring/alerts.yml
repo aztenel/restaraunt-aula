@@ -1,0 +1,203 @@
+# Правила оповещений AULA. Проверка: promtool check rules ops/monitoring/alerts.yml
+# Цели из ТЗ: доступность 99,5 % в месяц, p95 API ≤ 300 мс, бэкап не старше 24 ч (RPO),
+# недоступность POS/мессенджера/платёжного провайдера не роняет сайт — задачи копятся в очереди.
+# severity: critical — реагировать сразу (в т.ч. ночью), warning — в рабочее время.
+# Действия по каждому алерту — docs/operations.md, «Инциденты».
+
+groups:
+  - name: aula-availability
+    rules:
+      - alert: AulaApiDown
+        expr: up{job="aula-api"} == 0 or absent(up{job="aula-api"})
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "API не отвечает на метрики ({{ $labels.instance }})"
+          description: "Prometheus не может получить /api/v1/metrics больше 2 минут. Витрина и админка не работают. Проверьте: ops/deploy/compose.sh ps; logs api."
+
+      - alert: AulaApiNotReady
+        expr: probe_success{job="blackbox-internal", service="api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "API не готов: /api/v1/health/ready ≠ 200"
+          description: "PostgreSQL или Redis недоступны для API больше 2 минут. Заказы не принимаются."
+
+      - alert: AulaWebDown
+        expr: probe_success{job="blackbox-internal", service="web"} == 0
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Витрина (web) не отвечает"
+          description: "Next.js не отдаёт главную страницу больше 3 минут. Гости не могут оформить заказ."
+
+      - alert: AulaAdminDown
+        expr: probe_success{job="blackbox-internal", service="admin"} == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Админ-панель не отвечает"
+          description: "Контейнер admin не отдаёт /healthz больше 5 минут. Операторы не видят очередь заказов."
+
+      - alert: AulaProxyUpstreamErrors
+        expr: sum(rate(caddy_http_request_errors_total[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Caddy: ошибки проксирования ({{ $value | humanize }}/с)"
+          description: "Reverse proxy не может достучаться до upstream (502/504). Проверьте контейнеры api/web/admin."
+
+  - name: aula-api-quality
+    rules:
+      - alert: AulaHigh5xxRate
+        expr: |
+          sum(rate(aula_http_errors_total[5m]))
+            / clamp_min(sum(rate(aula_http_request_duration_seconds_count[5m])), 0.001) > 0.02
+          and sum(rate(aula_http_request_duration_seconds_count[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Доля ответов 5xx {{ $value | humanizePercentage }}"
+          description: "Больше 2 % запросов к API завершаются ошибкой 5xx в течение 5 минут. Смотрите Sentry и логи api (Grafana → Loki)."
+
+      - alert: AulaApiLatencyP95High
+        # NFR ТЗ: отклик API до 300 мс на 95-м перцентиле. Отчёты и выгрузки (XLSX/PDF) исключены.
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le) (rate(aula_http_request_duration_seconds_bucket{route!~"(?i).*(report|export|xlsx|pdf|document).*"}[5m]))
+          ) > 0.3
+          and sum(rate(aula_http_request_duration_seconds_count[5m])) > 0.05
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "p95 API {{ $value | humanizeDuration }} > 300 мс"
+          description: "95-й перцентиль времени ответа API выше цели ТЗ (300 мс) 10 минут подряд. Grafana → «AULA API» → «Медленные маршруты»."
+
+      - alert: AulaEventLoopLag
+        expr: max(aula_nodejs_eventloop_lag_p99_seconds) > 0.2
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Задержка event loop Node.js {{ $value | humanizeDuration }}"
+          description: "Процесс API перегружен синхронной работой (PDF/XLSX, тяжёлые JSON). Возможен рост латентности."
+
+  - name: aula-queues
+    rules:
+      - alert: AulaOutboxLag
+        # Самое старое готовое событие/задача не передано в очередь дольше 60 с — worker остановлен или завис.
+        expr: max(aula_outbox_lag_seconds) > 60
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Outbox отстаёт на {{ $value | humanizeDuration }}"
+          description: "Уведомления, передача в POS и платёжные задачи не обрабатываются. Проверьте контейнер worker: ops/deploy/compose.sh ps worker; logs worker. Заказы при этом принимаются."
+
+      - alert: AulaOutboxBacklog
+        expr: max(aula_outbox_pending) > 500
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "В outbox {{ $value }} необработанных записей"
+          description: "Очередь растёт быстрее, чем обрабатывается. Проверьте worker и WORKER_CONCURRENCY."
+
+      - alert: AulaFailedJobsOpen
+        expr: max(aula_failed_jobs_open) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Очередь неудач: {{ $value }} задач"
+          description: "Задачи исчерпали повторы (внешний сервис недоступен или отвечает ошибкой). Админка → Система → Очередь неудач: причина, «Повторить» после восстановления сервиса."
+
+  - name: aula-backups
+    rules:
+      - alert: AulaBackupStale
+        # RPO ≤ 24 ч: ежедневный бэкап + 2 ч запаса на длительность и расписание.
+        expr: time() - max(aula_backup_last_success_timestamp_seconds) > 26 * 3600
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Последний успешный бэкап {{ $value | humanizeDuration }} назад"
+          description: "Нарушается RPO (24 ч). Логи: ops/deploy/compose.sh logs backup. Ручной запуск: ops/deploy/compose.sh run --rm backup backup.sh"
+
+      - alert: AulaBackupMissing
+        expr: absent(aula_backup_last_success_timestamp_seconds)
+        for: 26h
+        labels:
+          severity: critical
+        annotations:
+          summary: "Нет данных об успешных бэкапах"
+          description: "node-exporter не видит метрик бэкапа 26 ч: контейнер backup не запускался или не пишет /metrics."
+
+      - alert: AulaBackupFailed
+        expr: max(aula_backup_last_status) == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Последний запуск бэкапа завершился ошибкой"
+          description: "Логи: ops/deploy/compose.sh logs --tail=200 backup. После исправления: ops/deploy/compose.sh run --rm backup backup.sh"
+
+  - name: aula-host
+    rules:
+      - alert: HostDiskSpaceLow
+        expr: |
+          (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|nsfs"}
+            / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs|nsfs"}) < 0.15
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Свободно {{ $value | humanizePercentage }} на {{ $labels.mountpoint }}"
+          description: "Очистка: docker image prune -a --filter until=720h (оставьте образы последних релизов для отката), docker builder prune."
+
+      - alert: HostDiskSpaceCritical
+        expr: |
+          (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|nsfs"}
+            / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs|nsfs"}) < 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Диск {{ $labels.mountpoint }} почти заполнен ({{ $value | humanizePercentage }})"
+          description: "PostgreSQL и Redis остановятся при нехватке места. Освободите место немедленно."
+
+      - alert: HostDiskWillFillIn24h
+        expr: |
+          predict_linear(node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|nsfs"}[6h], 24 * 3600) < 0
+          and node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|nsfs"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs|nsfs"} < 0.4
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Диск {{ $labels.mountpoint }} заполнится в течение суток"
+          description: "Скорость роста занятого места указывает на заполнение в ближайшие 24 ч (логи, тома, бэкапы)."
+
+      - alert: HostMemoryHigh
+        expr: (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) > 0.9
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Память хоста занята на {{ $value | humanizePercentage }}"
+          description: "Риск OOM для PostgreSQL/API. Проверьте docker stats."
+
+      - alert: HostCpuHigh
+        expr: 1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) > 0.85
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU хоста загружен на {{ $value | humanizePercentage }}"
+          description: "Длительная высокая загрузка CPU. В пике (пятница вечер) — повод увеличить сервер."

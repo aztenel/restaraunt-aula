@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
-import { Config } from './shared/infrastructure/config/config';
+import { Config, loadEnvFileIfPresent } from './shared/infrastructure/config/config';
 import { BullmqRuntime } from './shared/infrastructure/events/bullmq-runtime';
 import { initSentry } from './shared/infrastructure/logging/sentry';
 
@@ -11,6 +11,7 @@ import { initSentry } from './shared/infrastructure/logging/sentry';
  * (платежи, мессенджеры, POS, доставка), периодические задачи. HTTP не слушает.
  */
 async function bootstrap(): Promise<void> {
+  loadEnvFileIfPresent();
   const config = new Config();
   initSentry(config, 'worker');
   if (config.queue.driver !== 'bullmq') {

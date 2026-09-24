@@ -1,0 +1,166 @@
+# Мониторинг AULA (опционально, отдельный compose-проект на том же хосте, что и production-стек):
+#   Prometheus + Alertmanager (Telegram) + blackbox + node-exporter — метрики, алерты, бэкапы, диск;
+#   Loki + Promtail — структурированные JSON-логи контейнеров;
+#   Grafana — дашборды (провижининг из ops/monitoring/grafana);
+#   Uptime Kuma — внешние проверки доступности web/admin/api (SLO 99,5 %), TLS-сертификатов, пульс бэкапа.
+#
+# Запуск (после production-стека: нужны сеть aula-net и том aula_backup_metrics):
+#   docker compose -f docker-compose.monitoring.yml --env-file .env up -d
+#
+# Секреты — в env/ сервера: env/monitoring.env (из ops/monitoring/monitoring.env.example),
+# env/metrics_token (тот же токен, что METRICS_TOKEN в env/api.env; chmod 644 — читает Prometheus).
+#
+# Веб-интерфейсы слушают только 127.0.0.1 — доступ через SSH-туннель:
+#   ssh -L 3100:127.0.0.1:3100 -L 3200:127.0.0.1:3200 -L 9090:127.0.0.1:9090 deploy@<сервер>
+#   Grafana http://localhost:3100 · Uptime Kuma http://localhost:3200 · Prometheus http://localhost:9090
+#
+# Uptime Kuma лучше держать ВНЕ проверяемого сервера (например, на staging для production и наоборот),
+# иначе падение хоста некому будет заметить.
+
+name: aula-monitoring
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  prometheus:
+    image: prom/prometheus:v3.14.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=30d
+      - --web.enable-lifecycle
+    volumes:
+      - ./ops/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./ops/monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - ./env/metrics_token:/etc/prometheus/secrets/metrics_token:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    restart: unless-stopped
+    logging: *logging
+    networks: [aula]
+
+  alertmanager:
+    image: prom/alertmanager:v0.34.1
+    env_file:
+      - ./env/monitoring.env
+    environment:
+      DEPLOY_ENV: ${DEPLOY_ENV:-production}
+    # Alertmanager не читает переменные окружения в конфигурации — подставляем их в шаблон при старте.
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        sed -e "s|__TELEGRAM_BOT_TOKEN__|$${TELEGRAM_BOT_TOKEN:?TELEGRAM_BOT_TOKEN не задан}|g" \
+            -e "s|__TELEGRAM_CHAT_ID__|$${TELEGRAM_CHAT_ID:?TELEGRAM_CHAT_ID не задан}|g" \
+            -e "s|__DEPLOY_ENV__|$${DEPLOY_ENV}|g" \
+            /etc/alertmanager/alertmanager.tmpl.yml > /tmp/alertmanager.yml
+        exec /bin/alertmanager --config.file=/tmp/alertmanager.yml --storage.path=/alertmanager
+    volumes:
+      - ./ops/monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.tmpl.yml:ro
+      - alertmanager_data:/alertmanager
+    ports:
+      - "127.0.0.1:9093:9093"
+    restart: unless-stopped
+    logging: *logging
+    networks: [aula]
+
+  blackbox:
+    image: prom/blackbox-exporter:v0.28.0
+    command: ["--config.file=/etc/blackbox/blackbox.yml"]
+    volumes:
+      - ./ops/monitoring/blackbox.yml:/etc/blackbox/blackbox.yml:ro
+    restart: unless-stopped
+    logging: *logging
+    networks: [aula]
+
+  node-exporter:
+    image: prom/node-exporter:v1.12.1
+    command:
+      - --path.rootfs=/host
+      - --collector.textfile.directory=/textfile
+      - --collector.filesystem.mount-points-exclude=^/(dev|proc|sys|run|var/lib/docker/.+)($$|/)
+    pid: host
+    volumes:
+      - /:/host:ro,rslave
+      # Метрики бэкапа (aula_backup_*), которые пишет контейнер backup.
+      - backup_metrics:/textfile:ro
+    restart: unless-stopped
+    logging: *logging
+    networks: [aula]
+
+  loki:
+    image: grafana/loki:3.7.8
+    command: ["-config.file=/etc/loki/loki.yml"]
+    volumes:
+      - ./ops/monitoring/loki.yml:/etc/loki/loki.yml:ro
+      - loki_data:/loki
+    restart: unless-stopped
+    logging: *logging
+    networks: [aula]
+
+  promtail:
+    image: grafana/promtail:3.6.11
+    command: ["-config.file=/etc/promtail/promtail.yml"]
+    volumes:
+      - ./ops/monitoring/promtail.yml:/etc/promtail/promtail.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - promtail_data:/promtail
+    depends_on:
+      - loki
+    restart: unless-stopped
+    logging: *logging
+    networks: [aula]
+
+  grafana:
+    image: grafana/grafana:12.4.11
+    env_file:
+      - ./env/monitoring.env
+    environment:
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_SERVER_ROOT_URL: http://localhost:3100
+      GF_DEFAULT_LOCALE: ru-RU
+    volumes:
+      - ./ops/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./ops/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "127.0.0.1:3100:3000"
+    depends_on:
+      - prometheus
+      - loki
+    restart: unless-stopped
+    logging: *logging
+    networks: [aula]
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:2.5.5
+    volumes:
+      - uptime_kuma_data:/app/data
+    ports:
+      - "127.0.0.1:3200:3001"
+    restart: unless-stopped
+    logging: *logging
+    networks: [aula]
+
+volumes:
+  prometheus_data:
+  alertmanager_data:
+  loki_data:
+  promtail_data:
+  grafana_data:
+  uptime_kuma_data:
+  backup_metrics:
+    external: true
+    name: aula_backup_metrics
+
+networks:
+  aula:
+    external: true
+    name: aula-net

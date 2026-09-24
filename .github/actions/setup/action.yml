@@ -1,0 +1,27 @@
+name: Setup Node.js + pnpm
+description: >-
+  Node.js из .nvmrc, pnpm из поля packageManager корневого package.json, кэш стора pnpm
+  и установка зависимостей строго по lockfile (pnpm install --frozen-lockfile).
+
+inputs:
+  install:
+    description: Устанавливать зависимости (pnpm install --frozen-lockfile)
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - name: pnpm
+      uses: pnpm/action-setup@v4
+
+    - name: Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: .nvmrc
+        cache: pnpm
+
+    - name: Зависимости (строго по pnpm-lock.yaml)
+      if: inputs.install == 'true'
+      shell: bash
+      run: pnpm install --frozen-lockfile

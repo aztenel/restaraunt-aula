@@ -1,4 +1,4 @@
-import { ConflictError, ValidationError } from '../../../shared/kernel/errors';
+import { ConflictError, InvalidStateTransitionError, ValidationError } from '../../../shared/kernel/errors';
 import { Money } from '../../../shared/kernel/money';
 import { StateMachine } from '../../../shared/kernel/state-machine';
 import { PaymentMethod, PaymentPurpose, PaymentStatus, PaymentView } from '../public';
@@ -259,6 +259,8 @@ export class Payment {
     if (this.isMoneyReceived()) return 'ignored';
     if (reported && !reported.equals(this.props.amount)) return 'amount_mismatch';
     if (!PaymentFsm.canTransition(this.props.status, 'succeeded')) return 'ignored';
+    // Поздняя оплата (failed/cancelled -> succeeded) — только по подтверждению провайдера онлайн-платежа.
+    if (this.props.status !== 'pending' && this.props.method !== 'online') return 'ignored';
     this.transition('succeeded');
     this.props.paidAt = now;
     return 'applied';
@@ -270,6 +272,8 @@ export class Payment {
       throw new ConflictError('payment.not_on_receipt', 'Only on_receipt payments can be marked as collected');
     }
     if (this.isMoneyReceived()) return 'ignored';
+    // Отменённый платёж при получении «собрать» нельзя: поздняя оплата — только у онлайн-платежей.
+    if (this.props.status !== 'pending') throw new InvalidStateTransitionError('payment', this.props.status, 'succeeded');
     this.transition('succeeded');
     this.props.paidAt = now;
     return 'applied';

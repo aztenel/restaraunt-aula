@@ -10,5 +10,14 @@ coverage/
 .DS_Store
 .turbo/
 *.tsbuildinfo
-storage/
-tmp/
+# Локальные данные (STORAGE_DRIVER=local пишет в apps/api/storage). Шаблон без «/» в начале
+# игнорировал бы и исходники src/shared/infrastructure/storage/.
+/storage/
+/apps/*/storage/
+/tmp/
+/apps/*/tmp/
+
+# Сервер (docker-compose.prod.yml): секреты окружения и состояние деплоя — не в git
+/env/
+/.deploy/
+rclone.conf

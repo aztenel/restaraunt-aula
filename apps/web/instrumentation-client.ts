@@ -9,6 +9,7 @@ if (dsn) {
     Sentry.init({
       dsn,
       environment: process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT || process.env.NODE_ENV,
+      release: process.env.NEXT_PUBLIC_RELEASE,
       tracesSampleRate: 0.05,
       sendDefaultPii: false,
     });
