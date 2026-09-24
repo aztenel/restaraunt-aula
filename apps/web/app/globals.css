@@ -83,14 +83,14 @@
   }
 }
 
-@layer utilities {
-  /* Отступ под нижнюю мобильную навигацию с учётом «чёлки»/жестовой панели. */
-  .pb-safe-nav {
-    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
-  }
-  .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
+/* Отступ под нижнюю мобильную навигацию с учётом «чёлки»/жестовой панели.
+   @utility — чтобы работали варианты (md:pb-0 перекрывает на десктопе). */
+@utility pb-safe-nav {
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+}
+
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Карта Leaflet: не перекрывает шапку и выпадающие меню. */
