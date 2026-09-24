@@ -94,8 +94,19 @@ export abstract class StopListControl {
     available: boolean,
     source: 'manual' | 'pos',
   ): Promise<void>;
-  /** Найти блюдо по внешнему коду POS (sku). */
+  /**
+   * Найти блюдо по внешнему коду POS (sku). Код блюда общий для сети (номенклатура сети в POS);
+   * если код задан только как переопределение филиала — находится, когда он однозначен во всех филиалах.
+   */
   abstract findDishIdBySku(sku: string): Promise<string | null>;
+
+  /**
+   * Найти блюдо по коду POS конкретного филиала: сначала переопределение кода в меню филиала,
+   * затем общий код блюда. По умолчанию — как findDishIdBySku (для заглушек).
+   */
+  findDishIdBySkuInBranch(_branchId: string, sku: string): Promise<string | null> {
+    return this.findDishIdBySku(sku);
+  }
 }
 
 export const CatalogEvents = {
@@ -103,6 +114,8 @@ export const CatalogEvents = {
   StopListChanged: 'catalog.stop_list_changed',
   /** Изменились блюда/категории/цены (для сброса кэшей витрины). */
   MenuChanged: 'catalog.menu_changed',
+  /** Изменился контент витрины: баннер, акция или статическая страница (для сброса кэшей). */
+  ContentChanged: 'catalog.content_changed',
 } as const;
 
 export interface StopListChangedPayload {
@@ -110,10 +123,21 @@ export interface StopListChangedPayload {
   dishId: string;
   availability: DishAvailability;
   source: 'manual' | 'pos';
+  /** До какого момента блюдо в стопе (ISO), null — до ручного возврата. */
+  stoppedUntil?: string | null;
+  reason?: string | null;
 }
 
 export interface MenuChangedPayload {
   branchId: string | null;
   dishId?: string | null;
   categoryId?: string | null;
+}
+
+export interface ContentChangedPayload {
+  kind: 'banner' | 'promotion' | 'page';
+  id: string;
+  slug?: string | null;
+  /** Филиал баннера/акции; null — весь контент сети. */
+  branchId: string | null;
 }

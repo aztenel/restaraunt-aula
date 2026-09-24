@@ -1,0 +1,47 @@
+# Контекст сборки образов api / web / admin — корень монорепозитория.
+# Всё, что собирается внутри образа или не нужно для сборки, исключаем:
+# так контекст маленький, кэш слоёв стабилен, а секреты не попадают в образ.
+
+# Зависимости и артефакты сборки (ставятся и собираются внутри образа)
+**/node_modules
+**/dist
+**/build
+**/.next
+**/out
+**/coverage
+**/.turbo
+**/*.tsbuildinfo
+**/.vite
+**/test-results
+**/playwright-report
+**/blob-report
+
+# Локальные данные разработчика
+**/storage
+**/tmp
+**/*.log
+.deploy
+env
+
+# Секреты и локальные настройки окружения (в образ не попадают никогда)
+**/.env
+**/.env.*
+!**/.env.example
+**/*.pem
+**/*.key
+**/rclone.conf
+
+# Не нужно для сборки приложений
+.git
+.github
+.vscode
+.idea
+**/.DS_Store
+docs
+ops/backup
+ops/monitoring
+ops/deploy
+ops/build-env
+docker-compose*.yml
+*.md
+!apps/**/README.md

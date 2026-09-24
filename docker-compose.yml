@@ -1,0 +1,108 @@
+# Инфраструктура для ЛОКАЛЬНОЙ разработки AULA. Приложения (api, worker, web, admin) запускаются
+# на хосте через pnpm (pnpm dev:api / dev:worker / dev:web / dev:admin) — см. README.md.
+#
+#   docker compose up -d          # поднять
+#   docker compose ps             # статус и healthcheck
+#   docker compose down           # остановить (данные в томах сохраняются)
+#   docker compose down -v        # остановить и удалить данные
+#
+# Порты (переопределяются в корневом .env, см. .env.example):
+#   PostgreSQL 16  localhost:5432   база/пользователь/пароль: aula / aula / aula
+#   Redis 7        localhost:6379
+#   MinIO (S3)     localhost:9000   API S3, бакет "aula" (префикс public/ — анонимное чтение)
+#   MinIO Console  localhost:9001   логин/пароль: MINIO_ROOT_USER / MINIO_ROOT_PASSWORD
+#   Mailpit SMTP   localhost:1025   вся почта перехватывается, наружу не уходит
+#   Mailpit UI     localhost:8025
+
+name: aula-dev
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: aula
+      POSTGRES_USER: aula
+      POSTGRES_PASSWORD: aula
+      TZ: UTC
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    shm_size: 256mb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aula -d aula"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.4-alpine
+    # BullMQ требует noeviction; AOF — задачи очереди переживают перезапуск.
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  # S3-совместимое хранилище (как в production). Официальные образы MinIO больше не публикуются
+  # на Docker Hub, поэтому используется сборка сообщества; образ можно заменить через MINIO_IMAGE.
+  minio:
+    image: ${MINIO_IMAGE:-pgsty/minio:RELEASE.2026-08-04T00-00-00Z}
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-aula-minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-aula-minio-secret}
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - miniodata:/data
+    restart: unless-stopped
+
+  # Одноразовая задача: создать бакет "aula" и открыть на чтение префикс public/ (фото блюд).
+  # PDF смет, счетов и сертификатов лежат в private/ и отдаются только по подписанной ссылке.
+  minio-init:
+    image: ${MINIO_MC_IMAGE:-pgsty/mc:RELEASE.2026-09-16T00-00-00Z}
+    depends_on:
+      minio:
+        condition: service_started
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-aula-minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-aula-minio-secret}
+      S3_BUCKET: ${S3_BUCKET:-aula}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        for i in $$(seq 1 60); do
+          mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD" >/dev/null 2>&1 && break
+          echo "Жду MinIO... ($$i)"; sleep 1
+        done
+        mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"
+        mc mb --ignore-existing "local/$$S3_BUCKET"
+        mc anonymous set download "local/$$S3_BUCKET/public"
+        echo "Бакет $$S3_BUCKET готов: public/ — чтение для всех, остальное — приватно"
+    restart: "no"
+
+  mailpit:
+    image: axllent/mailpit:v1.31
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "1"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "1"
+      MP_MAX_MESSAGES: "5000"
+    ports:
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"
+      - "${MAILPIT_UI_PORT:-8025}:8025"
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  redisdata:
+  miniodata:

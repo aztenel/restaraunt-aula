@@ -1,0 +1,125 @@
+# Reverse proxy AULA (staging / production), контейнер caddy из docker-compose.prod.yml.
+#
+# Домены — из переменных окружения контейнера (корневой .env сервера):
+#   WEB_DOMAIN   → витрина (web:3001) + /api/v1/* → api:3000 (тот же origin: без CORS-preflight на 4G)
+#   ADMIN_DOMAIN → админка (admin:8080) + /api/v1/* → api:3000 (тот же origin: refresh-cookie SameSite=strict)
+#   API_DOMAIN   → только /api/v1/* → api:3000 (вебхуки провайдеров, мобильное приложение, портал франчайзи)
+#
+# Автоматический HTTPS (Let's Encrypt / ZeroSSL) и редирект HTTP→HTTPS Caddy включает сам
+# для доменных адресов сайтов. Ограничение частоты запросов делает приложение (Redis), не прокси.
+# Проверка конфигурации: caddy validate --config ops/caddy/Caddyfile --adapter caddyfile
+{
+	email {$ACME_EMAIL}
+	# Метрики HTTP-серверов Caddy (отдаются на :2020 внутри сети Docker, см. ниже).
+	metrics
+
+	# Если перед Caddy стоит балансировщик или CDN, перечислите его адреса — иначе
+	# X-Forwarded-For от клиентов игнорируется (защита от подмены IP для лимитов частоты).
+	# servers {
+	# 	trusted_proxies static 203.0.113.0/24
+	# }
+}
+
+# --- Общие фрагменты ---------------------------------------------------------
+
+(security_headers) {
+	header {
+		# HSTS (ТЗ: HTTPS с редиректом, HSTS). preload не включаем без решения владельца домена.
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), payment=(self), geolocation=(self)"
+		Cross-Origin-Opener-Policy "same-origin-allow-popups"
+		-Server
+		-X-Powered-By
+		# Применять при отправке ответа — перекрывает одноимённые заголовки upstream.
+		defer
+	}
+}
+
+(common) {
+	encode zstd gzip
+	# Загрузка фото блюд и документов — до 15 МБ; больше — 413.
+	request_body {
+		max_size 15MB
+	}
+	import security_headers
+	log {
+		output stdout
+		format json
+	}
+}
+
+(api_routes) {
+	# Метрики Prometheus наружу не публикуются: Prometheus ходит в api:3000 внутри сети Docker.
+	handle /api/v1/metrics* {
+		respond "Not Found" 404
+	}
+	handle /api/v1/* {
+		reverse_proxy api:3000 {
+			# Короткий перезапуск контейнера при деплое не превращается в 502: Caddy повторяет подключение.
+			lb_try_duration 30s
+			lb_try_interval 250ms
+			# Сквозной идентификатор запроса: попадает в логи API (requestId) и ответ клиенту.
+			header_up X-Request-Id {http.request.uuid}
+		}
+		header X-Request-Id {http.request.uuid}
+	}
+}
+
+# --- Сайты -------------------------------------------------------------------
+
+{$WEB_DOMAIN} {
+	import common
+	import api_routes
+	header {
+		X-Frame-Options "SAMEORIGIN"
+		# staging: WEB_ROBOTS_TAG=noindex,nofollow (не индексировать тестовый стенд)
+		X-Robots-Tag "{$WEB_ROBOTS_TAG:all}"
+		defer
+	}
+	handle {
+		reverse_proxy web:3001 {
+			lb_try_duration 30s
+			lb_try_interval 250ms
+		}
+	}
+}
+
+www.{$WEB_DOMAIN} {
+	redir https://{$WEB_DOMAIN}{uri} permanent
+}
+
+{$ADMIN_DOMAIN} {
+	import common
+	import api_routes
+	header {
+		X-Frame-Options "DENY"
+		X-Robots-Tag "noindex, nofollow"
+		defer
+	}
+	handle {
+		reverse_proxy admin:8080 {
+			lb_try_duration 30s
+			lb_try_interval 250ms
+		}
+	}
+}
+
+{$API_DOMAIN} {
+	import common
+	import api_routes
+	header {
+		X-Frame-Options "DENY"
+		X-Robots-Tag "noindex, nofollow"
+		defer
+	}
+	handle {
+		respond "Not Found" 404
+	}
+}
+
+# Метрики самого Caddy для Prometheus (порт не публикуется на хост).
+:2020 {
+	metrics /metrics
+}

@@ -151,6 +151,13 @@ export interface PaymentEventPayload {
   provider: string;
   amount: MoneyJson;
   occurredAt: string;
+  /** Причина отказа/отмены (для PaymentFailed / PaymentCancelled). */
+  reason?: string | null;
+  /**
+   * Статус до перехода. Для PaymentSucceeded со значением failed/cancelled — «поздняя оплата»:
+   * провайдер подтвердил списание уже после отмены/отказа; потребитель решает, вернуть ли деньги.
+   */
+  previousStatus?: PaymentStatus;
 }
 
 export interface RefundEventPayload {
@@ -176,6 +183,20 @@ export interface CertificateIssuedPayload {
   price: MoneyJson;
   buyerPhone: string | null;
   branchId: string | null;
+  occurredAt: string;
+}
+
+export type RefundStatus = RefundView['status'];
+export type CertificateStatus = CertificateBalanceView['status'];
+export type CertificateKind = CertificateBalanceView['kind'];
+
+export interface CertificateExpiredPayload {
+  certificateId: string;
+  kind: 'amount' | 'set';
+  nominal: MoneyJson;
+  /** Несгоревший остаток на момент истечения срока (списывается из обязательств). */
+  balance: MoneyJson;
+  expiresAt: string;
   occurredAt: string;
 }
 

@@ -1,0 +1,253 @@
+# AULA: staging / production на одном Docker-хосте. Управляется скриптами ops/deploy/*.sh:
+#
+#   ops/deploy/deploy.sh v1.4.0      # выкатить тег: pull → миграции → up → проверка /health/ready
+#   ops/deploy/rollback.sh           # откат на предыдущую версию одной командой
+#   ops/deploy/compose.sh ps         # docker compose с текущим тегом (logs, exec, ps ...)
+#
+# Файлы на сервере (каталог DEPLOY_PATH, по умолчанию /opt/aula) — см. docs/operations.md:
+#   .env              переменные этого файла (REGISTRY, DEPLOY_ENV, домены, ...) — из .env.example
+#   env/api.env       окружение API/worker/migrate — из apps/api/.env.example
+#   env/web.env       серверное окружение витрины — из apps/web/.env.example
+#   env/backup.env    бэкапы — из ops/backup/backup.env.example; env/rclone.conf — из ops/backup/rclone.conf.example
+#
+# Образы: api (+worker, migrate) и backup — общие для окружений; web и admin собираются под окружение,
+# потому что NEXT_PUBLIC_* / VITE_* встраиваются при сборке (тег <версия>-<окружение>).
+# PostgreSQL в контейнере — только с профилем "db" (COMPOSE_PROFILES=db); в production можно
+# использовать управляемый PostgreSQL 16, тогда DATABASE_URL в env/api.env указывает на него.
+
+name: aula
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
+x-hardening: &hardening
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+x-api-image: &api-image
+  image: ${REGISTRY:?REGISTRY не задан в .env}/aula-api:${TAG:?TAG не задан — используйте ops/deploy/*.sh}
+  env_file:
+    - ./env/api.env
+  environment: &api-env
+    RELEASE: ${TAG}
+    SENTRY_ENVIRONMENT: ${DEPLOY_ENV:?DEPLOY_ENV не задан (staging|production)}
+    PORT: "3000"
+  logging: *logging
+  <<: *hardening
+
+services:
+  # Миграции (только вперёд). Одноразовый контейнер: api и worker стартуют после его успешного завершения.
+  migrate:
+    <<: *api-image
+    command: ["node", "dist/cli/migrate.js"]
+    restart: "no"
+    healthcheck:
+      disable: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+        required: false
+
+  api:
+    <<: *api-image
+    command: ["node", "dist/main.js"]
+    restart: unless-stopped
+    expose:
+      - "3000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+        required: false
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  # Фоновый процесс: outbox → очереди, интеграции (платежи, мессенджеры, POS), расписания.
+  # Жизнеспособность контролируется метрикой aula_outbox_lag_seconds (алерт AulaOutboxLag).
+  worker:
+    <<: *api-image
+    command: ["node", "dist/worker.js"]
+    environment:
+      <<: *api-env
+      QUEUE_DRIVER: bullmq
+      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-5}
+    restart: unless-stopped
+    stop_grace_period: 60s
+    healthcheck:
+      disable: true
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+        required: false
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  web:
+    image: ${REGISTRY}/aula-web:${TAG}-${DEPLOY_ENV}
+    env_file:
+      - ./env/web.env
+    environment:
+      RELEASE: ${TAG}
+    restart: unless-stopped
+    expose:
+      - "3001"
+    depends_on:
+      api:
+        condition: service_started
+    logging: *logging
+    <<: *hardening
+    deploy:
+      resources:
+        limits:
+          memory: 768m
+
+  admin:
+    image: ${REGISTRY}/aula-admin:${TAG}-${DEPLOY_ENV}
+    restart: unless-stopped
+    expose:
+      - "8080"
+    logging: *logging
+    <<: *hardening
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+
+  caddy:
+    image: caddy:2.11-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      WEB_DOMAIN: ${WEB_DOMAIN:?WEB_DOMAIN не задан}
+      ADMIN_DOMAIN: ${ADMIN_DOMAIN:?ADMIN_DOMAIN не задан}
+      API_DOMAIN: ${API_DOMAIN:?API_DOMAIN не задан}
+      ACME_EMAIL: ${ACME_EMAIL:?ACME_EMAIL не задан}
+      WEB_ROBOTS_TAG: ${WEB_ROBOTS_TAG:-all}
+    volumes:
+      - ./ops/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_started
+      web:
+        condition: service_started
+      admin:
+        condition: service_started
+    logging: *logging
+
+  redis:
+    image: redis:7.4-alpine
+    # noeviction — требование BullMQ; AOF (fsync раз в секунду) — задачи переживают перезапуск.
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --appendfsync
+      - everysec
+      - --maxmemory
+      - 512mb
+      - --maxmemory-policy
+      - noeviction
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    logging: *logging
+
+  # Опционально: PostgreSQL в контейнере (COMPOSE_PROFILES=db). В production допустим управляемый PostgreSQL 16
+  # у провайдера в РК — тогда профиль не включается, а DATABASE_URL указывает на внешний сервер.
+  postgres:
+    profiles: ["db"]
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-aula}
+      POSTGRES_USER: ${POSTGRES_USER:-aula}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-}
+      TZ: UTC
+    command:
+      - postgres
+      - -c
+      - shared_buffers=${POSTGRES_SHARED_BUFFERS:-1GB}
+      - -c
+      - effective_cache_size=${POSTGRES_EFFECTIVE_CACHE_SIZE:-3GB}
+      - -c
+      - work_mem=16MB
+      - -c
+      - maintenance_work_mem=256MB
+      - -c
+      - max_connections=150
+      - -c
+      - random_page_cost=1.1
+      - -c
+      - log_min_duration_statement=500ms
+      - -c
+      - idle_in_transaction_session_timeout=60s
+    shm_size: 512mb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    logging: *logging
+
+  # Ежедневный бэкап БД и файлов (cron внутри контейнера, расписание BACKUP_CRON в env/backup.env).
+  # Ручной запуск:  ops/deploy/compose.sh run --rm backup backup.sh
+  backup:
+    image: ${REGISTRY}/aula-backup:${TAG}
+    env_file:
+      - ./env/backup.env
+    environment:
+      BACKUP_ENV_NAME: ${DEPLOY_ENV}
+      RELEASE: ${TAG}
+    restart: unless-stopped
+    volumes:
+      - ./env/rclone.conf:/config/rclone.conf:ro
+      - backup_work:/var/backups/aula
+      - backup_metrics:/metrics
+    depends_on:
+      postgres:
+        condition: service_healthy
+        required: false
+    logging: *logging
+
+volumes:
+  caddy_data:
+  caddy_config:
+  redis_data:
+  pgdata:
+  backup_work:
+  # Метрики бэкапа (textfile collector) читает node-exporter из docker-compose.monitoring.yml.
+  backup_metrics:
+    name: aula_backup_metrics
+
+networks:
+  default:
+    # Фиксированное имя: к сети подключается стек мониторинга (docker-compose.monitoring.yml).
+    name: aula-net

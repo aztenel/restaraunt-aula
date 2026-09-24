@@ -1,0 +1,100 @@
+@import 'tailwindcss';
+
+/*
+ * Дизайн-токены AULA: тёплая палитра (земля, золото, молоко), национальный акцент — орнамент.
+ * Контраст текста на фоне — не ниже WCAG AA. Шрифты: Manrope (текст) и Lora (заголовки),
+ * оба с кириллицей и расширенной кириллицей (казахские буквы ә, ғ, қ, ң, ө, ұ, ү, һ, і).
+ */
+@theme {
+  --color-cream-50: #fffcf7;
+  --color-cream-100: #fbf6ee;
+  --color-cream-200: #f3e8d6;
+  --color-cream-300: #e8d6b8;
+
+  --color-earth-50: #f7f1ea;
+  --color-earth-100: #ede0d0;
+  --color-earth-200: #d9c0a3;
+  --color-earth-300: #c19a74;
+  --color-earth-400: #a5774f;
+  --color-earth-500: #8a5a36;
+  --color-earth-600: #6f4526;
+  --color-earth-700: #57351e;
+  --color-earth-800: #3f2717;
+  --color-earth-900: #2a1a10;
+
+  --color-gold-200: #f3dfa8;
+  --color-gold-300: #e8c878;
+  --color-gold-400: #d9ae4f;
+  --color-gold-500: #c8962e;
+  --color-gold-600: #a87a1f;
+  --color-gold-700: #7c5a14;
+
+  --color-terracotta-500: #b5452c;
+  --color-terracotta-600: #963722;
+
+  --color-steppe-100: #e3f1e7;
+  --color-steppe-700: #256b40;
+
+  --color-whatsapp: #117a65;
+  --color-whatsapp-dark: #0c5c4c;
+
+  --color-ink: #231a13;
+  --color-muted: #6b5a4b;
+
+  --font-sans:
+    var(--font-manrope), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans', sans-serif;
+  --font-display: var(--font-lora), Georgia, 'Times New Roman', 'Noto Serif', serif;
+
+  --radius-card: 1.25rem;
+  --shadow-card: 0 1px 2px rgb(42 26 16 / 0.06), 0 10px 28px -14px rgb(42 26 16 / 0.22);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 5rem;
+  }
+
+  body {
+    background-color: var(--color-cream-100);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-gold-500);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--color-gold-200);
+    color: var(--color-earth-900);
+  }
+}
+
+@layer utilities {
+  /* Отступ под нижнюю мобильную навигацию с учётом «чёлки»/жестовой панели. */
+  .pb-safe-nav {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Карта Leaflet: не перекрывает шапку и выпадающие меню. */
+.leaflet-container {
+  z-index: 0;
+  font-family: var(--font-sans);
+}
