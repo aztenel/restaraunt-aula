@@ -12,10 +12,11 @@ import { SmsProvider } from '../sms/sms-channel';
  */
 export const MOBIZON_SETTINGS_KEY = 'notifications.mobizon';
 export const MOBIZON_CODE = 'mobizon';
+const DEFAULT_BASE_URL = 'https://api.mobizon.kz';
 
 const MobizonSettingsSchema = z.object({
   apiKey: z.string().min(10),
-  baseUrl: z.string().url().default('https://api.mobizon.kz'),
+  baseUrl: z.string().url().optional(),
   /** Альфа-имя отправителя (зарегистрированное в Mobizon); пусто — имя по умолчанию. */
   from: z.string().max(11).optional(),
 });
@@ -86,7 +87,7 @@ export class MobizonSmsProvider extends SmsProvider {
       integration: MOBIZON_SETTINGS_KEY,
       operation: 'message.sendSmsMessage',
       method: 'POST',
-      url: `${settings.baseUrl.replace(/\/$/, '')}/service/message/sendsmsmessage?${query.toString()}`,
+      url: `${(settings.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, '')}/service/message/sendsmsmessage?${query.toString()}`,
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
       body: form.toString(),
       correlationId: input.correlationId,

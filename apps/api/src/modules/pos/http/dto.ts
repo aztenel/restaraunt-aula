@@ -133,6 +133,11 @@ export class OrderExportDto {
   missingMappings: MissingMappingDto[];
   @ApiPropertyOptional({ nullable: true }) lastAttemptAt: Date | null;
   @ApiPropertyOptional({ nullable: true }) sentAt: Date | null;
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'POS подтвердила создание заказа. null при status=sent — заказ принят POS в обработку, подтверждение ожидается',
+  })
+  confirmedAt: Date | null;
   @ApiPropertyOptional({ nullable: true }) failedAt: Date | null;
   @ApiProperty() createdAt: Date;
   @ApiProperty() updatedAt: Date;
@@ -155,6 +160,7 @@ export class OrderExportDto {
       missingMappings: (r.details.missing ?? []).map(MissingMappingDto.from),
       lastAttemptAt: r.lastAttemptAt,
       sentAt: r.sentAt,
+      confirmedAt: r.confirmedAt,
       failedAt: r.failedAt,
       createdAt: r.createdAt,
       updatedAt: r.updatedAt,

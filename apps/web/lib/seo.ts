@@ -53,7 +53,7 @@ export interface BuildMetadataInput {
   /** Служебные страницы (статус заказа, оплата, токены) — не индексировать. */
   noindex?: boolean;
   type?: 'website' | 'article';
-  /** Заголовок без шаблона «%s — AULA» (главная). */
+  /** Заголовок без шаблона «%s — AULA». По умолчанию — если название бренда уже есть в заголовке. */
   absoluteTitle?: boolean;
   siteUrl?: string;
 }
@@ -62,8 +62,9 @@ export function buildMetadata(input: BuildMetadataInput): Metadata {
   const siteUrl = input.siteUrl ?? getSiteUrl();
   const url = localizedUrl(input.locale, input.path, siteUrl);
   const description = truncateDescription(input.description);
+  const absolute = input.absoluteTitle ?? input.title.includes(SITE_NAME);
   return {
-    title: input.absoluteTitle ? { absolute: input.title } : input.title,
+    title: absolute ? { absolute: input.title } : input.title,
     description,
     alternates: {
       canonical: url,

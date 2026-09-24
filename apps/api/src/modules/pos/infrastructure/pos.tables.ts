@@ -30,6 +30,8 @@ export interface OrderExportsTable {
   details: unknown;
   last_attempt_at: Date | null;
   sent_at: Date | null;
+  confirmed_at: Date | null;
+  confirm_checks: number;
   failed_at: Date | null;
   created_at: Date;
   updated_at: Generated<Date>;

@@ -5,7 +5,7 @@ import { KitchenOrder } from '../../ordering/public';
  * Реализации — в infrastructure/adapters/<провайдер>. Модуль заказов о POS не знает:
  * выбор POS филиала — настройка pos.routing, а не код.
  *
- * pushOrder, fetchStopList и fetchProducts ходят во внешнюю систему и вызываются только
+ * pushOrder, checkOrder, fetchStopList и fetchProducts ходят во внешнюю систему и вызываются только
  * из фоновых задач (@JobHandler). Ошибки внешней системы — ExternalServiceError(retryable),
  * ненастроенная интеграция — ValidationError с кодом POS_NOT_CONFIGURED.
  */
@@ -57,7 +57,15 @@ export interface PosOrderMapping {
 export interface PosPushResult {
   /** Идентификатор заказа в POS. */
   posOrderId: string;
+  /**
+   * POS подтвердила создание заказа сразу. false — заказ принят в обработку асинхронно,
+   * результат проверяется позже (checkOrder). По умолчанию — true.
+   */
+  confirmed?: boolean;
 }
+
+/** Результат проверки заказа, созданного асинхронно. */
+export type PosOrderCheck = { state: 'created' } | { state: 'in_progress' } | { state: 'failed'; error: string };
 
 /** Позиция стоп-листа POS: только товары, которые POS сообщила (остальные доступны). */
 export interface PosStopListItem {
@@ -93,4 +101,9 @@ export abstract class PosClient {
 
   /** Номенклатура POS (для экрана сопоставления). */
   abstract fetchProducts(branch: PosBranchRef): Promise<PosProduct[]>;
+
+  /** Состояние заказа, переданного без подтверждения (confirmed=false). По умолчанию POS создаёт заказ сразу. */
+  async checkOrder(_branch: PosBranchRef, _posOrderId: string): Promise<PosOrderCheck> {
+    return { state: 'created' };
+  }
 }

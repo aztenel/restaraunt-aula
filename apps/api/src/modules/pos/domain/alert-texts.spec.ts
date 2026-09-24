@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cancelledAfterSentAlert, exportFailureAlert, stopListSyncAlert } from './alert-texts';
+import { cancelledAfterSentAlert, exportFailureAlert, stopListSyncAlert, unconfirmedOrderAlert } from './alert-texts';
 
 describe('POS alert texts', () => {
   it('missing mapping lists dishes and tells the kitchen to work from the admin screen', () => {
@@ -28,5 +28,8 @@ describe('POS alert texts', () => {
   it('cancel and sync texts', () => {
     expect(cancelledAfterSentAlert({ orderNumber: 'N', posOrderId: 'P-1' }).details).toContain('P-1');
     expect(stopListSyncAlert({ providerTitle: 'pos_a', failures: 3, error: 'HTTP 503' }).details).toContain('HTTP 503');
+    const unconfirmed = unconfirmedOrderAlert({ orderNumber: 'N', posOrderId: 'P-9', link: 'L' });
+    expect(unconfirmed.title).toBe('Заказ N не подтверждён POS');
+    expect(unconfirmed.details).toContain('P-9');
   });
 });

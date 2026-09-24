@@ -6,7 +6,9 @@ import { PosFailureReason } from '../public';
  * Передача заказа в POS. Одна запись на заказ.
  *
  * pending — ждёт передачи (в том числе между повторами при недоступности POS);
- * sent — заказ создан в POS; failed — не передан (кухня работает по экрану админки, персонал оповещён);
+ * sent — заказ передан в POS (confirmedAt — POS подтвердила создание; часть POS создаёт заказ асинхронно
+ * и может отклонить его позже: тогда sent -> failed); failed — не передан (кухня работает по экрану админки,
+ * персонал оповещён);
  * skipped — передавать не нужно (POS без API — провайдер manual, заказ отменён до передачи).
  * Ручной повтор: failed/skipped -> pending.
  */
@@ -23,7 +25,7 @@ export const ORDER_EXPORT_MACHINE = new StateMachine<OrderExportStatus>('pos.ord
   pending: ['sent', 'failed', 'skipped'],
   failed: ['pending'],
   skipped: ['pending'],
-  sent: [],
+  sent: ['failed'],
 });
 
 export const POS_FAILURE_REASONS: readonly PosFailureReason[] = [
@@ -43,6 +45,11 @@ export type SkipReason = (typeof SKIP_REASONS)[number];
 
 /** Сколько раз пытаться передать заказ при недоступности POS до признания неудачи. */
 export const PUSH_MAX_ATTEMPTS = 6;
+
+/** Сколько раз проверять асинхронно создаваемый заказ, прежде чем попросить персонал проверить кассу. */
+export const CONFIRM_MAX_CHECKS = 6;
+
+export type ConfirmationOutcome = 'confirmed' | 'wait' | 'gave_up' | 'rejected';
 
 /** Блюдо заказа (и его опции), для которых нет сопоставления с товаром POS. */
 export interface MissingMapping {
@@ -74,6 +81,9 @@ export interface OrderExportState {
   details: OrderExportDetails;
   lastAttemptAt: Date | null;
   sentAt: Date | null;
+  /** POS подтвердила создание заказа (null — ещё нет или переданный заказ не подтверждён). */
+  confirmedAt: Date | null;
+  confirmChecks: number;
   failedAt: Date | null;
   createdAt: Date;
 }
@@ -105,6 +115,8 @@ export class OrderExport {
       details: {},
       lastAttemptAt: null,
       sentAt: null,
+      confirmedAt: null,
+      confirmChecks: 0,
       failedAt: null,
       createdAt: input.now,
     });
@@ -153,15 +165,48 @@ export class OrderExport {
     this.state.lastAttemptAt = now;
   }
 
-  markSent(posOrderId: string, now: Date): void {
+  /** Заказ передан. confirmed=false — POS создаёт его асинхронно, нужна проверка (checkOrder). */
+  markSent(posOrderId: string, now: Date, confirmed = true): void {
     invariant(posOrderId.trim().length > 0, 'pos.pos_order_id_required', 'POS order id is required');
     ORDER_EXPORT_MACHINE.assertTransition(this.state.status, OrderExportStatus.Sent);
     this.state.status = OrderExportStatus.Sent;
     this.state.posOrderId = posOrderId;
     this.state.sentAt = now;
+    this.state.confirmedAt = confirmed ? now : null;
+    this.state.confirmChecks = 0;
     this.state.lastError = null;
     this.state.failureReason = null;
     this.state.details = {};
+  }
+
+  /** Передан, но POS ещё не подтвердила создание. */
+  needsConfirmation(): boolean {
+    return this.state.status === OrderExportStatus.Sent && this.state.confirmedAt === null;
+  }
+
+  /**
+   * Результат проверки асинхронно создаваемого заказа:
+   * created -> confirmed; failed -> POS отклонила заказ (sent -> failed); in_progress/ошибка проверки ->
+   * ждать и проверить позже, после maxChecks — gave_up (заказ остаётся sent без подтверждения, персонал проверяет кассу).
+   */
+  recordConfirmation(
+    check: { state: 'created' } | { state: 'in_progress'; error?: string } | { state: 'failed'; error: string },
+    now: Date,
+    maxChecks: number = CONFIRM_MAX_CHECKS,
+  ): ConfirmationOutcome {
+    invariant(this.needsConfirmation(), 'pos.order_export_not_awaiting_confirmation', 'Export is not awaiting confirmation');
+    this.state.confirmChecks += 1;
+    if (check.state === 'created') {
+      this.state.confirmedAt = now;
+      this.state.lastError = null;
+      return 'confirmed';
+    }
+    if (check.state === 'failed') {
+      this.markFailed('rejected', check.error, now);
+      return 'rejected';
+    }
+    if (check.error) this.state.lastError = clipError(check.error);
+    return this.state.confirmChecks >= maxChecks ? 'gave_up' : 'wait';
   }
 
   markSkipped(reason: SkipReason, now: Date): void {
@@ -206,5 +251,7 @@ export class OrderExport {
     this.state.skipReason = null;
     this.state.details = {};
     this.state.failedAt = null;
+    this.state.confirmedAt = null;
+    this.state.confirmChecks = 0;
   }
 }

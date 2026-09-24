@@ -1,7 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { JobHandler, Scheduled } from '../../../shared/infrastructure/events/decorators';
 import { JobEnvelope } from '../../../shared/infrastructure/events/types';
-import { PUSH_ORDER_JOB, PUSH_ORDER_RETRY, PushOrderJobPayload, PushOrderToPos } from '../application/order-export.actions';
+import {
+  CONFIRM_ORDER_JOB,
+  CONFIRM_ORDER_RETRY,
+  ConfirmOrderJobPayload,
+  ConfirmPosOrder,
+  PUSH_ORDER_JOB,
+  PUSH_ORDER_RETRY,
+  PushOrderJobPayload,
+  PushOrderToPos,
+} from '../application/order-export.actions';
 import { IMPORT_PRODUCTS_JOB, IMPORT_PRODUCTS_RETRY, ImportPosProducts, ImportProductsJobPayload } from '../application/product-import.actions';
 import {
   ScheduleStopListSync,
@@ -18,6 +27,7 @@ import { STOP_LIST_SYNC_INTERVAL_MS } from '../domain/sync-policy';
 export class PosJobsHandler {
   constructor(
     private readonly pushOrder: PushOrderToPos,
+    private readonly confirmOrder: ConfirmPosOrder,
     private readonly syncStopList: SyncStopList,
     private readonly importProducts: ImportPosProducts,
     private readonly scheduleStopListSync: ScheduleStopListSync,
@@ -26,6 +36,11 @@ export class PosJobsHandler {
   @JobHandler(PUSH_ORDER_JOB, PUSH_ORDER_RETRY)
   async onPushOrder(job: JobEnvelope<PushOrderJobPayload>): Promise<void> {
     await this.pushOrder.execute(job.payload.orderId);
+  }
+
+  @JobHandler(CONFIRM_ORDER_JOB, CONFIRM_ORDER_RETRY)
+  async onConfirmOrder(job: JobEnvelope<ConfirmOrderJobPayload>): Promise<void> {
+    await this.confirmOrder.execute(job.payload.orderId);
   }
 
   @JobHandler(SYNC_STOP_LIST_JOB, SYNC_STOP_LIST_RETRY)

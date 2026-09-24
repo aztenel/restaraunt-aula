@@ -1,7 +1,7 @@
 import { Money } from '../../../../../shared/kernel/money';
 import { zonedParts } from '../../../../../shared/kernel/time';
 import { KitchenOrder } from '../../../../ordering/public';
-import { PosOrderMapping, PosProduct, PosProductKind, PosStopListItem } from '../../../domain/pos-client';
+import { PosOrderCheck, PosOrderMapping, PosProduct, PosProductKind, PosStopListItem } from '../../../domain/pos-client';
 import { IikoBranchSettings } from './iiko.settings';
 
 /**
@@ -108,6 +108,23 @@ export function parseCreateDeliveryResponse(body: unknown): { posOrderId: string
     creationStatus: typeof info?.creationStatus === 'string' ? info.creationStatus : null,
     error,
   };
+}
+
+/**
+ * Ответ deliveries/by_id: состояние асинхронного создания заказа.
+ * Success — создан на кассе; Error — отклонён (errorInfo); InProgress или заказа ещё нет в ответе — ждать.
+ */
+export function parseDeliveryById(body: unknown, posOrderId: string): PosOrderCheck {
+  const order = asArray(asRecord(body)?.orders)
+    .map(asRecord)
+    .find((o) => o?.id === posOrderId);
+  if (!order) return { state: 'in_progress' };
+  if (order.creationStatus === 'Success') return { state: 'created' };
+  if (order.creationStatus === 'Error') {
+    const errorInfo = asRecord(order.errorInfo);
+    return { state: 'failed', error: (errorInfo && iikoErrorMessage(errorInfo)) ?? (typeof errorInfo?.code === 'string' ? errorInfo.code : 'Order creation failed') };
+  }
+  return { state: 'in_progress' };
 }
 
 /**

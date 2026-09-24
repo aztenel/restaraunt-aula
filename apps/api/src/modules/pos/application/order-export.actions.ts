@@ -10,9 +10,10 @@ import { newId } from '../../../shared/kernel/ids';
 import { DEFAULT_TIMEZONE } from '../../../shared/kernel/time';
 import { BranchDirectory } from '../../identity/public';
 import { OrderQuery, OrderStatus } from '../../ordering/public';
-import { cancelledAfterSentAlert, exportFailureAlert } from '../domain/alert-texts';
+import { cancelledAfterSentAlert, exportFailureAlert, unconfirmedOrderAlert } from '../domain/alert-texts';
 import { describeMissing, resolveOrderLines } from '../domain/order-lines';
-import { MissingMapping, OrderExport, OrderExportState, PUSH_MAX_ATTEMPTS, SkipReason } from '../domain/order-export';
+import { CONFIRM_MAX_CHECKS, MissingMapping, OrderExport, OrderExportState, PUSH_MAX_ATTEMPTS, SkipReason } from '../domain/order-export';
+import { PosOrderCheck } from '../domain/pos-client';
 import { OrderExportRecord, OrderExportRepository } from '../infrastructure/order-export.repository';
 import { ProductMappingRepository } from '../infrastructure/product-mapping.repository';
 import { OrderPosFailedPayload, OrderSentToPosPayload, PosEvents } from '../public';
@@ -34,6 +35,15 @@ export interface PushOrderJobPayload {
  */
 export const PUSH_ORDER_RETRY = { attempts: PUSH_MAX_ATTEMPTS + 2, backoffMs: 30_000, maxBackoffMs: 15 * 60_000 };
 
+/** Задача проверки заказа, который POS создаёт асинхронно. */
+export const CONFIRM_ORDER_JOB = 'pos.confirm_order';
+export interface ConfirmOrderJobPayload {
+  orderId: string;
+}
+/** Первая проверка — через 30 с после передачи, дальше 30 с, 1, 2, 4, 5 минут (~13 минут всего). */
+export const CONFIRM_ORDER_DELAY_MS = 30_000;
+export const CONFIRM_ORDER_RETRY = { attempts: CONFIRM_MAX_CHECKS + 2, backoffMs: 30_000, maxBackoffMs: 5 * 60_000 };
+
 /** Статусы заказа, в которых заказ передаётся в POS (кухня/выдача/учёт продажи). */
 const PUSHABLE_STATUSES: ReadonlySet<OrderStatus> = new Set<OrderStatus>(['accepted', 'cooking', 'ready', 'delivering', 'completed']);
 const CANCELLED_STATUSES: ReadonlySet<OrderStatus> = new Set<OrderStatus>(['cancelled', 'refunded']);
@@ -50,11 +60,20 @@ function auditView(s: OrderExportState) {
     failureReason: s.failureReason,
     skipReason: s.skipReason,
     lastError: s.lastError,
+    confirmedAt: s.confirmedAt,
   };
 }
 
 function adminOrderLink(config: Config, orderId: string): string {
   return `${config.app.adminUrl}/orders/${orderId}`;
+}
+
+/** Ожидание подтверждения от POS: задача проверки повторяется очередью с задержкой. */
+class PosConfirmationPendingError extends Error {
+  constructor(orderId: string) {
+    super(`POS has not confirmed order ${orderId} yet`);
+    this.name = 'PosConfirmationPendingError';
+  }
 }
 
 /**
@@ -90,8 +109,55 @@ export class RegisterOrderExport {
   }
 }
 
+/**
+ * Неудача передачи (в транзакции изменения записи): событие OrderPosFailed и оповещение персонала
+ * филиала (WhatsApp/Telegram + лента админки). Сам заказ не меняется — кухня работает по экрану админки.
+ */
+@Injectable()
+export class ReportOrderExportFailure {
+  constructor(
+    private readonly events: EventBus,
+    private readonly alert: AlertPosStaff,
+    private readonly config: Config,
+    private readonly clock: Clock,
+  ) {}
+
+  async execute(s: OrderExportState): Promise<void> {
+    const reason = s.failureReason ?? 'rejected';
+    await this.events.publish<OrderPosFailedPayload>(
+      PosEvents.OrderPosFailed,
+      {
+        orderId: s.orderId,
+        number: s.orderNumber,
+        branchId: s.branchId,
+        provider: s.provider,
+        reason,
+        error: s.lastError ?? '',
+        attempts: s.attempts,
+        occurredAt: this.clock.now().toISOString(),
+      },
+      { aggregateId: s.orderId, branchId: s.branchId },
+    );
+    const text = exportFailureAlert({
+      orderNumber: s.orderNumber,
+      reason,
+      error: s.lastError ?? '',
+      attempts: s.attempts,
+      missing: s.details.missing,
+      link: adminOrderLink(this.config, s.orderId),
+    });
+    await this.alert.execute({
+      branchId: s.branchId,
+      ...text,
+      dedupeKey: `pos:order:${s.orderId}:failed:${s.manualRetries}`,
+      feed: { stream: 'orders', entityId: s.orderId },
+      related: { type: 'order', id: s.orderId },
+    });
+  }
+}
+
 type PushOutcome =
-  | { kind: 'sent'; posOrderId: string }
+  | { kind: 'sent'; posOrderId: string; confirmed: boolean }
   | { kind: 'skip'; reason: SkipReason }
   | { kind: 'fail'; error: ClassifiedPosError; missing?: MissingMapping[] }
   | { kind: 'temporary'; error: ClassifiedPosError; cause: unknown };
@@ -113,9 +179,9 @@ export class PushOrderToPos {
     private readonly branches: BranchDirectory,
     private readonly database: Database,
     private readonly events: EventBus,
+    private readonly jobs: JobQueue,
     private readonly audit: AuditLog,
-    private readonly alert: AlertPosStaff,
-    private readonly config: Config,
+    private readonly reportFailure: ReportOrderExportFailure,
     private readonly clock: Clock,
   ) {}
 
@@ -170,7 +236,7 @@ export class PushOrderToPos {
       }
       const branch = await this.branches.find(branchId);
       const result = await resolved.client.pushOrder(order, { lines, timezone: branch?.timezone ?? DEFAULT_TIMEZONE });
-      return { kind: 'sent', posOrderId: result.posOrderId };
+      return { kind: 'sent', posOrderId: result.posOrderId, confirmed: result.confirmed ?? true };
     } catch (err) {
       const error = classifyPosError(err);
       return error.retryable ? { kind: 'temporary', error, cause: err } : { kind: 'fail', error };
@@ -188,7 +254,7 @@ export class PushOrderToPos {
       let cause: unknown = null;
       switch (outcome.kind) {
         case 'sent':
-          exp.markSent(outcome.posOrderId, now);
+          exp.markSent(outcome.posOrderId, now, outcome.confirmed);
           break;
         case 'skip':
           exp.markSkipped(outcome.reason, now);
@@ -213,8 +279,21 @@ export class PushOrderToPos {
           meta: { orderId: after.orderId, orderNumber: after.orderNumber },
         });
       }
-      if (after.status === 'sent') await this.publishSent(after);
-      if (after.status === 'failed') await this.onFailed(after);
+      if (after.status === 'sent') {
+        await this.events.publish<OrderSentToPosPayload>(
+          PosEvents.OrderSentToPos,
+          { orderId: after.orderId, branchId: after.branchId, posOrderId: after.posOrderId!, provider: after.provider, occurredAt: now.toISOString() },
+          { aggregateId: after.orderId, branchId: after.branchId },
+        );
+        if (exp.needsConfirmation()) {
+          await this.jobs.enqueue<ConfirmOrderJobPayload>(
+            CONFIRM_ORDER_JOB,
+            { orderId: after.orderId },
+            { delayMs: CONFIRM_ORDER_DELAY_MS, branchId: after.branchId, aggregateId: after.orderId },
+          );
+        }
+      }
+      if (after.status === 'failed') await this.reportFailure.execute(after);
       return cause;
     });
     if (retryCause) {
@@ -222,46 +301,74 @@ export class PushOrderToPos {
       throw retryCause;
     }
   }
+}
 
-  private async publishSent(s: OrderExportState): Promise<void> {
-    await this.events.publish<OrderSentToPosPayload>(
-      PosEvents.OrderSentToPos,
-      { orderId: s.orderId, branchId: s.branchId, posOrderId: s.posOrderId!, provider: s.provider, occurredAt: this.clock.now().toISOString() },
-      { aggregateId: s.orderId, branchId: s.branchId },
-    );
-  }
+/**
+ * Проверка заказа, который POS создаёт асинхронно (фоновая задача): создан — подтверждение;
+ * отклонён — sent -> failed, OrderPosFailed и оповещение; нет ответа за ~13 минут — персонал
+ * просят проверить кассу. Ошибка самой проверки — повтор позже.
+ */
+@Injectable()
+export class ConfirmPosOrder {
+  private readonly logger = new Logger(ConfirmPosOrder.name);
 
-  private async onFailed(s: OrderExportState): Promise<void> {
-    const reason = s.failureReason ?? 'rejected';
-    await this.events.publish<OrderPosFailedPayload>(
-      PosEvents.OrderPosFailed,
-      {
-        orderId: s.orderId,
-        number: s.orderNumber,
-        branchId: s.branchId,
-        provider: s.provider,
-        reason,
-        error: s.lastError ?? '',
-        attempts: s.attempts,
-        occurredAt: this.clock.now().toISOString(),
-      },
-      { aggregateId: s.orderId, branchId: s.branchId },
-    );
-    const text = exportFailureAlert({
-      orderNumber: s.orderNumber,
-      reason,
-      error: s.lastError ?? '',
-      attempts: s.attempts,
-      missing: s.details.missing,
-      link: adminOrderLink(this.config, s.orderId),
+  constructor(
+    private readonly exports: OrderExportRepository,
+    private readonly registry: PosClientRegistry,
+    private readonly database: Database,
+    private readonly audit: AuditLog,
+    private readonly reportFailure: ReportOrderExportFailure,
+    private readonly alert: AlertPosStaff,
+    private readonly config: Config,
+    private readonly clock: Clock,
+  ) {}
+
+  async execute(orderId: string): Promise<void> {
+    const current = await this.exports.findByOrderId(orderId);
+    if (!current || !current.needsConfirmation()) return;
+    const s = current.snapshot();
+    let check: PosOrderCheck | { state: 'in_progress'; error: string };
+    try {
+      // Проверяем в той POS, куда заказ передан (маршрутизацию могли поменять после передачи).
+      check = await this.registry.get(s.provider).checkOrder({ branchId: s.branchId }, s.posOrderId!);
+    } catch (err) {
+      check = { state: 'in_progress', error: classifyPosError(err).message };
+    }
+
+    const wait = await this.database.transaction(async () => {
+      const exp = await this.exports.findByOrderId(orderId, { forUpdate: true });
+      if (!exp || !exp.needsConfirmation()) return false;
+      const before = exp.snapshot();
+      const outcome = exp.recordConfirmation(check, this.clock.now());
+      await this.exports.save(exp);
+      const after = exp.snapshot();
+      if (outcome === 'rejected') {
+        await this.audit.record({
+          action: 'pos.order_export_failed',
+          entityType: 'pos_order_export',
+          entityId: after.id,
+          branchId: after.branchId,
+          before: auditView(before),
+          after: auditView(after),
+          meta: { orderId: after.orderId, orderNumber: after.orderNumber, stage: 'confirmation' },
+        });
+        await this.reportFailure.execute(after);
+      }
+      if (outcome === 'gave_up') {
+        await this.alert.execute({
+          branchId: after.branchId,
+          ...unconfirmedOrderAlert({ orderNumber: after.orderNumber, posOrderId: after.posOrderId, link: adminOrderLink(this.config, after.orderId) }),
+          dedupeKey: `pos:order:${after.orderId}:unconfirmed:${after.manualRetries}`,
+          feed: { stream: 'orders', entityId: after.orderId },
+          related: { type: 'order', id: after.orderId },
+        });
+      }
+      return outcome === 'wait';
     });
-    await this.alert.execute({
-      branchId: s.branchId,
-      ...text,
-      dedupeKey: `pos:order:${s.orderId}:failed:${s.manualRetries}`,
-      feed: { stream: 'orders', entityId: s.orderId },
-      related: { type: 'order', id: s.orderId },
-    });
+    if (wait) {
+      this.logger.debug({ orderId }, 'POS has not confirmed the order yet');
+      throw new PosConfirmationPendingError(orderId);
+    }
   }
 }
 

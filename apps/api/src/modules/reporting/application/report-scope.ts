@@ -39,6 +39,6 @@ export class ReportScopes {
   }
 
   period(input: { from?: string | null; to?: string | null }, options: { defaultDays?: number; maxDays?: number } = {}): ReportPeriod {
-    return reportPeriod(input, this.today(), options);
+    return reportPeriod({ from: input.from, to: input.to }, this.today(), options);
   }
 }

@@ -29,10 +29,7 @@ export const WHATSAPP_PROVIDER = 'whatsapp';
 const LOCALES = ['kk', 'ru', 'en'] as const;
 
 const TemplateMappingSchema = z.union([
-  z
-    .string()
-    .min(1)
-    .transform((name) => ({ name })),
+  z.string().min(1),
   z.object({
     /** Имя одобренного шаблона в WhatsApp Manager. */
     name: z.string().min(1),
@@ -53,13 +50,16 @@ const WhatsAppSettingsSchema = z.object({
   apiVersion: z
     .string()
     .regex(/^v\d+\.\d+$/)
-    .default('v21.0'),
-  baseUrl: z.string().url().default('https://graph.facebook.com'),
+    .optional(),
+  baseUrl: z.string().url().optional(),
   appSecret: z.string().optional(),
   verifyToken: z.string().optional(),
-  languageCodes: z.record(z.string().min(2)).default({}),
-  templates: z.record(TemplateMappingSchema).default({}),
+  languageCodes: z.record(z.string().min(2)).optional(),
+  templates: z.record(TemplateMappingSchema).optional(),
 });
+type TemplateMapping = Exclude<z.infer<typeof TemplateMappingSchema>, string>;
+const DEFAULT_API_VERSION = 'v21.0';
+const DEFAULT_BASE_URL = 'https://graph.facebook.com';
 export type WhatsAppSettings = z.infer<typeof WhatsAppSettingsSchema>;
 
 export const WHATSAPP_DESCRIPTOR: IntegrationDescriptor = {
@@ -146,22 +146,22 @@ export class WhatsAppCloudAdapter extends NotificationChannelAdapter implements 
       throw new ChannelNotConfiguredError('whatsapp', 'settings are invalid');
     }
     if (!settings) throw new ChannelNotConfiguredError('whatsapp', 'integration is disabled');
-    const mapping = settings.templates[request.template];
+    const mapping = settings.templates?.[request.template];
     if (!mapping) throw new ChannelNotConfiguredError('whatsapp', `template ${request.template} is not mapped`);
-    const spec = typeof mapping === 'string' ? { name: mapping } : mapping;
+    const spec: TemplateMapping = typeof mapping === 'string' ? { name: mapping } : mapping;
 
     const attachment = request.attachments[0];
     const documentUrl = attachment ? await this.storage.signedUrl(attachment.fileKey, DOCUMENT_LINK_TTL_SECONDS, attachment.filename) : '';
     const values: Record<string, string> = { ...request.params, documentUrl };
-    const names = 'params' in spec && spec.params ? spec.params : request.paramOrder;
-    const named = 'namedParams' in spec && spec.namedParams === true;
+    const names = spec.params ?? request.paramOrder;
+    const named = spec.namedParams === true;
     const parameters = names.map((name) =>
       named
         ? { type: 'text', parameter_name: name, text: whatsappParamText(values[name]) }
         : { type: 'text', text: whatsappParamText(values[name]) },
     );
     const components: unknown[] = [];
-    if ('documentHeader' in spec && spec.documentHeader && attachment) {
+    if (spec.documentHeader && attachment) {
       components.push({
         type: 'header',
         parameters: [{ type: 'document', document: { link: documentUrl, filename: attachment.filename } }],
@@ -169,7 +169,7 @@ export class WhatsAppCloudAdapter extends NotificationChannelAdapter implements 
     }
     if (parameters.length > 0) components.push({ type: 'body', parameters });
 
-    const locale = this.templateLocale(request.locale, 'languages' in spec ? spec.languages : undefined);
+    const locale = this.templateLocale(request.locale, spec.languages);
     const body = {
       messaging_product: 'whatsapp',
       recipient_type: 'individual',
@@ -177,7 +177,7 @@ export class WhatsAppCloudAdapter extends NotificationChannelAdapter implements 
       type: 'template',
       template: {
         name: spec.name,
-        language: { code: settings.languageCodes[locale] ?? locale },
+        language: { code: settings.languageCodes?.[locale] ?? locale },
         components,
       },
     };
@@ -186,7 +186,7 @@ export class WhatsAppCloudAdapter extends NotificationChannelAdapter implements 
         integration: WHATSAPP_SETTINGS_KEY,
         operation: 'messages.template',
         method: 'POST',
-        url: `${settings.baseUrl.replace(/\/$/, '')}/${settings.apiVersion}/${encodeURIComponent(settings.phoneNumberId)}/messages`,
+        url: `${(settings.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, '')}/${settings.apiVersion ?? DEFAULT_API_VERSION}/${encodeURIComponent(settings.phoneNumberId)}/messages`,
         headers: { authorization: `Bearer ${settings.accessToken}` },
         body,
         correlationId: request.deliveryId,

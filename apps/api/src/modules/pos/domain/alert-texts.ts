@@ -51,6 +51,20 @@ export function cancelledAfterSentAlert(input: { orderNumber: string; posOrderId
   return { title: `Заказ ${input.orderNumber} отменён — отмените в POS`, details };
 }
 
+export function unconfirmedOrderAlert(input: { orderNumber: string; posOrderId: string | null; link?: string | null }): {
+  title: string;
+  details: string;
+} {
+  const details = [
+    `POS приняла заказ в обработку, но не подтвердила его создание${input.posOrderId ? ` (№ в POS: ${input.posOrderId})` : ''}.`,
+    'Проверьте, появился ли заказ на кассе и кухне; если нет — готовьте по экрану заказа в админке.',
+    input.link ?? '',
+  ]
+    .filter((s) => s.length > 0)
+    .join('\n');
+  return { title: `Заказ ${input.orderNumber} не подтверждён POS`, details };
+}
+
 export function stopListSyncAlert(input: { providerTitle: string; failures: number; error: string; link?: string | null }): {
   title: string;
   details: string;

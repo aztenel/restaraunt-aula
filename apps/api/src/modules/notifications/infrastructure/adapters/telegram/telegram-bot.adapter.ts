@@ -18,10 +18,11 @@ import { NOTIFICATIONS_HTTP } from '../../redaction';
  */
 export const TELEGRAM_SETTINGS_KEY = 'notifications.telegram';
 export const TELEGRAM_PROVIDER = 'telegram';
+const DEFAULT_BASE_URL = 'https://api.telegram.org';
 
 const TelegramSettingsSchema = z.object({
   botToken: z.string().regex(/^\d+:[A-Za-z0-9_-]{20,}$/, 'Bot token looks like 123456:ABC-DEF...'),
-  baseUrl: z.string().url().default('https://api.telegram.org'),
+  baseUrl: z.string().url().optional(),
 });
 type TelegramSettings = z.infer<typeof TelegramSettingsSchema>;
 
@@ -88,7 +89,7 @@ export class TelegramBotAdapter extends NotificationChannelAdapter {
       throw new ChannelNotConfiguredError('telegram', 'settings are invalid');
     }
     if (!settings) throw new ChannelNotConfiguredError('telegram', 'integration is disabled');
-    const base = `${settings.baseUrl.replace(/\/$/, '')}/bot${settings.botToken}`;
+    const base = `${(settings.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, '')}/bot${settings.botToken}`;
 
     const message = await this.call(base, 'sendMessage', request.deliveryId, {
       chat_id: request.to,

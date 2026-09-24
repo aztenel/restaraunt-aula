@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { redirect } from '@/i18n/navigation';
+import { permanentRedirect } from '@/i18n/navigation';
 import { getPublicBranch } from '@/lib/data';
 import { resolveLocale } from '@/lib/page';
 import { routes } from '@/lib/routes';
@@ -12,5 +12,5 @@ export default async function BranchShortcutPage({ params }: { params: Params })
   const { branchSlug } = await params;
   const branch = await getPublicBranch(locale, branchSlug);
   if (!branch) notFound();
-  redirect({ href: routes.branch(branch.slug), locale });
+  permanentRedirect({ href: routes.branch(branch.slug), locale });
 }

@@ -23,7 +23,7 @@ export const SMTP_PROVIDER = 'smtp';
 
 const SmtpSettingsSchema = z.object({
   host: z.string().min(1),
-  port: z.coerce.number().int().min(1).max(65535).default(587),
+  port: z.number().int().min(1).max(65535).optional(),
   /** true — TLS с начала соединения (порт 465); false — STARTTLS. */
   secure: z.boolean().optional(),
   user: z.string().optional(),
@@ -80,7 +80,7 @@ export class SmtpTransportFactory {
   create(settings: SmtpSettings): SmtpTransport {
     const transport = createTransport({
       host: settings.host,
-      port: settings.port,
+      port: settings.port ?? 587,
       secure: settings.secure ?? settings.port === 465,
       auth: settings.user ? { user: settings.user, pass: settings.password ?? '' } : undefined,
       pool: true,

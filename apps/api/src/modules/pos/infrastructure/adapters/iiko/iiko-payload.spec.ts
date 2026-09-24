@@ -6,6 +6,7 @@ import {
   formatIikoDateTime,
   iikoErrorMessage,
   parseCreateDeliveryResponse,
+  parseDeliveryById,
   parseNomenclature,
   parseStopLists,
 } from './iiko-payload';
@@ -96,6 +97,16 @@ describe('iiko payload', () => {
     expect(parseCreateDeliveryResponse('garbage').posOrderId).toBeNull();
     expect(iikoErrorMessage({ errorDescription: 'Organization not found' })).toBe('Organization not found');
     expect(iikoErrorMessage('')).toBeNull();
+  });
+
+  it('parses deliveries/by_id creation status', () => {
+    expect(parseDeliveryById({ orders: [{ id: 'X', creationStatus: 'Success' }] }, 'X')).toEqual({ state: 'created' });
+    expect(parseDeliveryById({ orders: [{ id: 'X', creationStatus: 'InProgress' }] }, 'X')).toEqual({ state: 'in_progress' });
+    expect(parseDeliveryById({ orders: [] }, 'X')).toEqual({ state: 'in_progress' });
+    expect(
+      parseDeliveryById({ orders: [{ id: 'X', creationStatus: 'Error', errorInfo: { code: 'TerminalOffline', description: 'Terminal is offline' } }] }, 'X'),
+    ).toEqual({ state: 'failed', error: 'Terminal is offline' });
+    expect(parseDeliveryById({ orders: [{ id: 'X', creationStatus: 'Error', errorInfo: { code: 'Common' } }] }, 'X')).toEqual({ state: 'failed', error: 'Common' });
   });
 
   it('parses stop lists of the branch organization and terminal group', () => {

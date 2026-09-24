@@ -41,7 +41,10 @@ export function reportPeriod(
 ): ReportPeriod {
   const defaultDays = options.defaultDays ?? DEFAULT_PERIOD_DAYS;
   const maxDays = options.maxDays ?? MAX_PERIOD_DAYS;
-  for (const [field, value] of Object.entries(input)) {
+  for (const [field, value] of [
+    ['from', input.from],
+    ['to', input.to],
+  ] as const) {
     if (value !== undefined && value !== null && !isIsoDate(value)) {
       throw new ValidationError('report.invalid_date', `${field} must be a date YYYY-MM-DD`, { field, value });
     }

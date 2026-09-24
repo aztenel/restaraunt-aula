@@ -27,9 +27,7 @@ export const SMS_ROUTING_SETTINGS_KEY = 'notifications.sms_routing';
 
 const SmsRoutingSchema = z.object({
   order: z.array(z.string().min(1)).optional(),
-  prefixRules: z
-    .array(z.object({ prefix: z.string().regex(/^\+?\d{1,11}$/), provider: z.string().min(1) }))
-    .default([]),
+  prefixRules: z.array(z.object({ prefix: z.string().regex(/^\+?\d{1,11}$/), provider: z.string().min(1) })).optional(),
 });
 type SmsRouting = z.infer<typeof SmsRoutingSchema>;
 

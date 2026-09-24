@@ -98,7 +98,8 @@ describe('POS: передача заказов на кухню (integration)', (
     ctx.http
       .on('/api/1/access_token', 200, { correlationId: 'c1', token: 'tok-1' }, { times: 1 })
       .on('/api/1/access_token', 200, { correlationId: 'c2', token: 'tok-2' })
-      .on('/api/1/deliveries/create', 200, { correlationId: 'c3', orderInfo: { id: 'IIKO-1', creationStatus: 'InProgress' } });
+      .on('/api/1/deliveries/create', 200, { correlationId: 'c3', orderInfo: { id: 'IIKO-1', creationStatus: 'InProgress' } })
+      .on('/api/1/deliveries/by_id', 200, { orders: [{ id: 'IIKO-1', creationStatus: 'Success' }] });
 
     const first = kitchenOrder(branchId, {
       items: [item(plov, 'Плов', 2, [{ optionId: cheese, name: 'Сыр' }]), item(lagman, 'Лагман')],
@@ -136,6 +137,8 @@ describe('POS: передача заказов на кухню (integration)', (
     expect(exp.pos_order_id).toBe('IIKO-1');
     expect(exp.provider).toBe('iiko');
     expect(exp.attempts).toBe(1);
+    // iiko создаёт заказ асинхронно (InProgress) — подтверждение проверяется отдельной задачей.
+    expect(exp.confirmed_at).toBeNull();
     const sent = await outbox(PosEvents.OrderSentToPos);
     expect(sent).toHaveLength(1);
     expect(sent[0]).toMatchObject({ orderId: first.orderId, branchId, posOrderId: 'IIKO-1', provider: 'iiko' });
@@ -157,6 +160,10 @@ describe('POS: передача заказов на кухню (integration)', (
     await publishAccepted(t, third);
     expect(tokenRequests()).toHaveLength(2);
     expect(createRequests()[2]!.headers.authorization).toBe('Bearer tok-2');
+    // Проверка создания первого заказа прошла (deliveries/by_id -> Success).
+    const byId = ctx.http.requests.filter((r) => r.url.endsWith('/api/1/deliveries/by_id'));
+    expect(JSON.parse(byId[0]!.body!)).toEqual({ organizationId: ORG_ID, orderIds: ['IIKO-1'] });
+    expect((await exportOf(first.orderId)).confirmed_at).not.toBeNull();
 
     // Журнал интеграций: полный обмен, но API-логин и токен замаскированы.
     const logs = await sql<{ request: any; response: any }>`
@@ -201,6 +208,74 @@ describe('POS: передача заказов на кухню (integration)', (
     expect(JSON.parse(createRequests()[1]!.body!).order.id).toBe(order.orderId);
     expect(ctx.fakes.notifier.staff).toHaveLength(0);
     expect(await failedJobs()).toBe(0);
+  });
+
+  it('asynchronous creation: POS rejects the order later -> failed, OrderPosFailed, alert; silence -> staff asked to check the till', async () => {
+    const branchId = await createBranch(t);
+    await routeToIiko(t, { [branchId]: {} });
+    const plov = newId();
+    await mapDish(branchId, plov, 'P-PLOV');
+    ctx.http
+      .on('/api/1/access_token', 200, { token: 'tok' })
+      .on('/api/1/deliveries/create', 200, { orderInfo: { id: 'IIKO-A', creationStatus: 'InProgress' } }, { times: 1 })
+      .on('/api/1/deliveries/create', 200, { orderInfo: { id: 'IIKO-B', creationStatus: 'InProgress' } }, { times: 1 })
+      .on(/by_id/, 200, { orders: [{ id: 'IIKO-A', creationStatus: 'InProgress' }] }, { times: 1 })
+      .on(/by_id/, 200, { orders: [{ id: 'IIKO-A', creationStatus: 'Error', errorInfo: { code: 'TerminalOffline', description: 'Terminal is offline' } }] }, { times: 1 })
+      .on(/by_id/, 200, { orders: [{ id: 'IIKO-B', creationStatus: 'InProgress' }] });
+
+    const rejected = kitchenOrder(branchId, { items: [item(plov, 'Плов')] });
+    ctx.fakes.orders.orders.set(rejected.orderId, rejected);
+    await publishAccepted(t, rejected);
+    expect((await exportOf(rejected.orderId)).status).toBe('sent');
+
+    t.clock.advance(31_000);
+    await t.drain(); // InProgress — ждём
+    expect((await exportOf(rejected.orderId)).status).toBe('sent');
+    t.clock.advance(31_000);
+    await t.drain(); // Error — отклонён
+    const exp = await exportOf(rejected.orderId);
+    expect(exp).toMatchObject({ status: 'failed', failure_reason: 'rejected', last_error: 'Terminal is offline', confirm_checks: 2, pos_order_id: 'IIKO-A' });
+    expect((await outbox(PosEvents.OrderPosFailed))[0]).toMatchObject({ orderId: rejected.orderId, reason: 'rejected', error: 'Terminal is offline' });
+    expect(ctx.fakes.notifier.staff).toHaveLength(1);
+    expect((ctx.fakes.notifier.staff[0]!.params as { details: string }).details).toContain('Terminal is offline');
+
+    // Второй заказ POS так и не подтвердила — после 6 проверок персонал просят проверить кассу.
+    const silent = kitchenOrder(branchId, { items: [item(plov, 'Плов')] });
+    ctx.fakes.orders.orders.set(silent.orderId, silent);
+    await publishAccepted(t, silent);
+    for (let i = 0; i < 10; i++) {
+      t.clock.advance(5 * 60_000);
+      await t.drain();
+    }
+    const unconfirmed = await exportOf(silent.orderId);
+    expect(unconfirmed).toMatchObject({ status: 'sent', confirmed_at: null, confirm_checks: 6 });
+    expect(ctx.fakes.notifier.staff).toHaveLength(2);
+    expect((ctx.fakes.notifier.staff[1]!.params as { title: string }).title).toBe(`Заказ ${silent.number} не подтверждён POS`);
+    expect(await failedJobs()).toBe(0);
+
+    const admin = await tokenFor(t, [{ role: 'sysadmin' }]);
+    const list = await t.http().get(`/api/v1/admin/pos/exports?orderId=${silent.orderId}`).set('authorization', admin.auth);
+    expect(list.body.items[0]).toMatchObject({ status: 'sent', confirmedAt: null, canRetry: false });
+  });
+
+  it('iiko 401: the token is refreshed once and the request repeated', async () => {
+    const branchId = await createBranch(t);
+    await routeToIiko(t, { [branchId]: {} });
+    const plov = newId();
+    await mapDish(branchId, plov, 'P-PLOV');
+    ctx.http
+      .on('/api/1/access_token', 200, { token: 'old' }, { times: 1 })
+      .on('/api/1/access_token', 200, { token: 'new' })
+      .on('/api/1/deliveries/create', 401, { errorDescription: 'Token expired' }, { times: 1 })
+      .on('/api/1/deliveries/create', 200, { orderInfo: { id: 'IIKO-R', creationStatus: 'Success' } });
+    const order = kitchenOrder(branchId, { items: [item(plov, 'Плов')] });
+    ctx.fakes.orders.orders.set(order.orderId, order);
+
+    await publishAccepted(t, order);
+
+    expect(createRequests().map((r) => r.headers.authorization)).toEqual(['Bearer old', 'Bearer new']);
+    expect(await exportOf(order.orderId)).toMatchObject({ status: 'sent', attempts: 1, pos_order_id: 'IIKO-R' });
+    expect((await exportOf(order.orderId)).confirmed_at).not.toBeNull();
   });
 
   it('iiko 400: non-retryable failure, OrderPosFailed, staff alert and admin feed item; the order is not retried', async () => {

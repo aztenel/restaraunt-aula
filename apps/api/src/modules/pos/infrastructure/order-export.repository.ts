@@ -23,6 +23,8 @@ function toState(row: Selectable<OrderExportsTable>): OrderExportState {
     details: (row.details as OrderExportDetails | null) ?? {},
     lastAttemptAt: row.last_attempt_at,
     sentAt: row.sent_at,
+    confirmedAt: row.confirmed_at,
+    confirmChecks: row.confirm_checks,
     failedAt: row.failed_at,
     createdAt: row.created_at,
   };
@@ -43,6 +45,8 @@ function toRow(s: OrderExportState) {
     details: JSON.stringify(s.details ?? {}),
     last_attempt_at: s.lastAttemptAt,
     sent_at: s.sentAt,
+    confirmed_at: s.confirmedAt,
+    confirm_checks: s.confirmChecks,
     failed_at: s.failedAt,
   };
 }

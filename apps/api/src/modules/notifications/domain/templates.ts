@@ -273,8 +273,8 @@ function toInfo(key: TemplateKey, audience: TemplateAudience, def: TemplateDefin
 }
 
 const REGISTRY = new Map<string, TemplateInfo>([
-  ...Object.entries(GUEST_TEMPLATES).map(([k, d]) => [k, toInfo(k as TemplateKey, 'guest', d)] as const),
-  ...Object.entries(STAFF_TEMPLATES).map(([k, d]) => [k, toInfo(k as TemplateKey, 'staff', d)] as const),
+  ...Object.entries(GUEST_TEMPLATES).map(([k, d]) => [k, toInfo(k as TemplateKey, 'guest', d as TemplateDefinition<object>)] as const),
+  ...Object.entries(STAFF_TEMPLATES).map(([k, d]) => [k, toInfo(k as TemplateKey, 'staff', d as TemplateDefinition<object>)] as const),
 ]);
 
 export const GUEST_TEMPLATE_KEYS = Object.keys(GUEST_TEMPLATES) as GuestTemplate[];

@@ -12,12 +12,13 @@ import { SmsProvider } from '../sms/sms-channel';
  */
 export const SMSC_SETTINGS_KEY = 'notifications.smsc';
 export const SMSC_CODE = 'smsc';
+const DEFAULT_BASE_URL = 'https://smsc.kz';
 
 const SmscSettingsSchema = z.object({
   login: z.string().min(1),
   password: z.string().min(1),
   sender: z.string().max(11).optional(),
-  baseUrl: z.string().url().default('https://smsc.kz'),
+  baseUrl: z.string().url().optional(),
 });
 type SmscSettings = z.infer<typeof SmscSettingsSchema>;
 
@@ -86,7 +87,7 @@ export class SmscSmsProvider extends SmsProvider {
       integration: SMSC_SETTINGS_KEY,
       operation: 'send',
       method: 'POST',
-      url: `${settings.baseUrl.replace(/\/$/, '')}/sys/send.php`,
+      url: `${(settings.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, '')}/sys/send.php`,
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
       body: form.toString(),
       correlationId: input.correlationId,

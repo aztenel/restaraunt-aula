@@ -10,6 +10,7 @@ import {
   PosBranchRef,
   PosCapabilities,
   PosClient,
+  PosOrderCheck,
   PosOrderMapping,
   PosProduct,
   PosPushResult,
@@ -19,6 +20,7 @@ import {
   buildDeliveryRequest,
   iikoErrorMessage,
   parseCreateDeliveryResponse,
+  parseDeliveryById,
   parseNomenclature,
   parseStopLists,
 } from './iiko-payload';
@@ -60,7 +62,8 @@ const SETTINGS_SCHEMA = IikoSettingsSchema as unknown as ZodType<IikoSettings>;
 const DUPLICATE_ORDER_RE = /already exist|уже существует|duplicate/i;
 
 /**
- * Адаптер iikoCloud API: заказы доставки/самовывоза (deliveries/create), стоп-листы, номенклатура.
+ * Адаптер iikoCloud API: заказы доставки/самовывоза (deliveries/create, проверка создания — deliveries/by_id),
+ * стоп-листы, номенклатура.
  * Токен доступа кэшируется ~50 минут; при 401 — один повтор с новым токеном.
  */
 @Injectable()
@@ -99,11 +102,28 @@ export class IikoPosClient extends PosClient {
         throw new ExternalServiceError(IIKO_SETTINGS_KEY, `Order rejected: ${parsed.error ?? 'creation error'}`, false, 200, res);
       }
       // Мы передаём свой id заказа — iiko использует его как id заказа в POS.
-      return { posOrderId: parsed.posOrderId ?? order.orderId };
+      // Создание асинхронное: InProgress подтверждается позже (checkOrder -> deliveries/by_id).
+      return { posOrderId: parsed.posOrderId ?? order.orderId, confirmed: parsed.creationStatus === 'Success' };
     } catch (err) {
       if (err instanceof ExternalServiceError && err.statusCode === 400 && DUPLICATE_ORDER_RE.test(iikoErrorMessage(err.responseBody) ?? '')) {
-        return { posOrderId: order.orderId };
+        return { posOrderId: order.orderId, confirmed: false };
       }
+      throw this.withDetails(err);
+    }
+  }
+
+  override async checkOrder(branch: PosBranchRef, posOrderId: string): Promise<PosOrderCheck> {
+    const ctx = await this.context(branch.branchId);
+    try {
+      const res = await this.call(
+        ctx.settings,
+        'deliveries_by_id',
+        '/api/1/deliveries/by_id',
+        { organizationId: ctx.branch.organizationId, orderIds: [posOrderId] },
+        posOrderId,
+      );
+      return parseDeliveryById(res, posOrderId);
+    } catch (err) {
       throw this.withDetails(err);
     }
   }

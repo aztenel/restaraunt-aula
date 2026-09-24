@@ -2,7 +2,14 @@ import { Global, Module, OnModuleInit } from '@nestjs/common';
 import { IntegrationCatalog } from '../../shared/infrastructure/settings/integration-catalog';
 import { AlertPosStaff } from './application/alert-pos-staff.action';
 import { BulkUpsertProductMappings, CreateProductMapping, DeleteProductMapping, UpdateProductMapping } from './application/mapping.actions';
-import { HandleCancelledOrder, PushOrderToPos, RegisterOrderExport, RetryOrderExport } from './application/order-export.actions';
+import {
+  ConfirmPosOrder,
+  HandleCancelledOrder,
+  PushOrderToPos,
+  RegisterOrderExport,
+  ReportOrderExportFailure,
+  RetryOrderExport,
+} from './application/order-export.actions';
 import { POS_CLIENTS, PosClientRegistry, posRoutingDescriptor } from './application/pos-client.registry';
 import { MappingSuggestionsQuery, OrderExportsQuery, PosProductsQuery, PosStatusQuery, ProductMappingsQuery } from './application/pos.queries';
 import { ImportPosProducts, RequestProductImport } from './application/product-import.actions';
@@ -47,7 +54,9 @@ import { SyncStateRepository } from './infrastructure/sync-state.repository';
     // Действия
     AlertPosStaff,
     RegisterOrderExport,
+    ReportOrderExportFailure,
     PushOrderToPos,
+    ConfirmPosOrder,
     RetryOrderExport,
     HandleCancelledOrder,
     CreateProductMapping,

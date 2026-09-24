@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { InvalidStateTransitionError, InvariantViolationError } from '../../../shared/kernel/errors';
-import { ORDER_EXPORT_MACHINE, OrderExport, PUSH_MAX_ATTEMPTS } from './order-export';
+import { CONFIRM_MAX_CHECKS, ORDER_EXPORT_MACHINE, OrderExport, PUSH_MAX_ATTEMPTS } from './order-export';
 
 const now = new Date('2026-10-01T10:00:00Z');
 
@@ -9,11 +9,12 @@ function fresh() {
 }
 
 describe('OrderExport', () => {
-  it('state machine: pending -> sent|failed|skipped; failed/skipped -> pending; sent is final', () => {
+  it('state machine: pending -> sent|failed|skipped; failed/skipped -> pending; sent -> failed only (async rejection)', () => {
     expect(ORDER_EXPORT_MACHINE.allowedFrom('pending')).toEqual(['sent', 'failed', 'skipped']);
     expect(ORDER_EXPORT_MACHINE.canTransition('failed', 'pending')).toBe(true);
     expect(ORDER_EXPORT_MACHINE.canTransition('skipped', 'pending')).toBe(true);
-    expect(ORDER_EXPORT_MACHINE.isFinal('sent')).toBe(true);
+    expect(ORDER_EXPORT_MACHINE.allowedFrom('sent')).toEqual(['failed']);
+    expect(ORDER_EXPORT_MACHINE.canTransition('sent', 'pending')).toBe(false);
     expect(ORDER_EXPORT_MACHINE.canTransition('failed', 'sent')).toBe(false);
   });
 
@@ -28,9 +29,39 @@ describe('OrderExport', () => {
     expect(s.posOrderId).toBe('pos-1');
     expect(s.attempts).toBe(2);
     expect(s.lastError).toBeNull();
+    expect(s.confirmedAt).toEqual(now);
+    expect(e.needsConfirmation()).toBe(false);
     expect(e.canRetry()).toBe(false);
-    expect(() => e.markFailed('rejected', 'x', now)).toThrow(InvalidStateTransitionError);
+    expect(() => e.markSkipped('order_cancelled', now)).toThrow(InvalidStateTransitionError);
     expect(() => e.retry()).toThrow(InvalidStateTransitionError);
+    expect(() => e.recordConfirmation({ state: 'created' }, now)).toThrow(InvariantViolationError);
+  });
+
+  it('asynchronously created order: confirmed later, or rejected (sent -> failed), or given up after max checks', () => {
+    const confirmed = fresh();
+    confirmed.startAttempt(now);
+    confirmed.markSent('pos-1', now, false);
+    expect(confirmed.needsConfirmation()).toBe(true);
+    expect(confirmed.recordConfirmation({ state: 'in_progress' }, now)).toBe('wait');
+    const later = new Date(now.getTime() + 60_000);
+    expect(confirmed.recordConfirmation({ state: 'created' }, later)).toBe('confirmed');
+    expect(confirmed.snapshot()).toMatchObject({ status: 'sent', confirmedAt: later, confirmChecks: 2 });
+
+    const rejected = fresh();
+    rejected.startAttempt(now);
+    rejected.markSent('pos-2', now, false);
+    expect(rejected.recordConfirmation({ state: 'failed', error: 'Terminal is offline' }, now)).toBe('rejected');
+    expect(rejected.snapshot()).toMatchObject({ status: 'failed', failureReason: 'rejected', lastError: 'Terminal is offline' });
+    expect(rejected.canRetry()).toBe(true);
+    rejected.retry();
+    expect(rejected.snapshot()).toMatchObject({ status: 'pending', confirmedAt: null, confirmChecks: 0 });
+
+    const silent = fresh();
+    silent.startAttempt(now);
+    silent.markSent('pos-3', now, false);
+    for (let i = 1; i < CONFIRM_MAX_CHECKS; i++) expect(silent.recordConfirmation({ state: 'in_progress', error: 'HTTP 503' }, now)).toBe('wait');
+    expect(silent.recordConfirmation({ state: 'in_progress' }, now)).toBe('gave_up');
+    expect(silent.snapshot()).toMatchObject({ status: 'sent', confirmedAt: null, lastError: 'HTTP 503' });
   });
 
   it('requires a POS order id', () => {

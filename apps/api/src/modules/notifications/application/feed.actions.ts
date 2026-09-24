@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { SecretBox, safeEqual } from '../../../shared/infrastructure/crypto/secret-box';
 import { Actor } from '../../../shared/kernel/actor';
 import { Clock } from '../../../shared/kernel/clock';
-import { ForbiddenError, UnauthenticatedError, ValidationError } from '../../../shared/kernel/errors';
+import { ForbiddenError, UnauthenticatedError } from '../../../shared/kernel/errors';
 import { isUuid } from '../../../shared/kernel/ids';
 import { StaffDirectory } from '../../identity/public';
 import {
@@ -15,16 +15,8 @@ import {
   FeedItem,
   visibleStreams,
 } from '../domain/feed';
-import { FeedRepository, FeedStreamScope } from '../infrastructure/feed.repository';
-
-const RECENT_DEFAULT_LIMIT = 100;
-const RECENT_MAX_LIMIT = 500;
-
-function scopeFor(actor: Actor): FeedStreamScope {
-  const scope: FeedStreamScope = {};
-  for (const stream of visibleStreams(actor)) scope[stream] = actor.branchesWith(FEED_STREAM_PERMISSIONS[stream]);
-  return scope;
-}
+import { FeedRepository } from '../infrastructure/feed.repository';
+import { feedScopeFor, RECENT_MAX_LIMIT } from './feed.queries';
 
 function sign(box: SecretBox, payload: string): string {
   return box.hmac(`admin-feed:${payload}`);
@@ -76,28 +68,7 @@ export class OpenFeedStream {
     if (!member || !member.isActive) throw new UnauthenticatedError('admin_feed.invalid_ticket', 'User is not active');
     const actor = actorFromFeedClaims(claims);
     const backlog =
-      lastEventId && isUuid(lastEventId) ? await this.feed.recent(scopeFor(actor), { afterId: lastEventId, limit: RECENT_MAX_LIMIT }) : [];
+      lastEventId && isUuid(lastEventId) ? await this.feed.recent(feedScopeFor(actor), { afterId: lastEventId, limit: RECENT_MAX_LIMIT }) : [];
     return { actor, backlog };
-  }
-}
-
-/** Недавние события ленты для догрузки после переподключения (с учётом прав по потокам и филиалам). */
-@Injectable()
-export class FeedQueries {
-  constructor(private readonly feed: FeedRepository) {}
-
-  async recent(actor: Actor, input: { since?: string; limit?: number }): Promise<FeedItem[]> {
-    if (visibleStreams(actor).length === 0) {
-      throw new ForbiddenError('access.forbidden', 'No access to admin queues', { permissions: Object.values(FEED_STREAM_PERMISSIONS) });
-    }
-    const limit = Math.min(Math.max(input.limit ?? RECENT_DEFAULT_LIMIT, 1), RECENT_MAX_LIMIT);
-    const since = input.since?.trim();
-    if (!since) return this.feed.recent(scopeFor(actor), { limit });
-    if (isUuid(since)) return this.feed.recent(scopeFor(actor), { afterId: since, limit });
-    const date = new Date(since);
-    if (Number.isNaN(date.getTime())) {
-      throw new ValidationError('admin_feed.invalid_since', 'since must be an ISO date-time or a feed event id');
-    }
-    return this.feed.recent(scopeFor(actor), { since: date, limit });
   }
 }
