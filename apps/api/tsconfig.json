@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "outDir": "dist",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": false,
+    "useDefineForClassFields": false,
+    "isolatedModules": false,
+    "declaration": false,
+    "types": ["node"],
+    "baseUrl": "."
+  },
+  "include": ["src", "test", "vitest.config.ts"]
+}

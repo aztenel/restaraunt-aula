@@ -1,0 +1,21 @@
+{
+  "name": "aula-platform",
+  "private": true,
+  "description": "AULA: собственный канал заказа, бронирование, банкеты и единая админка по филиалам",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "lint": "pnpm -r --parallel run lint",
+    "typecheck": "pnpm -r run typecheck",
+    "test": "pnpm -r run test",
+    "build": "pnpm -r run build",
+    "dev:api": "pnpm --filter @aula/api dev",
+    "dev:worker": "pnpm --filter @aula/api dev:worker",
+    "dev:web": "pnpm --filter @aula/web dev",
+    "dev:admin": "pnpm --filter @aula/admin dev",
+    "migrate": "pnpm --filter @aula/api migrate",
+    "openapi": "pnpm --filter @aula/api openapi && pnpm --filter @aula/api-client generate"
+  }
+}
