@@ -24,8 +24,9 @@ import { Locale, LOCALES } from '../../../../shared/kernel/translatable';
 import { PaymentMethod, PaymentStatus, PaymentView } from '../../../payments/public';
 import { OrderSlotsView, DeliveryOption, DeliveryResolution } from '../../application/delivery.queries';
 import { OrderTrackingView } from '../../application/order.queries';
-import { QuoteResult } from '../../application/quote-order.action';
-import { PlacedOrder } from '../../application/place-order.action';
+import { PlacedOrder, PlaceOrderInput } from '../../application/place-order.action';
+import { QuoteOrderInput, QuoteResult } from '../../application/quote-order.action';
+import { PricedLineRequest } from '../../../catalog/public';
 import { COURIER_DISPATCH_STATUSES, CourierDispatchStatus } from '../../domain/courier-dispatch';
 import { DeliveryZoneState } from '../../domain/delivery-zone';
 import { OrderItemSnapshot } from '../../domain/order';
@@ -593,4 +594,54 @@ export class OrderSlotsDto {
       dates: v.dates,
     };
   }
+}
+
+// ---------------------------------------------------------------- Преобразование запросов
+
+export function checkoutInput(dto: CheckoutDto | Omit<CheckoutDto, 'phoneVerificationToken' | 'analyticsSessionId'>): PlaceOrderInput {
+  const full = dto as Partial<CheckoutDto>;
+  return {
+    branchId: dto.branchId,
+    type: dto.type,
+    items: dto.items.map(lineInput),
+    delivery: dto.delivery
+      ? {
+          point: { lat: dto.delivery.point.lat, lng: dto.delivery.point.lng },
+          addressText: dto.delivery.addressText,
+          apartment: dto.delivery.apartment ?? null,
+          entrance: dto.delivery.entrance ?? null,
+          floor: dto.delivery.floor ?? null,
+          intercom: dto.delivery.intercom ?? null,
+          courierComment: dto.delivery.courierComment ?? null,
+        }
+      : null,
+    contactless: dto.contactless ?? false,
+    scheduledFor: dto.scheduledFor ? new Date(dto.scheduledFor) : null,
+    customer: { name: dto.customer.name, phone: dto.customer.phone, email: dto.customer.email ?? null },
+    comment: dto.comment ?? null,
+    promoCode: dto.promoCode ?? null,
+    certificateCode: dto.certificateCode ?? null,
+    paymentMethod: dto.paymentMethod,
+    phoneVerificationToken: full.phoneVerificationToken ?? null,
+    consent: { personalData: dto.consent.personalData, marketing: dto.consent.marketing ?? null },
+    locale: dto.locale,
+    analyticsSessionId: full.analyticsSessionId ?? null,
+    idempotencyKey: dto.idempotencyKey,
+  };
+}
+
+export function lineInput(l: OrderLineInputDto): PricedLineRequest {
+  return { dishId: l.dishId, quantity: l.quantity, modifierOptionIds: l.modifierOptionIds ?? [] };
+}
+
+export function quoteInput(dto: QuoteOrderDto): QuoteOrderInput {
+  return {
+    branchId: dto.branchId,
+    type: dto.type,
+    items: dto.items.map(lineInput),
+    point: dto.point ? { lat: dto.point.lat, lng: dto.point.lng } : null,
+    promoCode: dto.promoCode ?? null,
+    certificateCode: dto.certificateCode ?? null,
+    phone: dto.phone ?? null,
+  };
 }
