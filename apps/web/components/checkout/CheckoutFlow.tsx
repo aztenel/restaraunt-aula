@@ -255,6 +255,11 @@ export function CheckoutFlow({ branches }: { branches: CheckoutBranch[] }) {
     }, 50);
   };
 
+  /** Ошибка без поля — показать сообщение над формой (на телефоне кнопка далеко внизу). */
+  const revealFormError = () => {
+    window.setTimeout(() => document.getElementById(`${idPrefix}-form-error`)?.scrollIntoView?.({ block: 'center', behavior: 'smooth' }), 50);
+  };
+
   const goNext = () => {
     setServerField(null);
     const { state: next, errors } = advance(state, ctx);
@@ -296,7 +301,10 @@ export function CheckoutFlow({ branches }: { branches: CheckoutBranch[] }) {
     }
     if (currentQuote && currentQuote.problems.length > 0) {
       const blocking = currentQuote.problems[0]!;
-      setFormError({ text: problemText(blocking), cart: blocking.startsWith('catalog.') });
+      const target = checkoutErrorTarget({ code: blocking });
+      setFormError({ text: problemText(blocking), cart: target.cart });
+      if (target.field && target.step === 'payment') focusField(target.field);
+      else revealFormError();
       return;
     }
     setFormError(null);
@@ -332,6 +340,7 @@ export function CheckoutFlow({ branches }: { branches: CheckoutBranch[] }) {
       if (target.needsVerification) {
         setNeedsVerification(true);
         setFormError({ text: t('verificationRequired'), cart: false });
+        window.setTimeout(() => document.getElementById(`${idPrefix}-verification`)?.scrollIntoView?.({ block: 'center', behavior: 'smooth' }), 50);
         return;
       }
       setFormError({ text, cart: target.cart });
@@ -339,6 +348,8 @@ export function CheckoutFlow({ branches }: { branches: CheckoutBranch[] }) {
         setServerField({ field: target.field, text });
         if (target.step === 'details') router.push(routes.checkout());
         focusField(target.field);
+      } else {
+        revealFormError();
       }
     }
   };
@@ -398,7 +409,7 @@ export function CheckoutFlow({ branches }: { branches: CheckoutBranch[] }) {
       <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
         <div>
           {formError ? (
-            <FormError className="mb-6">
+            <FormError id={`${idPrefix}-form-error`} className="mb-6">
               {formError.text}{' '}
               {formError.cart ? (
                 <Link href={routes.cart()} className="underline underline-offset-4">

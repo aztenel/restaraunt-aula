@@ -13,6 +13,7 @@ import { localDateTime } from '../domain/availability';
 import { DepositOutcome, DepositState } from '../domain/deposit-policy';
 import { Reservation } from '../domain/reservation';
 import { VenuePosition } from '../domain/venue';
+import { VenueRules } from '../domain/venue-rules';
 import { HallRepository } from '../infrastructure/hall.repository';
 import { ReservationFilter, ReservationRepository } from '../infrastructure/reservation.repository';
 import { ReservationSettingsRepository } from '../infrastructure/settings.repository';
@@ -21,6 +22,7 @@ import { ReservationKind, ReservationSource, ReservationStatus } from '../public
 import { ReservationLinks } from './reservation-links';
 import {
   DepositPaymentView,
+  ImageView,
   ReservationDetailView,
   ReservationSummaryView,
   ReservationViewMapper,
@@ -54,6 +56,8 @@ export interface TimelineVenueView {
   position: VenuePosition;
   isActive: boolean;
   bookableOnline: boolean;
+  /** Действующие правила места (длительность, уборка, удержание и т.д.). */
+  rules: VenueRules;
   items: TimelineItemView[];
 }
 
@@ -64,6 +68,7 @@ export interface TimelineHallView {
   planWidth: number;
   planHeight: number;
   isActive: boolean;
+  background: ImageView | null;
   venues: TimelineVenueView[];
 }
 
@@ -220,6 +225,7 @@ export class ReservationQueries {
         planWidth: h.plan.width,
         planHeight: h.plan.height,
         isActive: h.isActive,
+        background: this.views.image(h.background),
         venues: venues
           .filter((v) => v.hallId === h.id)
           .map((v) => ({
@@ -234,6 +240,7 @@ export class ReservationQueries {
             position: { ...v.position },
             isActive: v.isActive && v.type.isActive,
             bookableOnline: v.rules.bookableOnline,
+            rules: { ...v.rules },
             items: items.filter((i) => i.reservation.venueId === v.id).map((i) => timelineItem(i.reservation, now)),
           })),
       })),

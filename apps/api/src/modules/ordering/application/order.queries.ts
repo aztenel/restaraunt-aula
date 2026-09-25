@@ -6,18 +6,19 @@ import { Money } from '../../../shared/kernel/money';
 import { Page, PageRequest } from '../../../shared/kernel/pagination';
 import { Permission } from '../../../shared/kernel/permissions';
 import { addMinutes } from '../../../shared/kernel/time';
-import { BranchDirectory, BranchInfo } from '../../identity/public';
+import { BranchDirectory, BranchInfo, StaffDirectory } from '../../identity/public';
 import { PaymentView } from '../../payments/public';
-import { CourierDispatchStatus } from '../domain/courier-dispatch';
+import { CourierDispatchStatus, isTerminalDispatchStatus } from '../domain/courier-dispatch';
 import { DeliveryZoneState } from '../domain/delivery-zone';
 import { Order, OrderItemSnapshot, OrderState } from '../domain/order';
 import { ACTIVE_ORDER_STATUSES } from '../domain/order-status';
 import { totalRefundable } from '../domain/payment-plan';
 import { CourierDispatchRecord, CourierDispatchRepository } from '../infrastructure/courier-dispatch.repository';
 import { DeliveryZoneRepository } from '../infrastructure/delivery-zone.repository';
-import { OrderPaymentKind, OrderRefundRecord } from '../infrastructure/order-payments.repository';
+import { OrderPaymentKind, OrderPaymentsRepository, OrderRefundRecord } from '../infrastructure/order-payments.repository';
 import { OrderListFilter, OrderRepository, StatusHistoryEntry } from '../infrastructure/order.repository';
 import { OrderStatus } from '../public';
+import { CourierDispatchRegistry } from './courier-dispatch.registry';
 import { OrderPaymentState } from './order-payment-state';
 
 export interface OrderPaymentSummary {
@@ -58,6 +59,18 @@ export interface OrderDetailsView extends OrderTrackingView {
   canReject: boolean;
   canRefund: boolean;
   refundable: Money;
+  /** Можно повторно вызвать курьера службы доставки (заказ «Готов», активной заявки нет, филиал работает со службой). */
+  canRetryCourier: boolean;
+  /** Есть активная заявка службы доставки, её можно отменить. */
+  canCancelCourier: boolean;
+  /** Имя сотрудника, оформившего телефонный заказ. */
+  createdByName: string | null;
+}
+
+export interface OrderQueueCourier {
+  status: CourierDispatchStatus;
+  trackingUrl: string | null;
+  courierName: string | null;
 }
 
 export interface OrderQueueCard {
@@ -65,6 +78,12 @@ export interface OrderQueueCard {
   allowedTransitions: OrderStatus[];
   /** Обещанное время прошло, а заказ ещё не выдан. */
   isLate: boolean;
+  canCancel: boolean;
+  canReject: boolean;
+  /** Последняя заявка службы доставки (null — свои курьеры или заявки не было). */
+  courier: OrderQueueCourier | null;
+  /** Сколько получить с гостя при получении (0 — оплачено онлайн и/или сертификатом). */
+  amountDue: Money;
 }
 
 export interface OrderQueueView {
@@ -81,6 +100,9 @@ export class OrderQueries {
     private readonly state: OrderPaymentState,
     private readonly dispatches: CourierDispatchRepository,
     private readonly zones: DeliveryZoneRepository,
+    private readonly orderPayments: OrderPaymentsRepository,
+    private readonly registry: CourierDispatchRegistry,
+    private readonly staff: StaffDirectory,
     private readonly clock: Clock,
   ) {}
 
@@ -99,6 +121,8 @@ export class OrderQueries {
     const linkBy = new Map(snapshot.links.map((l) => [l.paymentId, l]));
     const refundable = totalRefundable(snapshot.positions);
     const canManage = actor.can(Permission.OrdersManage, order.branchId);
+    const activeDispatch = dispatch !== null && !isTerminalDispatchStatus(dispatch.status);
+    const creator = s.createdBy ? await this.staff.get(s.createdBy) : null;
     return {
       ...tracking,
       payments: snapshot.views.map((v) => ({ payment: v, kind: linkBy.get(v.id)?.kind ?? null, attempt: linkBy.get(v.id)?.attempt ?? null })),
@@ -110,7 +134,19 @@ export class OrderQueries {
       canReject: canManage && order.canReject(),
       canRefund: actor.can(Permission.OrdersRefund, order.branchId) && order.canPartialRefund() && refundable.isPositive(),
       refundable,
+      canRetryCourier: canManage && s.type === 'delivery' && s.status === 'ready' && !activeDispatch && (await this.usesExternalCouriers(s.branchId)),
+      canCancelCourier: canManage && activeDispatch,
+      createdByName: creator?.name ?? null,
     };
+  }
+
+  /** Филиал работает со службой доставки (ошибка настройки маршрутизации — считаем, что нет). */
+  private async usesExternalCouriers(branchId: string): Promise<boolean> {
+    try {
+      return (await this.registry.resolve(branchId)).external;
+    } catch {
+      return false;
+    }
   }
 
   async list(actor: Actor, filter: Omit<OrderListFilter, 'branches'> & { branchId?: string | null }, page: PageRequest): Promise<Page<OrderState>> {
@@ -122,14 +158,26 @@ export class OrderQueries {
   async queue(actor: Actor, branchId?: string | null): Promise<OrderQueueView> {
     const branches = actor.scopeBranches(Permission.OrdersView, branchId ?? null);
     const states = await this.orders.active(branches, ACTIVE_ORDER_STATUSES);
-    const items = await this.orders.itemsForOrders(states.map((s) => s.id));
+    const ids = states.map((s) => s.id);
+    const [items, links, dispatches] = await Promise.all([
+      this.orders.itemsForOrders(ids),
+      this.orderPayments.listForOrders(ids),
+      this.dispatches.latestForOrders(ids),
+    ]);
     const now = this.clock.now();
     const cards = states.map((s): OrderQueueCard => {
       const order = Order.restore({ ...s, items: items.get(s.id) ?? ([] as OrderItemSnapshot[]) });
+      const canManage = actor.can(Permission.OrdersManage, s.branchId);
+      const dispatch = dispatches.get(s.id) ?? null;
+      const onReceipt = (links.get(s.id) ?? []).filter((l) => l.kind === 'on_receipt').map((l) => l.amount);
       return {
         order: order.snapshot(),
-        allowedTransitions: actor.can(Permission.OrdersManage, s.branchId) ? order.staffTransitions() : [],
+        allowedTransitions: canManage ? order.staffTransitions() : [],
         isLate: s.status !== 'awaiting_payment' && s.promisedAt.getTime() < now.getTime(),
+        canCancel: canManage && order.canCancel(),
+        canReject: canManage && order.canReject(),
+        courier: dispatch ? { status: dispatch.status, trackingUrl: dispatch.trackingUrl, courierName: dispatch.courierName } : null,
+        amountDue: Money.sum(onReceipt, s.totals.total.currency),
       };
     });
     return {

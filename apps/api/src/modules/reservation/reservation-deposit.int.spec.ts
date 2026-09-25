@@ -66,6 +66,8 @@ describe('Reservation: deposit, holds, guest self-service, reminders (integratio
     await payDeposit(t, fakes, payment.id);
     const paid = await detail(res.token);
     expect(paid).toMatchObject({ status: 'confirmed', canPay: false, holdExpiresAt: null, deposit: { state: 'paid', paymentStatus: 'succeeded', paymentUrl: null } });
+    // Без ручного подтверждения — обычное обновление без звука.
+    expect(fakes.adminFeed.events.at(-1)).toMatchObject({ stream: 'reservations', kind: 'updated', sound: false });
     expect(fakes.notifier.guest.map((g) => g.template)).toEqual(['reservation.confirmed']);
     const [changed] = await outboxEvents(t, ReservationEvents.ReservationStatusChanged);
     expect(changed!.payload).toMatchObject({ from: 'awaiting_deposit', to: 'confirmed', depositOutcome: 'none', reason: 'deposit_paid' });
@@ -105,6 +107,16 @@ describe('Reservation: deposit, holds, guest self-service, reminders (integratio
     expect(paid).toMatchObject({ status: 'pending', deposit: { state: 'paid' } });
     expect(paid.holdExpiresAt).toBe(new Date(t.clock.now().getTime() + minutes(60)).toISOString());
     expect(fakes.notifier.guest.map((g) => g.template)).toEqual(['reservation.awaiting_deposit', 'reservation.pending']);
+    // Лента админки: бронь требует внимания — событие «новое» со звуком и ссылкой на бронь.
+    const id = await reservationId(res.token);
+    expect(fakes.adminFeed.events.at(-1)).toMatchObject({
+      stream: 'reservations',
+      kind: 'created',
+      entityId: id,
+      branchId: layout.branchId,
+      sound: true,
+      title: expect.stringContaining('ждёт подтверждения: депозит оплачен'),
+    });
 
     // Персонал не подтвердил вовремя — бронь снимается, оплаченный депозит возвращается.
     t.clock.advance(minutes(61));

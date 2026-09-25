@@ -363,6 +363,14 @@ describe('Payments (integration)', () => {
         [300_000, true, true],
       ]);
       expect(await auditActions(ctx.t, p.id)).toEqual(expect.arrayContaining(['refund.requested', 'refund.succeeded']));
+      // Контракт listRefunds: все возвраты платежей по порядку, со статусом и временем завершения.
+      const listed = await payments.listRefunds([p.id]);
+      expect(listed.map((r) => [r.id, r.amount.amount, r.status])).toEqual([
+        [r1.id, 200_000, 'succeeded'],
+        [r2.id, 300_000, 'succeeded'],
+      ]);
+      expect(listed[0]!.completedAt).toBeInstanceOf(Date);
+      expect(await payments.listRefunds([])).toEqual([]);
     });
 
     it('referenceFullyRefunded considers all paid payments of the reference', async () => {

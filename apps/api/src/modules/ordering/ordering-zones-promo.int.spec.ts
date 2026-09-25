@@ -205,6 +205,14 @@ describe('Ordering: delivery zones, branch resolution, slots and promo codes (in
         ['AUTUMN-5', true],
         ['NET1', false],
       ]);
+      const codes = async (query: string) =>
+        (await api().get(`/api/v1/admin/promo-codes?${query}`).set('Authorization', managerA).expect(200)).body.items.map((p: { code: string }) => p.code);
+      expect(await codes('scope=network')).toEqual(['NET1']);
+      expect(await codes('scope=branch')).toEqual(['AUTUMN-5']);
+      expect(await codes(`scope=branch&branchId=${branchA}`)).toEqual(['AUTUMN-5']);
+      // Сетевые промокоды не относятся к филиалу: фильтр филиала при scope=network не применяется.
+      expect(await codes(`scope=network&branchId=${branchA}`)).toEqual(['NET1']);
+      await api().get('/api/v1/admin/promo-codes?scope=all').set('Authorization', managerA).expect(400);
       await api().put(`/api/v1/admin/promo-codes/${global.body.id}`).set('Authorization', managerA).send(promoBody({ code: 'NET1' })).expect(403);
       await api().delete(`/api/v1/admin/promo-codes/${global.body.id}`).set('Authorization', managerA).expect(403);
       const updated = await api()

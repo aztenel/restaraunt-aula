@@ -10,7 +10,7 @@ import { ImageDto, VenuePositionDto } from './common.dto';
 import { DATE_RE, TIME_RE } from './reservations.dto';
 
 const DEPOSIT_OUTCOMES = ['none', 'refunded', 'retained'] as const;
-const AVAILABILITY_REASONS = ['no_capacity', 'occupied', 'past', 'too_soon', 'too_far', 'closed', 'not_accepting'] as const;
+export const AVAILABILITY_REASONS = ['no_capacity', 'occupied', 'past', 'too_soon', 'too_far', 'closed', 'not_accepting'] as const;
 
 // ---------------------------------------------------------------- запросы
 

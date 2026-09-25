@@ -19,7 +19,7 @@ import { LOCALES, Locale } from '../../../../shared/kernel/translatable';
 import { DEPOSIT_STATES, DepositOutcome, DepositState } from '../../domain/deposit-policy';
 import { ALL_RESERVATION_STATUSES } from '../../domain/reservation-status';
 import { ReservationKind, ReservationSource, ReservationStatus } from '../../public';
-import { TimeRangeDto, VenuePositionDto, VenueRulesDto } from './common.dto';
+import { ImageDto, TimeRangeDto, VenuePositionDto, VenueRulesDto } from './common.dto';
 
 export const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 export const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -79,6 +79,9 @@ export class ReservationSummaryDto {
   @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) banquetRequestId: string | null;
   @ApiProperty({ description: 'Требует отметки «пришли / не пришли»' }) needsMark: boolean;
   @ApiProperty() createdAt: Date;
+  @ApiProperty({ enum: ALL_RESERVATION_STATUSES, isArray: true, description: 'Переходы, доступные сотруднику сейчас' })
+  allowedTransitions: ReservationStatus[];
+  @ApiProperty({ description: 'Можно перенести / пересадить' }) canReschedule: boolean;
 }
 
 export class ReservationsPageDto {
@@ -108,9 +111,6 @@ export class StatusHistoryDto {
 }
 
 export class ReservationDetailDto extends ReservationSummaryDto {
-  @ApiProperty({ enum: ALL_RESERVATION_STATUSES, isArray: true, description: 'Переходы, доступные сотруднику сейчас' })
-  allowedTransitions: ReservationStatus[];
-  @ApiProperty() canReschedule: boolean;
   @ApiProperty({ type: VenueRulesDto, description: 'Правила брони (снимок на момент брони / переноса)' }) rules: VenueRulesDto;
   @ApiProperty({ description: 'Дедлайн бесплатной отмены' }) cancellationDeadline: Date;
   @ApiProperty({ enum: DEPOSIT_OUTCOMES, description: 'Исход депозита при отмене сейчас по правилу' }) depositOutcomeIfCancelled: DepositOutcome;
@@ -144,6 +144,8 @@ export class TimelineItemDto {
   @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) banquetRequestId: string | null;
   @ApiProperty({ enum: DEPOSIT_STATES }) depositState: DepositState;
   @ApiProperty() needsMark: boolean;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true, description: 'Бронь будет снята, если не подтвердят / не оплатят до этого момента' })
+  holdExpiresAt: Date | null;
 }
 
 export class TimelineVenueDto {
@@ -158,6 +160,7 @@ export class TimelineVenueDto {
   @ApiProperty({ type: VenuePositionDto }) position: VenuePositionDto;
   @ApiProperty() isActive: boolean;
   @ApiProperty() bookableOnline: boolean;
+  @ApiProperty({ type: VenueRulesDto, description: 'Действующие правила места: длительность, уборка, удержание, шаг сетки' }) rules: VenueRulesDto;
   @ApiProperty({ type: [TimelineItemDto] }) items: TimelineItemDto[];
 }
 
@@ -168,6 +171,7 @@ export class TimelineHallDto {
   @ApiProperty() planWidth: number;
   @ApiProperty() planHeight: number;
   @ApiProperty() isActive: boolean;
+  @ApiPropertyOptional({ type: ImageDto, nullable: true, description: 'Подложка плана зала' }) background: ImageDto | null;
   @ApiProperty({ type: [TimelineVenueDto] }) venues: TimelineVenueDto[];
 }
 

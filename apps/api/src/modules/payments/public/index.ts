@@ -81,6 +81,8 @@ export interface RefundView {
   status: 'pending' | 'succeeded' | 'failed';
   reason: string;
   createdAt: Date;
+  /** Когда возврат завершился (прошёл или не прошёл); null — ещё в работе. */
+  completedAt?: Date | null;
 }
 
 export abstract class PaymentsService {
@@ -99,6 +101,8 @@ export abstract class PaymentsService {
    * Сумма возвратов не может превысить сумму платежа. Идемпотентно по idempotencyKey.
    */
   abstract requestRefund(input: { paymentId: string; amount?: Money; reason: string; idempotencyKey: string }): Promise<RefundView>;
+  /** Возвраты по платежам (все статусы), в порядке создания. */
+  abstract listRefunds(paymentIds: string[]): Promise<RefundView[]>;
   /** Отметить получение денег по оплате при получении (курьер/касса). */
   abstract markCollected(paymentId: string): Promise<void>;
   /** Зарегистрировать поступление по банковскому переводу (счёт юрлицу). */

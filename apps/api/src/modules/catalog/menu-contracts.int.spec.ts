@@ -173,6 +173,39 @@ describe('Catalog public contracts: MenuPricing, MenuQuery, StopListControl (int
       ]);
       expect(await query.getDishes('bad', [besh])).toEqual([]);
     });
+
+    it('describes dishes regardless of the branch menu and stop-list (problem lines of a cart)', async () => {
+      const o = await owner(t);
+      await setAvailability(t, o.auth, gv, besh, { available: false });
+      const cards = await query.describeDishes([kazy, besh, 'x', '01a0d872-0000-7000-8000-000000000000', besh]);
+      expect(cards.map((c) => [c.dishId, c.name.ru])).toEqual([
+        [kazy, 'Казы'],
+        [besh, 'Бешбармак'],
+      ]);
+      expect(cards[1]).toMatchObject({ slug: 'beshbarmak', photoUrl: null, weightGrams: 500 });
+      expect(await query.describeDishes([])).toEqual([]);
+    });
+
+    it('branch order menu: all dishes of the branch with modifiers, stopped ones flagged even in hide mode', async () => {
+      const o = await owner(t);
+      await setAvailability(t, o.auth, gv, besh, { available: false, reason: 'Нет конины' });
+      const menu = await query.branchOrderMenu(gv);
+      expect(menu.branchId).toBe(gv);
+      expect(menu.categories).toEqual([{ id: category, slug: expect.any(String), name: expect.objectContaining({ ru: 'Казахская кухня' }) }]);
+      expect(menu.dishes.map((d) => [d.dishId, d.stopped, d.availability])).toEqual([
+        [besh, true, 'stopped_hidden'],
+        [kazy, false, 'available'],
+      ]);
+      const b = menu.dishes[0]!;
+      expect(b).toMatchObject({ price: { amount: 630_000 }, stopReason: 'Нет конины', stoppedUntil: null, sku: 'POS-1' });
+      expect(b.modifierGroups.map((g) => [g.id, g.isRequired, g.options.length])).toEqual([
+        [size.id, true, 2],
+        [extras.id, false, 2],
+      ]);
+      expect(b.modifierGroups[0]!.options[1]).toMatchObject({ id: size.options[1]!.id, price: { amount: 190_000 }, isDefault: false });
+      expect(menu.dishes[1]).toMatchObject({ sku: 'GV-KAZY', stopReason: null, modifierGroups: [] });
+      expect(await codeOf(query.branchOrderMenu('01a0d872-0000-7000-8000-000000000000'))).toBe('branch.not_found');
+    });
   });
 
   describe('StopListControl', () => {

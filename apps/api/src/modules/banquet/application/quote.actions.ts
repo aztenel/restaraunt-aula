@@ -13,7 +13,8 @@ import { Notifier } from '../../notifications/public';
 import { QUOTE_EDITABLE_STATUSES } from '../domain/banquet-status';
 import { BanquetRequest } from '../domain/banquet-request';
 import { formatTenge } from '../domain/money-format';
-import { calculateQuote, QuoteDiscount, QuoteLineInput } from '../domain/quote';
+import { calculateQuote, QuoteCalculation, QuoteDiscount, QuoteLineInput } from '../domain/quote';
+import { SellerSnapshot } from '../domain/requisites';
 import { QuoteLineKind } from '../domain/texts';
 import { ActivityRepository } from '../infrastructure/activity.repository';
 import { QuoteRecord, QuoteRepository } from '../infrastructure/quote.repository';
@@ -51,6 +52,110 @@ export interface SaveQuoteInput {
   refreshMenuPrices?: boolean;
 }
 
+/** Расчёт сметы без сохранения: позиции (снимки меню), НДС продавца, итоги, срок действия. */
+export interface PreparedQuote {
+  lines: QuoteLineInput[];
+  calc: QuoteCalculation;
+  seller: SellerSnapshot;
+  guests: number;
+  validUntil: string;
+  notes: string | null;
+}
+
+/**
+ * Расчёт сметы по правилам сохранения (общий для сохранения версии и предпросмотра): позиции меню —
+ * снимок из прошлой версии или текущее меню филиала, НДС по юрлицу-продавцу, валидация срока и заметок.
+ */
+@Injectable()
+export class QuoteCalculator {
+  constructor(
+    private readonly quotes: QuoteRepository,
+    private readonly support: BanquetSupport,
+    private readonly menu: MenuQuery,
+  ) {}
+
+  async prepare(request: BanquetRequest, input: SaveQuoteInput): Promise<PreparedQuote> {
+    const s = request.snapshot();
+    const today = await this.support.today(s.branchId);
+    const lines = await this.resolveLines(request, input);
+    const seller = await this.support.seller(s.branchId);
+    const guests = input.guests ?? s.guests;
+    const calc = calculateQuote({
+      lines,
+      discount: input.discount ?? null,
+      serviceChargeBp: input.serviceChargeBp ?? 0,
+      vat: { payer: seller.vatPayer, rateBp: seller.vatRateBp },
+      guests,
+    });
+    const validUntil = input.validUntil ?? addDays(today, DEFAULT_QUOTE_VALIDITY_DAYS);
+    if (!isIsoDate(validUntil) || validUntil < today) {
+      throw new ValidationError('banquet_quote.invalid_valid_until', 'Validity date must be today or later');
+    }
+    const notes = input.notes?.trim() || null;
+    if (notes && notes.length > 4000) throw new ValidationError('banquet_quote.notes_too_long', 'Notes are too long');
+    return { lines, calc, seller, guests, validUntil, notes };
+  }
+
+  private async resolveLines(request: BanquetRequest, input: SaveQuoteInput): Promise<QuoteLineInput[]> {
+    const menuLines = input.lines.filter((l) => l.kind === 'menu');
+    const branchId = request.branchId;
+    if (menuLines.length > 0 && !branchId) {
+      throw new ValidationError('banquet_quote.branch_required', 'Choose the executing branch before adding menu items');
+    }
+    // Снимки из последней версии: цена позиции меню фиксируется на момент добавления.
+    const previous = input.refreshMenuPrices ? null : await this.quotes.latest(request.id);
+    const snapshots = new Map((previous?.lines ?? []).filter((l) => l.kind === 'menu' && l.dishId).map((l) => [l.dishId!, l]));
+    const missing = [...new Set(menuLines.map((l) => l.dishId).filter((id): id is string => !!id && !snapshots.has(id)))];
+    const dishes = missing.length > 0 && branchId ? await this.menu.getDishes(branchId, missing) : [];
+    const fresh = new Map(dishes.map((d) => [d.dishId, d]));
+    return input.lines.map((line, index) => {
+      if (line.kind === 'menu') {
+        if (!line.dishId) throw new ValidationError('banquet_quote.dish_required', 'Menu line needs a dish', { line: index + 1 });
+        const snap = snapshots.get(line.dishId);
+        const dish = fresh.get(line.dishId);
+        if (!snap && !dish) {
+          throw new ValidationError('banquet_quote.dish_not_in_menu', 'Dish is not in the branch menu', { line: index + 1, dishId: line.dishId });
+        }
+        return {
+          kind: 'menu',
+          dishId: line.dishId,
+          title: snap?.title ?? dish!.name,
+          unit: line.unit?.trim() || snap?.unit || 'порц.',
+          quantity: line.quantity,
+          unitPrice: snap?.unitPrice ?? dish!.price,
+          discount: line.discount ?? null,
+        };
+      }
+      if (!line.unitPrice) throw new ValidationError('banquet_quote.invalid_price', 'Price is required', { line: index + 1 });
+      return {
+        kind: line.kind,
+        dishId: null,
+        title: line.title ?? {},
+        unit: line.unit ?? '',
+        quantity: line.quantity,
+        unitPrice: line.unitPrice,
+        discount: line.discount ?? null,
+      };
+    });
+  }
+}
+
+/** Предпросмотр сметы: итоги по тем же правилам, что и при сохранении, без новой версии и без записи в БД. */
+@Injectable()
+export class PreviewQuote {
+  constructor(
+    private readonly support: BanquetSupport,
+    private readonly calculator: QuoteCalculator,
+  ) {}
+
+  async execute(actor: Actor, requestId: string, input: SaveQuoteInput): Promise<PreparedQuote & { request: BanquetRequest; discount: QuoteDiscount; serviceChargeBp: number }> {
+    const request = await this.support.load(requestId);
+    assertCanManage(actor, request);
+    const prepared = await this.calculator.prepare(request, input);
+    return { ...prepared, request, discount: input.discount ?? null, serviceChargeBp: input.serviceChargeBp ?? 0 };
+  }
+}
+
 /**
  * Сохранение сметы — всегда новая версия (прошлые версии неизменяемы и доступны списком).
  * Позиции меню — снимок названия и цены филиала на момент добавления: блюдо, уже бывшее в прошлой версии,
@@ -66,7 +171,7 @@ export class SaveQuoteVersion {
     private readonly activities: ActivityRepository,
     private readonly support: BanquetSupport,
     private readonly recorder: BanquetStatusRecorder,
-    private readonly menu: MenuQuery,
+    private readonly calculator: QuoteCalculator,
     private readonly database: Database,
     private readonly audit: AuditLog,
     private readonly clock: Clock,
@@ -81,23 +186,7 @@ export class SaveQuoteVersion {
       }
       const s = request.snapshot();
       const now = this.clock.now();
-      const today = await this.support.today(s.branchId);
-      const lines = await this.resolveLines(request, input);
-      const seller = await this.support.seller(s.branchId);
-      const guests = input.guests ?? s.guests;
-      const calc = calculateQuote({
-        lines,
-        discount: input.discount ?? null,
-        serviceChargeBp: input.serviceChargeBp ?? 0,
-        vat: { payer: seller.vatPayer, rateBp: seller.vatRateBp },
-        guests,
-      });
-      const validUntil = input.validUntil ?? addDays(today, DEFAULT_QUOTE_VALIDITY_DAYS);
-      if (!isIsoDate(validUntil) || validUntil < today) {
-        throw new ValidationError('banquet_quote.invalid_valid_until', 'Validity date must be today or later');
-      }
-      const notes = input.notes?.trim() || null;
-      if (notes && notes.length > 4000) throw new ValidationError('banquet_quote.notes_too_long', 'Notes are too long');
+      const { calc, seller, guests, validUntil, notes } = await this.calculator.prepare(request, input);
       const quote = {
         id: newId(),
         requestId,
@@ -147,49 +236,6 @@ export class SaveQuoteVersion {
       });
       await this.recorder.record(request, { actor, before });
       return (await this.quotes.findById(quote.id))!;
-    });
-  }
-
-  private async resolveLines(request: BanquetRequest, input: SaveQuoteInput): Promise<QuoteLineInput[]> {
-    const menuLines = input.lines.filter((l) => l.kind === 'menu');
-    const branchId = request.branchId;
-    if (menuLines.length > 0 && !branchId) {
-      throw new ValidationError('banquet_quote.branch_required', 'Choose the executing branch before adding menu items');
-    }
-    // Снимки из последней версии: цена позиции меню фиксируется на момент добавления.
-    const previous = input.refreshMenuPrices ? null : await this.quotes.latest(request.id);
-    const snapshots = new Map((previous?.lines ?? []).filter((l) => l.kind === 'menu' && l.dishId).map((l) => [l.dishId!, l]));
-    const missing = [...new Set(menuLines.map((l) => l.dishId).filter((id): id is string => !!id && !snapshots.has(id)))];
-    const dishes = missing.length > 0 && branchId ? await this.menu.getDishes(branchId, missing) : [];
-    const fresh = new Map(dishes.map((d) => [d.dishId, d]));
-    return input.lines.map((line, index) => {
-      if (line.kind === 'menu') {
-        if (!line.dishId) throw new ValidationError('banquet_quote.dish_required', 'Menu line needs a dish', { line: index + 1 });
-        const snap = snapshots.get(line.dishId);
-        const dish = fresh.get(line.dishId);
-        if (!snap && !dish) {
-          throw new ValidationError('banquet_quote.dish_not_in_menu', 'Dish is not in the branch menu', { line: index + 1, dishId: line.dishId });
-        }
-        return {
-          kind: 'menu',
-          dishId: line.dishId,
-          title: snap?.title ?? dish!.name,
-          unit: line.unit?.trim() || snap?.unit || 'порц.',
-          quantity: line.quantity,
-          unitPrice: snap?.unitPrice ?? dish!.price,
-          discount: line.discount ?? null,
-        };
-      }
-      if (!line.unitPrice) throw new ValidationError('banquet_quote.invalid_price', 'Price is required', { line: index + 1 });
-      return {
-        kind: line.kind,
-        dishId: null,
-        title: line.title ?? {},
-        unit: line.unit ?? '',
-        quantity: line.quantity,
-        unitPrice: line.unitPrice,
-        discount: line.discount ?? null,
-      };
     });
   }
 }

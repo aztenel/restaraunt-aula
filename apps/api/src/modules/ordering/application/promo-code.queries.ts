@@ -23,11 +23,13 @@ export class PromoCodeQueries {
 
   async list(
     actor: Actor,
-    filter: { branchId?: string | null; q?: string; active?: boolean },
+    filter: { branchId?: string | null; scope?: 'network' | 'branch'; q?: string; active?: boolean },
     page: PageRequest,
   ): Promise<Page<PromoCodeView>> {
-    const branches = filter.branchId ? actor.scopeBranches(Permission.PromoCodesManage, filter.branchId) : actor.branchesWith(Permission.PromoCodesManage);
-    const result = await this.promos.list({ branches, branchId: filter.branchId ?? undefined, q: filter.q, active: filter.active }, page);
+    // Сетевые промокоды не относятся к филиалу: при scope=network фильтр филиала не применяется.
+    const branchId = filter.scope === 'network' ? null : (filter.branchId ?? null);
+    const branches = branchId ? actor.scopeBranches(Permission.PromoCodesManage, branchId) : actor.branchesWith(Permission.PromoCodesManage);
+    const result = await this.promos.list({ branches, branchId: branchId ?? undefined, scope: filter.scope, q: filter.q, active: filter.active }, page);
     const stats = await this.promos.usageStats(result.items.map((p) => p.id));
     return {
       ...result,

@@ -209,6 +209,7 @@ describe('Banquet: full flow (integration)', () => {
     const held = await http().post(api(`/admin/banquets/requests/${id}/transition`)).set('authorization', w.managerAuth).send({ to: 'held' });
     expect(held.status).toBe(200);
     expect(held.body.status).toBe('held');
+    expect(held.body).toMatchObject({ canIssueAct: true, canEditQuote: false, canSendLatestQuote: false, canIssueInvoice: true });
     const statusEvents = (await publishedEvents(ctx.t, BanquetEvents.StatusChanged)).filter((e) => e.payload.requestId === id);
     expect(statusEvents.map((e) => `${e.payload.from}->${e.payload.to}`)).toEqual([
       'new->in_progress',
@@ -234,6 +235,8 @@ describe('Banquet: full flow (integration)', () => {
     expect(act.status).toBe(201);
     expect(act.body).toMatchObject({ payerType: 'individual', amount: { amount: 66_000_000 }, vat: { amount: 9_103_448 } });
     expect(act.body.esf.status).toBe('not_required');
+    expect(act.body.esfRetryable).toBe(false);
+    expect((await http().get(api(`/admin/banquets/requests/${id}`)).set('authorization', w.managerAuth)).body.canIssueAct).toBe(false);
     const duplicateAct = await http().post(api(`/admin/banquets/requests/${id}/act`)).set('authorization', w.managerAuth);
     expect(duplicateAct.status).toBe(409);
     const actEvent = (await publishedEvents(ctx.t, BanquetEvents.ActIssued))[0]!.payload;
@@ -299,6 +302,7 @@ describe('Banquet: full flow (integration)', () => {
 
     const detail = await http().get(api(`/admin/banquets/requests/${id}`)).set('authorization', w.managerAuth);
     expect(detail.body.act.esf).toMatchObject({ status: 'draft_ready', provider: 'manual', error: null });
+    expect(detail.body.act.esfRetryable).toBe(true);
     expect(detail.body.documents.map((d: any) => d.kind).sort()).toEqual(['act', 'esf_xml', 'invoice']);
     const esfDoc = detail.body.documents.find((d: any) => d.kind === 'esf_xml');
     const link = await http().get(api(`/admin/banquets/documents/${esfDoc.id}/link`)).set('authorization', w.financeAuth);
@@ -317,5 +321,6 @@ describe('Banquet: full flow (integration)', () => {
     const retry = await http().post(api(`/admin/banquets/acts/${act.body.id}/esf/retry`)).set('authorization', w.financeAuth);
     expect(retry.status).toBe(201);
     expect(retry.body.esf.status).toBe('pending');
+    expect(retry.body.esfRetryable).toBe(false);
   });
 });

@@ -14,10 +14,13 @@ import { normalizePhone } from '../../src/shared/kernel/phone';
 import { Locale } from '../../src/shared/kernel/translatable';
 import { HttpTransport } from '../../src/shared/infrastructure/integrations/external-http';
 import {
+  BranchOrderMenu,
   DishAvailability,
+  DishCard,
   DishSummary,
   MenuPricing,
   MenuQuery,
+  OrderMenuModifierGroup,
   PricedLine,
   PricedLineRequest,
   StopListControl,
@@ -252,6 +255,40 @@ export class FakeMenuQuery extends MenuQuery {
   async getDishes(_branchId: string, dishIds: string[]): Promise<DishSummary[]> {
     return dishIds.map((id) => this.menu.dishes.get(id)).filter((d): d is FakeDish => !!d).map((d) => this.summary(d));
   }
+
+  async describeDishes(dishIds: string[]): Promise<DishCard[]> {
+    return dishIds
+      .map((id) => this.menu.dishes.get(id))
+      .filter((d): d is FakeDish => !!d)
+      .map((d) => ({ dishId: d.dishId, slug: this.summary(d).slug, name: { ru: d.name, kk: d.name }, photoUrl: null, weightGrams: 300 }));
+  }
+
+  async branchOrderMenu(branchId: string): Promise<BranchOrderMenu> {
+    const dishes = [...this.menu.dishes.values()].filter((d) => !d.branchIds || d.branchIds.includes(branchId));
+    const categoryIds = [...new Set(dishes.map((d) => d.categoryId ?? 'cat-1'))];
+    return {
+      branchId,
+      categories: categoryIds.map((id) => ({ id, slug: id, name: { ru: id } })),
+      dishes: dishes.map((d) => {
+        const groups = new Map<string, OrderMenuModifierGroup>();
+        for (const m of d.modifiers ?? []) {
+          const group = groups.get(m.groupId) ?? { id: m.groupId, name: { ru: 'Добавки' }, minSelect: 0, maxSelect: 10, isRequired: false, options: [] };
+          group.options.push({ id: m.optionId, name: { ru: m.name }, price: Money.of(m.price), isDefault: false });
+          groups.set(m.groupId, group);
+        }
+        const availability = d.availability ?? 'available';
+        return {
+          ...this.summary(d),
+          availability,
+          stopped: availability !== 'available',
+          stoppedUntil: null,
+          stopReason: null,
+          sku: d.sku ?? null,
+          modifierGroups: [...groups.values()],
+        };
+      }),
+    };
+  }
 }
 
 export class FakeStopListControl extends StopListControl {
@@ -323,6 +360,10 @@ export class FakePaymentsService extends PaymentsService {
     const refund: RefundView = { id: newId(), paymentId: p.id, amount, status: 'pending', reason: input.reason, createdAt: new Date() };
     this.refunds.push(refund);
     return refund;
+  }
+
+  async listRefunds(paymentIds: string[]): Promise<RefundView[]> {
+    return this.refunds.filter((r) => paymentIds.includes(r.paymentId));
   }
 
   async markCollected(paymentId: string): Promise<void> {

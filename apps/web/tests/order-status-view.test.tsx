@@ -127,6 +127,15 @@ describe('статус заказа: опрос и переход на опла�
     expect(goToPayment).toHaveBeenCalledWith('https://pay.example/p2');
   });
 
+  it('оплата при получении: «Заказ оформлен», без перехода на оплату', async () => {
+    api.GET.mockResolvedValue(ok(tracking({ status: 'paid' }, { method: 'on_receipt', isPaid: true })));
+    renderView(tracking({ status: 'paid' }, { method: 'on_receipt', isPaid: true }), true);
+    expect(screen.getByRole('heading', { level: 2, name: 'Заказ оформлен' })).toBeTruthy();
+    expect(screen.getByText('К оплате при получении')).toBeTruthy();
+    await advance(20_000);
+    expect(goToPayment).not.toHaveBeenCalled();
+  });
+
   it('оплаченный заказ: цель «покупка» один раз, опрос продолжается до выполнения', async () => {
     const paid = tracking({ status: 'cooking', timeline: [] }, { isPaid: true, current: { ...pending('p1', null), status: 'succeeded' as never } });
     api.GET.mockResolvedValueOnce(ok({ ...paid })).mockResolvedValue(ok({ ...paid, status: 'completed' }));

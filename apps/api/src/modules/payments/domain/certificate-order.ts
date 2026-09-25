@@ -8,6 +8,7 @@ import { StateMachine } from '../../../shared/kernel/state-machine';
  *   awaiting_payment -> issued (оплата прошла, сертификаты выпущены) | payment_failed
  *   payment_failed -> issued  (поздняя оплата: провайдер подтвердил списание после отказа —
  *                              гость заплатил, сертификаты выпускаются)
+ *   payment_failed -> awaiting_payment (гость повторяет оплату со страницы заказа — новый платёж)
  */
 export const CertificateOrderStatus = {
   AwaitingPayment: 'awaiting_payment',
@@ -18,7 +19,7 @@ export type CertificateOrderStatus = (typeof CertificateOrderStatus)[keyof typeo
 
 export const CertificateOrderFsm = new StateMachine<CertificateOrderStatus>('certificate_order', {
   awaiting_payment: ['issued', 'payment_failed'],
-  payment_failed: ['issued'],
+  payment_failed: ['issued', 'awaiting_payment'],
   issued: [],
 });
 

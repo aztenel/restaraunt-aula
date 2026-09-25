@@ -7,8 +7,15 @@ import { Page, pageRequest } from '../../../../shared/kernel/pagination';
 import { Permission } from '../../../../shared/kernel/permissions';
 import { InvoiceListItemView, InvoiceQueries } from '../../application/admin.queries';
 import { SignedLink } from '../../application/document-files';
-import { CancelBanquetInvoice, IssueBanquetInvoice, RegisterInvoiceBankTransfer } from '../../application/invoice.actions';
-import { BanquetBankTransferDto, BanquetCancelInvoiceDto, BanquetInvoicesQueryDto, BanquetIssueInvoiceDto, parseInvoiceStatuses } from '../dto';
+import { CancelBanquetInvoice, IssueBanquetInvoice, RegisterInvoiceBankTransfer, ResendInvoicePaymentLink } from '../../application/invoice.actions';
+import {
+  BanquetBankTransferDto,
+  BanquetCancelInvoiceDto,
+  BanquetInvoicesQueryDto,
+  BanquetIssueInvoiceDto,
+  BanquetResendPaymentLinkDto,
+  parseInvoiceStatuses,
+} from '../dto';
 import { BanquetBankTransferResultDto, BanquetInvoiceListItemDto, BanquetInvoicesPageDto, BanquetSignedLinkDto } from '../responses.dto';
 
 /**
@@ -24,6 +31,7 @@ export class AdminBanquetInvoicesController {
     private readonly issue: IssueBanquetInvoice,
     private readonly bankTransfer: RegisterInvoiceBankTransfer,
     private readonly cancel: CancelBanquetInvoice,
+    private readonly resendLink: ResendInvoicePaymentLink,
   ) {}
 
   @Get('invoices')
@@ -77,6 +85,23 @@ export class AdminBanquetInvoicesController {
       documentNumber: dto.documentNumber,
     });
     return { invoice: await this.queries.get(actor, invoiceId), paymentId: result.paymentId, duplicate: result.duplicate };
+  }
+
+  /**
+   * Отправить гостю ссылку на оплату счёта физлица ещё раз. Если прежний платёж не прошёл / отменён —
+   * создаётся новый на остаток; regenerate — принудительно новая ссылка (прежний неоплаченный платёж отменяется).
+   */
+  @Post('invoices/:invoiceId/payment-link')
+  @HttpCode(200)
+  @RequirePermissions(Permission.BanquetsInvoice)
+  @ApiOkResponse({ type: BanquetInvoiceListItemDto })
+  async paymentLink(
+    @CurrentActor() actor: Actor,
+    @Param('invoiceId', ParseUUIDPipe) invoiceId: string,
+    @Body() dto: BanquetResendPaymentLinkDto,
+  ): Promise<InvoiceListItemView> {
+    await this.resendLink.execute(actor, invoiceId, { regenerate: dto.regenerate ?? false });
+    return this.queries.get(actor, invoiceId);
   }
 
   @Post('invoices/:invoiceId/cancel')

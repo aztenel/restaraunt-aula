@@ -7,10 +7,37 @@ import { Permission } from '../../../../shared/kernel/permissions';
 import { DishOptionView, QuoteQueries } from '../../application/admin.queries';
 import { BanquetQueries, RequestDetailView } from '../../application/banquet.queries';
 import { SignedLink } from '../../application/document-files';
-import { SaveQuoteVersion, SendQuote } from '../../application/quote.actions';
-import { QuoteSummaryView, QuoteView, quoteView } from '../../application/views';
+import { PreviewQuote, SaveQuoteInput, SaveQuoteVersion, SendQuote } from '../../application/quote.actions';
+import { QuotePreviewView, quotePreviewView, QuoteSummaryView, QuoteView, quoteView } from '../../application/views';
 import { BanquetMenuSearchQueryDto, BanquetSaveQuoteDto, toDiscount } from '../dto';
-import { BanquetDishOptionDto, BanquetQuoteDto, BanquetQuoteSummaryDto, BanquetRequestDetailDto, BanquetSignedLinkDto } from '../responses.dto';
+import {
+  BanquetDishOptionDto,
+  BanquetQuoteDto,
+  BanquetQuotePreviewDto,
+  BanquetQuoteSummaryDto,
+  BanquetRequestDetailDto,
+  BanquetSignedLinkDto,
+} from '../responses.dto';
+
+function saveQuoteInput(dto: BanquetSaveQuoteDto): SaveQuoteInput {
+  return {
+    lines: dto.lines.map((l) => ({
+      kind: l.kind,
+      dishId: l.dishId ?? null,
+      title: l.title ?? null,
+      unit: l.unit ?? null,
+      unitPrice: l.unitPrice ? MoneyInputDto.toMoney(l.unitPrice) : null,
+      quantity: l.quantity,
+      discount: toDiscount(l.discount),
+    })),
+    discount: toDiscount(dto.discount),
+    serviceChargeBp: dto.serviceChargeBp,
+    guests: dto.guests ?? null,
+    validUntil: dto.validUntil ?? null,
+    notes: dto.notes ?? null,
+    refreshMenuPrices: dto.refreshMenuPrices ?? false,
+  };
+}
 
 /** Конструктор сметы: версии (каждое сохранение — новая версия), PDF, отправка клиенту, поиск блюд меню. */
 @ApiTags('admin')
@@ -22,6 +49,7 @@ export class AdminBanquetQuotesController {
     private readonly requests: BanquetQueries,
     private readonly saveQuote: SaveQuoteVersion,
     private readonly sendQuote: SendQuote,
+    private readonly previewQuote: PreviewQuote,
   ) {}
 
   @Get('requests/:id/quotes')
@@ -36,24 +64,29 @@ export class AdminBanquetQuotesController {
   @RequirePermissions(Permission.BanquetsManage)
   @ApiCreatedResponse({ type: BanquetQuoteDto })
   async save(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: BanquetSaveQuoteDto): Promise<QuoteView> {
-    const quote = await this.saveQuote.execute(actor, id, {
-      lines: dto.lines.map((l) => ({
-        kind: l.kind,
-        dishId: l.dishId ?? null,
-        title: l.title ?? null,
-        unit: l.unit ?? null,
-        unitPrice: l.unitPrice ? MoneyInputDto.toMoney(l.unitPrice) : null,
-        quantity: l.quantity,
-        discount: toDiscount(l.discount),
-      })),
-      discount: toDiscount(dto.discount),
-      serviceChargeBp: dto.serviceChargeBp,
-      guests: dto.guests ?? null,
-      validUntil: dto.validUntil ?? null,
-      notes: dto.notes ?? null,
-      refreshMenuPrices: dto.refreshMenuPrices ?? false,
-    });
+    const quote = await this.saveQuote.execute(actor, id, saveQuoteInput(dto));
     return quoteView(quote, quote.version);
+  }
+
+  /** Предпросмотр сметы: итоги по тем же правилам, что и при сохранении, без новой версии. */
+  @Post('requests/:id/quotes/preview')
+  @HttpCode(200)
+  @RequirePermissions(Permission.BanquetsManage)
+  @ApiOkResponse({ type: BanquetQuotePreviewDto })
+  async preview(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: BanquetSaveQuoteDto): Promise<QuotePreviewView> {
+    const p = await this.previewQuote.execute(actor, id, saveQuoteInput(dto));
+    return quotePreviewView({
+      requestId: p.request.id,
+      branchId: p.request.branchId,
+      guests: p.guests,
+      discount: p.discount,
+      serviceChargeBp: p.serviceChargeBp,
+      seller: p.seller,
+      lines: p.calc.lines,
+      totals: p.calc.totals,
+      validUntil: p.validUntil,
+      notes: p.notes,
+    });
   }
 
   @Get('quotes/:quoteId')

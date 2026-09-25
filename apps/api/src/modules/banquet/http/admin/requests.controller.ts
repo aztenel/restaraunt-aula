@@ -91,7 +91,15 @@ export class AdminBanquetRequestsController {
   @RequirePermissions(Permission.BanquetsView)
   @ApiOkResponse({ type: [BanquetPipelineColumnDto] })
   pipeline(@CurrentActor() actor: Actor, @Query() q: BanquetPipelineQueryDto): Promise<PipelineColumn[]> {
-    return this.queries.pipeline(actor, { branchId: q.branchId, managerId: q.managerId, dateFrom: q.dateFrom, dateTo: q.dateTo });
+    return this.queries.pipeline(actor, {
+      branchId: q.branchId,
+      managerId: q.managerId,
+      dateFrom: q.dateFrom,
+      dateTo: q.dateTo,
+      q: q.q,
+      isOffsite: q.offsite,
+      slaBreached: q.slaBreached,
+    });
   }
 
   /** Менеджеры для назначения (с нагрузкой). */
@@ -102,6 +110,7 @@ export class AdminBanquetRequestsController {
     return this.queries.managers(actor);
   }
 
+  /** Календарь мероприятий: филиала или (без branchId) всех доступных филиалов вместе с выездными заявками. */
   @Get('calendar')
   @RequirePermissions(Permission.BanquetsView)
   @ApiOkResponse({ type: BanquetCalendarDto })

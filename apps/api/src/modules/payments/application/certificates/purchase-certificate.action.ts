@@ -40,7 +40,8 @@ function optionalPhone(value: string | null | undefined): string | null {
   return value?.trim() ? normalizePhone(value) : null;
 }
 
-function describe(product: CertificateProduct, quantity: number, locale: Locale): string {
+/** Описание платежа для страницы оплаты: «AULA: <сертификат> × N». */
+export function certificatePaymentDescription(product: Pick<CertificateProduct, 'name' | 'nominal'>, quantity: number, locale: Locale): string {
   const title = translate(product.name, locale) || formatTenge(product.nominal);
   return `AULA: ${title}${quantity > 1 ? ` × ${quantity}` : ''}`;
 }
@@ -153,7 +154,7 @@ export class PurchaseCertificate {
         branchId: null,
         method: 'online',
         amount: order.total,
-        description: describe(product, input.quantity, input.locale),
+        description: certificatePaymentDescription(product, input.quantity, input.locale),
         customer: { phone: buyerPhone, name: order.buyer.name, email: buyerEmail },
         returnUrl: this.links.certificateOrderUrl(order.token, input.locale),
         idempotencyKey: `certificate-order:${order.id}`,

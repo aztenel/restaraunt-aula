@@ -266,6 +266,79 @@ describe('Banquet: invoices and payments (integration)', () => {
     expect(await auditActions(ctx.t, invoice.body.id)).toContain('banquet.refund_requested');
   });
 
+  it('admin invoice: payment link, resend / regenerate, refundable amount per payment and refunds with status', async () => {
+    const r = await agreedRequest(ctx, w);
+    const invoice = await http().post(api(`/admin/banquets/requests/${r.id}/invoices`)).set('authorization', w.managerAuth).send({ payerType: 'individual' });
+    expect(invoice.status).toBe(201);
+    const first = ctx.fakes.payments.payments.get(invoice.body.paymentId)!;
+    expect(invoice.body).toMatchObject({ paymentUrl: first.paymentUrl, paymentStatus: 'created', canResendPaymentLink: true, refunds: [] });
+
+    // Повторная отправка: действующая ссылка та же, гостю — уведомление; аудит.
+    ctx.fakes.notifier.clear();
+    const resent = await http().post(api(`/admin/banquets/invoices/${invoice.body.id}/payment-link`)).set('authorization', w.managerAuth).send({});
+    expect(resent.status).toBe(200);
+    expect(resent.body).toMatchObject({ paymentId: first.id, paymentUrl: first.paymentUrl });
+    expect(ctx.fakes.notifier.guest.map((g) => g.template)).toEqual(['banquet.invoice_issued']);
+    expect(ctx.fakes.notifier.guest[0]!.params).toMatchObject({ invoiceNumber: invoice.body.number, paymentUrl: invoice.body.publicUrl });
+    // Перевыпуск: прежний неоплаченный платёж отменяется, новая ссылка.
+    const regenerated = await http()
+      .post(api(`/admin/banquets/invoices/${invoice.body.id}/payment-link`))
+      .set('authorization', w.managerAuth)
+      .send({ regenerate: true });
+    expect(regenerated.status).toBe(200);
+    expect(regenerated.body.paymentId).not.toBe(first.id);
+    expect(regenerated.body.paymentUrl).toMatch(/^https:\/\/pay\.test\/banquet-invoice:.+:1$/);
+    expect(first.status).toBe('cancelled');
+    expect(await auditActions(ctx.t, invoice.body.id)).toEqual(expect.arrayContaining(['banquet.invoice_payment_link_sent']));
+    // Права: banquets.invoice.
+    const branchManager = await tokenFor(ctx.t, [{ role: StaffRole.BranchManager, branchId: w.branchId }]);
+    expect((await http().post(api(`/admin/banquets/invoices/${invoice.body.id}/payment-link`)).set('authorization', branchManager.auth).send({})).status).toBe(403);
+
+    // Оплата: ссылки больше нет, повторная отправка невозможна; возвраты с остатком к возврату.
+    await succeedPayment(ctx, regenerated.body.paymentId);
+    let paid = (await http().get(api(`/admin/banquets/invoices/${invoice.body.id}`)).set('authorization', w.financeAuth)).body;
+    expect(paid).toMatchObject({ status: 'paid', paymentUrl: null, paymentStatus: 'succeeded', canResendPaymentLink: false });
+    expect(paid.payments).toEqual([expect.objectContaining({ paymentId: regenerated.body.paymentId, refundable: { amount: 100_000_000, currency: 'KZT' } })]);
+    const again = await http().post(api(`/admin/banquets/invoices/${invoice.body.id}/payment-link`)).set('authorization', w.managerAuth).send({});
+    expect(again.status).toBe(409);
+    expect(again.body.error.code).toBe('banquet_invoice.not_payable');
+
+    const refund = await http()
+      .post(api(`/admin/banquets/requests/${r.id}/refunds`))
+      .set('authorization', w.financeAuth)
+      .send({ paymentId: regenerated.body.paymentId, amount: { amount: 30_000_000 }, reason: 'Уменьшили число гостей', idempotencyKey: 'refund-partial-0001' });
+    expect(refund.status).toBe(201);
+    paid = (await http().get(api(`/admin/banquets/invoices/${invoice.body.id}`)).set('authorization', w.financeAuth)).body;
+    expect(paid.payments[0].refundable).toEqual({ amount: 70_000_000, currency: 'KZT' });
+    expect(paid.refunds).toEqual([
+      expect.objectContaining({
+        refundId: refund.body.id,
+        paymentId: regenerated.body.paymentId,
+        amount: { amount: 30_000_000, currency: 'KZT' },
+        status: 'pending',
+        reason: expect.stringContaining('Уменьшили число гостей'),
+      }),
+    ]);
+    // Неудачный возврат не уменьшает остаток к возврату.
+    ctx.fakes.payments.refunds[0]!.status = 'failed';
+    const detail = (await http().get(api(`/admin/banquets/requests/${r.id}`)).set('authorization', w.financeAuth)).body;
+    expect(detail.invoices[0].payments[0].refundable.amount).toBe(100_000_000);
+    expect(detail.invoices[0].refunds[0].status).toBe('failed');
+    const list = (await http().get(api('/admin/banquets/invoices')).set('authorization', w.financeAuth)).body;
+    expect(list.items[0]).toMatchObject({ id: invoice.body.id, refunds: [expect.objectContaining({ status: 'failed' })] });
+  });
+
+  it('company invoices have no payment link to resend', async () => {
+    const r = await agreedRequest(ctx, w);
+    const companyId = await company();
+    const invoice = await http().post(api(`/admin/banquets/requests/${r.id}/invoices`)).set('authorization', w.financeAuth).send({ payerType: 'company', companyId });
+    expect(invoice.status).toBe(201);
+    expect(invoice.body).toMatchObject({ paymentUrl: null, paymentStatus: null, canResendPaymentLink: false });
+    const denied = await http().post(api(`/admin/banquets/invoices/${invoice.body.id}/payment-link`)).set('authorization', w.financeAuth).send({});
+    expect(denied.status).toBe(409);
+    expect(denied.body.error.code).toBe('banquet_invoice.bank_transfer_only');
+  });
+
   it('cancellation releases the venue and cancels unpaid invoices; a reason is required', async () => {
     const r = await agreedRequest(ctx, w);
     const venue = ctx.fakes.venues.addVenue(w.branchId, { capacityMax: 150 });

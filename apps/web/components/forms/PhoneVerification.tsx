@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useState, type FormEvent } from 'react';
+import { useEffect, useId, useState, type KeyboardEvent } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { call, toApiError, type ApiError } from '@aula/api-client';
 import { buttonClasses } from '@/components/ui/button';
@@ -85,9 +85,8 @@ export function PhoneVerification({
     }
   };
 
-  const verify = async (event: FormEvent) => {
-    event.preventDefault();
-    if (!verificationId || !code.trim()) return;
+  const verify = async () => {
+    if (!verificationId || !code.trim() || stage === 'verifying') return;
     setError(null);
     setStage('verifying');
     try {
@@ -124,7 +123,8 @@ export function PhoneVerification({
       </h3>
       <p className="mt-1 text-sm text-earth-800">{intro ?? t('text', { phone: formatPhone(phone) })}</p>
       {stage === 'code' || stage === 'verifying' ? (
-        <form onSubmit={verify} className="mt-3" noValidate>
+        // Не <form>: блок встроен в формы оформления и брони (вложенные формы недопустимы).
+        <div className="mt-3">
           <label htmlFor={`${id}-code`} className="block text-sm font-semibold text-earth-800">
             {t('codeLabel', { phone: formatPhone(phone) })}
           </label>
@@ -133,6 +133,13 @@ export function PhoneVerification({
               id={`${id}-code`}
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
+                // Enter подтверждает код, а не отправляет внешнюю форму заказа/брони.
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  void verify();
+                }
+              }}
               inputMode="numeric"
               autoComplete="one-time-code"
               pattern="[0-9]*"
@@ -141,11 +148,11 @@ export function PhoneVerification({
               aria-describedby={error ? `${id}-error` : undefined}
               className={`${inputBase} max-w-40 text-center font-mono text-lg tracking-[0.4em]`}
             />
-            <button type="submit" disabled={stage === 'verifying' || code.length < 4} className={buttonClasses('primary', 'md')}>
+            <button type="button" onClick={() => void verify()} disabled={stage === 'verifying' || code.length < 4} className={buttonClasses('primary', 'md')}>
               {stage === 'verifying' ? t('verifying') : t('verify')}
             </button>
           </div>
-        </form>
+        </div>
       ) : null}
       <div aria-live="polite">
         {error ? (

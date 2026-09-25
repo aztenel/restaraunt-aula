@@ -14,6 +14,7 @@ import { CustomerDirectory, CustomerTag } from '../../customers/public';
 import { Notifier } from '../../notifications/public';
 import { PaymentPurpose, PaymentsService, RefundView } from '../../payments/public';
 import { INVOICEABLE_STATUSES } from '../domain/banquet-status';
+import { BanquetRequest } from '../domain/banquet-request';
 import { formatDateRu } from '../domain/dates';
 import { assertWithinQuote, defaultDueDate, defaultInvoiceAmount, InvoicePurpose, PayerType } from '../domain/invoice';
 import { formatTenge } from '../domain/money-format';
@@ -472,6 +473,52 @@ export class CancelBanquetInvoice {
   }
 }
 
+/** Счёт физлица ждёт онлайн-оплату (иначе 409): общие проверки ссылки на оплату. */
+function assertOnlinePayable(record: InvoiceRecord, request: BanquetRequest): void {
+  if (record.payerType !== 'individual') throw new ConflictError('banquet_invoice.bank_transfer_only', 'Company invoices are paid by bank transfer');
+  if (record.status !== 'issued' && record.status !== 'partially_paid') {
+    throw new ConflictError('banquet_invoice.not_payable', 'Invoice is not awaiting payment', { status: record.status });
+  }
+  if (request.status === 'cancelled') throw new ConflictError('banquet_invoice.not_payable', 'Request is cancelled');
+}
+
+/**
+ * Действующий онлайн-платёж счёта: текущий, если ещё ждёт оплату (и не требуется новый), иначе новый
+ * платёж на остаток по счёту (ключ идемпотентности — номер попытки). Вызывается в транзакции.
+ */
+@Injectable()
+export class InvoiceOnlinePayment {
+  constructor(
+    private readonly invoices: InvoiceRepository,
+    private readonly payments: PaymentsService,
+    private readonly links: BanquetLinks,
+  ) {}
+
+  async ensure(record: InvoiceRecord, request: BanquetRequest, options: { forceNew: boolean }): Promise<{ record: InvoiceRecord; previousPaymentId: string | null; renewed: boolean }> {
+    if (record.paymentId) {
+      const current = await this.payments.getPayment(record.paymentId);
+      const active = current.status === 'created' || current.status === 'pending';
+      if (active && !options.forceNew) return { record, previousPaymentId: null, renewed: false };
+      if (active) await this.payments.cancelPayment(current.id, 'banquet_invoice_link_regenerated');
+    }
+    const s = request.snapshot();
+    const attempts = (await this.payments.listForReference(PaymentPurpose.BanquetInvoice, record.id)).filter((p) => p.method === 'online').length;
+    const payment = await this.payments.createPayment({
+      purpose: PaymentPurpose.BanquetInvoice,
+      referenceId: record.id,
+      branchId: record.branchId,
+      method: 'online',
+      amount: invoiceEntity(record).remaining(),
+      description: `Счёт ${record.number} (банкет ${s.number})`,
+      customer: { phone: s.contact.phone || null, name: s.contact.name, email: s.contact.email },
+      returnUrl: this.links.invoice(record.publicToken, s.locale),
+      idempotencyKey: onlinePaymentKey(record.id, attempts),
+    });
+    await this.invoices.setPaymentId(record.id, payment.id);
+    return { record: (await this.invoices.findById(record.id))!, previousPaymentId: record.paymentId, renewed: true };
+  }
+}
+
 /**
  * Ссылка на онлайн-оплату счёта физлица с витрины: если прежняя ссылка истекла, отменена или платёж не прошёл,
  * создаётся новый платёж на остаток по счёту. Действующая ссылка возвращается как есть.
@@ -481,8 +528,7 @@ export class RenewInvoicePayment {
   constructor(
     private readonly invoices: InvoiceRepository,
     private readonly support: BanquetSupport,
-    private readonly payments: PaymentsService,
-    private readonly links: BanquetLinks,
+    private readonly online: InvoiceOnlinePayment,
     private readonly database: Database,
   ) {}
 
@@ -492,30 +538,67 @@ export class RenewInvoicePayment {
     return this.database.transaction(async () => {
       const request = await this.support.load(found.requestId, { forUpdate: true });
       const record = (await this.invoices.findById(found.id, { forUpdate: true }))!;
-      if (record.payerType !== 'individual') throw new ConflictError('banquet_invoice.bank_transfer_only', 'Company invoices are paid by bank transfer');
-      if (record.status !== 'issued' && record.status !== 'partially_paid') {
-        throw new ConflictError('banquet_invoice.not_payable', 'Invoice is not awaiting payment', { status: record.status });
-      }
-      if (request.status === 'cancelled') throw new ConflictError('banquet_invoice.not_payable', 'Request is cancelled');
-      if (record.paymentId) {
-        const current = await this.payments.getPayment(record.paymentId);
-        if (current.status === 'created' || current.status === 'pending') return record;
-      }
+      assertOnlinePayable(record, request);
+      return (await this.online.ensure(record, request, { forceNew: false })).record;
+    });
+  }
+}
+
+/**
+ * Менеджер повторно отправляет гостю ссылку на оплату счёта (banquets.invoice). Если прежний платёж
+ * не прошёл / отменён / истёк — создаётся новый на остаток; regenerate — принудительно новая ссылка
+ * (прежний неоплаченный платёж отменяется). Гостю уходит уведомление со ссылкой на страницу счёта.
+ */
+@Injectable()
+export class ResendInvoicePaymentLink {
+  constructor(
+    private readonly invoices: InvoiceRepository,
+    private readonly support: BanquetSupport,
+    private readonly online: InvoiceOnlinePayment,
+    private readonly notifier: Notifier,
+    private readonly links: BanquetLinks,
+    private readonly database: Database,
+    private readonly audit: AuditLog,
+    private readonly clock: Clock,
+  ) {}
+
+  async execute(actor: Actor, invoiceId: string, input: { regenerate?: boolean }): Promise<InvoiceRecord> {
+    const found = await this.invoices.findById(invoiceId);
+    if (!found) throw new NotFoundError('banquet_invoice', invoiceId);
+    return this.database.transaction(async () => {
+      const request = await this.support.load(found.requestId, { forUpdate: true });
+      assertCanInvoice(actor, request);
+      const record = (await this.invoices.findById(found.id, { forUpdate: true }))!;
+      assertOnlinePayable(record, request);
+      const result = await this.online.ensure(record, request, { forceNew: input.regenerate === true });
+      const updated = result.record;
       const s = request.snapshot();
-      const attempts = (await this.payments.listForReference(PaymentPurpose.BanquetInvoice, record.id)).filter((p) => p.method === 'online').length;
-      const payment = await this.payments.createPayment({
-        purpose: PaymentPurpose.BanquetInvoice,
-        referenceId: record.id,
+      const now = this.clock.now();
+      await this.audit.record({
+        action: 'banquet.invoice_payment_link_sent',
+        entityType: 'banquet_invoice',
+        entityId: record.id,
         branchId: record.branchId,
-        method: 'online',
-        amount: invoiceEntity(record).remaining(),
-        description: `Счёт ${record.number} (банкет ${s.number})`,
-        customer: { phone: s.contact.phone || null, name: s.contact.name, email: s.contact.email },
-        returnUrl: this.links.invoice(record.publicToken, s.locale),
-        idempotencyKey: onlinePaymentKey(record.id, attempts),
+        before: { paymentId: record.paymentId },
+        after: { paymentId: updated.paymentId },
+        meta: { number: record.number, requestNumber: s.number, renewed: result.renewed, regenerate: input.regenerate === true },
+        actor,
       });
-      await this.invoices.setPaymentId(record.id, payment.id);
-      return (await this.invoices.findById(record.id))!;
+      await this.notifier.notifyGuest({
+        recipient: { phone: s.contact.phone || null, email: s.contact.email, name: s.contact.name },
+        template: 'banquet.invoice_issued',
+        params: {
+          number: s.number,
+          invoiceNumber: record.number,
+          amount: formatTenge(invoiceEntity(updated).remaining()),
+          dueDate: formatDateRu(record.dueDate),
+          paymentUrl: this.links.invoice(record.publicToken, s.locale),
+        },
+        locale: s.locale,
+        dedupeKey: `banquet:invoice:${record.id}:link:${updated.paymentId}:${now.getTime()}`,
+        related: { type: 'banquet_request', id: s.id },
+      });
+      return updated;
     });
   }
 }

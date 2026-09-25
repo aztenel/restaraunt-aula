@@ -3,10 +3,11 @@ import { Clock } from '../../../shared/kernel/clock';
 import { NotFoundError } from '../../../shared/kernel/errors';
 import { MoneyJson } from '../../../shared/kernel/money';
 import { addDays, startOfLocalDay } from '../../../shared/kernel/time';
-import { Locale, translate } from '../../../shared/kernel/translatable';
+import { Locale, Translatable, translate } from '../../../shared/kernel/translatable';
 import { BranchDirectory, BranchInfo } from '../../identity/public';
 import {
   assertLocalDateTime,
+  BookingChannel,
   bookingWindow,
   findFreeVenues,
   SlotRejection,
@@ -14,6 +15,7 @@ import {
   VenueCandidate,
 } from '../domain/availability';
 import { VenuePosition } from '../domain/venue';
+import { VenueRules } from '../domain/venue-rules';
 import { HallRepository } from '../infrastructure/hall.repository';
 import { ReservationRepository } from '../infrastructure/reservation.repository';
 import { ReservationSettingsRepository } from '../infrastructure/settings.repository';
@@ -92,6 +94,47 @@ export interface PublicHallMapView {
   branchSlug: string;
   acceptsReservations: boolean;
   halls: PublicHallView[];
+}
+
+export interface AdminVenueSlotView {
+  venueId: string;
+  hallId: string;
+  hallName: Translatable;
+  code: string;
+  name: Translatable;
+  typeCode: string;
+  typeName: Translatable;
+  capacityMin: number;
+  capacityMax: number;
+  /** Гостей меньше минимальной вместимости (оператор может посадить, витрина — нет). */
+  belowMinimum: boolean;
+  deposit: MoneyJson | null;
+  start: Date;
+  end: Date;
+  /** Конец занятости места: конец брони + буфер уборки. */
+  blockedUntil: Date;
+  durationMinutes: number;
+  rules: VenueRules;
+  bookableOnline: boolean;
+  position: VenuePosition;
+}
+
+export interface AdminAvailabilityView {
+  branchId: string;
+  date: string;
+  time: string;
+  guests: number;
+  durationMinutes: number | null;
+  available: boolean;
+  reason: AvailabilityReason | null;
+  venues: AdminVenueSlotView[];
+  alternatives: AlternativeTimeView[];
+}
+
+export interface AdminSlotQuery extends SlotQuery {
+  hallId?: string | null;
+  /** Не учитывать занятость этой брони (перенос / пересадка). */
+  excludeReservationId?: string | null;
 }
 
 export interface SlotQuery {
@@ -198,6 +241,64 @@ export class AvailabilityQueries {
     };
   }
 
+  /**
+   * Свободные места для оператора (бронь по телефону, перенос): включая места только для брони
+   * через оператора (bookableOnline = false), без ограничений витрины по упреждению и горизонту
+   * (часы работы соблюдаются, начало — не раньше чем 15 минут назад), без проверки минимальной вместимости.
+   */
+  async adminAvailability(branchId: string, query: AdminSlotQuery): Promise<AdminAvailabilityView> {
+    const branch = await this.branches.find(branchId);
+    if (!branch) throw new NotFoundError('branch', branchId);
+    assertLocalDateTime(query.date, query.time);
+    const venues = await this.venues.listDetailed({
+      branchIds: [branch.id],
+      activeOnly: true,
+      typeCode: query.typeCode ?? undefined,
+      hallId: query.hallId ?? undefined,
+    });
+    const inputs = await this.slotInputs(branch, venues, query.date, 'admin');
+    // Оператор может посадить меньше минимальной вместимости — проверяется только максимум.
+    const candidates = inputs.candidates.map((c) => ({ ...c, capacityMin: 1 }));
+    const busy = query.excludeReservationId ? inputs.busy.filter((b) => b.reservationId !== query.excludeReservationId) : inputs.busy;
+    const slot = { candidates, busy, guests: query.guests, date: query.date, time: query.time, durationMinutes: query.durationMinutes, window: inputs.window };
+    const result = findFreeVenues(slot);
+    const alternatives = result.free.length === 0 && result.reason !== 'no_capacity' ? suggestAlternatives(slot) : [];
+    const byId = new Map(venues.map((v) => [v.id, v]));
+    return {
+      branchId: branch.id,
+      date: query.date,
+      time: query.time,
+      guests: query.guests,
+      durationMinutes: query.durationMinutes ?? null,
+      available: result.free.length > 0,
+      reason: result.reason,
+      venues: result.free.map((free) => {
+        const v = byId.get(free.venueId)!;
+        return {
+          venueId: v.id,
+          hallId: v.hallId,
+          hallName: v.hall.name,
+          code: v.code,
+          name: v.name,
+          typeCode: v.type.code,
+          typeName: v.type.name,
+          capacityMin: v.capacityMin,
+          capacityMax: v.capacityMax,
+          belowMinimum: query.guests < v.capacityMin,
+          deposit: v.deposit?.toJSON() ?? null,
+          start: free.range.start,
+          end: free.range.end,
+          blockedUntil: free.blocked.end,
+          durationMinutes: free.durationMinutes,
+          rules: { ...v.rules },
+          bookableOnline: v.rules.bookableOnline,
+          position: { ...v.position },
+        };
+      }),
+      alternatives: alternatives.map((a) => ({ date: a.date, time: a.time, start: a.start, venueIds: a.venueIds })),
+    };
+  }
+
   async hallMap(slug: string, locale: Locale, slot: SlotQuery | null): Promise<PublicHallMapView> {
     const branch = await this.branchBySlug(slug);
     const halls = await this.halls.list({ branchIds: [branch.id], activeOnly: true });
@@ -249,8 +350,8 @@ export class AvailabilityQueries {
     };
   }
 
-  /** Кандидаты, занятость (день запроса с запасом на длительность брони) и окно брони витрины. */
-  private async slotInputs(branch: BranchInfo, venues: readonly VenueDetails[], date: string) {
+  /** Кандидаты, занятость (день запроса с запасом на длительность брони) и окно брони канала (по умолчанию — витрины). */
+  private async slotInputs(branch: BranchInfo, venues: readonly VenueDetails[], date: string, channel: BookingChannel = 'web') {
     const candidates: VenueCandidate[] = venues.map((v) => ({
       venueId: v.id,
       capacityMin: v.capacityMin,
@@ -265,7 +366,7 @@ export class AvailabilityQueries {
       to,
     );
     const settings = await this.settings.get(branch.id);
-    const window = bookingWindow('web', {
+    const window = bookingWindow(channel, {
       now: this.clock.now(),
       timezone: branch.timezone,
       openingHours: branch.openingHours,

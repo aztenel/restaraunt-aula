@@ -7,6 +7,7 @@ import { pageRequest } from '../../../../shared/kernel/pagination';
 import { Permission } from '../../../../shared/kernel/permissions';
 import { addDays, DEFAULT_TIMEZONE, startOfLocalDay } from '../../../../shared/kernel/time';
 import { Locale } from '../../../../shared/kernel/translatable';
+import { MenuQuery } from '../../../catalog/public';
 import { CancelCourierDispatch, RetryCourierDispatch } from '../../application/courier-dispatch.actions';
 import { OrderLinks } from '../../application/order-links';
 import { OrderQueries } from '../../application/order.queries';
@@ -18,6 +19,8 @@ import {
   AdminOrderDetailsDto,
   AdminOrderListItemDto,
   AdminOrderListQueryDto,
+  AdminOrderMenuDto,
+  AdminOrderMenuQueryDto,
   AdminOrderQueueDto,
   AdminOrdersPageDto,
   AdminQueueQueryDto,
@@ -47,6 +50,7 @@ export class AdminOrdersController {
     private readonly retryCourier: RetryCourierDispatch,
     private readonly cancelCourier: CancelCourierDispatch,
     private readonly links: OrderLinks,
+    private readonly menu: MenuQuery,
   ) {}
 
   private async details(actor: Actor, orderId: string): Promise<AdminOrderDetailsDto> {
@@ -79,6 +83,18 @@ export class AdminOrdersController {
   @ApiOkResponse({ type: AdminOrderQueueDto })
   async queue(@CurrentActor() actor: Actor, @Query() q: AdminQueueQueryDto): Promise<AdminOrderQueueDto> {
     return AdminOrderQueueDto.from(await this.queries.queue(actor, q.branchId ?? null));
+  }
+
+  /**
+   * Меню филиала для телефонного заказа: все блюда с ценами филиала и модификаторами, включая блюда
+   * в стоп-листе (stopped = true — оператор видит, но заказать нельзя).
+   */
+  @RequirePermissions(Permission.OrdersManage)
+  @Get('menu')
+  @ApiOkResponse({ type: AdminOrderMenuDto })
+  async orderMenu(@CurrentActor() actor: Actor, @Query() q: AdminOrderMenuQueryDto): Promise<AdminOrderMenuDto> {
+    actor.assertCan(Permission.OrdersManage, q.branchId);
+    return AdminOrderMenuDto.from(await this.menu.branchOrderMenu(q.branchId));
   }
 
   /** Расчёт телефонного заказа (суммы считает сервер). */

@@ -14,16 +14,19 @@ import { CheckEsfStatus, RetryEsf, SubmitEsf } from './application/esf.actions';
 import { BanquetFunnel } from './application/funnel';
 import {
   CancelBanquetInvoice,
+  InvoiceOnlinePayment,
   IssueBanquetInvoice,
   RecordInvoicePayment,
   RecordInvoiceRefund,
   RefundBanquetPayment,
   RegisterInvoiceBankTransfer,
   RenewInvoicePayment,
+  ResendInvoicePaymentLink,
 } from './application/invoice.actions';
 import { ManagerAssigner } from './application/manager-assigner';
 import { PublicBanquetQueries } from './application/public.queries';
-import { AcceptQuote, SaveQuoteVersion, SendQuote } from './application/quote.actions';
+import { InvoicePaymentsInfo } from './application/invoice-payments-info';
+import { AcceptQuote, PreviewQuote, QuoteCalculator, SaveQuoteVersion, SendQuote } from './application/quote.actions';
 import {
   AddBanquetActivity,
   AssignBanquetManager,
@@ -109,6 +112,8 @@ import { TemplateRepository } from './infrastructure/template.repository';
     SetPrepaymentAmount,
     SetBanquetVenue,
     ReleaseBanquetVenue,
+    QuoteCalculator,
+    PreviewQuote,
     SaveQuoteVersion,
     SendQuote,
     AcceptQuote,
@@ -117,6 +122,9 @@ import { TemplateRepository } from './infrastructure/template.repository';
     RegisterInvoiceBankTransfer,
     CancelBanquetInvoice,
     RenewInvoicePayment,
+    ResendInvoicePaymentLink,
+    InvoiceOnlinePayment,
+    InvoicePaymentsInfo,
     RefundBanquetPayment,
     RecordInvoiceRefund,
     GenerateContract,

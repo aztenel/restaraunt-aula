@@ -8,6 +8,8 @@
 - Решения по открытым вопросам ТЗ: [docs/decisions.md](docs/decisions.md)
 - Эксплуатация (деплой, откат, бэкапы, мониторинг, инциденты): [docs/operations.md](docs/operations.md)
 - Инфраструктура (хостинг в РК, сайзинг, DNS/TLS, CDN): [docs/infrastructure.md](docs/infrastructure.md)
+- Инструкция для администратора и сотрудников: [docs/admin-guide.md](docs/admin-guide.md), сценарий видео по админке: [docs/admin-video-script.md](docs/admin-video-script.md)
+- Схема базы данных: [docs/database-schema.md](docs/database-schema.md), описание API: [docs/openapi.json](docs/openapi.json)
 
 ## Архитектура
 
@@ -189,3 +191,7 @@ expand/contract), бэкапы и ежеквартальная проверка 
 | [docs/openapi.json](docs/openapi.json) | разработчики клиентов (витрина, админка, мобильное приложение, портал франчайзи) |
 | [docs/operations.md](docs/operations.md) | администратор системы, дежурный |
 | [docs/infrastructure.md](docs/infrastructure.md) | владелец инфраструктуры, архитектор |
+| [docs/admin-guide.md](docs/admin-guide.md) | сотрудники всех ролей: работа в админке, первый запуск |
+| [docs/admin-video-script.md](docs/admin-video-script.md) | запись видеоинструкций по админке |
+| [docs/database-schema.md](docs/database-schema.md) | разработчики, DBA: схема БД (генерируется `pnpm --filter @aula/api db:schema-doc`) |
+| [docs/development/frontend-guide.md](docs/development/frontend-guide.md) | разработчики витрины и админки |

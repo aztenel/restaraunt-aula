@@ -20,6 +20,7 @@ import { assertCanView } from './access';
 import { BanquetLinks } from './banquet-links';
 import { BanquetSupport } from './banquet-support';
 import { BanquetDocumentFiles, SignedLink } from './document-files';
+import { InvoicePaymentsInfo } from './invoice-payments-info';
 import { DocumentView, documentView, InvoiceView, invoiceView, QuoteSummaryView, quoteSummaryView, QuoteView, quoteView } from './views';
 
 export interface DishOptionView {
@@ -95,6 +96,7 @@ export class InvoiceQueries {
     private readonly support: BanquetSupport,
     private readonly links: BanquetLinks,
     private readonly clock: Clock,
+    private readonly paymentsInfo: InvoicePaymentsInfo,
   ) {}
 
   async list(
@@ -106,12 +108,19 @@ export class InvoiceQueries {
     const today = toLocalDate(this.clock.now());
     const { items, total } = await this.invoices.list({ branches, statuses: query.status, overdueOn: query.overdue ? today : undefined }, page);
     const payments = await this.invoices.paymentsOf(items.map((i) => i.id));
+    const extras = await this.paymentsInfo.load(items, payments);
     const requests = new Map((await this.requests.findByIds([...new Set(items.map((i) => i.requestId))])).map((r) => [r.id, r]));
     return pageOf(
       items.map((i) => {
         const request = requests.get(i.requestId);
         return {
-          ...invoiceView(i, payments, { today, publicUrl: this.links.invoice(i.publicToken, request?.snapshot().locale ?? 'ru') }),
+          ...invoiceView(i, payments, {
+            today,
+            publicUrl: this.links.invoice(i.publicToken, request?.snapshot().locale ?? 'ru'),
+            currentPayment: extras.currentPayments.get(i.id),
+            refunds: extras.refunds,
+            requestCancelled: request?.status === 'cancelled',
+          }),
           requestNumber: request?.number ?? '',
         };
       }),
@@ -127,8 +136,15 @@ export class InvoiceQueries {
     assertCanView(actor, request);
     const today = await this.support.today(invoice.branchId);
     const payments = await this.invoices.paymentsOf([invoice.id]);
+    const extras = await this.paymentsInfo.load([invoice], payments);
     return {
-      ...invoiceView(invoice, payments, { today, publicUrl: this.links.invoice(invoice.publicToken, request.snapshot().locale) }),
+      ...invoiceView(invoice, payments, {
+        today,
+        publicUrl: this.links.invoice(invoice.publicToken, request.snapshot().locale),
+        currentPayment: extras.currentPayments.get(invoice.id),
+        refunds: extras.refunds,
+        requestCancelled: request.status === 'cancelled',
+      }),
       requestNumber: request.number,
     };
   }

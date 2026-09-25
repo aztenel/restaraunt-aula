@@ -203,6 +203,13 @@ export class BanquetSaveQuoteDto {
   @ApiPropertyOptional({ description: 'Обновить цены позиций меню по текущему меню филиала' }) @IsOptional() @IsBoolean() refreshMenuPrices?: boolean;
 }
 
+export class BanquetResendPaymentLinkDto {
+  @ApiPropertyOptional({ description: 'Принудительно новая ссылка: прежний неоплаченный платёж отменяется' })
+  @IsOptional()
+  @IsBoolean()
+  regenerate?: boolean;
+}
+
 export class BanquetAcceptQuoteDto {
   @ApiProperty({ description: 'Версия сметы, которую видел клиент' }) @IsInt() @Min(1) version: number;
 }
@@ -280,6 +287,13 @@ export class BanquetPipelineQueryDto {
   @ApiPropertyOptional() @IsOptional() @IsUUID() managerId?: string;
   @ApiPropertyOptional({ example: '2026-10-01' }) @IsOptional() @Matches(DATE_RE) dateFrom?: string;
   @ApiPropertyOptional({ example: '2026-12-31' }) @IsOptional() @Matches(DATE_RE) dateTo?: string;
+  @ApiPropertyOptional({ description: 'Номер, имя или телефон' }) @IsOptional() @IsString() @MaxLength(100) q?: string;
+  @ApiPropertyOptional({ type: Boolean, description: 'Только выездные (true) / только в залах (false)' })
+  @IsOptional()
+  @Transform(toBoolean)
+  @IsBoolean()
+  offsite?: boolean;
+  @ApiPropertyOptional({ type: Boolean, description: 'Нарушен SLA первого ответа' }) @IsOptional() @Transform(toBoolean) @IsBoolean() slaBreached?: boolean;
 }
 
 export function parseStatuses(value: string | undefined): BanquetStatus[] | undefined {
@@ -291,7 +305,10 @@ export function parseStatuses(value: string | undefined): BanquetStatus[] | unde
 }
 
 export class BanquetCalendarQueryDto {
-  @ApiProperty() @IsUUID() branchId: string;
+  @ApiPropertyOptional({ description: 'Филиал; не задан — все филиалы, доступные сотруднику, и выездные заявки' })
+  @IsOptional()
+  @IsUUID()
+  branchId?: string;
   @ApiProperty({ example: '2026-10-01' }) @Matches(DATE_RE) from: string;
   @ApiProperty({ example: '2026-10-31' }) @Matches(DATE_RE) to: string;
 }

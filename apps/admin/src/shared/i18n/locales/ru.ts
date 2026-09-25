@@ -238,6 +238,7 @@ export const ru = {
     activateConfirm: 'Активировать «{{name}}»?',
   },
   branches: {
+    id: 'ID (для интеграций)',
     create: 'Добавить филиал',
     createTitle: 'Новый филиал',
     editTitle: 'Филиал',

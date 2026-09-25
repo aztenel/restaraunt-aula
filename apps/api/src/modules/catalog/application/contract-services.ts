@@ -2,18 +2,23 @@ import { Injectable, Logger } from '@nestjs/common';
 import { RequestContext } from '../../../shared/infrastructure/context/request-context';
 import { Actor } from '../../../shared/kernel/actor';
 import { Clock } from '../../../shared/kernel/clock';
-import { ValidationError } from '../../../shared/kernel/errors';
+import { NotFoundError, ValidationError } from '../../../shared/kernel/errors';
 import { isUuid } from '../../../shared/kernel/ids';
 import { BranchDirectory } from '../../identity/public';
 import { normalizeSku } from '../domain/dish';
+import { isRequiredGroup } from '../domain/modifiers';
 import { isInBranchMenu, priceLines } from '../domain/pricing';
 import { normalizeSearchQuery } from '../domain/search';
 import { displayAvailability, effectiveAvailability, StopListMode } from '../domain/stop-list';
 import { BranchMenuRepository } from '../infrastructure/branch-menu.repository';
+import { CategoryRepository } from '../infrastructure/category.repository';
 import { DishRepository } from '../infrastructure/dish.repository';
 import { MenuReadRepository, MenuRow } from '../infrastructure/menu-read.repository';
+import { ModifierRepository } from '../infrastructure/modifier.repository';
 import {
+  BranchOrderMenu,
   DishAvailability,
+  DishCard,
   DishSummary,
   MenuPricing,
   MenuQuery,
@@ -79,6 +84,8 @@ export class MenuQueryService extends MenuQuery {
     private readonly branches: BranchDirectory,
     private readonly images: ImageUrls,
     private readonly clock: Clock,
+    private readonly modifiers: ModifierRepository,
+    private readonly categories: CategoryRepository,
   ) {
     super();
   }
@@ -116,6 +123,69 @@ export class MenuQueryService extends MenuQuery {
     const { rows } = await this.menu.list({ branchId, now: this.clock.now(), hideStopped: false, dishIds: ids });
     const byId = new Map((await this.summaries(rows, mode)).map((s) => [s.dishId, s]));
     return ids.map((id) => byId.get(id)).filter((s): s is DishSummary => !!s);
+  }
+
+  async describeDishes(dishIds: string[]): Promise<DishCard[]> {
+    const ids = [...new Set(dishIds.filter((id) => isUuid(id)))];
+    if (ids.length === 0) return [];
+    const [records, photos] = await Promise.all([this.dishes.findManyByIds(ids), this.dishes.photosFor(ids)]);
+    const byId = new Map(records.map((d) => [d.id, d]));
+    return ids
+      .map((id) => byId.get(id))
+      .filter((d) => d !== undefined)
+      .map((d) => ({
+        dishId: d.id,
+        slug: d.slug,
+        name: d.name,
+        photoUrl: this.images.url(photos.get(d.id)?.[0], 'dishes'),
+        weightGrams: d.weightGrams,
+      }));
+  }
+
+  async branchOrderMenu(branchId: string): Promise<BranchOrderMenu> {
+    const mode = await stopListMode(this.branches, branchId);
+    if (!mode) throw new NotFoundError('branch', branchId);
+    const now = this.clock.now();
+    const [{ rows }, categories] = await Promise.all([
+      this.menu.list({ branchId, now, hideStopped: false }),
+      this.categories.list({ activeOnly: true }),
+    ]);
+    const ids = rows.map((r) => r.dish.id);
+    const [photos, groups] = await Promise.all([this.dishes.photosFor(ids), this.modifiers.groupsForDishes(ids)]);
+    const used = new Set(rows.map((r) => r.dish.categoryId));
+    return {
+      branchId,
+      categories: categories.filter((c) => used.has(c.id)).map((c) => ({ id: c.id, slug: c.slug, name: c.name })),
+      dishes: rows.map((r) => {
+        const stopped = effectiveAvailability(r.item, now) === 'stopped';
+        return {
+          dishId: r.dish.id,
+          slug: r.dish.slug,
+          categoryId: r.dish.categoryId,
+          name: r.dish.name,
+          price: r.item.price,
+          availability: displayAvailability(effectiveAvailability(r.item, now), mode),
+          stopped,
+          stoppedUntil: stopped ? r.item.stoppedUntil : null,
+          stopReason: stopped ? r.item.stopReason : null,
+          photoUrl: this.images.url(photos.get(r.dish.id)?.[0], 'dishes'),
+          weightGrams: r.dish.weightGrams,
+          sku: r.item.sku ?? r.dish.sku,
+          modifierGroups: (groups.get(r.dish.id) ?? [])
+            .filter((g) => g.isActive && g.options.some((o) => o.isActive))
+            .map((g) => ({
+              id: g.id,
+              name: g.name,
+              minSelect: g.minSelect,
+              maxSelect: g.maxSelect,
+              isRequired: isRequiredGroup(g),
+              options: g.options
+                .filter((o) => o.isActive)
+                .map((o) => ({ id: o.id, name: o.name, price: o.price, isDefault: o.isDefault })),
+            })),
+        };
+      }),
+    };
   }
 }
 

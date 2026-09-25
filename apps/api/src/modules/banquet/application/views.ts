@@ -1,9 +1,12 @@
-import { MoneyJson } from '../../../shared/kernel/money';
+import { Money, MoneyJson } from '../../../shared/kernel/money';
+import { PaymentView, RefundView } from '../../payments/public';
 import { Translatable } from '../../../shared/kernel/translatable';
 import { BanquetRequest } from '../domain/banquet-request';
 import { EsfStatus } from '../domain/esf';
+import { activePaymentUrl } from './invoice-payments-info';
 import { InvoicePurpose, InvoiceStatus, PayerType } from '../domain/invoice';
-import { QuoteDiscount } from '../domain/quote';
+import { CalculatedQuoteLine, QuoteDiscount, QuoteTotals } from '../domain/quote';
+import { SellerSnapshot } from '../domain/requisites';
 import { slaDeadline } from '../domain/sla';
 import { QuoteLineKind } from '../domain/texts';
 import { ActivityKind, ActivityRecord } from '../infrastructure/activity.repository';
@@ -109,14 +112,42 @@ export interface QuoteView {
   isLatest: boolean;
 }
 
+/** Предпросмотр сметы: итоги без сохранения версии. */
+export interface QuotePreviewView {
+  requestId: string;
+  branchId: string | null;
+  guests: number;
+  discount: DiscountView | null;
+  serviceChargeBp: number;
+  vatPayer: boolean;
+  vatRateBp: number;
+  lines: QuoteLineView[];
+  totals: QuoteTotalsView;
+  validUntil: string;
+  notes: string | null;
+  seller: { name: string; bin: string };
+}
+
 export interface InvoicePaymentView {
   paymentId: string;
   method: string;
   amount: MoneyJson;
   refunded: MoneyJson;
+  /** Сколько ещё можно вернуть: сумма минус прошедшие и ожидающие возвраты. */
+  refundable: MoneyJson;
   documentNumber: string | null;
   paidAt: Date;
   recordedByName: string;
+}
+
+export interface InvoiceRefundView {
+  refundId: string;
+  paymentId: string;
+  amount: MoneyJson;
+  status: 'pending' | 'succeeded' | 'failed';
+  reason: string;
+  createdAt: Date;
+  completedAt: Date | null;
 }
 
 export interface InvoiceView {
@@ -146,6 +177,13 @@ export interface InvoiceView {
   cancelledAt: Date | null;
   cancelReason: string | null;
   payments: InvoicePaymentView[];
+  /** Ссылка на онлайн-оплату текущего платежа (физлицо), пока он ждёт оплату. */
+  paymentUrl: string | null;
+  /** Статус текущего онлайн-платежа (created, pending, succeeded, failed, cancelled...). */
+  paymentStatus: string | null;
+  /** Можно отправить (перевыпустить) ссылку на оплату: счёт физлица ждёт оплату. */
+  canResendPaymentLink: boolean;
+  refunds: InvoiceRefundView[];
 }
 
 export interface ActView {
@@ -164,6 +202,8 @@ export interface ActView {
     error: string | null;
     updatedAt: Date | null;
   };
+  /** ЭСФ можно отправить повторно (не удалась или ждёт ручной загрузки черновика). */
+  esfRetryable: boolean;
   createdAt: Date;
 }
 
@@ -222,6 +262,63 @@ export function requestSummaryView(
     firstResponseAt: s.firstResponseAt,
     createdAt: s.createdAt,
     updatedAt: s.updatedAt,
+  };
+}
+
+function lineView(l: CalculatedQuoteLine): QuoteLineView {
+  return {
+    position: l.position,
+    kind: l.kind,
+    dishId: l.dishId,
+    title: l.title,
+    unit: l.unit,
+    quantity: l.quantity,
+    unitPrice: l.unitPrice.toJSON(),
+    discount: discountView(l.discount),
+    gross: l.gross.toJSON(),
+    discountAmount: l.discountAmount.toJSON(),
+    total: l.total.toJSON(),
+  };
+}
+
+function totalsView(t: QuoteTotals): QuoteTotalsView {
+  return {
+    subtotal: t.subtotal.toJSON(),
+    linesDiscount: t.linesDiscount.toJSON(),
+    overallDiscount: t.overallDiscount.toJSON(),
+    discount: t.discount.toJSON(),
+    service: t.service.toJSON(),
+    total: t.total.toJSON(),
+    vat: t.vat.toJSON(),
+    perGuest: t.perGuest.toJSON(),
+  };
+}
+
+export function quotePreviewView(input: {
+  requestId: string;
+  branchId: string | null;
+  guests: number;
+  discount: QuoteDiscount;
+  serviceChargeBp: number;
+  seller: SellerSnapshot;
+  lines: CalculatedQuoteLine[];
+  totals: QuoteTotals;
+  validUntil: string;
+  notes: string | null;
+}): QuotePreviewView {
+  return {
+    requestId: input.requestId,
+    branchId: input.branchId,
+    guests: input.guests,
+    discount: discountView(input.discount),
+    serviceChargeBp: input.serviceChargeBp,
+    vatPayer: input.seller.vatPayer,
+    vatRateBp: input.seller.vatRateBp,
+    lines: input.lines.map(lineView),
+    totals: totalsView(input.totals),
+    validUntil: input.validUntil,
+    notes: input.notes,
+    seller: { name: input.seller.name, bin: input.seller.bin },
   };
 }
 
@@ -289,7 +386,22 @@ export function quoteSummaryView(q: QuoteSummary, latestVersion: number | null):
   };
 }
 
-export function invoiceView(r: InvoiceRecord, payments: InvoicePaymentRecord[], extra: { today: string; publicUrl: string }): InvoiceView {
+export function invoiceView(
+  r: InvoiceRecord,
+  payments: InvoicePaymentRecord[],
+  extra: {
+    today: string;
+    publicUrl: string;
+    /** Текущий онлайн-платёж счёта (ссылка на оплату). */
+    currentPayment?: PaymentView;
+    refunds?: readonly RefundView[];
+    requestCancelled?: boolean;
+  },
+): InvoiceView {
+  const own = payments.filter((p) => p.invoiceId === r.id);
+  const ownIds = new Set(own.map((p) => p.paymentId));
+  const refunds = (extra.refunds ?? []).filter((x) => ownIds.has(x.paymentId));
+  const awaiting = r.status === 'issued' || r.status === 'partially_paid';
   return {
     id: r.id,
     requestId: r.requestId,
@@ -316,17 +428,36 @@ export function invoiceView(r: InvoiceRecord, payments: InvoicePaymentRecord[], 
     paidAt: r.paidAt,
     cancelledAt: r.cancelledAt,
     cancelReason: r.cancelReason,
-    payments: payments
-      .filter((p) => p.invoiceId === r.id)
-      .map((p) => ({
+    payments: own.map((p) => {
+      const reserved = Money.sum(
+        refunds.filter((x) => x.paymentId === p.paymentId && x.status !== 'failed').map((x) => x.amount),
+        p.amount.currency,
+      );
+      // Возвраты, прошедшие до учёта в Payments, отражены в refunded — берём большее из двух.
+      const used = reserved.greaterThan(p.refunded) ? reserved : p.refunded;
+      return {
         paymentId: p.paymentId,
         method: p.method,
         amount: p.amount.toJSON(),
         refunded: p.refunded.toJSON(),
+        refundable: p.amount.subtract(used).clampToZero().toJSON(),
         documentNumber: p.documentNumber,
         paidAt: p.paidAt,
         recordedByName: p.recordedByName,
-      })),
+      };
+    }),
+    paymentUrl: activePaymentUrl(extra.currentPayment),
+    paymentStatus: extra.currentPayment?.status ?? null,
+    canResendPaymentLink: r.payerType === 'individual' && awaiting && !extra.requestCancelled,
+    refunds: refunds.map((x) => ({
+      refundId: x.id,
+      paymentId: x.paymentId,
+      amount: x.amount.toJSON(),
+      status: x.status,
+      reason: x.reason,
+      createdAt: x.createdAt,
+      completedAt: x.completedAt ?? null,
+    })),
   };
 }
 
@@ -347,6 +478,7 @@ export function actView(a: ActRecord): ActView {
       error: a.esf.error,
       updatedAt: a.esf.updatedAt,
     },
+    esfRetryable: a.esf.status === 'failed' || a.esf.status === 'draft_ready',
     createdAt: a.createdAt,
   };
 }

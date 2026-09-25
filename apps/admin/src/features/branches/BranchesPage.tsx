@@ -63,6 +63,16 @@ export function BranchesPage() {
           { title: t('branches.code'), dataIndex: 'code', render: (code: string) => <Tag>{code}</Tag> },
           { title: t('branches.slug'), dataIndex: 'slug', render: (slug: string) => <Typography.Text code>{slug}</Typography.Text> },
           {
+            // ID нужен при настройке интеграций по филиалам (маршрутизация платежей, POS, курьеров).
+            title: t('branches.id'),
+            dataIndex: 'id',
+            render: (id: string) => (
+              <Typography.Text code copyable={{ text: id }} style={{ fontSize: 12 }}>
+                {id.slice(0, 8)}…
+              </Typography.Text>
+            ),
+          },
+          {
             title: t('branches.contacts'),
             key: 'contacts',
             render: (_, b) => (

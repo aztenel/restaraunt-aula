@@ -138,6 +138,7 @@ export class Refund {
       status: this.props.status,
       reason: this.props.reason,
       createdAt: this.props.createdAt,
+      completedAt: this.props.completedAt,
     };
   }
 }

@@ -68,8 +68,17 @@ export class PromoCodeInputDto {
   }
 }
 
+export const PROMO_SCOPES = ['network', 'branch'] as const;
+
 export class PromoListQueryDto extends PageQueryDto {
   @ApiPropertyOptional() @IsOptional() @IsUUID() branchId?: string;
+  @ApiPropertyOptional({
+    enum: PROMO_SCOPES,
+    description: 'network — только промокоды на всю сеть (branchId не учитывается), branch — только промокоды филиалов',
+  })
+  @IsOptional()
+  @IsIn(PROMO_SCOPES)
+  scope?: (typeof PROMO_SCOPES)[number];
   @ApiPropertyOptional({ description: 'Поиск по коду' }) @IsOptional() @IsString() @MaxLength(32) q?: string;
   @ApiPropertyOptional() @IsOptional() @Transform(queryBoolean) @IsBoolean() active?: boolean;
 }

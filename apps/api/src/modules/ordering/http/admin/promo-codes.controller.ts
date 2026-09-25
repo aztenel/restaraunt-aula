@@ -27,7 +27,7 @@ export class AdminPromoCodesController {
   @Get()
   @ApiOkResponse({ type: PromoCodesPageDto })
   async list(@CurrentActor() actor: Actor, @Query() q: PromoListQueryDto): Promise<PromoCodesPageDto> {
-    const page = await this.queries.list(actor, { branchId: q.branchId ?? null, q: q.q, active: q.active }, pageRequest(q.page, q.perPage));
+    const page = await this.queries.list(actor, { branchId: q.branchId ?? null, scope: q.scope, q: q.q, active: q.active }, pageRequest(q.page, q.perPage));
     return { ...page, items: page.items.map(PromoCodeDto.from) };
   }
 

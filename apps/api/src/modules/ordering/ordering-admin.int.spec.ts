@@ -129,12 +129,89 @@ describe('Ordering: admin orders and permissions (integration)', () => {
       'ready',
       'delivering',
     ]);
-    expect(group('awaiting_payment').orders[0]).toMatchObject({ id: waiting.orderId, allowedTransitions: ['cancelled'] });
-    expect(group('paid')).toMatchObject({ count: 1, orders: [{ id: paid.orderId, allowedTransitions: ['accepted'], isLate: false }] });
+    expect(group('awaiting_payment').orders[0]).toMatchObject({
+      id: waiting.orderId,
+      allowedTransitions: ['cancelled'],
+      canCancel: true,
+      canReject: false,
+      courier: null,
+      amountDue: { amount: 0, currency: 'KZT' },
+    });
+    expect(group('paid')).toMatchObject({
+      count: 1,
+      orders: [{ id: paid.orderId, allowedTransitions: ['accepted'], isLate: false, canCancel: false, canReject: true, amountDue: { amount: 0 } }],
+    });
     expect(group('paid').orders[0].items[0]).toMatchObject({ quantity: 1, name: { ru: expect.stringContaining('Плов') } });
     ctx.t.clock.advance(2 * 60 * 60_000);
     queue = await api().get('/api/v1/admin/orders/queue').set('Authorization', operator).expect(200);
     expect(group('paid').orders[0].isLate).toBe(true);
+
+    // Оплата при получении: сколько получить с гостя; финансы видят очередь без действий.
+    const onReceipt = await place(branchA, { paymentMethod: 'on_receipt', phoneVerificationToken: `verified:${PHONE}` });
+    queue = await api().get('/api/v1/admin/orders/queue').set('Authorization', operator).expect(200);
+    const card = group('paid').orders.find((o: { id: string }) => o.id === onReceipt.orderId);
+    expect(card).toMatchObject({ paymentMethod: 'on_receipt', amountDue: { amount: 400_000, currency: 'KZT' }, canReject: true });
+    const finance = await staff(ctx, 'finance');
+    queue = await api().get(`/api/v1/admin/orders/queue?branchId=${branchA}`).set('Authorization', finance).expect(200);
+    expect(group('paid').orders[0]).toMatchObject({ allowedTransitions: [], canCancel: false, canReject: false });
+  });
+
+  it('quote shows the dish name and photo for stopped or foreign-branch lines', async () => {
+    const operator = await staff(ctx, 'branch_operator', branchA);
+    const plov = addDish(ctx, 'Плов', 3_000);
+    const stopped = addDish(ctx, 'Манты', 2_500, { availability: 'stopped_hidden' });
+    const foreign = addDish(ctx, 'Бешбармак', 5_000, { branchIds: [branchB] });
+    const quote = await api()
+      .post('/api/v1/public/orders/quote')
+      .send({
+        branchId: branchA,
+        type: 'pickup',
+        items: [
+          { dishId: plov.dishId, quantity: 1 },
+          { dishId: stopped.dishId, quantity: 1 },
+          { dishId: foreign.dishId, quantity: 1 },
+          { dishId: '01a0d872-0000-7000-8000-000000000000', quantity: 1 },
+        ],
+      })
+      .expect(200);
+    expect(quote.body.lines).toMatchObject([
+      { index: 0, name: 'Плов', available: true, problem: null },
+      { index: 1, name: 'Манты', photoUrl: null, available: false, problem: 'catalog.dish_unavailable', unitPrice: null },
+      { index: 2, name: 'Бешбармак', available: false, problem: 'catalog.dish_not_in_branch_menu' },
+      { index: 3, name: null, available: false, problem: 'catalog.dish_not_in_branch_menu' },
+    ]);
+    expect(quote.body.total).toEqual({ amount: 300_000, currency: 'KZT' });
+    const admin = await api()
+      .post('/api/v1/admin/orders/quote')
+      .set('Authorization', operator)
+      .send({ branchId: branchA, type: 'pickup', items: [{ dishId: stopped.dishId, quantity: 1 }] })
+      .expect(200);
+    expect(admin.body.lines[0]).toMatchObject({ name: 'Манты', problem: 'catalog.dish_unavailable' });
+  });
+
+  it('branch menu for phone orders: dishes with modifiers, stopped ones flagged; orders.manage in the branch', async () => {
+    const plov = addDish(ctx, 'Плов', 3_000, { modifiers: [{ groupId: 'g-1', optionId: 'o-1', name: 'Сыр', price: 30_000 }] });
+    addDish(ctx, 'Манты', 2_500, { availability: 'stopped_shown' });
+    addDish(ctx, 'Бешбармак', 5_000, { branchIds: [branchB] });
+    const operator = await staff(ctx, 'branch_operator', branchA);
+    const menu = await api().get(`/api/v1/admin/orders/menu?branchId=${branchA}`).set('Authorization', operator).expect(200);
+    expect(menu.body.branchId).toBe(branchA);
+    expect(menu.body.dishes.map((d: { name: { ru: string } }) => d.name.ru)).toEqual(['Плов', 'Манты']);
+    expect(menu.body.dishes[0]).toMatchObject({
+      dishId: plov.dishId,
+      price: { amount: 300_000, currency: 'KZT' },
+      stopped: false,
+      availability: 'available',
+      modifierGroups: [{ id: 'g-1', options: [{ id: 'o-1', name: { ru: 'Сыр' }, price: { amount: 30_000 } }] }],
+    });
+    expect(menu.body.dishes[1]).toMatchObject({ stopped: true, availability: 'stopped_shown' });
+    expect(menu.body.categories).toEqual([expect.objectContaining({ id: 'cat-1' })]);
+
+    await api().get(`/api/v1/admin/orders/menu?branchId=${branchB}`).set('Authorization', operator).expect(403);
+    await api().get('/api/v1/admin/orders/menu').set('Authorization', operator).expect(400);
+    const finance = await staff(ctx, 'finance');
+    await api().get(`/api/v1/admin/orders/menu?branchId=${branchA}`).set('Authorization', finance).expect(403);
+    await api().get(`/api/v1/admin/orders/menu?branchId=${branchA}`).expect(401);
   });
 
   it('phone order by an operator: channel admin, on_receipt without SMS code, online sends the guest a status link', async () => {
@@ -157,6 +234,7 @@ describe('Ordering: admin orders and permissions (integration)', () => {
     const res = await api().post('/api/v1/admin/orders').set('Authorization', operator).send(body).expect(201);
     expect(res.body).toMatchObject({ status: 'paid', channel: 'admin', paymentMethod: 'on_receipt', total: { amount: 600_000 } });
     expect(res.body.createdBy).toEqual(expect.any(String));
+    expect(res.body.createdByName).toBe('Сотрудник');
     expect(res.body.payments[0]).toMatchObject({ kind: 'on_receipt', status: 'pending' });
     expect(ctx.fakes.customers.consents[0]).toMatchObject({ kind: 'personal_data', granted: true });
     expect((ctx.fakes.customers.consents[0] as unknown as { source: string }).source).toBe('phone');

@@ -170,7 +170,19 @@ export class ReservationRecorder {
       aggregateId: r.id,
       branchId: r.branchId,
     });
-    await this.pushFeed(r, `Бронь ${p.number}: ${STATUS_TITLES[change.to] ?? change.to}`);
+    if (change.from === 'awaiting_deposit' && change.to === 'pending') {
+      // Депозит оплачен, место требует ручного подтверждения — бронь ждёт сотрудника (со звуком).
+      await this.feed.push({
+        branchId: r.branchId,
+        stream: 'reservations',
+        kind: 'created',
+        entityId: r.id,
+        title: `Бронь ${p.number} ждёт подтверждения: депозит оплачен · ${this.when(r, ctx.branch)} · ${p.guests} гост. · ${translate(ctx.venue.name, 'ru')}`,
+        sound: true,
+      });
+    } else {
+      await this.pushFeed(r, `Бронь ${p.number}: ${STATUS_TITLES[change.to] ?? change.to}`);
+    }
     if (r.kind === 'banquet') return;
     await this.notifyGuestAbout(r, change.to, ctx);
     if (change.to === 'cancelled' && p.cancelledBy === 'guest') {

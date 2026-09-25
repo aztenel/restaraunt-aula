@@ -128,6 +128,10 @@ export interface ReservationSummaryView {
   /** Подтверждённая бронь уже началась, отметки «пришли / не пришли» нет. */
   needsMark: boolean;
   createdAt: Date;
+  /** Переходы, доступные сотруднику сейчас (кнопки в списке и карточке). */
+  allowedTransitions: ReservationStatus[];
+  /** Можно перенести / пересадить. */
+  canReschedule: boolean;
 }
 
 export interface DepositPaymentView {
@@ -273,6 +277,8 @@ export class ReservationViewMapper {
       banquetRequestId: p.banquetRequestId,
       needsMark: r.needsMark(now),
       createdAt: p.createdAt,
+      allowedTransitions: r.allowedTransitions(now),
+      canReschedule: r.canReschedule(),
     };
   }
 
@@ -306,6 +312,8 @@ export interface TimelineItemView {
   banquetRequestId: string | null;
   depositState: DepositState;
   needsMark: boolean;
+  /** Бронь будет снята, если не подтвердят / не оплатят до этого момента. */
+  holdExpiresAt: Date | null;
 }
 
 export function timelineItem(r: Reservation, now: Date): TimelineItemView {
@@ -325,5 +333,6 @@ export function timelineItem(r: Reservation, now: Date): TimelineItemView {
     banquetRequestId: p.banquetRequestId,
     depositState: p.depositState,
     needsMark: r.needsMark(now),
+    holdExpiresAt: p.holdExpiresAt,
   };
 }

@@ -356,6 +356,7 @@
       "refunded": "Cancelled, money refunded"
     },
     "statusReadyPickup": "Ready for pickup",
+    "statusPlaced": "Order placed",
     "preparingPayment": "Preparing the payment page — this takes a few seconds…",
     "awaitingPayment": "We’ll send the order to the kitchen right after payment.",
     "payUntil": "Please pay by {time}, otherwise the order will be cancelled.",

@@ -119,6 +119,19 @@ describe('Banquet: admin (integration)', () => {
 
     const breachedList = await http().get(api('/admin/banquets/requests')).query({ slaBreached: 'true' }).set('authorization', w.managerAuth);
     expect(breachedList.body.items.map((i: any) => i.id)).toEqual([r.id]);
+    // Воронка с теми же фильтрами: нарушенный SLA, поиск по имени/телефону, выездные.
+    const column = async (query: Record<string, string>) => {
+      const res = await http().get(api('/admin/banquets/pipeline')).query(query).set('authorization', w.managerAuth);
+      expect(res.status).toBe(200);
+      return res.body.find((c: any) => c.status === 'new') as { count: number; items: Array<{ id: string }> };
+    };
+    expect((await column({ slaBreached: 'true' })).items.map((i) => i.id)).toEqual([r.id]);
+    expect((await column({ slaBreached: 'false' })).items.map((i) => i.id)).toEqual([answered.id]);
+    expect((await column({ q: 'Марат' })).items.map((i) => i.id)).toEqual([answered.id]);
+    expect((await column({ q: '7015556677' })).count).toBe(1);
+    expect((await column({ offsite: 'true' })).count).toBe(0);
+    expect((await column({ offsite: 'false' })).count).toBe(2);
+    expect((await http().get(api('/admin/banquets/pipeline')).query({ offsite: 'maybe' }).set('authorization', w.managerAuth)).status).toBe(400);
 
     const stats = await http().get(api('/admin/banquets/sla-stats')).query({ from: '2026-10-01', to: '2026-10-01' }).set('authorization', w.ownerAuth);
     expect(stats.status).toBe(200);
@@ -195,6 +208,87 @@ describe('Banquet: admin (integration)', () => {
     expect(released.status).toBe(200);
     expect(released.body.venue).toBeNull();
     expect(ctx.fakes.venues.holds.size).toBe(1);
+  });
+
+  it('calendar without a branch: all visible branches and offsite requests; branch manager sees own branch only', async () => {
+    const a = await publicRequest(w.branchId);
+    const b = await publicRequest(w.otherBranchId, { contact: { name: 'Бота', phone: '+77012223344' } });
+    const offsite = await publicRequest(null, { offsite: true, address: 'Астана, ул. Сыганак 10', eventDate: '2026-11-20' });
+    ctx.fakes.venues.addVenue(w.branchId, { capacityMax: 150 });
+    ctx.fakes.venues.addVenue(w.otherBranchId, { capacityMax: 150 });
+    const range = { from: '2026-11-01', to: '2026-11-30' };
+
+    const all = await http().get(api('/admin/banquets/calendar')).query(range).set('authorization', w.managerAuth);
+    expect(all.status).toBe(200);
+    expect(all.body.branchId).toBeNull();
+    expect([...all.body.branchIds].sort()).toEqual([w.branchId, w.otherBranchId].sort());
+    expect(all.body.banquets.map((x: any) => x.id).sort()).toEqual([a.id, b.id, offsite.id].sort());
+    expect(all.body.banquets.find((x: any) => x.id === offsite.id)).toMatchObject({ isOffsite: true, branchId: null });
+    expect(all.body.venues).toHaveLength(2);
+
+    // Выездная заявка с филиалом-исполнителем попадает и в календарь филиала.
+    await http().patch(api(`/admin/banquets/requests/${offsite.id}`)).set('authorization', w.managerAuth).send({ branchId: w.branchId }).expect(200);
+    const branch = await http().get(api('/admin/banquets/calendar')).query({ ...range, branchId: w.branchId }).set('authorization', w.managerAuth);
+    expect(branch.body).toMatchObject({ branchId: w.branchId, branchIds: [w.branchId] });
+    expect(branch.body.banquets.map((x: any) => x.id).sort()).toEqual([a.id, offsite.id].sort());
+
+    const branchManager = await tokenFor(ctx.t, [{ role: StaffRole.BranchManager, branchId: w.otherBranchId }]);
+    const own = await http().get(api('/admin/banquets/calendar')).query(range).set('authorization', branchManager.auth);
+    expect(own.status).toBe(200);
+    expect(own.body.branchIds).toEqual([w.otherBranchId]);
+    expect(own.body.banquets.map((x: any) => x.id)).toEqual([b.id]);
+    expect(own.body.venues).toHaveLength(1);
+    const operator = await tokenFor(ctx.t, [{ role: StaffRole.BranchOperator, branchId: w.branchId }]);
+    expect((await http().get(api('/admin/banquets/calendar')).query(range).set('authorization', operator.auth)).status).toBe(403);
+  });
+
+  it('quote preview computes totals like saving but creates no version; capability flags follow the funnel', async () => {
+    const r = await publicRequest(w.branchId);
+    const lines = [
+      { kind: 'other', title: { ru: 'Банкетное меню' }, unit: 'чел.', unitPrice: { amount: 1_500_000 }, quantity: 100, discount: { type: 'percent', bp: 1000 } },
+      { kind: 'hall_rent', title: { ru: 'Аренда зала' }, unit: 'усл.', unitPrice: { amount: 50_000_000 }, quantity: 1 },
+    ];
+    const body = { lines, serviceChargeBp: 1000, discount: { type: 'amount', amount: { amount: 1_000_000 } } };
+    let detail = (await http().get(api(`/admin/banquets/requests/${r.id}`)).set('authorization', w.managerAuth)).body;
+    expect(detail).toMatchObject({ canEditQuote: true, canSendLatestQuote: false, canIssueInvoice: false, canIssueAct: false });
+
+    const preview = await http().post(api(`/admin/banquets/requests/${r.id}/quotes/preview`)).set('authorization', w.managerAuth).send(body);
+    expect(preview.status).toBe(200);
+    expect(preview.body).toMatchObject({ requestId: r.id, branchId: w.branchId, guests: 100, serviceChargeBp: 1000, vatPayer: true, vatRateBp: 1600 });
+    expect(preview.body.lines).toHaveLength(2);
+    expect(preview.body.validUntil).toBe('2026-10-15');
+    const versions = await http().get(api(`/admin/banquets/requests/${r.id}/quotes`)).set('authorization', w.managerAuth);
+    expect(versions.body).toEqual([]);
+    detail = (await http().get(api(`/admin/banquets/requests/${r.id}`)).set('authorization', w.managerAuth)).body;
+    expect(detail.status).toBe('new'); // предпросмотр не берёт заявку в работу
+    expect(detail.timeline.map((a: any) => a.kind)).not.toContain('quote_saved');
+
+    const saved = await http().post(api(`/admin/banquets/requests/${r.id}/quotes`)).set('authorization', w.managerAuth).send(body);
+    expect(saved.status).toBe(201);
+    expect(saved.body.totals).toEqual(preview.body.totals);
+    expect(saved.body.lines).toEqual(preview.body.lines);
+    detail = (await http().get(api(`/admin/banquets/requests/${r.id}`)).set('authorization', w.managerAuth)).body;
+    expect(detail).toMatchObject({ status: 'in_progress', canEditQuote: true, canSendLatestQuote: true });
+    await http().post(api(`/admin/banquets/quotes/${saved.body.id}/send`)).set('authorization', w.managerAuth).expect(200);
+    detail = (await http().get(api(`/admin/banquets/requests/${r.id}`)).set('authorization', w.managerAuth)).body;
+    expect(detail).toMatchObject({ status: 'quote_sent', canEditQuote: true, canSendLatestQuote: false, canIssueInvoice: false });
+    const token = String(detail.publicQuoteUrl).split('/').pop()!;
+    await http().post(api(`/public/banquets/quotes/${token}/accept`)).send({ version: 1 }).expect(200);
+    detail = (await http().get(api(`/admin/banquets/requests/${r.id}`)).set('authorization', w.managerAuth)).body;
+    expect(detail).toMatchObject({ status: 'agreed', canIssueInvoice: true, canIssueAct: false });
+    // Финансы могут выставить счёт, но не править смету.
+    const finance = (await http().get(api(`/admin/banquets/requests/${r.id}`)).set('authorization', w.financeAuth)).body;
+    expect(finance).toMatchObject({ canEditQuote: false, canSendLatestQuote: false, canIssueInvoice: true });
+
+    // Права и ошибки предпросмотра.
+    const branchManager = await tokenFor(ctx.t, [{ role: StaffRole.BranchManager, branchId: w.branchId }]);
+    expect((await http().post(api(`/admin/banquets/requests/${r.id}/quotes/preview`)).set('authorization', branchManager.auth).send(body)).status).toBe(403);
+    const invalid = await http()
+      .post(api(`/admin/banquets/requests/${r.id}/quotes/preview`))
+      .set('authorization', w.managerAuth)
+      .send({ lines: [{ kind: 'menu', dishId: '01926f00-0000-7000-8000-000000000000', quantity: 1 }] });
+    expect(invalid.status).toBe(422);
+    expect(invalid.body.error.code).toBe('banquet_quote.dish_not_in_menu');
   });
 
   it('offsite catering: address required, numbering by the default branch, executing branch chosen later, no venue', async () => {

@@ -71,6 +71,18 @@ export class RefundRepository {
     return rows.map(mapRefund);
   }
 
+  async listForPayments(paymentIds: readonly string[]): Promise<Refund[]> {
+    if (paymentIds.length === 0) return [];
+    const rows = await this.db()
+      .selectFrom('payments.refunds')
+      .selectAll()
+      .where('payment_id', 'in', [...paymentIds])
+      .orderBy('created_at')
+      .orderBy('id')
+      .execute();
+    return rows.map(mapRefund);
+  }
+
   /** Сумма «занятых» возвратов (ожидающие + прошедшие) по платежам — одним запросом для списков. */
   async reservedByPayment(paymentIds: string[]): Promise<Map<string, number>> {
     const map = new Map<string, number>();

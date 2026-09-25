@@ -48,6 +48,8 @@ export interface PromoListFilter {
   /** Филиалы, промокоды которых видны ('all' — все); глобальные промокоды видны всегда. */
   branches: 'all' | string[];
   branchId?: string | null;
+  /** network — только сетевые промокоды, branch — только промокоды филиалов. */
+  scope?: 'network' | 'branch';
   q?: string;
   active?: boolean;
 }
@@ -89,6 +91,8 @@ export class PromoCodeRepository {
     if (filter.branchId !== undefined) {
       q = filter.branchId === null ? q.where('branch_id', 'is', null) : q.where('branch_id', '=', filter.branchId);
     }
+    if (filter.scope === 'network') q = q.where('branch_id', 'is', null);
+    if (filter.scope === 'branch') q = q.where('branch_id', 'is not', null);
     if (filter.active !== undefined) q = q.where('is_active', '=', filter.active);
     const text = filter.q?.trim().toUpperCase();
     if (text) q = q.where('code', 'like', `%${text.replace(/[%_\\]/g, (c) => `\\${c}`)}%`);

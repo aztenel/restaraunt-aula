@@ -123,7 +123,13 @@ export function OrderStatusView({ token, initial, autoPay }: { token: string; in
   };
 
   const steps = timelineSteps(order);
-  const statusLabel = order.status === 'ready' && order.type === 'pickup' ? t('statusReadyPickup') : t(STATUS_KEYS[order.status]);
+  /** Подпись статуса для гостя: «оплачен» при оплате при получении означает «оформлен», «готов» при самовывозе — «можно забирать». */
+  const labelFor = (status: OrderStatus) => {
+    if (status === 'ready' && order.type === 'pickup') return t('statusReadyPickup');
+    if (status === 'paid' && order.payment.method === 'on_receipt') return t('statusPlaced');
+    return t(STATUS_KEYS[status]);
+  };
+  const statusLabel = labelFor(order.status);
   const currentUrl = order.payment.current?.paymentUrl;
 
   return (
@@ -213,7 +219,7 @@ export function OrderStatusView({ token, initial, autoPay }: { token: string; in
                   {step.state === 'done' ? <CheckIcon size={14} /> : null}
                 </span>
                 <span className={clsx(step.state === 'upcoming' ? 'text-muted' : 'text-earth-900', step.state === 'current' && 'font-semibold')}>
-                  {step.status === 'ready' && order.type === 'pickup' ? t('statusReadyPickup') : t(STATUS_KEYS[step.status])}
+                  {labelFor(step.status)}
                   {step.at ? <span className="block text-xs text-muted">{formatDateTime(step.at, locale)}</span> : null}
                 </span>
               </li>

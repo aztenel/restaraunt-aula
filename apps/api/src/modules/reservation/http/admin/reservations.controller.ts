@@ -4,6 +4,7 @@ import { CurrentActor, RequirePermissions } from '../../../../shared/infrastruct
 import { Actor } from '../../../../shared/kernel/actor';
 import { pageRequest } from '../../../../shared/kernel/pagination';
 import { Permission } from '../../../../shared/kernel/permissions';
+import { AvailabilityQueries } from '../../application/availability.queries';
 import { CreateStaffReservation } from '../../application/create-staff-reservation.action';
 import { ReservationQueries } from '../../application/reservation.queries';
 import {
@@ -13,6 +14,7 @@ import {
   MarkReservationNoShow,
 } from '../../application/reservation-status.actions';
 import { RescheduleReservation } from '../../application/reschedule-reservation.action';
+import { AdminAvailabilityDto, AdminAvailabilityQueryDto } from '../dto/admin-availability.dto';
 import {
   AdminReservationsQueryDto,
   CancelReservationDto,
@@ -42,6 +44,7 @@ export class AdminReservationsController {
     private readonly markArrived: MarkReservationArrived,
     private readonly markNoShow: MarkReservationNoShow,
     private readonly reschedule: RescheduleReservation,
+    private readonly availability: AvailabilityQueries,
   ) {}
 
   @Get()
@@ -72,6 +75,26 @@ export class AdminReservationsController {
   @ApiOkResponse({ type: TimelineDto })
   timeline(@CurrentActor() actor: Actor, @Query() query: TimelineQueryDto): Promise<TimelineDto> {
     return this.queries.timeline(actor, query.branchId, query.date);
+  }
+
+  /**
+   * Свободные места для оператора (бронь по телефону, перенос): включая места только для брони через
+   * оператора, без ограничений витрины по упреждению и горизонту; часы работы соблюдаются.
+   */
+  @Get('availability')
+  @RequirePermissions(Permission.ReservationsManage)
+  @ApiOkResponse({ type: AdminAvailabilityDto })
+  adminAvailability(@CurrentActor() actor: Actor, @Query() query: AdminAvailabilityQueryDto): Promise<AdminAvailabilityDto> {
+    actor.assertCan(Permission.ReservationsManage, query.branchId);
+    return this.availability.adminAvailability(query.branchId, {
+      date: query.date,
+      time: query.time,
+      guests: query.guests,
+      durationMinutes: query.durationMinutes,
+      typeCode: query.typeCode,
+      hallId: query.hallId,
+      excludeReservationId: query.excludeReservationId,
+    });
   }
 
   @Get(':id')

@@ -108,6 +108,23 @@ export class CourierDispatchRepository {
     return row ? mapDispatch(row) : null;
   }
 
+  /** Последние заявки нескольких заказов (очередь оператора). */
+  async latestForOrders(orderIds: readonly string[]): Promise<Map<string, CourierDispatchRecord>> {
+    const result = new Map<string, CourierDispatchRecord>();
+    if (orderIds.length === 0) return result;
+    const rows = await this.db()
+      .selectFrom('ordering.courier_dispatches')
+      .selectAll()
+      .where('order_id', 'in', [...orderIds])
+      .orderBy('requested_at', 'desc')
+      .orderBy('id', 'desc')
+      .execute();
+    for (const row of rows) {
+      if (!result.has(row.order_id)) result.set(row.order_id, mapDispatch(row));
+    }
+    return result;
+  }
+
   async patch(id: string, patch: CourierDispatchPatch): Promise<void> {
     const set: Record<string, unknown> = {};
     if (patch.status !== undefined) set.status = patch.status;

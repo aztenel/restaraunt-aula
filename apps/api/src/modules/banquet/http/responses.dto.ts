@@ -129,14 +129,40 @@ export class BanquetQuoteDto {
   @ApiProperty() isLatest: boolean;
 }
 
+export class BanquetQuotePreviewDto {
+  @ApiProperty() requestId: string;
+  @ApiProperty({ nullable: true, type: String }) branchId: string | null;
+  @ApiProperty() guests: number;
+  @ApiProperty({ nullable: true, type: BanquetDiscountDto }) discount: BanquetDiscountDto | null;
+  @ApiProperty() serviceChargeBp: number;
+  @ApiProperty() vatPayer: boolean;
+  @ApiProperty() vatRateBp: number;
+  @ApiProperty({ type: [BanquetQuoteLineDto] }) lines: BanquetQuoteLineDto[];
+  @ApiProperty({ type: BanquetQuoteTotalsDto }) totals: BanquetQuoteTotalsDto;
+  @ApiProperty({ example: '2026-10-15' }) validUntil: string;
+  @ApiProperty({ nullable: true, type: String }) notes: string | null;
+  @ApiProperty({ type: BanquetPartyShortDto }) seller: { name: string; bin: string };
+}
+
 export class BanquetInvoicePaymentDto {
   @ApiProperty() paymentId: string;
   @ApiProperty({ example: 'bank_transfer' }) method: string;
   @ApiProperty({ type: MoneyDto }) amount: MoneyDto;
   @ApiProperty({ type: MoneyDto }) refunded: MoneyDto;
+  @ApiProperty({ type: MoneyDto, description: 'Сколько ещё можно вернуть (сумма минус прошедшие и ожидающие возвраты)' }) refundable: MoneyDto;
   @ApiProperty({ nullable: true, type: String }) documentNumber: string | null;
   @ApiProperty(DATE_TIME) paidAt: Date;
   @ApiProperty() recordedByName: string;
+}
+
+export class BanquetInvoiceRefundDto {
+  @ApiProperty() refundId: string;
+  @ApiProperty() paymentId: string;
+  @ApiProperty({ type: MoneyDto }) amount: MoneyDto;
+  @ApiProperty({ enum: ['pending', 'succeeded', 'failed'] }) status: 'pending' | 'succeeded' | 'failed';
+  @ApiProperty() reason: string;
+  @ApiProperty(DATE_TIME) createdAt: Date;
+  @ApiProperty({ ...DATE_TIME, nullable: true }) completedAt: Date | null;
 }
 
 export class BanquetInvoiceDto {
@@ -166,6 +192,11 @@ export class BanquetInvoiceDto {
   @ApiProperty({ ...DATE_TIME, nullable: true }) cancelledAt: Date | null;
   @ApiProperty({ nullable: true, type: String }) cancelReason: string | null;
   @ApiProperty({ type: [BanquetInvoicePaymentDto] }) payments: BanquetInvoicePaymentDto[];
+  @ApiProperty({ nullable: true, type: String, description: 'Ссылка на онлайн-оплату (физлицо), пока текущий платёж ждёт оплату' })
+  paymentUrl: string | null;
+  @ApiProperty({ nullable: true, type: String, example: 'created', description: 'Статус текущего онлайн-платежа' }) paymentStatus: string | null;
+  @ApiProperty({ description: 'Можно отправить / перевыпустить ссылку на оплату (POST invoices/:id/payment-link)' }) canResendPaymentLink: boolean;
+  @ApiProperty({ type: [BanquetInvoiceRefundDto], description: 'Возвраты по поступлениям счёта со статусами' }) refunds: BanquetInvoiceRefundDto[];
 }
 
 export class BanquetInvoiceListItemDto extends BanquetInvoiceDto {
@@ -198,6 +229,7 @@ export class BanquetActDto {
   @ApiProperty({ type: MoneyDto }) amount: MoneyDto;
   @ApiProperty({ type: MoneyDto }) vat: MoneyDto;
   @ApiProperty({ type: BanquetEsfDto }) esf: BanquetEsfDto;
+  @ApiProperty({ description: 'ЭСФ можно отправить повторно (POST acts/:actId/esf/retry)' }) esfRetryable: boolean;
   @ApiProperty(DATE_TIME) createdAt: Date;
 }
 
@@ -285,6 +317,10 @@ export class BanquetRequestDetailDto extends BanquetRequestSummaryDto {
   @ApiProperty({ nullable: true, type: BanquetActDto }) act: BanquetActDto | null;
   @ApiProperty({ type: [BanquetDocumentDto] }) documents: BanquetDocumentDto[];
   @ApiProperty({ type: [BanquetActivityDto] }) timeline: BanquetActivityDto[];
+  @ApiProperty({ description: 'Можно сохранить новую версию сметы' }) canEditQuote: boolean;
+  @ApiProperty({ description: 'Можно отправить клиенту последнюю версию сметы' }) canSendLatestQuote: boolean;
+  @ApiProperty({ description: 'Можно выставить счёт (смета согласована, есть невыставленный остаток)' }) canIssueInvoice: boolean;
+  @ApiProperty({ description: 'Можно оформить акт (банкет проведён, акта ещё нет)' }) canIssueAct: boolean;
 }
 
 export class BanquetSignedLinkDto {
@@ -304,6 +340,7 @@ export class BanquetRefundResultDto {
   @ApiProperty({ enum: ['pending', 'succeeded', 'failed'] }) status: 'pending' | 'succeeded' | 'failed';
   @ApiProperty() reason: string;
   @ApiProperty(DATE_TIME) createdAt: Date;
+  @ApiPropertyOptional({ ...DATE_TIME, nullable: true, description: 'Возврат завершён (прошёл или не прошёл)' }) completedAt?: Date | null;
 }
 
 export class BanquetManagerDto {
@@ -364,7 +401,8 @@ export class BanquetOccupancyDto {
 }
 
 export class BanquetCalendarDto {
-  @ApiProperty() branchId: string;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Филиал запроса; null — все доступные филиалы' }) branchId: string | null;
+  @ApiProperty({ type: [String], description: 'Филиалы, попавшие в календарь' }) branchIds: string[];
   @ApiProperty() from: string;
   @ApiProperty() to: string;
   @ApiProperty({ type: [BanquetCalendarVenueDto] }) venues: BanquetCalendarVenueDto[];

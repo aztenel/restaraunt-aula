@@ -73,6 +73,31 @@ export class OrderPaymentsRepository {
     }));
   }
 
+  /** Связи нескольких заказов (очередь оператора). */
+  async listForOrders(orderIds: readonly string[]): Promise<Map<string, OrderPaymentLink[]>> {
+    const result = new Map<string, OrderPaymentLink[]>(orderIds.map((id) => [id, []]));
+    if (orderIds.length === 0) return result;
+    const rows = await this.db()
+      .selectFrom('ordering.order_payments')
+      .selectAll()
+      .where('order_id', 'in', [...orderIds])
+      .orderBy('created_at')
+      .orderBy('attempt')
+      .orderBy('payment_id')
+      .execute();
+    for (const r of rows) {
+      result.get(r.order_id)?.push({
+        paymentId: r.payment_id,
+        orderId: r.order_id,
+        kind: r.kind as OrderPaymentKind,
+        attempt: r.attempt,
+        amount: Money.of(r.amount_amount, r.amount_currency as Currency),
+        createdAt: r.created_at,
+      });
+    }
+    return result;
+  }
+
   async addRefund(input: {
     refundId: string;
     orderId: string;

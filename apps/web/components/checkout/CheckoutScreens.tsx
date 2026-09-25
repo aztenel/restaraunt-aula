@@ -343,7 +343,9 @@ export function PaymentScreen({
       </fieldset>
 
       {needsVerification || state.verification ? (
-        <PhoneVerification phone={state.customer.phone} verified={state.verification} onVerified={onVerified} intro={t('verificationIntro')} />
+        <div id={id('verification')} className="scroll-mt-24">
+          <PhoneVerification phone={state.customer.phone} verified={state.verification} onVerified={onVerified} intro={t('verificationIntro')} />
+        </div>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">

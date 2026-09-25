@@ -202,7 +202,12 @@ export class OrderSlotsQueryDto extends OrderingLocaleQueryDto {
 export class OrderQuoteLineDto {
   @ApiProperty({ description: 'Номер позиции в запросе' }) index: number;
   @ApiProperty() dishId: string;
-  @ApiPropertyOptional({ type: String, nullable: true, description: 'Название на языке запроса (null — блюдо не найдено)' }) name: string | null;
+  @ApiPropertyOptional({
+    type: String,
+    nullable: true,
+    description: 'Название на языке запроса; есть и у недоступной позиции (стоп-лист, нет в меню филиала). null — блюдо не найдено/удалено',
+  })
+  name: string | null;
   @ApiPropertyOptional({ type: String, nullable: true }) photoUrl: string | null;
   @ApiProperty() quantity: number;
   @ApiPropertyOptional({ type: MoneyDto, nullable: true }) unitPrice: MoneyDto | null;
@@ -270,8 +275,8 @@ export class OrderQuoteDto {
       lines: q.lines.map((l) => ({
         index: l.index,
         dishId: l.request.dishId,
-        name: l.priced ? text(l.priced.dishName, locale) : null,
-        photoUrl: l.priced?.photoUrl ?? null,
+        name: l.priced ? text(l.priced.dishName, locale) : l.dish ? text(l.dish.name, locale) : null,
+        photoUrl: l.priced?.photoUrl ?? l.dish?.photoUrl ?? null,
         quantity: l.request.quantity,
         unitPrice: moneyOrNull(l.priced?.unitPrice),
         lineTotal: moneyOrNull(l.priced?.lineTotal),

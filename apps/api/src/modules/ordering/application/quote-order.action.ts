@@ -4,7 +4,7 @@ import { ValidationError } from '../../../shared/kernel/errors';
 import { assertGeoPoint, GeoPoint } from '../../../shared/kernel/geo';
 import { Money } from '../../../shared/kernel/money';
 import { tryNormalizePhone } from '../../../shared/kernel/phone';
-import { PricedLineRequest } from '../../catalog/public';
+import { DishCard, MenuQuery, PricedLineRequest } from '../../catalog/public';
 import { BranchDirectory, BranchInfo } from '../../identity/public';
 import { CertificateBalanceView } from '../../payments/public';
 import { DeliveryZoneState } from '../domain/delivery-zone';
@@ -53,10 +53,15 @@ export interface QuoteCertificate {
   amount: Money;
 }
 
+/** Позиция расчёта: у проблемной позиции (стоп-лист, нет в меню филиала) — название и фото блюда из каталога. */
+export interface QuoteLine extends PricingLineResult {
+  dish: DishCard | null;
+}
+
 export interface QuoteResult {
   branch: BranchInfo;
   type: OrderType;
-  lines: PricingLineResult[];
+  lines: QuoteLine[];
   breakdown: TotalsBreakdown;
   delivery: QuoteDelivery | null;
   promo: QuotePromo | null;
@@ -78,6 +83,7 @@ export class QuoteOrder {
     private readonly branches: BranchDirectory,
     private readonly pricing: OrderPricing,
     private readonly certificates: OrderCertificateCheck,
+    private readonly menu: MenuQuery,
     private readonly clock: Clock,
   ) {}
 
@@ -151,6 +157,10 @@ export class QuoteOrder {
       }
     }
 
-    return { branch, type: input.type, lines: result.lines, breakdown, delivery, promo, certificate, amountDue, problems };
+    const missing = result.lines.filter((l) => l.priced === null).map((l) => l.request.dishId);
+    const cards = new Map((missing.length > 0 ? await this.menu.describeDishes(missing) : []).map((d) => [d.dishId, d]));
+    const lines = result.lines.map((l): QuoteLine => ({ ...l, dish: l.priced ? null : (cards.get(l.request.dishId) ?? null) }));
+
+    return { branch, type: input.type, lines, breakdown, delivery, promo, certificate, amountDue, problems };
   }
 }

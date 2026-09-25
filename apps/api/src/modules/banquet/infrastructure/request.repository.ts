@@ -213,12 +213,23 @@ export class RequestRepository {
    * Заявки календаря филиала: дата мероприятия в интервале локальных дат [from, to]
    * или занятость зала пересекает интервал [fromUtc, toUtc).
    */
-  async forCalendar(branchId: string, range: { from: string; to: string; fromUtc: Date; toUtc: Date }): Promise<BanquetRequest[]> {
+  /**
+   * Заявки календаря: филиалы scope ('all' — все) и, если includeUnassigned, выездные заявки без филиала-исполнителя.
+   */
+  async forCalendar(
+    scope: { branches: 'all' | string[]; includeUnassigned: boolean },
+    range: { from: string; to: string; fromUtc: Date; toUtc: Date },
+  ): Promise<BanquetRequest[]> {
+    const branches = scope.branches;
+    if (branches !== 'all' && branches.length === 0 && !scope.includeUnassigned) return [];
     const rows = await this.db()
       .selectFrom(T)
       .selectAll()
       .where('deleted_at', 'is', null)
-      .where('branch_id', '=', branchId)
+      .where((eb) => {
+        const own = branches === 'all' ? eb('branch_id', 'is not', null) : branches.length > 0 ? eb('branch_id', 'in', branches) : sql<boolean>`false`;
+        return scope.includeUnassigned ? eb.or([own, eb('branch_id', 'is', null)]) : eb.and([own]);
+      })
       .where('status', '!=', 'cancelled')
       .where((eb) =>
         eb.or([

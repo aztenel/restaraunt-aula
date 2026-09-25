@@ -4,6 +4,7 @@ import { CreatePaymentCommand, PaymentPurpose, PaymentsService, PaymentView, Ref
 import { CreatePayment } from './create-payment.action';
 import { PaymentQueries } from './payment.queries';
 import { CancelPayment, MarkCollected } from './payment-status.actions';
+import { RefundRepository } from '../infrastructure/refund.repository';
 import { RequestRefund } from './refund.actions';
 import { RegisterBankTransfer } from './register-bank-transfer.action';
 
@@ -20,6 +21,7 @@ export class PaymentsFacade extends PaymentsService {
     private readonly refund: RequestRefund,
     private readonly collect: MarkCollected,
     private readonly bankTransfer: RegisterBankTransfer,
+    private readonly refunds: RefundRepository,
   ) {
     super();
   }
@@ -42,6 +44,10 @@ export class PaymentsFacade extends PaymentsService {
 
   requestRefund(input: { paymentId: string; amount?: Money; reason: string; idempotencyKey: string }): Promise<RefundView> {
     return this.refund.execute(input);
+  }
+
+  async listRefunds(paymentIds: string[]): Promise<RefundView[]> {
+    return (await this.refunds.listForPayments(paymentIds)).map((r) => r.toView());
   }
 
   async markCollected(paymentId: string): Promise<void> {

@@ -3,6 +3,7 @@ import { Transform, Type } from 'class-transformer';
 import { IsIn, IsOptional, IsString, IsUUID, Matches, MaxLength, MinLength, ValidateNested } from 'class-validator';
 import { GeoPointDto, MoneyDto, MoneyInputDto, PageQueryDto, TranslatableDto } from '../../../../shared/infrastructure/http/api-types';
 import { Locale, LOCALES } from '../../../../shared/kernel/translatable';
+import { BranchOrderMenu, DishAvailability } from '../../../catalog/public';
 import { PaymentMethod, PaymentStatus } from '../../../payments/public';
 import { OrderDetailsView, OrderQueueCard, OrderQueueView } from '../../application/order.queries';
 import { COURIER_DISPATCH_STATUSES, CourierDispatchStatus } from '../../domain/courier-dispatch';
@@ -49,6 +50,10 @@ export class AdminOrderListQueryDto extends PageQueryDto {
 
 export class AdminQueueQueryDto {
   @ApiPropertyOptional() @IsOptional() @IsUUID() branchId?: string;
+}
+
+export class AdminOrderMenuQueryDto {
+  @ApiProperty({ format: 'uuid', description: 'Филиал телефонного заказа (право orders.manage в филиале)' }) @IsUUID() branchId: string;
 }
 
 export class TransitionOrderDto {
@@ -189,6 +194,12 @@ export class AdminOrderDeliveryDto {
   @ApiProperty() contactless: boolean;
 }
 
+export class AdminQueueCourierDto {
+  @ApiProperty({ enum: COURIER_DISPATCH_STATUSES }) status: CourierDispatchStatus;
+  @ApiPropertyOptional({ type: String, nullable: true }) trackingUrl: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) courierName: string | null;
+}
+
 export class AdminQueueOrderDto extends AdminOrderListItemDto {
   @ApiProperty({ type: [AdminOrderItemDto] }) items: AdminOrderItemDto[];
   @ApiPropertyOptional({ type: String, nullable: true }) comment: string | null;
@@ -196,6 +207,11 @@ export class AdminQueueOrderDto extends AdminOrderListItemDto {
   @ApiProperty() contactless: boolean;
   @ApiProperty({ enum: ORDER_STATUSES, isArray: true, description: 'Доступные сотруднику переходы' }) allowedTransitions: OrderStatus[];
   @ApiProperty({ description: 'Обещанное время прошло' }) isLate: boolean;
+  @ApiProperty({ description: 'Отмена доступна (awaiting_payment / accepted, право orders.manage)' }) canCancel: boolean;
+  @ApiProperty({ description: 'Отказ от оплаченного заказа доступен (paid → accepted → cancelled)' }) canReject: boolean;
+  @ApiPropertyOptional({ type: AdminQueueCourierDto, nullable: true, description: 'Заявка службы доставки (null — свои курьеры или заявки нет)' })
+  courier: AdminQueueCourierDto | null;
+  @ApiProperty({ type: MoneyDto, description: 'Получить с гостя при получении (0 — оплачено онлайн и/или сертификатом)' }) amountDue: MoneyDto;
 
   static fromCard(c: OrderQueueCard): AdminQueueOrderDto {
     const s = c.order;
@@ -211,6 +227,10 @@ export class AdminQueueOrderDto extends AdminOrderListItemDto {
       contactless: s.contactless,
       allowedTransitions: c.allowedTransitions,
       isLate: c.isLate,
+      canCancel: c.canCancel,
+      canReject: c.canReject,
+      courier: c.courier ? { ...c.courier } : null,
+      amountDue: money(c.amountDue),
     };
   }
 }
@@ -369,6 +389,9 @@ export class AdminOrderDetailsDto extends AdminOrderListItemDto {
   @ApiProperty({ description: 'Частичный возврат (право orders.refund, статус от принятия до выполнения)' }) canRefund: boolean;
   @ApiProperty({ type: MoneyDto, description: 'Сколько ещё можно вернуть' }) refundable: MoneyDto;
   @ApiProperty({ description: 'Ссылка на страницу статуса для гостя' }) trackingUrl: string;
+  @ApiProperty({ description: 'Можно повторно вызвать курьера службы доставки (POST :id/courier/retry)' }) canRetryCourier: boolean;
+  @ApiProperty({ description: 'Можно отменить активную заявку службы доставки (POST :id/courier/cancel)' }) canCancelCourier: boolean;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Имя сотрудника, оформившего телефонный заказ' }) createdByName: string | null;
 
   static fromView(v: OrderDetailsView, trackingUrl: string): AdminOrderDetailsDto {
     const s = v.order;
@@ -427,6 +450,88 @@ export class AdminOrderDetailsDto extends AdminOrderListItemDto {
       canRefund: v.canRefund,
       refundable: money(v.refundable),
       trackingUrl,
+      canRetryCourier: v.canRetryCourier,
+      canCancelCourier: v.canCancelCourier,
+      createdByName: v.createdByName,
+    };
+  }
+}
+
+// ---------------------------------------------------------------- Меню филиала для телефонного заказа
+
+export class AdminOrderMenuOptionDto {
+  @ApiProperty() id: string;
+  @ApiProperty({ type: TranslatableDto }) name: TranslatableDto;
+  @ApiProperty({ type: MoneyDto }) price: MoneyDto;
+  @ApiProperty() isDefault: boolean;
+}
+
+export class AdminOrderMenuModifierGroupDto {
+  @ApiProperty() id: string;
+  @ApiProperty({ type: TranslatableDto }) name: TranslatableDto;
+  @ApiProperty() minSelect: number;
+  @ApiProperty() maxSelect: number;
+  @ApiProperty() isRequired: boolean;
+  @ApiProperty({ type: [AdminOrderMenuOptionDto] }) options: AdminOrderMenuOptionDto[];
+}
+
+export class AdminOrderMenuCategoryDto {
+  @ApiProperty() id: string;
+  @ApiProperty() slug: string;
+  @ApiProperty({ type: TranslatableDto }) name: TranslatableDto;
+}
+
+export class AdminOrderMenuDishDto {
+  @ApiProperty() dishId: string;
+  @ApiProperty() slug: string;
+  @ApiProperty() categoryId: string;
+  @ApiProperty({ type: TranslatableDto }) name: TranslatableDto;
+  @ApiProperty({ type: MoneyDto, description: 'Цена в филиале без модификаторов' }) price: MoneyDto;
+  @ApiProperty({ enum: Object.values(DishAvailability), description: 'Как блюдо видно на витрине (режим стоп-листа филиала)' })
+  availability: DishAvailability;
+  @ApiProperty({ description: 'В стоп-листе — к заказу недоступно' }) stopped: boolean;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true, description: 'Стоп до (null — до ручного возврата)' })
+  stoppedUntil: Date | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) stopReason: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) photoUrl: string | null;
+  @ApiPropertyOptional({ type: Number, nullable: true }) weightGrams: number | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) sku: string | null;
+  @ApiProperty({ type: [AdminOrderMenuModifierGroupDto] }) modifierGroups: AdminOrderMenuModifierGroupDto[];
+}
+
+export class AdminOrderMenuDto {
+  @ApiProperty() branchId: string;
+  @ApiProperty({ type: [AdminOrderMenuCategoryDto], description: 'Категории, в которых есть блюда меню филиала (в порядке меню)' })
+  categories: AdminOrderMenuCategoryDto[];
+  @ApiProperty({ type: [AdminOrderMenuDishDto], description: 'Все блюда меню филиала, включая стоп-лист (stopped = true)' })
+  dishes: AdminOrderMenuDishDto[];
+
+  static from(m: BranchOrderMenu): AdminOrderMenuDto {
+    return {
+      branchId: m.branchId,
+      categories: m.categories.map((c) => ({ id: c.id, slug: c.slug, name: translatable(c.name) })),
+      dishes: m.dishes.map((d) => ({
+        dishId: d.dishId,
+        slug: d.slug,
+        categoryId: d.categoryId,
+        name: translatable(d.name),
+        price: money(d.price),
+        availability: d.availability,
+        stopped: d.stopped,
+        stoppedUntil: d.stoppedUntil,
+        stopReason: d.stopReason,
+        photoUrl: d.photoUrl,
+        weightGrams: d.weightGrams,
+        sku: d.sku,
+        modifierGroups: d.modifierGroups.map((g) => ({
+          id: g.id,
+          name: translatable(g.name),
+          minSelect: g.minSelect,
+          maxSelect: g.maxSelect,
+          isRequired: g.isRequired,
+          options: g.options.map((o) => ({ id: o.id, name: translatable(o.name), price: money(o.price), isDefault: o.isDefault })),
+        })),
+      })),
     };
   }
 }

@@ -80,10 +80,70 @@ export abstract class MenuPricing {
   abstract checkAvailability(branchId: string, dishIds: string[]): Promise<Record<string, DishAvailability | 'not_in_menu'>>;
 }
 
+/** Блюдо независимо от меню филиала и стоп-листа: название и фото для проблемных позиций корзины. */
+export interface DishCard {
+  dishId: string;
+  slug: string;
+  name: Translatable;
+  photoUrl: string | null;
+  weightGrams: number | null;
+}
+
+export interface OrderMenuModifierOption {
+  id: string;
+  name: Translatable;
+  price: Money;
+  isDefault: boolean;
+}
+
+export interface OrderMenuModifierGroup {
+  id: string;
+  name: Translatable;
+  minSelect: number;
+  maxSelect: number;
+  isRequired: boolean;
+  options: OrderMenuModifierOption[];
+}
+
+export interface OrderMenuCategory {
+  id: string;
+  slug: string;
+  name: Translatable;
+}
+
+export interface OrderMenuDish {
+  dishId: string;
+  slug: string;
+  categoryId: string;
+  name: Translatable;
+  price: Money;
+  /** Как блюдо видно на витрине с учётом режима стоп-листа филиала. */
+  availability: DishAvailability;
+  /** Блюдо в стоп-листе (к заказу недоступно) — независимо от режима показа филиала. */
+  stopped: boolean;
+  stoppedUntil: Date | null;
+  stopReason: string | null;
+  photoUrl: string | null;
+  weightGrams: number | null;
+  sku: string | null;
+  modifierGroups: OrderMenuModifierGroup[];
+}
+
+/** Меню филиала для телефонного заказа: все позиции (включая стоп-лист), с модификаторами. */
+export interface BranchOrderMenu {
+  branchId: string;
+  categories: OrderMenuCategory[];
+  dishes: OrderMenuDish[];
+}
+
 /** Поиск блюд меню филиала (конструктор банкетной сметы, телефонный заказ в админке). */
 export abstract class MenuQuery {
   abstract searchBranchDishes(branchId: string, query: string, limit?: number): Promise<DishSummary[]>;
   abstract getDishes(branchId: string, dishIds: string[]): Promise<DishSummary[]>;
+  /** Название и фото блюд по id (активных и нет, в меню филиала или нет); удалённые и несуществующие пропускаются. */
+  abstract describeDishes(dishIds: string[]): Promise<DishCard[]>;
+  /** Полное меню филиала с модификаторами (блюда из стоп-листа — с флагом stopped). */
+  abstract branchOrderMenu(branchId: string): Promise<BranchOrderMenu>;
 }
 
 /** Управление стоп-листом извне (синхронизация с POS). */

@@ -67,7 +67,7 @@ describe('Ordering: courier dispatch via the delivery service (integration)', ()
     const order = await readyDeliveryOrder();
     await ctx.t.drain();
     expect(await enqueuedJobs(ctx.t, CourierJobs.Create)).toEqual([]);
-    expect((await details(order.orderId)).courierDispatch).toBeNull();
+    expect(await details(order.orderId)).toMatchObject({ courierDispatch: null, canRetryCourier: false, canCancelCourier: false });
     expect(ctx.http.requests).toEqual([]);
     const catalog = ctx.t.get(IntegrationCatalog);
     expect(catalog.get(COURIER_ROUTING_SETTINGS_KEY)?.fields[0]?.options).toEqual(['own', 'yandex']);
@@ -159,11 +159,18 @@ describe('Ordering: courier dispatch via the delivery service (integration)', ()
     await ctx.t.drain();
     expect((await details(other.orderId)).courierDispatch).toMatchObject({ status: 'failed', lastError: expect.stringContaining('bad phone') });
     expect(ctx.fakes.adminFeed.events.at(-1)).toMatchObject({ entityId: other.orderId, sound: true });
+    // Карточка и очередь подсказывают действие: повторить вызов можно, отменить нечего.
+    expect(await details(other.orderId)).toMatchObject({ canRetryCourier: true, canCancelCourier: false });
+    const queue = (await api().get('/api/v1/admin/orders/queue').set('Authorization', operator).expect(200)).body;
+    const cards = queue.groups.flatMap((g: { orders: unknown[] }) => g.orders) as Array<{ id: string; courier: unknown }>;
+    expect(cards.find((c) => c.id === other.orderId)!.courier).toEqual({ status: 'failed', trackingUrl: null, courierName: null });
+    expect(cards.find((c) => c.id === order.orderId)!.courier).toMatchObject({ status: 'estimating' });
 
     // Оператор вызывает курьера повторно.
     ctx.http.on('/claims/create', 200, { id: 'claim-3', status: 'new', version: 1 }, { times: 1 });
     const retried = await api().post(`/api/v1/admin/orders/${other.orderId}/courier/retry`).set('Authorization', operator).expect(200);
     expect(retried.body.courierDispatch).toMatchObject({ status: 'requested' });
+    expect(retried.body).toMatchObject({ canRetryCourier: false, canCancelCourier: true });
     await api().post(`/api/v1/admin/orders/${other.orderId}/courier/retry`).set('Authorization', operator).expect(409);
     await ctx.t.drain();
     expect((await details(other.orderId)).courierDispatch).toMatchObject({ status: 'estimating', externalId: 'claim-3' });

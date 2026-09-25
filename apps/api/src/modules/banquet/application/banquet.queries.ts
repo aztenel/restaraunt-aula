@@ -9,7 +9,7 @@ import { addDays, isIsoDate, startOfLocalDay } from '../../../shared/kernel/time
 import { Translatable } from '../../../shared/kernel/translatable';
 import { BranchDirectory, StaffDirectory } from '../../identity/public';
 import { VenueAvailability, VenueOccupancy, VenueSummary } from '../../reservation/public';
-import { ALL_BANQUET_STATUSES, availableTransitions } from '../domain/banquet-status';
+import { ALL_BANQUET_STATUSES, availableTransitions, INVOICEABLE_STATUSES, QUOTE_EDITABLE_STATUSES } from '../domain/banquet-status';
 import { BanquetRequest } from '../domain/banquet-request';
 import { SlaStats, slaStats } from '../domain/sla';
 import { ActivityRepository } from '../infrastructure/activity.repository';
@@ -22,6 +22,7 @@ import { BanquetStatus } from '../public';
 import { assertCanView } from './access';
 import { BanquetLinks } from './banquet-links';
 import { BanquetSupport } from './banquet-support';
+import { InvoicePaymentsInfo } from './invoice-payments-info';
 import { ManagerAssigner } from './manager-assigner';
 import {
   ActivityView,
@@ -68,6 +69,14 @@ export interface RequestDetailView extends RequestSummaryView {
   act: ActView | null;
   documents: DocumentView[];
   timeline: ActivityView[];
+  /** Можно сохранить новую версию сметы (право banquets.manage, статус до согласования включительно). */
+  canEditQuote: boolean;
+  /** Можно отправить клиенту последнюю версию сметы. */
+  canSendLatestQuote: boolean;
+  /** Можно выставить счёт (banquets.invoice, смета согласована, есть невыставленный остаток). */
+  canIssueInvoice: boolean;
+  /** Можно оформить акт выполненных работ (банкет проведён, акта ещё нет). */
+  canIssueAct: boolean;
 }
 
 export interface PipelineColumn {
@@ -77,7 +86,9 @@ export interface PipelineColumn {
 }
 
 export interface CalendarView {
-  branchId: string;
+  /** Филиал запроса; null — все доступные филиалы (и выездные заявки без филиала). */
+  branchId: string | null;
+  branchIds: string[];
   from: string;
   to: string;
   venues: VenueSummary[];
@@ -120,6 +131,7 @@ export class BanquetQueries {
     private readonly staff: StaffDirectory,
     private readonly venues: VenueAvailability,
     private readonly links: BanquetLinks,
+    private readonly paymentsInfo: InvoicePaymentsInfo,
     private readonly clock: Clock,
   ) {}
 
@@ -189,6 +201,10 @@ export class BanquetQueries {
     const required = request.requiredPrepayment(quoteTotal);
     const covered = request.isPrepaymentCovered(paid, quoteTotal);
     const act = await this.documents.actOfRequest(id);
+    const extras = await this.paymentsInfo.load(invoices, payments);
+    const canManage = actor.can(Permission.BanquetsManage, s.branchId);
+    const canInvoice = actor.can(Permission.BanquetsInvoice, s.branchId);
+    const quoteEditable = QUOTE_EDITABLE_STATUSES.includes(s.status);
     let venueName: Translatable | null = null;
     if (s.venue) {
       try {
@@ -230,32 +246,64 @@ export class BanquetQueries {
       cancelledAt: s.cancelledAt,
       publicQuoteUrl: this.links.quote(s.publicToken, s.locale),
       quotes: versions.map((v) => quoteSummaryView(v, latest?.version ?? null)),
-      invoices: invoices.map((i) => invoiceView(i, payments, { today, publicUrl: this.links.invoice(i.publicToken, s.locale) })),
+      invoices: invoices.map((i) =>
+        invoiceView(i, payments, {
+          today,
+          publicUrl: this.links.invoice(i.publicToken, s.locale),
+          currentPayment: extras.currentPayments.get(i.id),
+          refunds: extras.refunds,
+          requestCancelled: s.status === 'cancelled',
+        }),
+      ),
       act: act ? actView(act) : null,
       documents: (await this.documents.listForRequest(id)).map(documentView),
       timeline: (await this.activities.list(id)).map(activityView),
+      canEditQuote: canManage && quoteEditable,
+      // Как в SendQuote: после отправки (quote_sent / agreed) повторно отправляется только новая версия.
+      canSendLatestQuote: canManage && quoteEditable && latest !== null && !((s.status === 'quote_sent' || s.status === 'agreed') && latest.sentAt !== null),
+      canIssueInvoice: canInvoice && INVOICEABLE_STATUSES.includes(s.status) && quoteTotal !== null && quoteTotal.greaterThan(invoiced),
+      canIssueAct: (canInvoice || canManage) && s.status === 'held' && act === null && quote !== null,
     };
   }
 
-  /** Календарь мероприятий филиала: заявки, залы и занятость (брони и банкеты) из модуля Reservation. */
-  async calendar(actor: Actor, input: { branchId: string; from: string; to: string }): Promise<CalendarView> {
-    actor.assertCan(Permission.BanquetsView, input.branchId);
+  /**
+   * Календарь мероприятий: заявки, залы и занятость (брони и банкеты) из модуля Reservation.
+   * С branchId — филиал; без него — все филиалы, доступные сотруднику, плюс выездные заявки без
+   * филиала-исполнителя (их видят глобальные роли).
+   */
+  async calendar(actor: Actor, input: { branchId?: string | null; from: string; to: string }): Promise<CalendarView> {
+    if (input.branchId) actor.assertCan(Permission.BanquetsView, input.branchId);
+    else actor.assertCanSomewhere(Permission.BanquetsView);
     if (!isIsoDate(input.from) || !isIsoDate(input.to) || input.to < input.from) {
       throw new ValidationError('banquet.calendar_range_invalid', 'Expected from <= to (YYYY-MM-DD)');
     }
     if (input.to > addDays(input.from, MAX_CALENDAR_DAYS)) {
       throw new ValidationError('banquet.calendar_range_too_long', `Calendar range is limited to ${MAX_CALENDAR_DAYS} days`);
     }
-    const branch = await this.branches.get(input.branchId);
-    const fromUtc = startOfLocalDay(input.from, branch.timezone);
-    const toUtc = startOfLocalDay(addDays(input.to, 1), branch.timezone);
-    const requests = await this.requests.forCalendar(input.branchId, { from: input.from, to: input.to, fromUtc, toUtc });
+    const scope = actor.scopeBranches(Permission.BanquetsView, input.branchId ?? null);
+    const branches = (await this.branches.list()).filter((b) => (scope === 'all' ? true : scope.includes(b.id)));
+    if (input.branchId && branches.length === 0) throw new NotFoundError('branch', input.branchId);
+    const range = { from: startOfLocalDay(input.from), to: startOfLocalDay(addDays(input.to, 1)) };
+    const requests = await this.requests.forCalendar(
+      { branches: scope, includeUnassigned: !input.branchId && actor.can(Permission.BanquetsView, null) },
+      { from: input.from, to: input.to, fromUtc: range.from, toUtc: range.to },
+    );
+    const venues: VenueSummary[] = [];
+    const occupancy: VenueOccupancy[] = [];
+    for (const branch of branches) {
+      if (!input.branchId && !branch.isActive) continue;
+      venues.push(...(await this.venues.listVenues(branch.id)));
+      const fromUtc = startOfLocalDay(input.from, branch.timezone);
+      const toUtc = startOfLocalDay(addDays(input.to, 1), branch.timezone);
+      occupancy.push(...(await this.venues.occupancy(branch.id, fromUtc, toUtc)));
+    }
     return {
-      branchId: input.branchId,
+      branchId: input.branchId ?? null,
+      branchIds: input.branchId ? [input.branchId] : branches.filter((b) => b.isActive).map((b) => b.id),
       from: input.from,
       to: input.to,
-      venues: await this.venues.listVenues(input.branchId),
-      occupancy: await this.venues.occupancy(input.branchId, fromUtc, toUtc),
+      venues,
+      occupancy,
       banquets: await this.summaries(requests),
     };
   }

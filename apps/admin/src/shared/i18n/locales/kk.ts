@@ -236,6 +236,7 @@ export const kk: AdminMessages = {
     activateConfirm: '«{{name}}» белсендірілсін бе?',
   },
   branches: {
+    id: 'ID (интеграциялар үшін)',
     create: 'Филиал қосу',
     createTitle: 'Жаңа филиал',
     editTitle: 'Филиал',
