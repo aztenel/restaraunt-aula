@@ -76,7 +76,7 @@ export const certificatesKk: DeepMessages<typeof certificatesRu> = {
       order: 'Сертификаттар тапсырысы: {{id}}',
       issue: 'Шот бойынша шығару',
       columns: {
-        code: 'Сертификат',
+        code: 'Сертификат (коды)',
         kind: 'Түрі',
         status: 'Мәртебесі',
         balance: 'Қалдық / номинал',
@@ -110,7 +110,7 @@ export const certificatesKk: DeepMessages<typeof certificatesRu> = {
       setDescription: 'Жиынтық құрамы',
       order: 'Тапсырыс',
       orderInfo: '{{source}} · {{status}} · {{quantity}} дана, {{total}}',
-      orderCompany: 'Компания: {{company}}',
+      orderCompany: 'Компания атауы: {{company}}',
       openPayment: 'Төлем',
       ledger: 'Сертификат бойынша қозғалыстар',
       noLedger: 'Қозғалыстар жоқ',
