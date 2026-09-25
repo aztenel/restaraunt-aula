@@ -1,6 +1,7 @@
 import { banquetsKk } from './banquets.kk';
 import { catalogKk } from './catalog.kk';
 import { certificatesKk } from './certificates.kk';
+import { customersKk } from './customers.kk';
 import { orderingKk } from './ordering.kk';
 import { paymentsKk } from './payments.kk';
 import { reportingKk } from './reporting.kk';
@@ -11,6 +12,7 @@ import type { AdminMessages } from './ru';
 export const kk: AdminMessages = {
   ...paymentsKk,
   ...certificatesKk,
+  ...customersKk,
   ...orderingKk,
   ...catalogKk,
   ...banquetsKk,
