@@ -139,6 +139,11 @@ export const PaymentsEvents = {
   RefundFailed: 'payments.refund_failed',
   CertificateIssued: 'payments.certificate_issued',
   CertificateRedeemed: 'payments.certificate_redeemed',
+  /**
+   * Сумма возвращена на сертификат (отмена заказа, оплаченного сертификатом): остаток сертификата
+   * снова увеличился. Проекции обязательств по сертификатам (Reporting) учитывают его наравне с погашениями.
+   */
+  CertificateCredited: 'payments.certificate_credited',
   CertificateExpired: 'payments.certificate_expired',
 } as const;
 
@@ -197,6 +202,18 @@ export interface CertificateExpiredPayload {
   /** Несгоревший остаток на момент истечения срока (списывается из обязательств). */
   balance: MoneyJson;
   expiresAt: string;
+  occurredAt: string;
+}
+
+export interface CertificateCreditedPayload {
+  certificateId: string;
+  /** Сколько вернули на сертификат. */
+  amount: MoneyJson;
+  balanceAfter: MoneyJson;
+  branchId: string | null;
+  /** Возврат платежа gift_certificate, по которому сумма вернулась на сертификат. */
+  refundId: string | null;
+  paymentId: string | null;
   occurredAt: string;
 }
 

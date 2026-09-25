@@ -10,7 +10,7 @@ import { tryNormalizePhone } from '../../../../shared/kernel/phone';
 import { Notifier } from '../../../notifications/public';
 import { resolveDeliveryTarget } from '../../domain/certificate-order';
 import { CertificateRecord, CertificateRepository, LedgerEntry } from '../../infrastructure/certificate.repository';
-import { CertificateRedeemedPayload, PaymentsEvents } from '../../public';
+import { CertificateCreditedPayload, CertificateRedeemedPayload, PaymentsEvents } from '../../public';
 import { certificateAuditState, formatAmount } from './certificate-views';
 
 function currentActor(): Actor {
@@ -118,11 +118,15 @@ export class DebitCertificate {
   }
 }
 
-/** Возврат суммы на сертификат (отмена заказа, оплаченного сертификатом). */
+/**
+ * Возврат суммы на сертификат (отмена заказа, оплаченного сертификатом): журнал движений, аудит
+ * и событие CertificateCredited — в транзакции возврата (обязательства по сертификатам снова растут).
+ */
 @Injectable()
 export class CreditCertificate {
   constructor(
     private readonly certificates: CertificateRepository,
+    private readonly events: EventBus,
     private readonly audit: AuditLog,
     private readonly clock: Clock,
   ) {}
@@ -167,6 +171,19 @@ export class CreditCertificate {
       after: certificateAuditState(record),
       meta: { amount: input.amount.toJSON(), refundId: input.refundId, paymentId: input.paymentId },
     });
+    await this.events.publish(
+      PaymentsEvents.CertificateCredited,
+      {
+        certificateId: record.certificate.id,
+        amount: input.amount.toJSON(),
+        balanceAfter: balanceAfter.toJSON(),
+        branchId: input.branchId,
+        refundId: input.refundId,
+        paymentId: input.paymentId,
+        occurredAt: now.toISOString(),
+      } satisfies CertificateCreditedPayload,
+      { aggregateId: record.certificate.id, branchId: input.branchId },
+    );
     return { ledger, balanceAfter };
   }
 }

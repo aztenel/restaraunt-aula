@@ -20,7 +20,7 @@ import {
 import { lazy, Suspense, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
-import { Permission, translate, type AuditRecord, type Money } from '@aula/api-client';
+import { formatMoney, Permission, translate, type AuditRecord, type Money } from '@aula/api-client';
 import { systemApi } from '@/shared/api/endpoints';
 import { useApiQuery } from '@/shared/api/hooks';
 import { useCan } from '@/shared/auth/useCan';
@@ -260,7 +260,7 @@ function InfoTab({ order }: { order: AdminOrderDetails }) {
 }
 
 function PaymentsTab({ order, onRefund }: { order: AdminOrderDetails; onRefund: () => void }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   return (
     <>
       <Flex justify="space-between" align="center" wrap gap={8} style={{ marginBottom: 8 }}>
@@ -268,8 +268,7 @@ function PaymentsTab({ order, onRefund }: { order: AdminOrderDetails; onRefund: 
           {t('orders.detail.payments.title')}
         </Typography.Title>
         <Space wrap>
-          <Typography.Text type="secondary">{t('orders.detail.refundable', { amount: '' })}</Typography.Text>
-          <MoneyText value={order.refundable} strong />
+          <Typography.Text strong>{t('orders.detail.refundable', { amount: formatMoney(order.refundable, i18n.language) })}</Typography.Text>
           {order.canRefund ? (
             <Button icon={<RollbackOutlined />} onClick={onRefund}>
               {t('orders.actions.refund')}
