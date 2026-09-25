@@ -3,14 +3,15 @@
  * Витрина денег НЕ считает (правила ТЗ №6 и №8): названия, цены, скидка, доставка, итог,
  * доступность позиций и минимальная сумма — только из ответа.
  *
- * TODO(ordering/openapi): эндпоинт ещё не описан в docs/openapi.json (модуль в разработке) —
- *   запрос идёт через api.raw(). После регенерации (`pnpm openapi`) перейти на типизированный
- *   `call(api.POST('/api/v1/public/orders/quote', { body, params: { query: { locale } } }))`,
- *   заменить интерфейсы ниже на components['schemas']['QuoteOrderDto' | 'QuoteDto'] и убрать
- *   normalizeQuote (разбор «на всякий случай»).
+ * TODO(ordering/openapi): запрос идёт через api.raw() — эндпоинт делался параллельно с витриной.
+ *   Он уже появился в docs/openapi.json (QuoteOrderDto → QuoteDto), тело запроса типизировано по схеме
+ *   (QuoteOrderBody). Перейти на `call(api.POST('/api/v1/public/orders/quote', { body, params: { query: { locale } } }))`,
+ *   когда nullable-поля DTO получат явные типы (сейчас promoCode и суммы/названия ответа выводятся как
+ *   Record<string, never>), и заменить интерфейсы ответа ниже на components['schemas']['QuoteDto'],
+ *   убрав normalizeQuote (разбор «на всякий случай»).
  */
 import { ApiError, type ApiClient } from '@aula/api-client';
-import type { Money } from './api-types';
+import type { Money, QuoteOrderBody } from './api-types';
 
 export const QUOTE_PATH = '/api/v1/public/orders/quote';
 
@@ -34,6 +35,8 @@ export interface QuoteRequest {
   certificateCode?: string | null;
   /** К определённому времени (ISO). */
   scheduledFor?: string | null;
+  /** Телефон гостя — для лимита промокода на один телефон. */
+  phone?: string | null;
 }
 
 export interface QuoteModifier {
@@ -115,12 +118,12 @@ export type QuoteOutcome =
   | { kind: 'error'; error: ApiError };
 
 /**
- * Тело запроса. API отклоняет лишние поля (forbidNonWhitelisted → 400), поэтому пустые значения
- * не отправляются. Сейчас QuoteOrderDto (в разработке) называет точку доставки `point`
- * и не принимает `scheduledFor` (время проверяется при оформлении) — сверить после регенерации OpenAPI.
+ * Тело запроса (QuoteOrderDto). API отклоняет лишние поля (forbidNonWhitelisted → 400), поэтому пустые
+ * значения не отправляются. В DTO точка доставки называется `point`, а `scheduledFor` не принимается
+ * (время проверяется при оформлении заказа) — в расчёт оно не передаётся.
  */
-export function quoteBody(request: QuoteRequest): Record<string, unknown> {
-  const body: Record<string, unknown> = {
+export function quoteBody(request: QuoteRequest): QuoteOrderBody {
+  const body: QuoteOrderBody = {
     branchId: request.branchId,
     type: request.type,
     items: request.items.map(({ dishId, quantity, modifierOptionIds }) => ({ dishId, quantity, modifierOptionIds })),
@@ -130,6 +133,8 @@ export function quoteBody(request: QuoteRequest): Record<string, unknown> {
   if (promo) body.promoCode = promo;
   const certificate = request.certificateCode?.trim();
   if (certificate) body.certificateCode = certificate;
+  const phone = request.phone?.trim();
+  if (phone) body.phone = phone;
   return body;
 }
 

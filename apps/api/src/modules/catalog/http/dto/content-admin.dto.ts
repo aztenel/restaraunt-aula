@@ -24,7 +24,7 @@ import { ImageDto, MissingTranslationDto } from './common.dto';
 
 export class BannerInputDto {
   @ApiProperty({ enum: BANNER_PLACEMENTS }) @IsIn(BANNER_PLACEMENTS) placement: string;
-  @ApiPropertyOptional({ nullable: true, description: 'Филиал; null — для всех филиалов' }) @IsOptional() @IsUUID() branchId?: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true, description: 'Филиал; null — для всех филиалов' }) @IsOptional() @IsUUID() branchId?: string | null;
 
   @ApiProperty({ type: TranslatableDto })
   @ValidateNested()
@@ -43,29 +43,29 @@ export class BannerInputDto {
   @Type(() => TranslatableDto)
   ctaLabel?: TranslatableDto | null;
 
-  @ApiPropertyOptional({ nullable: true, example: '/greenline/menu', description: 'Путь на сайте или http(s) URL' })
+  @ApiPropertyOptional({ type: String, nullable: true, example: '/greenline/menu', description: 'Путь на сайте или http(s) URL' })
   @IsOptional()
   @IsString()
   @MaxLength(1000)
   linkUrl?: string | null;
 
-  @ApiPropertyOptional({ nullable: true, description: 'Показывать с (ISO 8601)' }) @IsOptional() @IsISO8601({ strict: true }) activeFrom?: string | null;
-  @ApiPropertyOptional({ nullable: true, description: 'Показывать до (ISO 8601, не включая)' }) @IsOptional() @IsISO8601({ strict: true }) activeTo?: string | null;
-  @ApiPropertyOptional() @IsOptional() @IsInt() @Min(-1_000_000) @Max(1_000_000) sortOrder?: number | null;
-  @ApiPropertyOptional({ default: true }) @IsOptional() @IsBoolean() isActive?: boolean | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true, description: 'Показывать с (ISO 8601)' }) @IsOptional() @IsISO8601({ strict: true }) activeFrom?: string | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true, description: 'Показывать до (ISO 8601, не включая)' }) @IsOptional() @IsISO8601({ strict: true }) activeTo?: string | null;
+  @ApiPropertyOptional({ type: Number }) @IsOptional() @IsInt() @Min(-1_000_000) @Max(1_000_000) sortOrder?: number | null;
+  @ApiPropertyOptional({ type: Boolean, default: true }) @IsOptional() @IsBoolean() isActive?: boolean | null;
 }
 
 export class BannerDto {
   @ApiProperty() id: string;
   @ApiProperty({ enum: BANNER_PLACEMENTS }) placement: string;
-  @ApiPropertyOptional({ nullable: true }) branchId: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) branchId: string | null;
   @ApiProperty({ type: TranslatableDto }) title: TranslatableDto;
   @ApiProperty({ type: TranslatableDto }) subtitle: TranslatableDto;
   @ApiProperty({ type: TranslatableDto }) ctaLabel: TranslatableDto;
-  @ApiPropertyOptional({ nullable: true }) linkUrl: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) linkUrl: string | null;
   @ApiPropertyOptional({ type: ImageDto, nullable: true }) image: ImageDto | null;
-  @ApiPropertyOptional({ nullable: true }) activeFrom: Date | null;
-  @ApiPropertyOptional({ nullable: true }) activeTo: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) activeFrom: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) activeTo: Date | null;
   @ApiProperty() sortOrder: number;
   @ApiProperty() isActive: boolean;
   @ApiProperty({ type: [MissingTranslationDto] }) missingTranslations: MissingTranslationDto[];
@@ -81,7 +81,7 @@ export class BannerListQueryDto {
 // ---------------------------------------------------------------- Акции
 
 export class PromotionInputDto {
-  @ApiPropertyOptional({ nullable: true, example: 'kombo-obed', description: 'Не задан — из заголовка' })
+  @ApiPropertyOptional({ type: String, nullable: true, example: 'kombo-obed', description: 'Не задан — из заголовка' })
   @IsOptional()
   @IsString()
   @MaxLength(80)
@@ -116,8 +116,8 @@ export class PromotionInputDto {
   @Type(() => TranslatableDto)
   seoDescription?: TranslatableDto | null;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsISO8601({ strict: true }) validFrom?: string | null;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsISO8601({ strict: true }) validTo?: string | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) @IsOptional() @IsISO8601({ strict: true }) validFrom?: string | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) @IsOptional() @IsISO8601({ strict: true }) validTo?: string | null;
 
   @ApiPropertyOptional({ type: [String], description: 'Филиалы акции; пусто — во всех филиалах' })
   @IsOptional()
@@ -126,8 +126,8 @@ export class PromotionInputDto {
   @IsUUID('all', { each: true })
   branchIds?: string[] | null;
 
-  @ApiPropertyOptional() @IsOptional() @IsInt() @Min(-1_000_000) @Max(1_000_000) sortOrder?: number | null;
-  @ApiPropertyOptional({ default: true }) @IsOptional() @IsBoolean() isActive?: boolean | null;
+  @ApiPropertyOptional({ type: Number }) @IsOptional() @IsInt() @Min(-1_000_000) @Max(1_000_000) sortOrder?: number | null;
+  @ApiPropertyOptional({ type: Boolean, default: true }) @IsOptional() @IsBoolean() isActive?: boolean | null;
 }
 
 export class PromotionDto {
@@ -139,8 +139,8 @@ export class PromotionDto {
   @ApiProperty({ type: TranslatableDto }) seoTitle: TranslatableDto;
   @ApiProperty({ type: TranslatableDto }) seoDescription: TranslatableDto;
   @ApiPropertyOptional({ type: ImageDto, nullable: true }) image: ImageDto | null;
-  @ApiPropertyOptional({ nullable: true }) validFrom: Date | null;
-  @ApiPropertyOptional({ nullable: true }) validTo: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) validFrom: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) validTo: Date | null;
   @ApiProperty({ type: [String] }) branchIds: string[];
   @ApiProperty() sortOrder: number;
   @ApiProperty() isActive: boolean;
@@ -159,7 +159,7 @@ export class PageBodyDto implements Translatable {
 }
 
 export class PageInputDto {
-  @ApiPropertyOptional({ nullable: true, example: 'delivery', description: 'Не задан — из заголовка' })
+  @ApiPropertyOptional({ type: String, nullable: true, example: 'delivery', description: 'Не задан — из заголовка' })
   @IsOptional()
   @IsString()
   @MaxLength(80)
@@ -187,8 +187,8 @@ export class PageInputDto {
   @Type(() => TranslatableDto)
   seoDescription?: TranslatableDto | null;
 
-  @ApiPropertyOptional({ default: true }) @IsOptional() @IsBoolean() isPublished?: boolean | null;
-  @ApiPropertyOptional() @IsOptional() @IsInt() @Min(-1_000_000) @Max(1_000_000) sortOrder?: number | null;
+  @ApiPropertyOptional({ type: Boolean, default: true }) @IsOptional() @IsBoolean() isPublished?: boolean | null;
+  @ApiPropertyOptional({ type: Number }) @IsOptional() @IsInt() @Min(-1_000_000) @Max(1_000_000) sortOrder?: number | null;
 }
 
 export class PageDto {

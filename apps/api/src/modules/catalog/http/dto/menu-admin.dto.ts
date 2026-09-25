@@ -27,7 +27,7 @@ const AVAILABILITIES = Object.values(DishAvailability);
 // ---------------------------------------------------------------- Категории
 
 export class CategoryInputDto {
-  @ApiPropertyOptional({ nullable: true, example: 'salaty', description: 'Человекочитаемый URL; не задан — транслитерация из названия' })
+  @ApiPropertyOptional({ type: String, nullable: true, example: 'salaty', description: 'Человекочитаемый URL; не задан — транслитерация из названия' })
   @IsOptional()
   @IsString()
   @MaxLength(80)
@@ -56,14 +56,14 @@ export class CategoryInputDto {
   @Type(() => TranslatableDto)
   seoDescription?: TranslatableDto | null;
 
-  @ApiPropertyOptional({ description: 'Порядок в меню (по возрастанию)' })
+  @ApiPropertyOptional({ type: Number, description: 'Порядок в меню (по возрастанию)' })
   @IsOptional()
   @IsInt()
   @Min(-1_000_000)
   @Max(1_000_000)
   sortOrder?: number | null;
 
-  @ApiPropertyOptional({ default: true })
+  @ApiPropertyOptional({ type: Boolean, default: true })
   @IsOptional()
   @IsBoolean()
   isActive?: boolean | null;
@@ -96,7 +96,7 @@ export class ReorderDto {
 // ---------------------------------------------------------------- Блюда
 
 export class DishInputDto {
-  @ApiPropertyOptional({ nullable: true, example: 'beshbarmak', description: 'Не задан — транслитерация из названия' })
+  @ApiPropertyOptional({ type: String, nullable: true, example: 'beshbarmak', description: 'Не задан — транслитерация из названия' })
   @IsOptional()
   @IsString()
   @MaxLength(80)
@@ -133,11 +133,11 @@ export class DishInputDto {
   @Type(() => TranslatableDto)
   seoDescription?: TranslatableDto | null;
 
-  @ApiPropertyOptional({ nullable: true, description: 'Вес порции, г' }) @IsOptional() @IsInt() @Min(1) @Max(100_000) weightGrams?: number | null;
-  @ApiPropertyOptional({ nullable: true, description: 'Калорийность порции, ккал' }) @IsOptional() @IsInt() @Min(0) @Max(20_000) calories?: number | null;
-  @ApiPropertyOptional({ default: false }) @IsOptional() @IsBoolean() isVegetarian?: boolean | null;
-  @ApiPropertyOptional({ default: 0, minimum: 0, maximum: 3, description: 'Острота 0..3' }) @IsOptional() @IsInt() @Min(0) @Max(3) spicyLevel?: number | null;
-  @ApiPropertyOptional({ default: true }) @IsOptional() @IsBoolean() isHalal?: boolean | null;
+  @ApiPropertyOptional({ type: Number, nullable: true, description: 'Вес порции, г' }) @IsOptional() @IsInt() @Min(1) @Max(100_000) weightGrams?: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true, description: 'Калорийность порции, ккал' }) @IsOptional() @IsInt() @Min(0) @Max(20_000) calories?: number | null;
+  @ApiPropertyOptional({ type: Boolean, default: false }) @IsOptional() @IsBoolean() isVegetarian?: boolean | null;
+  @ApiPropertyOptional({ type: Number, default: 0, minimum: 0, maximum: 3, description: 'Острота 0..3' }) @IsOptional() @IsInt() @Min(0) @Max(3) spicyLevel?: number | null;
+  @ApiPropertyOptional({ type: Boolean, default: true }) @IsOptional() @IsBoolean() isHalal?: boolean | null;
 
   @ApiPropertyOptional({ type: [String], enum: ALLERGEN_CODES })
   @IsOptional()
@@ -146,14 +146,14 @@ export class DishInputDto {
   @IsIn(ALLERGEN_CODES, { each: true })
   allergens?: string[] | null;
 
-  @ApiPropertyOptional({ nullable: true, description: 'Общий код блюда в POS сети' })
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Общий код блюда в POS сети' })
   @IsOptional()
   @IsString()
   @MaxLength(64)
   sku?: string | null;
 
-  @ApiPropertyOptional() @IsOptional() @IsInt() @Min(-1_000_000) @Max(1_000_000) sortOrder?: number | null;
-  @ApiPropertyOptional({ default: true }) @IsOptional() @IsBoolean() isActive?: boolean | null;
+  @ApiPropertyOptional({ type: Number }) @IsOptional() @IsInt() @Min(-1_000_000) @Max(1_000_000) sortOrder?: number | null;
+  @ApiPropertyOptional({ type: Boolean, default: true }) @IsOptional() @IsBoolean() isActive?: boolean | null;
 
   @ApiPropertyOptional({ type: [String], description: 'Группы модификаторов в порядке показа; не задано — без изменений' })
   @IsOptional()
@@ -167,8 +167,8 @@ export class BranchPriceDto {
   @ApiProperty() branchId: string;
   @ApiProperty({ type: MoneyDto }) price: MoneyDto;
   @ApiProperty({ enum: ['available', 'stopped'] }) availability: string;
-  @ApiPropertyOptional({ nullable: true }) stoppedUntil: Date | null;
-  @ApiPropertyOptional({ nullable: true }) sku: string | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) stoppedUntil: Date | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) sku: string | null;
 }
 
 export class DishDto {
@@ -180,13 +180,13 @@ export class DishDto {
   @ApiProperty({ type: TranslatableDto }) composition: TranslatableDto;
   @ApiProperty({ type: TranslatableDto }) seoTitle: TranslatableDto;
   @ApiProperty({ type: TranslatableDto }) seoDescription: TranslatableDto;
-  @ApiPropertyOptional({ nullable: true }) weightGrams: number | null;
-  @ApiPropertyOptional({ nullable: true }) calories: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true }) weightGrams: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true }) calories: number | null;
   @ApiProperty() isVegetarian: boolean;
   @ApiProperty({ minimum: 0, maximum: 3 }) spicyLevel: number;
   @ApiProperty() isHalal: boolean;
   @ApiProperty({ type: [String], enum: ALLERGEN_CODES }) allergens: string[];
-  @ApiPropertyOptional({ nullable: true }) sku: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) sku: string | null;
   @ApiProperty() sortOrder: number;
   @ApiProperty() isActive: boolean;
   @ApiProperty({ type: [PhotoDto] }) photos: PhotoDto[];
@@ -220,7 +220,7 @@ export class PhotoOrderDto {
 // ---------------------------------------------------------------- Модификаторы
 
 export class ModifierOptionInputDto {
-  @ApiPropertyOptional({ description: 'id существующей опции; не задан — новая опция' }) @IsOptional() @IsUUID() id?: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', description: 'id существующей опции; не задан — новая опция' }) @IsOptional() @IsUUID() id?: string | null;
 
   @ApiProperty({ type: TranslatableDto, example: { ru: 'Большая порция', kk: 'Үлкен порция' } })
   @ValidateNested()
@@ -232,13 +232,13 @@ export class ModifierOptionInputDto {
   @Type(() => MoneyInputDto)
   price: MoneyInputDto;
 
-  @ApiPropertyOptional({ default: false }) @IsOptional() @IsBoolean() isDefault?: boolean | null;
-  @ApiPropertyOptional() @IsOptional() @IsInt() @Min(-1_000_000) @Max(1_000_000) sortOrder?: number | null;
-  @ApiPropertyOptional({ default: true }) @IsOptional() @IsBoolean() isActive?: boolean | null;
+  @ApiPropertyOptional({ type: Boolean, default: false }) @IsOptional() @IsBoolean() isDefault?: boolean | null;
+  @ApiPropertyOptional({ type: Number }) @IsOptional() @IsInt() @Min(-1_000_000) @Max(1_000_000) sortOrder?: number | null;
+  @ApiPropertyOptional({ type: Boolean, default: true }) @IsOptional() @IsBoolean() isActive?: boolean | null;
 }
 
 export class ModifierGroupInputDto {
-  @ApiPropertyOptional({ nullable: true, example: 'portion-size', description: 'Код группы; не задан — из названия' })
+  @ApiPropertyOptional({ type: String, nullable: true, example: 'portion-size', description: 'Код группы; не задан — из названия' })
   @IsOptional()
   @IsString()
   @MaxLength(80)
@@ -262,8 +262,8 @@ export class ModifierGroupInputDto {
   minSelect: number;
 
   @ApiProperty({ minimum: 1, maximum: MAX_MODIFIER_SELECT }) @IsInt() @Min(1) @Max(MAX_MODIFIER_SELECT) maxSelect: number;
-  @ApiPropertyOptional() @IsOptional() @IsInt() @Min(-1_000_000) @Max(1_000_000) sortOrder?: number | null;
-  @ApiPropertyOptional({ default: true }) @IsOptional() @IsBoolean() isActive?: boolean | null;
+  @ApiPropertyOptional({ type: Number }) @IsOptional() @IsInt() @Min(-1_000_000) @Max(1_000_000) sortOrder?: number | null;
+  @ApiPropertyOptional({ type: Boolean, default: true }) @IsOptional() @IsBoolean() isActive?: boolean | null;
 
   @ApiProperty({ type: [ModifierOptionInputDto], description: 'Полный список опций: отсутствующие удаляются' })
   @IsArray()
@@ -309,7 +309,7 @@ export class AddMenuItemDto {
   @Type(() => MoneyInputDto)
   price: MoneyInputDto;
 
-  @ApiPropertyOptional({ nullable: true, description: 'Код POS филиала (если отличается от общего кода блюда)' })
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Код POS филиала (если отличается от общего кода блюда)' })
   @IsOptional()
   @IsString()
   @MaxLength(64)
@@ -322,7 +322,7 @@ export class SetPriceDto {
   @Type(() => MoneyInputDto)
   price: MoneyInputDto;
 
-  @ApiPropertyOptional({ nullable: true, description: 'Код POS филиала; не передан — без изменений, null — сбросить' })
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Код POS филиала; не передан — без изменений, null — сбросить' })
   @IsOptional()
   @IsString()
   @MaxLength(64)
@@ -370,14 +370,14 @@ export class CopyMenuResultDto {
 export class SetAvailabilityDto {
   @ApiProperty({ description: 'true — вернуть в продажу, false — поставить в стоп-лист' }) @IsBoolean() available: boolean;
 
-  @ApiPropertyOptional({ nullable: true, description: 'Стоп до момента (ISO 8601), затем автоматический возврат; не задан — до ручного возврата' })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true, description: 'Стоп до момента (ISO 8601), затем автоматический возврат; не задан — до ручного возврата' })
   @IsOptional()
   @IsISO8601({ strict: true })
   until?: string | null;
 
   @ApiPropertyOptional({ description: 'Стоп до конца дня (полночь по времени филиала)' }) @IsOptional() @IsBoolean() untilEndOfDay?: boolean;
 
-  @ApiPropertyOptional({ nullable: true, example: 'Закончилась конина' }) @IsOptional() @IsString() @MaxLength(500) reason?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, example: 'Закончилась конина' }) @IsOptional() @IsString() @MaxLength(500) reason?: string | null;
 }
 
 export class BranchMenuItemDto {
@@ -391,13 +391,13 @@ export class BranchMenuItemDto {
   @ApiProperty({ type: MoneyDto }) price: MoneyDto;
   @ApiProperty({ enum: ['available', 'stopped'] }) availability: string;
   @ApiProperty({ enum: AVAILABILITIES, description: 'Как видно на витрине с учётом настройки филиала' }) displayAvailability: string;
-  @ApiPropertyOptional({ nullable: true }) stoppedUntil: Date | null;
-  @ApiPropertyOptional({ nullable: true }) stopReason: string | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) stoppedUntil: Date | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) stopReason: string | null;
   @ApiPropertyOptional({ nullable: true, enum: ['manual', 'pos'] }) stopSource: string | null;
-  @ApiPropertyOptional({ nullable: true }) stoppedAt: Date | null;
-  @ApiPropertyOptional({ nullable: true, description: 'Код POS филиала' }) sku: string | null;
-  @ApiPropertyOptional({ nullable: true, description: 'Код, который уходит в POS' }) effectiveSku: string | null;
-  @ApiPropertyOptional({ nullable: true }) updatedBy: string | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) stoppedAt: Date | null;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Код POS филиала' }) sku: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Код, который уходит в POS' }) effectiveSku: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) updatedBy: string | null;
   @ApiProperty() updatedAt: Date;
 }
 

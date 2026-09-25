@@ -92,16 +92,16 @@ export class BanquetAdminCreateRequestDto {
 
 export class BanquetUpdateRequestDto {
   @ApiPropertyOptional({ example: '2026-11-14' }) @IsOptional() @Matches(DATE_RE) eventDate?: string;
-  @ApiPropertyOptional({ example: '18:00', nullable: true }) @IsOptional() @Matches(TIME_RE) eventTime?: string | null;
+  @ApiPropertyOptional({ type: String, example: '18:00', nullable: true }) @IsOptional() @Matches(TIME_RE) eventTime?: string | null;
   @ApiPropertyOptional({ enum: BANQUET_EVENT_TYPES }) @IsOptional() @IsIn(BANQUET_EVENT_TYPES as unknown as string[]) eventType?: string;
   @ApiPropertyOptional({ minimum: 1, maximum: 5000 }) @IsOptional() @IsInt() @Min(1) @Max(5000) guests?: number;
   @ApiPropertyOptional({ type: MoneyInputDto, nullable: true }) @IsOptional() @ValidateNested() @Type(() => MoneyInputDto) budget?: MoneyInputDto | null;
-  @ApiPropertyOptional({ nullable: true, description: 'Филиал проведения / филиал-исполнитель выезда' }) @IsOptional() @IsUUID() branchId?: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true, description: 'Филиал проведения / филиал-исполнитель выезда' }) @IsOptional() @IsUUID() branchId?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() offsite?: boolean;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(500) address?: string | null;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(4000) wishes?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsString() @MaxLength(500) address?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsString() @MaxLength(4000) wishes?: string | null;
   @ApiPropertyOptional({ type: BanquetContactInputDto }) @IsOptional() @ValidateNested() @Type(() => BanquetContactInputDto) contact?: BanquetContactInputDto;
-  @ApiPropertyOptional({ nullable: true, description: 'Компания-заказчик (null — физлицо)' }) @IsOptional() @IsUUID() companyId?: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true, description: 'Компания-заказчик (null — физлицо)' }) @IsOptional() @IsUUID() companyId?: string | null;
 }
 
 export class BanquetTransitionDto {

@@ -50,7 +50,7 @@ export default async function DishPage({ params }: { params: Params }) {
   const menuPath = routes.branchMenu(branch.slug);
   const categoryPath = routes.category(branch.slug, dish.categorySlug);
   const dishPath = routes.dish(branch.slug, dish.categorySlug, dish.slug);
-  const menuLabel = `${menuT('title')} — ${branch.name}`;
+  const menuLabel = menuT('heading', { branch: branch.name });
   const photos = dish.photos.length > 0 ? dish.photos : dish.photo ? [dish.photo] : [];
   const facts = [
     dish.weightGrams ? t('weight', { grams: dish.weightGrams }) : null,

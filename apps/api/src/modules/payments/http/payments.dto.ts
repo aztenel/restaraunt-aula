@@ -22,32 +22,32 @@ function money(m: Money): MoneyDto {
 // ---------------------------------------------------------------- Ответы
 
 export class PaymentCustomerDto {
-  @ApiPropertyOptional({ nullable: true }) name: string | null;
-  @ApiPropertyOptional({ nullable: true, example: '+77771234567' }) phone: string | null;
-  @ApiPropertyOptional({ nullable: true }) email: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) name: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, example: '+77771234567' }) phone: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) email: string | null;
 }
 
 export class PaymentDto {
   @ApiProperty() id: string;
   @ApiProperty({ enum: PAYMENT_PURPOSES }) purpose: PaymentPurpose;
   @ApiProperty({ description: 'Объект оплаты: заказ, бронь, счёт банкета, заказ сертификатов' }) referenceId: string;
-  @ApiPropertyOptional({ nullable: true }) branchId: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) branchId: string | null;
   @ApiProperty({ enum: PAYMENT_METHODS }) method: PaymentMethod;
   @ApiProperty({ description: 'Провайдер (для online) или способ оплаты' }) provider: string;
   @ApiProperty({ enum: PAYMENT_STATUSES }) status: PaymentStatus;
   @ApiProperty({ type: MoneyDto }) amount: MoneyDto;
   @ApiProperty({ type: MoneyDto }) refundedAmount: MoneyDto;
   @ApiProperty({ type: MoneyDto, description: 'Сколько ещё можно вернуть (с учётом ожидающих возвратов)' }) refundableAmount: MoneyDto;
-  @ApiPropertyOptional({ nullable: true }) paymentUrl: string | null;
-  @ApiPropertyOptional({ nullable: true }) externalId: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) paymentUrl: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) externalId: string | null;
   @ApiProperty({ description: 'Номер счёта для провайдера' }) invoiceNo: number;
   @ApiProperty() description: string;
   @ApiProperty({ type: PaymentCustomerDto }) customer: PaymentCustomerDto;
   @ApiProperty() createdAt: Date;
-  @ApiPropertyOptional({ nullable: true }) paidAt: Date | null;
-  @ApiPropertyOptional({ nullable: true }) expiresAt: Date | null;
-  @ApiPropertyOptional({ nullable: true }) failureReason: string | null;
-  @ApiPropertyOptional({ nullable: true }) cancelReason: string | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) paidAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) expiresAt: Date | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) failureReason: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) cancelReason: string | null;
   @ApiProperty({ description: 'Провайдер сообщил сумму, отличную от суммы платежа' }) amountMismatch: boolean;
   @ApiProperty({ description: 'Можно запросить возврат (есть остаток и право)' }) canRefund: boolean;
   @ApiProperty({ description: 'Можно отметить получение денег (оплата при получении)' }) canCollect: boolean;
@@ -94,7 +94,7 @@ export class PaymentsPageDto {
 export class RefundPaymentRefDto {
   @ApiProperty({ enum: PAYMENT_PURPOSES }) purpose: string;
   @ApiProperty() referenceId: string;
-  @ApiPropertyOptional({ nullable: true }) branchId: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) branchId: string | null;
   @ApiProperty({ enum: PAYMENT_METHODS }) method: string;
 }
 
@@ -107,10 +107,10 @@ export class RefundDto {
   mode: RefundMode;
   @ApiProperty() reason: string;
   @ApiProperty() attempts: number;
-  @ApiPropertyOptional({ nullable: true }) failureReason: string | null;
-  @ApiPropertyOptional({ nullable: true }) comment: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) failureReason: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) comment: string | null;
   @ApiProperty() createdAt: Date;
-  @ApiPropertyOptional({ nullable: true }) completedAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) completedAt: Date | null;
   @ApiProperty({ description: 'Ожидает ручного подтверждения финансистом' }) awaitingManualConfirmation: boolean;
   @ApiProperty({ type: RefundPaymentRefDto }) payment: RefundPaymentRefDto;
 
@@ -170,10 +170,10 @@ export class ProviderLogEntryDto {
   @ApiProperty() integration: string;
   @ApiProperty({ enum: ['outbound', 'inbound'] }) direction: string;
   @ApiProperty() operation: string;
-  @ApiPropertyOptional({ nullable: true }) statusCode: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true }) statusCode: number | null;
   @ApiProperty() success: boolean;
-  @ApiPropertyOptional({ nullable: true }) durationMs: number | null;
-  @ApiPropertyOptional({ nullable: true }) error: string | null;
+  @ApiPropertyOptional({ type: Number, nullable: true }) durationMs: number | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) error: string | null;
   @ApiPropertyOptional({ type: 'object', additionalProperties: true, nullable: true, description: 'Запрос (платёжные данные замаскированы)' })
   request: unknown;
   @ApiPropertyOptional({ type: 'object', additionalProperties: true, nullable: true, description: 'Ответ (платёжные данные замаскированы)' })

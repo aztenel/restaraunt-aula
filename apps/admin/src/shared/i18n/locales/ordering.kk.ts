@@ -388,6 +388,11 @@ export const orderingKk: DeepMessages<typeof orderingRu> = {
     },
   },
   deliveryZones: {
+    geoman: {
+      firstVertex: 'Бірінші төбені қою үшін басыңыз',
+      continueLine: 'Төбе қосу үшін басыңыз',
+      finishPoly: 'Аймақты тұйықтау үшін бірінші төбені басыңыз',
+    },
     selectBranch: {
       title: 'Филиалды таңдаңыз',
       text: 'Жеткізу аймақтары әр филиал үшін жеке бапталады.',

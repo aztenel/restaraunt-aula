@@ -2,6 +2,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { AutoComplete, Button, Descriptions, Flex, Input, Select, Space, Tag, Typography } from 'antd';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router';
 import { Permission, type AuditRecord } from '@aula/api-client';
 import { systemApi, usersApi, type AuditQuery } from '@/shared/api/endpoints';
 import { queryKeys } from '@/shared/api/query-keys';
@@ -17,7 +18,7 @@ import { PageHeader } from '@/shared/ui/PageHeader';
 import { PaginatedTable } from '@/shared/ui/PaginatedTable';
 
 /** Типы объектов журнала (подсказки; список дополняется модулями). */
-const ENTITY_TYPES = ['user', 'branch', 'legal_entity', 'integration', 'failed_job', 'order', 'reservation', 'banquet', 'quote', 'invoice', 'payment', 'certificate', 'dish', 'category', 'price', 'delivery_zone', 'promocode', 'venue', 'customer'];
+const ENTITY_TYPES = ['user', 'branch', 'legal_entity', 'integration', 'failed_job', 'order', 'reservation', 'banquet', 'quote', 'invoice', 'payment', 'certificate', 'dish', 'category', 'price', 'delivery_zone', 'promo_code', 'venue', 'customer'];
 
 const ACTOR_COLORS: Record<string, string> = { staff: 'blue', system: 'purple', guest: 'default' };
 
@@ -36,7 +37,14 @@ export function AuditLogPage() {
   const { canSomewhere } = useCan();
   const { branchName } = useBranch();
   const canListUsers = canSomewhere(Permission.UsersManage);
-  const [filters, setFilters] = useState<Filters>({ branchId: null, range: null });
+  // Ссылка из карточки объекта: /audit-log?entityType=order&entityId=<id>.
+  const [searchParams] = useSearchParams();
+  const [filters, setFilters] = useState<Filters>(() => ({
+    branchId: null,
+    range: null,
+    entityType: searchParams.get('entityType') ?? undefined,
+    entityId: searchParams.get('entityId') ?? undefined,
+  }));
   const [draft, setDraft] = useState<Filters>(filters);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(50);

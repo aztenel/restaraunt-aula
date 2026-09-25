@@ -98,3 +98,11 @@ export type CertificateOrderStatus = Refine<
 >;
 
 export type CertificateBalance = Refine<Schemas['CertificateBalanceDto'], { setDescription: string | null }>;
+
+// ---------------------------------------------------------------- Заказ: расчёт корзины
+
+/** Тело POST /public/orders/quote (QuoteOrderDto; строковые nullable-поля в схеме выведены неточно). */
+export type QuoteOrderBody = Refine<
+  Schemas['QuoteOrderDto'],
+  { promoCode?: string | null; certificateCode?: string | null; phone?: string | null }
+>;

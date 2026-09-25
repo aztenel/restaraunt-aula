@@ -67,7 +67,8 @@ const quote = {
       available: true,
       problem: null,
     },
-    { index: 1, dishId: 'd2', name: 'Казы', photoUrl: null, quantity: 1, unitPrice: null, lineTotal: null, modifiers: [], available: false, problem: 'catalog.dish_unavailable' },
+    // Недоступная позиция приходит без названия — витрина берёт подпись из меню филиала.
+    { index: 1, dishId: 'd2', name: null, photoUrl: null, quantity: 1, unitPrice: null, lineTotal: null, modifiers: [], available: false, problem: 'catalog.dish_unavailable' },
   ],
   subtotal: kzt(1040000),
   discount: kzt(0),
@@ -94,9 +95,14 @@ afterEach(() => {
 describe('корзина: суммы только с сервера', () => {
   it('показывает названия, добавки, суммы из расчёта и проблему недоступной позиции', async () => {
     api.raw.mockResolvedValue(quote);
+    api.GET.mockResolvedValue({
+      data: { categories: [{ dishes: [{ id: 'd2', name: 'Казы', photo: null }] }] },
+      response: new Response(null, { status: 200 }),
+    });
     renderCart();
 
     expect(await screen.findByText('Бешбармак')).toBeTruthy();
+    expect(await screen.findByText('Казы')).toBeTruthy();
     expect(screen.getByText('Большая')).toBeTruthy();
     // Итог — ровно то, что прислал сервер (10 400 ₸), клиент не складывает цены.
     // (Testing Library сводит неразрывные пробелы форматирования к обычным.)

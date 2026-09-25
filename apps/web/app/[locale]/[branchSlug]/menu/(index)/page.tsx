@@ -90,15 +90,15 @@ export default async function BranchMenuPage({ params, searchParams }: { params:
           branchMenuJsonLd(menu, { locale, branchSlug: branch.slug, siteUrl, name: t('metaTitle', { branch: name }) }),
           breadcrumbJsonLd([
             { name: nav('home'), url: localizedUrl(locale, routes.home(), siteUrl) },
-            { name: `${t('title')} — ${name}`, url: menuUrl },
+            { name: t('heading', { branch: name }), url: menuUrl },
           ]),
         ]}
       />
-      <Breadcrumbs items={[{ label: nav('home'), href: routes.home() }, { label: `${t('title')} — ${name}` }]} />
-      <PageHeading title={t('title')} compact className="pb-2">
-        <p className="mt-2 text-lg text-muted">
-          <Link href={routes.branch(branch.slug)} className="underline-offset-4 hover:underline">
-            {t('branchLabel', { branch: name })}
+      <Breadcrumbs items={[{ label: nav('home'), href: routes.home() }, { label: t('heading', { branch: name }) }]} />
+      <PageHeading title={t('heading', { branch: name })} compact className="pb-2">
+        <p className="mt-2">
+          <Link href={routes.branch(branch.slug)} className="inline-flex min-h-11 items-center text-earth-700 underline underline-offset-4 hover:text-earth-900">
+            {t('branchInfo')}
           </Link>
         </p>
       </PageHeading>

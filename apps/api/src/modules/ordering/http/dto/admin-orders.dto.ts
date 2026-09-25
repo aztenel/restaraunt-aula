@@ -59,7 +59,7 @@ export class TransitionOrderDto {
 
 export class CancelOrderDto {
   @ApiProperty({ enum: CANCEL_REASON_CODES }) @IsIn(CANCEL_REASON_CODES) reasonCode: CancelReasonCode;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(500) reason?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsString() @MaxLength(500) reason?: string | null;
 
   @ApiPropertyOptional({
     type: MoneyInputDto,
@@ -83,10 +83,10 @@ export class AdminCreateOrderDto extends OmitType(OrderCheckoutDto, ['phoneVerif
 // ---------------------------------------------------------------- Ответы
 
 export class OrderCustomerDto {
-  @ApiPropertyOptional({ nullable: true }) customerId: string | null;
-  @ApiPropertyOptional({ nullable: true }) name: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) customerId: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) name: string | null;
   @ApiProperty({ example: '+77771234567' }) phone: string;
-  @ApiPropertyOptional({ nullable: true }) email: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) email: string | null;
 }
 
 export class AdminOrderListItemDto {
@@ -99,9 +99,9 @@ export class AdminOrderListItemDto {
   @ApiProperty({ type: OrderCustomerDto }) customer: OrderCustomerDto;
   @ApiProperty({ type: MoneyDto }) total: MoneyDto;
   @ApiProperty({ enum: CHECKOUT_PAYMENT_METHODS }) paymentMethod: 'online' | 'on_receipt';
-  @ApiPropertyOptional({ nullable: true }) promoCode: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) promoCode: string | null;
   @ApiProperty() placedAt: Date;
-  @ApiPropertyOptional({ nullable: true }) scheduledFor: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) scheduledFor: Date | null;
   @ApiProperty() promisedAt: Date;
 
   static from(s: OrderState): AdminOrderListItemDto {
@@ -142,10 +142,10 @@ export class AdminOrderItemDto {
   @ApiProperty() id: string;
   @ApiProperty() position: number;
   @ApiProperty() dishId: string;
-  @ApiPropertyOptional({ nullable: true }) sku: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) sku: string | null;
   @ApiProperty({ type: TranslatableDto, description: 'Снимок названия на момент заказа' }) name: TranslatableDto;
-  @ApiPropertyOptional({ nullable: true }) photoUrl: string | null;
-  @ApiPropertyOptional({ nullable: true }) weightGrams: number | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) photoUrl: string | null;
+  @ApiPropertyOptional({ type: Number, nullable: true }) weightGrams: number | null;
   @ApiProperty() quantity: number;
   @ApiProperty({ type: MoneyDto }) basePrice: MoneyDto;
   @ApiProperty({ type: MoneyDto }) unitPrice: MoneyDto;
@@ -179,20 +179,20 @@ export class AdminOrderItemDto {
 export class AdminOrderDeliveryDto {
   @ApiProperty({ type: GeoPointDto }) point: GeoPointDto;
   @ApiProperty() addressText: string;
-  @ApiPropertyOptional({ nullable: true }) apartment: string | null;
-  @ApiPropertyOptional({ nullable: true }) entrance: string | null;
-  @ApiPropertyOptional({ nullable: true }) floor: string | null;
-  @ApiPropertyOptional({ nullable: true }) intercom: string | null;
-  @ApiPropertyOptional({ nullable: true }) courierComment: string | null;
-  @ApiPropertyOptional({ nullable: true }) zoneId: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) apartment: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) entrance: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) floor: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) intercom: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) courierComment: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) zoneId: string | null;
   @ApiPropertyOptional({ type: TranslatableDto, nullable: true }) zoneName: TranslatableDto | null;
   @ApiProperty() contactless: boolean;
 }
 
 export class AdminQueueOrderDto extends AdminOrderListItemDto {
   @ApiProperty({ type: [AdminOrderItemDto] }) items: AdminOrderItemDto[];
-  @ApiPropertyOptional({ nullable: true }) comment: string | null;
-  @ApiPropertyOptional({ nullable: true, description: 'Адрес доставки одной строкой' }) deliveryAddress: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) comment: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Адрес доставки одной строкой' }) deliveryAddress: string | null;
   @ApiProperty() contactless: boolean;
   @ApiProperty({ enum: ORDER_STATUSES, isArray: true, description: 'Доступные сотруднику переходы' }) allowedTransitions: OrderStatus[];
   @ApiProperty({ description: 'Обещанное время прошло' }) isLate: boolean;
@@ -237,15 +237,15 @@ export class AdminOrderPaymentDto {
   @ApiProperty() id: string;
   @ApiPropertyOptional({ enum: ['certificate', 'online', 'on_receipt'], nullable: true, description: 'Назначение платежа в заказе' })
   kind: string | null;
-  @ApiPropertyOptional({ nullable: true, description: 'Номер попытки онлайн-оплаты' }) attempt: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true, description: 'Номер попытки онлайн-оплаты' }) attempt: number | null;
   @ApiProperty({ enum: Object.values(PaymentMethod) }) method: PaymentMethod;
   @ApiProperty() provider: string;
   @ApiProperty({ enum: Object.values(PaymentStatus) }) status: PaymentStatus;
   @ApiProperty({ type: MoneyDto }) amount: MoneyDto;
   @ApiProperty({ type: MoneyDto }) refundedAmount: MoneyDto;
-  @ApiPropertyOptional({ nullable: true }) paymentUrl: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) paymentUrl: string | null;
   @ApiProperty() createdAt: Date;
-  @ApiPropertyOptional({ nullable: true }) paidAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) paidAt: Date | null;
 }
 
 export class AdminOrderRefundDto {
@@ -255,9 +255,9 @@ export class AdminOrderRefundDto {
   @ApiProperty({ enum: ['pending', 'succeeded', 'failed'] }) status: string;
   @ApiProperty({ type: MoneyDto }) amount: MoneyDto;
   @ApiProperty() reason: string;
-  @ApiPropertyOptional({ nullable: true }) requestedBy: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) requestedBy: string | null;
   @ApiProperty() createdAt: Date;
-  @ApiPropertyOptional({ nullable: true }) completedAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) completedAt: Date | null;
 
   static from(r: OrderRefundRecord): AdminOrderRefundDto {
     return {
@@ -278,16 +278,16 @@ export class AdminCourierDispatchDto {
   @ApiProperty() id: string;
   @ApiProperty({ description: 'Служба курьеров' }) provider: string;
   @ApiProperty({ enum: COURIER_DISPATCH_STATUSES }) status: CourierDispatchStatus;
-  @ApiPropertyOptional({ nullable: true, description: 'Статус в терминах службы' }) providerStatus: string | null;
-  @ApiPropertyOptional({ nullable: true }) externalId: string | null;
-  @ApiPropertyOptional({ nullable: true }) trackingUrl: string | null;
-  @ApiPropertyOptional({ nullable: true }) courierName: string | null;
-  @ApiPropertyOptional({ nullable: true }) courierPhone: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Статус в терминах службы' }) providerStatus: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) externalId: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) trackingUrl: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) courierName: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) courierPhone: string | null;
   @ApiPropertyOptional({ type: MoneyDto, nullable: true }) price: MoneyDto | null;
   @ApiProperty() attempts: number;
-  @ApiPropertyOptional({ nullable: true }) lastError: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) lastError: string | null;
   @ApiProperty() requestedAt: Date;
-  @ApiPropertyOptional({ nullable: true }) finishedAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) finishedAt: Date | null;
 
   static from(d: CourierDispatchRecord): AdminCourierDispatchDto {
     return {
@@ -314,9 +314,9 @@ export class OrderStatusHistoryDto {
   @ApiProperty() at: Date;
   @ApiProperty({ enum: ['staff', 'system', 'guest'] }) actorKind: string;
   @ApiProperty() actorName: string;
-  @ApiPropertyOptional({ nullable: true }) actorUserId: string | null;
-  @ApiPropertyOptional({ nullable: true }) reasonCode: string | null;
-  @ApiPropertyOptional({ nullable: true }) reason: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) actorUserId: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) reasonCode: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) reason: string | null;
 
   static from(h: StatusHistoryEntry): OrderStatusHistoryDto {
     return { ...h };
@@ -325,19 +325,19 @@ export class OrderStatusHistoryDto {
 
 export class AdminOrderCancellationDto {
   @ApiProperty({ enum: CANCEL_REASON_CODES }) reasonCode: string;
-  @ApiPropertyOptional({ nullable: true }) reason: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) reason: string | null;
 }
 
 export class AdminOrderTimestampsDto {
   @ApiProperty() placedAt: Date;
-  @ApiPropertyOptional({ nullable: true }) paidAt: Date | null;
-  @ApiPropertyOptional({ nullable: true }) acceptedAt: Date | null;
-  @ApiPropertyOptional({ nullable: true }) cookingAt: Date | null;
-  @ApiPropertyOptional({ nullable: true }) readyAt: Date | null;
-  @ApiPropertyOptional({ nullable: true }) deliveringAt: Date | null;
-  @ApiPropertyOptional({ nullable: true }) completedAt: Date | null;
-  @ApiPropertyOptional({ nullable: true }) cancelledAt: Date | null;
-  @ApiPropertyOptional({ nullable: true }) refundedAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) paidAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) acceptedAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) cookingAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) readyAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) deliveringAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) completedAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) cancelledAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) refundedAt: Date | null;
 }
 
 export class AdminOrderDetailsDto extends AdminOrderListItemDto {
@@ -348,14 +348,14 @@ export class AdminOrderDetailsDto extends AdminOrderListItemDto {
   @ApiProperty({ type: MoneyDto }) discount: MoneyDto;
   @ApiProperty({ type: MoneyDto }) deliveryFee: MoneyDto;
   @ApiPropertyOptional({ enum: ['percent', 'fixed', 'free_delivery'], nullable: true }) promoKind: string | null;
-  @ApiPropertyOptional({ nullable: true }) certificateMaskedCode: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) certificateMaskedCode: string | null;
   @ApiProperty({ type: MoneyDto }) certificateAmount: MoneyDto;
   @ApiProperty({ type: MoneyDto, description: 'К оплате онлайн/при получении' }) amountDue: MoneyDto;
   @ApiPropertyOptional({ type: AdminOrderDeliveryDto, nullable: true }) delivery: AdminOrderDeliveryDto | null;
-  @ApiPropertyOptional({ nullable: true }) comment: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) comment: string | null;
   @ApiProperty() etaMinutes: number;
-  @ApiPropertyOptional({ nullable: true }) analyticsSessionId: string | null;
-  @ApiPropertyOptional({ nullable: true, description: 'Сотрудник, оформивший телефонный заказ' }) createdBy: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) analyticsSessionId: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true, description: 'Сотрудник, оформивший телефонный заказ' }) createdBy: string | null;
   @ApiProperty() wasPaid: boolean;
   @ApiPropertyOptional({ type: AdminOrderCancellationDto, nullable: true }) cancellation: AdminOrderCancellationDto | null;
   @ApiProperty({ type: AdminOrderTimestampsDto }) timestamps: AdminOrderTimestampsDto;

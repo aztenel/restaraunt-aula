@@ -78,7 +78,7 @@ export function DishOrderPanel({ dishId, name, branchId, available, modifierGrou
     if (unmet.length > 0) {
       setAttempted(true);
       const fieldset = groupRefs.current.get(unmet[0]!);
-      fieldset?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      fieldset?.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
       fieldset?.querySelector<HTMLInputElement>('input:not(:disabled)')?.focus({ preventScroll: true });
       return;
     }

@@ -32,8 +32,8 @@ export class PublicDishCardDto {
   @ApiProperty({ type: MoneyDto, description: 'Цена в этом филиале (без модификаторов)' }) price: MoneyDto;
   @ApiProperty({ description: 'Можно заказать сейчас' }) available: boolean;
   @ApiProperty({ enum: AVAILABILITIES }) availability: string;
-  @ApiPropertyOptional({ nullable: true, description: 'Вес порции, г' }) weightGrams: number | null;
-  @ApiPropertyOptional({ nullable: true, description: 'ккал на порцию' }) calories: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true, description: 'Вес порции, г' }) weightGrams: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true, description: 'ккал на порцию' }) calories: number | null;
   @ApiProperty() isVegetarian: boolean;
   @ApiProperty({ minimum: 0, maximum: 3 }) spicyLevel: number;
   @ApiProperty() isHalal: boolean;
@@ -159,7 +159,7 @@ export class PublicBannerDto {
   @ApiProperty() title: string;
   @ApiProperty() subtitle: string;
   @ApiProperty() ctaLabel: string;
-  @ApiPropertyOptional({ nullable: true }) linkUrl: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) linkUrl: string | null;
   @ApiPropertyOptional({ type: ImageDto, nullable: true }) image: ImageDto | null;
 }
 
@@ -170,8 +170,8 @@ export class PublicPromotionDto {
   @ApiProperty() description: string;
   @ApiProperty({ description: 'Условия акции' }) terms: string;
   @ApiPropertyOptional({ type: ImageDto, nullable: true }) image: ImageDto | null;
-  @ApiPropertyOptional({ nullable: true }) validFrom: Date | null;
-  @ApiPropertyOptional({ nullable: true }) validTo: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) validFrom: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) validTo: Date | null;
   @ApiProperty({ type: [String], description: 'Филиалы акции; пусто — все филиалы' }) branchIds: string[];
   @ApiProperty({ type: SeoDto }) seo: SeoDto;
   @ApiProperty() updatedAt: Date;
@@ -192,7 +192,7 @@ export class PublicPageDto extends PublicPageSummaryDto {
 
 export class SitemapBranchDto {
   @ApiProperty() slug: string;
-  @ApiPropertyOptional({ nullable: true }) updatedAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) updatedAt: Date | null;
 }
 
 export class SitemapCategoryDto {

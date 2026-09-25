@@ -5,7 +5,7 @@
 #           → typecheck ───────────────────┼→ build → docker (api, web, admin, backup; без публикации)
 #           → unit                         │
 #           → integration (PostgreSQL 16 + Redis 7)
-#           → openapi (дрейф docs/openapi.json и клиента)
+#           → openapi (дрейф docs/openapi.json и клиента, openapi:lint — точные типы схем)
 #   ci-ok ← все задачи
 #
 # Вызывается также из deploy.yml (workflow_call): тег выкатывается только при зелёном CI.
@@ -187,6 +187,8 @@ jobs:
             echo "::error::OpenAPI устарел: выполните 'pnpm openapi' и закоммитьте docs/openapi.json и packages/api-client/src/schema.d.ts"
             exit 1
           fi
+      - name: Проверить типизацию OpenAPI (nullable-поля с type, схемы ответов)
+        run: pnpm --filter @aula/api run openapi:lint
 
   build:
     name: Сборка api / web / admin

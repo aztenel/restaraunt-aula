@@ -62,7 +62,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
   const { branch, category } = page;
   const menuPath = routes.branchMenu(branch.slug);
   const categoryPath = routes.category(branch.slug, category.slug);
-  const menuLabel = `${t('title')} — ${branch.name}`;
+  const menuLabel = t('heading', { branch: branch.name });
   const urls = { locale, branchSlug: branch.slug, siteUrl };
 
   return (

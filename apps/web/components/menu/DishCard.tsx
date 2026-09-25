@@ -62,7 +62,7 @@ export async function DishCard({
       <div className="flex min-w-0 flex-1 flex-col sm:p-4">
         <h3 className="font-display text-lg font-semibold leading-snug text-earth-900">
           {/* Растянутая ссылка: вся карточка ведёт на страницу блюда, кнопка лежит поверх. */}
-          <Link href={href} className="rounded-sm after:absolute after:inset-0 after:rounded-card after:content-[''] focus-visible:outline-none">
+          <Link href={href} className="after:absolute after:inset-0 after:rounded-card after:content-[''] focus-visible:outline-none focus-visible:after:outline-3 focus-visible:after:outline-offset-2 focus-visible:after:outline-gold-500">
             {dish.name}
           </Link>
         </h3>

@@ -141,6 +141,7 @@
   },
   "Menu": {
     "title": "Menu",
+    "heading": "{branch} menu",
     "metaTitle": "{branch} menu — prices, delivery and pickup",
     "metaDescription": "Menu of the Kazakh cuisine restaurant {branch} with location prices: beshbarmak, baursaks, shashlik and more. Delivery and pickup in Astana.",
     "searchMetaTitle": "Search the {branch} menu",
@@ -150,6 +151,7 @@
     "chooseBranchMetaDescription": "AULA restaurants menu: choose a location to see prices and order delivery or pickup.",
     "noBranches": "Locations are coming soon.",
     "branchLabel": "Location: {branch}",
+    "branchInfo": "Branch address and opening hours",
     "whatsappText": "Hello! I would like to place an order.",
     "categoriesNav": "Menu sections",
     "allDishes": "Full menu",

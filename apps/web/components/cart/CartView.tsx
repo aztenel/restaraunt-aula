@@ -42,7 +42,8 @@ function acceptedTypes(branch: CartBranchOption | undefined): OrderType[] {
 }
 
 /**
- * Названия блюд, если расчёт недоступен (эндпоинт ещё не развёрнут или сбой): меню филиала
+ * Названия блюд, если расчёт недоступен (эндпоинт ещё не развёрнут или сбой) или в расчёте нет
+ * названия (недоступная позиция приходит с name: null): меню филиала
  * (GET /public/catalog/branches/{slug}/menu). Только подписи — без цен и сумм.
  */
 function useFallbackLabels(locale: string, branchSlug: string | null, enabled: boolean): Map<string, DishLabel> {
@@ -107,7 +108,9 @@ export function CartView({ branches }: { branches: CartBranchOption[] }) {
     enabled: mounted && Boolean(branch),
   });
 
-  const needFallback = quote.status === 'unavailable' || (quote.status === 'error' && !quote.quote);
+  // Подписи из меню филиала: расчёт недоступен или сервер не вернул название (недоступная позиция).
+  const missingNames = quote.quote?.lines.some((line) => !line.name) ?? false;
+  const needFallback = quote.status === 'unavailable' || (quote.status === 'error' && !quote.quote) || missingNames;
   const fallbackLabels = useFallbackLabels(locale, branch?.slug ?? null, mounted && needFallback);
 
   const quoteLines = useMemo(() => {
@@ -169,7 +172,7 @@ export function CartView({ branches }: { branches: CartBranchOption[] }) {
     if (quote.status !== 'error' || !quote.error) return null;
     const error = quote.error;
     // Нарушение правила заказа (филиал не принимает этот способ и т.п.) — текст из словаря проблем.
-    const orderProblem = error.code.startsWith('order.') ? problemKey(error.code, (k) => problems.has(k)) : 'generic';
+    const orderProblem = /^(order|promo|catalog)\./.test(error.code) ? problemKey(error.code, (k) => problems.has(k)) : 'generic';
     if (orderProblem !== 'generic') return problems(orderProblem);
     const key = apiErrorKey(error, (k) => errors.has(k));
     const minutes = retryAfterMinutes(error);

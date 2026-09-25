@@ -33,7 +33,8 @@ export async function HeroBanners({ banners }: { banners: Banner[] }) {
               )}
               <div className="absolute inset-0 -z-10 bg-gradient-to-t from-earth-900/90 via-earth-900/50 to-earth-900/10" aria-hidden="true" />
               <Container className="flex h-full flex-col justify-end pb-8 text-cream-50 sm:pb-12">
-                <h2 className="max-w-2xl text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl">{banner.title}</h2>
+                {/* Заголовок страницы (h1) — ниже, в блоке бренда; текст баннера — рекламный, не заголовок. */}
+                <p className="max-w-2xl font-display text-3xl font-semibold leading-tight text-balance sm:text-4xl lg:text-5xl">{banner.title}</p>
                 {banner.subtitle ? <p className="mt-3 max-w-xl text-lg text-cream-200">{banner.subtitle}</p> : null}
                 {isUsableLink(banner.linkUrl) ? (
                   <SmartLink href={banner.linkUrl} className={buttonClasses('secondary', 'lg', 'mt-6 self-start')}>

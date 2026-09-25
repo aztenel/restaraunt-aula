@@ -3980,7 +3980,7 @@ export interface components {
         CreatedUserDto: {
             user: components["schemas"]["StaffUserDto"];
             /** @description Показывается один раз */
-            temporaryPassword?: Record<string, never> | null;
+            temporaryPassword?: string | null;
         };
         UpdateUserDto: {
             email?: string;
@@ -4170,9 +4170,13 @@ export interface components {
             entityId: string;
             branchId?: string | null;
             /** @description Прежнее значение (JSON) */
-            before?: Record<string, never> | null;
+            before?: {
+                [key: string]: unknown;
+            } | null;
             /** @description Новое значение (JSON) */
-            after?: Record<string, never> | null;
+            after?: {
+                [key: string]: unknown;
+            } | null;
             meta: {
                 [key: string]: unknown;
             };
@@ -4238,9 +4242,13 @@ export interface components {
             operation: string;
             correlation_id?: string | null;
             /** @description Запрос (маскирован) */
-            request?: Record<string, never> | null;
+            request?: {
+                [key: string]: unknown;
+            } | null;
             /** @description Ответ (маскирован) */
-            response?: Record<string, never> | null;
+            response?: {
+                [key: string]: unknown;
+            } | null;
             status_code?: number | null;
             success: boolean;
             duration_ms?: number | null;
@@ -4257,7 +4265,10 @@ export interface components {
             kind: string;
             topic: string;
             handler?: string | null;
-            payload?: Record<string, never> | null;
+            /** @description Данные задачи (JSON) */
+            payload?: {
+                [key: string]: unknown;
+            } | null;
             error: string;
             attempts: number;
             /** Format: date-time */
@@ -4619,13 +4630,16 @@ export interface components {
              * @description null у обезличенного гостя
              * @example +77011234567
              */
-            phone?: Record<string, never> | null;
-            name?: Record<string, never> | null;
-            email?: Record<string, never> | null;
+            phone?: string | null;
+            name?: string | null;
+            email?: string | null;
             /** @enum {string} */
             locale: "kk" | "ru" | "en";
-            /** @example 1990-05-17 */
-            birthday?: Record<string, never> | null;
+            /**
+             * Format: date
+             * @example 1990-05-17
+             */
+            birthday?: string | null;
             /**
              * @example [
              *       "regular",
@@ -4633,15 +4647,17 @@ export interface components {
              *     ]
              */
             tags: string[];
-            allergies?: Record<string, never> | null;
-            preferences?: Record<string, never> | null;
-            notes?: Record<string, never> | null;
+            allergies?: string | null;
+            preferences?: string | null;
+            notes?: string | null;
             personalDataConsent: boolean;
-            personalDataConsentVersion?: Record<string, never> | null;
-            personalDataConsentAt?: Record<string, never> | null;
+            personalDataConsentVersion?: string | null;
+            /** Format: date-time */
+            personalDataConsentAt?: string | null;
             marketingConsent: boolean;
-            marketingConsentVersion?: Record<string, never> | null;
-            marketingConsentAt?: Record<string, never> | null;
+            marketingConsentVersion?: string | null;
+            /** Format: date-time */
+            marketingConsentAt?: string | null;
             ordersCount: number;
             completedOrdersCount: number;
             /** @description Сумма покупок за всё время: выполненные заказы, проведённые банкеты, сертификаты */
@@ -4651,8 +4667,10 @@ export interface components {
             banquetsCount: number;
             /** Format: date-time */
             firstSeenAt: string;
-            lastActivityAt?: Record<string, never> | null;
-            anonymizedAt?: Record<string, never> | null;
+            /** Format: date-time */
+            lastActivityAt?: string | null;
+            /** Format: date-time */
+            anonymizedAt?: string | null;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -4706,15 +4724,20 @@ export interface components {
             textVersion: string;
             /** @enum {string} */
             source: "web" | "admin" | "phone";
-            ip?: Record<string, never> | null;
-            /** @description Сотрудник, внёсший согласие */
-            recordedBy?: Record<string, never> | null;
+            ip?: string | null;
+            /**
+             * Format: uuid
+             * @description Сотрудник, внёсший согласие
+             */
+            recordedBy?: string | null;
             /** Format: date-time */
             recordedAt: string;
         };
         PeriodDto: {
-            from?: Record<string, never> | null;
-            to?: Record<string, never> | null;
+            /** Format: date */
+            from?: string | null;
+            /** Format: date */
+            to?: string | null;
         };
         PeriodTotalsDto: {
             /** @description Сумма покупок за период */
@@ -4738,7 +4761,8 @@ export interface components {
             /** @enum {string} */
             entityType: "order" | "reservation" | "banquet_request" | "banquet_invoice" | "gift_certificate";
             entityId: string;
-            branchId?: Record<string, never> | null;
+            /** Format: uuid */
+            branchId?: string | null;
             amount?: components["schemas"]["MoneyDto"] | null;
             /** @description Учитывается в сумме покупок (возврат — отрицательная сумма) */
             countsAsSpent: boolean;
@@ -4765,17 +4789,20 @@ export interface components {
             activities: components["schemas"]["ActivitiesPageDto"];
         };
         UpdateCustomerDto: {
-            name?: Record<string, never> | null;
-            email?: Record<string, never> | null;
-            /** @example 1990-05-17 */
-            birthday?: Record<string, never> | null;
+            name?: string | null;
+            email?: string | null;
+            /**
+             * Format: date
+             * @example 1990-05-17
+             */
+            birthday?: string | null;
             /** @enum {string} */
             locale?: "kk" | "ru" | "en";
             /** @description Полный набор тегов (заменяет текущий) */
             tags?: string[];
-            allergies?: Record<string, never> | null;
-            preferences?: Record<string, never> | null;
-            notes?: Record<string, never> | null;
+            allergies?: string | null;
+            preferences?: string | null;
+            notes?: string | null;
         };
         RecordConsentDto: {
             /** @enum {string} */
@@ -4797,10 +4824,12 @@ export interface components {
         SegmentDto: {
             id: string;
             name: string;
-            description?: Record<string, never> | null;
+            description?: string | null;
             filter: components["schemas"]["CustomerFilterDto"];
-            createdBy?: Record<string, never> | null;
-            updatedBy?: Record<string, never> | null;
+            /** Format: uuid */
+            createdBy?: string | null;
+            /** Format: uuid */
+            updatedBy?: string | null;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -4809,10 +4838,12 @@ export interface components {
         SegmentDetailDto: {
             id: string;
             name: string;
-            description?: Record<string, never> | null;
+            description?: string | null;
             filter: components["schemas"]["CustomerFilterDto"];
-            createdBy?: Record<string, never> | null;
-            updatedBy?: Record<string, never> | null;
+            /** Format: uuid */
+            createdBy?: string | null;
+            /** Format: uuid */
+            updatedBy?: string | null;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -4823,7 +4854,7 @@ export interface components {
         SaveSegmentDto: {
             /** @example Постоянные гости GreenLine */
             name: string;
-            description?: Record<string, never> | null;
+            description?: string | null;
             filter: components["schemas"]["CustomerFilterDto"];
         };
         ConsentTextDto: {
@@ -4834,7 +4865,8 @@ export interface components {
             text: components["schemas"]["TranslatableDto"];
             /** Format: date-time */
             publishedAt: string;
-            publishedBy?: Record<string, never> | null;
+            /** Format: uuid */
+            publishedBy?: string | null;
             /** @description Действующая версия (показывается на формах) */
             isCurrent: boolean;
         };
@@ -4951,7 +4983,7 @@ export interface components {
              * @description Человекочитаемый URL; не задан — транслитерация из названия
              * @example salaty
              */
-            slug?: Record<string, never> | null;
+            slug?: string | null;
             /**
              * @example {
              *       "ru": "Салаты",
@@ -4964,9 +4996,9 @@ export interface components {
             seoTitle?: components["schemas"]["TranslatableDto"] | null;
             seoDescription?: components["schemas"]["TranslatableDto"] | null;
             /** @description Порядок в меню (по возрастанию) */
-            sortOrder?: Record<string, never>;
+            sortOrder?: number;
             /** @default true */
-            isActive: Record<string, never>;
+            isActive: boolean;
         };
         ReorderDto: {
             /** @description id в нужном порядке */
@@ -4985,8 +5017,9 @@ export interface components {
             price: components["schemas"]["MoneyDto"];
             /** @enum {string} */
             availability: "available" | "stopped";
-            stoppedUntil?: Record<string, never> | null;
-            sku?: Record<string, never> | null;
+            /** Format: date-time */
+            stoppedUntil?: string | null;
+            sku?: string | null;
         };
         DishDto: {
             id: string;
@@ -4997,13 +5030,13 @@ export interface components {
             composition: components["schemas"]["TranslatableDto"];
             seoTitle: components["schemas"]["TranslatableDto"];
             seoDescription: components["schemas"]["TranslatableDto"];
-            weightGrams?: Record<string, never> | null;
-            calories?: Record<string, never> | null;
+            weightGrams?: number | null;
+            calories?: number | null;
             isVegetarian: boolean;
             spicyLevel: number;
             isHalal: boolean;
             allergens: ("gluten" | "milk" | "eggs" | "nuts" | "peanuts" | "soy" | "fish" | "crustaceans" | "molluscs" | "sesame" | "celery" | "mustard" | "sulphites" | "lupin")[];
-            sku?: Record<string, never> | null;
+            sku?: string | null;
             sortOrder: number;
             isActive: boolean;
             photos: components["schemas"]["PhotoDto"][];
@@ -5027,7 +5060,7 @@ export interface components {
              * @description Не задан — транслитерация из названия
              * @example beshbarmak
              */
-            slug?: Record<string, never> | null;
+            slug?: string | null;
             categoryId: string;
             /**
              * @example {
@@ -5042,24 +5075,24 @@ export interface components {
             seoTitle?: components["schemas"]["TranslatableDto"] | null;
             seoDescription?: components["schemas"]["TranslatableDto"] | null;
             /** @description Вес порции, г */
-            weightGrams?: Record<string, never> | null;
+            weightGrams?: number | null;
             /** @description Калорийность порции, ккал */
-            calories?: Record<string, never> | null;
+            calories?: number | null;
             /** @default false */
-            isVegetarian: Record<string, never>;
+            isVegetarian: boolean;
             /**
              * @description Острота 0..3
              * @default 0
              */
-            spicyLevel: Record<string, never>;
+            spicyLevel: number;
             /** @default true */
-            isHalal: Record<string, never>;
+            isHalal: boolean;
             allergens?: ("gluten" | "milk" | "eggs" | "nuts" | "peanuts" | "soy" | "fish" | "crustaceans" | "molluscs" | "sesame" | "celery" | "mustard" | "sulphites" | "lupin")[];
             /** @description Общий код блюда в POS сети */
-            sku?: Record<string, never> | null;
-            sortOrder?: Record<string, never>;
+            sku?: string | null;
+            sortOrder?: number;
             /** @default true */
-            isActive: Record<string, never>;
+            isActive: boolean;
             /** @description Группы модификаторов в порядке показа; не задано — без изменений */
             modifierGroupIds?: string[];
         };
@@ -5107,8 +5140,11 @@ export interface components {
             currency: "KZT";
         };
         ModifierOptionInputDto: {
-            /** @description id существующей опции; не задан — новая опция */
-            id?: Record<string, never>;
+            /**
+             * Format: uuid
+             * @description id существующей опции; не задан — новая опция
+             */
+            id?: string;
             /**
              * @example {
              *       "ru": "Большая порция",
@@ -5119,17 +5155,17 @@ export interface components {
             /** @description Доплата за опцию, тиыны (может быть 0) */
             price: components["schemas"]["MoneyInputDto"];
             /** @default false */
-            isDefault: Record<string, never>;
-            sortOrder?: Record<string, never>;
+            isDefault: boolean;
+            sortOrder?: number;
             /** @default true */
-            isActive: Record<string, never>;
+            isActive: boolean;
         };
         ModifierGroupInputDto: {
             /**
              * @description Код группы; не задан — из названия
              * @example portion-size
              */
-            code?: Record<string, never> | null;
+            code?: string | null;
             /**
              * @example {
              *       "ru": "Размер порции",
@@ -5141,9 +5177,9 @@ export interface components {
             /** @description Минимум выбора; >= 1 — группа обязательная */
             minSelect: number;
             maxSelect: number;
-            sortOrder?: Record<string, never>;
+            sortOrder?: number;
             /** @default true */
-            isActive: Record<string, never>;
+            isActive: boolean;
             /** @description Полный список опций: отсутствующие удаляются */
             options: components["schemas"]["ModifierOptionInputDto"][];
         };
@@ -5186,16 +5222,19 @@ export interface components {
              * @enum {string}
              */
             displayAvailability: "available" | "stopped_shown" | "stopped_hidden";
-            stoppedUntil?: Record<string, never> | null;
-            stopReason?: Record<string, never> | null;
+            /** Format: date-time */
+            stoppedUntil?: string | null;
+            stopReason?: string | null;
             /** @enum {string|null} */
             stopSource?: "manual" | "pos" | null;
-            stoppedAt?: Record<string, never> | null;
+            /** Format: date-time */
+            stoppedAt?: string | null;
             /** @description Код POS филиала */
-            sku?: Record<string, never> | null;
+            sku?: string | null;
             /** @description Код, который уходит в POS */
-            effectiveSku?: Record<string, never> | null;
-            updatedBy?: Record<string, never> | null;
+            effectiveSku?: string | null;
+            /** Format: uuid */
+            updatedBy?: string | null;
             /** Format: date-time */
             updatedAt: string;
         };
@@ -5210,7 +5249,7 @@ export interface components {
             /** @description Цена блюда в филиале, тиыны */
             price: components["schemas"]["MoneyInputDto"];
             /** @description Код POS филиала (если отличается от общего кода блюда) */
-            sku?: Record<string, never> | null;
+            sku?: string | null;
         };
         BulkPriceItemDto: {
             dishId: string;
@@ -5240,17 +5279,20 @@ export interface components {
         SetPriceDto: {
             price: components["schemas"]["MoneyInputDto"];
             /** @description Код POS филиала; не передан — без изменений, null — сбросить */
-            sku?: Record<string, never> | null;
+            sku?: string | null;
         };
         SetAvailabilityDto: {
             /** @description true — вернуть в продажу, false — поставить в стоп-лист */
             available: boolean;
-            /** @description Стоп до момента (ISO 8601), затем автоматический возврат; не задан — до ручного возврата */
-            until?: Record<string, never> | null;
+            /**
+             * Format: date-time
+             * @description Стоп до момента (ISO 8601), затем автоматический возврат; не задан — до ручного возврата
+             */
+            until?: string | null;
             /** @description Стоп до конца дня (полночь по времени филиала) */
             untilEndOfDay?: boolean;
             /** @example Закончилась конина */
-            reason?: Record<string, never> | null;
+            reason?: string | null;
         };
         AvailabilityResultDto: {
             changed: boolean;
@@ -5260,14 +5302,17 @@ export interface components {
             id: string;
             /** @enum {string} */
             placement: "home_hero" | "home_secondary" | "menu_top";
-            branchId?: Record<string, never> | null;
+            /** Format: uuid */
+            branchId?: string | null;
             title: components["schemas"]["TranslatableDto"];
             subtitle: components["schemas"]["TranslatableDto"];
             ctaLabel: components["schemas"]["TranslatableDto"];
-            linkUrl?: Record<string, never> | null;
+            linkUrl?: string | null;
             image?: components["schemas"]["ImageDto"] | null;
-            activeFrom?: Record<string, never> | null;
-            activeTo?: Record<string, never> | null;
+            /** Format: date-time */
+            activeFrom?: string | null;
+            /** Format: date-time */
+            activeTo?: string | null;
             sortOrder: number;
             isActive: boolean;
             missingTranslations: components["schemas"]["MissingTranslationDto"][];
@@ -5279,8 +5324,11 @@ export interface components {
         BannerInputDto: {
             /** @enum {string} */
             placement: "home_hero" | "home_secondary" | "menu_top";
-            /** @description Филиал; null — для всех филиалов */
-            branchId?: Record<string, never> | null;
+            /**
+             * Format: uuid
+             * @description Филиал; null — для всех филиалов
+             */
+            branchId?: string | null;
             title: components["schemas"]["TranslatableDto"];
             subtitle?: components["schemas"]["TranslatableDto"] | null;
             /** @description Текст кнопки */
@@ -5289,14 +5337,20 @@ export interface components {
              * @description Путь на сайте или http(s) URL
              * @example /greenline/menu
              */
-            linkUrl?: Record<string, never> | null;
-            /** @description Показывать с (ISO 8601) */
-            activeFrom?: Record<string, never> | null;
-            /** @description Показывать до (ISO 8601, не включая) */
-            activeTo?: Record<string, never> | null;
-            sortOrder?: Record<string, never>;
+            linkUrl?: string | null;
+            /**
+             * Format: date-time
+             * @description Показывать с (ISO 8601)
+             */
+            activeFrom?: string | null;
+            /**
+             * Format: date-time
+             * @description Показывать до (ISO 8601, не включая)
+             */
+            activeTo?: string | null;
+            sortOrder?: number;
             /** @default true */
-            isActive: Record<string, never>;
+            isActive: boolean;
         };
         PromotionDto: {
             id: string;
@@ -5307,8 +5361,10 @@ export interface components {
             seoTitle: components["schemas"]["TranslatableDto"];
             seoDescription: components["schemas"]["TranslatableDto"];
             image?: components["schemas"]["ImageDto"] | null;
-            validFrom?: Record<string, never> | null;
-            validTo?: Record<string, never> | null;
+            /** Format: date-time */
+            validFrom?: string | null;
+            /** Format: date-time */
+            validTo?: string | null;
             branchIds: string[];
             sortOrder: number;
             isActive: boolean;
@@ -5323,20 +5379,22 @@ export interface components {
              * @description Не задан — из заголовка
              * @example kombo-obed
              */
-            slug?: Record<string, never> | null;
+            slug?: string | null;
             title: components["schemas"]["TranslatableDto"];
             description?: components["schemas"]["TranslatableDto"] | null;
             /** @description Условия акции */
             terms?: components["schemas"]["TranslatableDto"] | null;
             seoTitle?: components["schemas"]["TranslatableDto"] | null;
             seoDescription?: components["schemas"]["TranslatableDto"] | null;
-            validFrom?: Record<string, never> | null;
-            validTo?: Record<string, never> | null;
+            /** Format: date-time */
+            validFrom?: string | null;
+            /** Format: date-time */
+            validTo?: string | null;
             /** @description Филиалы акции; пусто — во всех филиалах */
             branchIds?: string[];
-            sortOrder?: Record<string, never>;
+            sortOrder?: number;
             /** @default true */
-            isActive: Record<string, never>;
+            isActive: boolean;
         };
         PageBodyDto: {
             /** @description Қазақша (HTML) */
@@ -5368,14 +5426,14 @@ export interface components {
              * @description Не задан — из заголовка
              * @example delivery
              */
-            slug?: Record<string, never> | null;
+            slug?: string | null;
             title: components["schemas"]["TranslatableDto"];
             body: components["schemas"]["PageBodyDto"];
             seoTitle?: components["schemas"]["TranslatableDto"] | null;
             seoDescription?: components["schemas"]["TranslatableDto"] | null;
             /** @default true */
-            isPublished: Record<string, never>;
-            sortOrder?: Record<string, never>;
+            isPublished: boolean;
+            sortOrder?: number;
         };
         PublicBranchRefDto: {
             id: string;
@@ -5407,9 +5465,9 @@ export interface components {
             /** @enum {string} */
             availability: "available" | "stopped_shown" | "stopped_hidden";
             /** @description Вес порции, г */
-            weightGrams?: Record<string, never> | null;
+            weightGrams?: number | null;
             /** @description ккал на порцию */
-            calories?: Record<string, never> | null;
+            calories?: number | null;
             isVegetarian: boolean;
             spicyLevel: number;
             isHalal: boolean;
@@ -5510,9 +5568,9 @@ export interface components {
             /** @enum {string} */
             availability: "available" | "stopped_shown" | "stopped_hidden";
             /** @description Вес порции, г */
-            weightGrams?: Record<string, never> | null;
+            weightGrams?: number | null;
             /** @description ккал на порцию */
-            calories?: Record<string, never> | null;
+            calories?: number | null;
             isVegetarian: boolean;
             spicyLevel: number;
             isHalal: boolean;
@@ -5544,7 +5602,8 @@ export interface components {
         };
         SitemapBranchDto: {
             slug: string;
-            updatedAt?: Record<string, never> | null;
+            /** Format: date-time */
+            updatedAt?: string | null;
         };
         SitemapCategoryDto: {
             branchSlug: string;
@@ -5578,7 +5637,7 @@ export interface components {
             title: string;
             subtitle: string;
             ctaLabel: string;
-            linkUrl?: Record<string, never> | null;
+            linkUrl?: string | null;
             image?: components["schemas"]["ImageDto"] | null;
         };
         PublicPromotionDto: {
@@ -5589,8 +5648,10 @@ export interface components {
             /** @description Условия акции */
             terms: string;
             image?: components["schemas"]["ImageDto"] | null;
-            validFrom?: Record<string, never> | null;
-            validTo?: Record<string, never> | null;
+            /** Format: date-time */
+            validFrom?: string | null;
+            /** Format: date-time */
+            validTo?: string | null;
             /** @description Филиалы акции; пусто — все филиалы */
             branchIds: string[];
             seo: components["schemas"]["SeoDto"];
@@ -5613,10 +5674,10 @@ export interface components {
             seo: components["schemas"]["SeoDto"];
         };
         PaymentCustomerDto: {
-            name?: Record<string, never> | null;
+            name?: string | null;
             /** @example +77771234567 */
-            phone?: Record<string, never> | null;
-            email?: Record<string, never> | null;
+            phone?: string | null;
+            email?: string | null;
         };
         PaymentDto: {
             id: string;
@@ -5624,7 +5685,8 @@ export interface components {
             purpose: "order" | "reservation_deposit" | "banquet_invoice" | "gift_certificate";
             /** @description Объект оплаты: заказ, бронь, счёт банкета, заказ сертификатов */
             referenceId: string;
-            branchId?: Record<string, never> | null;
+            /** Format: uuid */
+            branchId?: string | null;
             /** @enum {string} */
             method: "online" | "on_receipt" | "gift_certificate" | "bank_transfer";
             /** @description Провайдер (для online) или способ оплаты */
@@ -5635,18 +5697,20 @@ export interface components {
             refundedAmount: components["schemas"]["MoneyDto"];
             /** @description Сколько ещё можно вернуть (с учётом ожидающих возвратов) */
             refundableAmount: components["schemas"]["MoneyDto"];
-            paymentUrl?: Record<string, never> | null;
-            externalId?: Record<string, never> | null;
+            paymentUrl?: string | null;
+            externalId?: string | null;
             /** @description Номер счёта для провайдера */
             invoiceNo: number;
             description: string;
             customer: components["schemas"]["PaymentCustomerDto"];
             /** Format: date-time */
             createdAt: string;
-            paidAt?: Record<string, never> | null;
-            expiresAt?: Record<string, never> | null;
-            failureReason?: Record<string, never> | null;
-            cancelReason?: Record<string, never> | null;
+            /** Format: date-time */
+            paidAt?: string | null;
+            /** Format: date-time */
+            expiresAt?: string | null;
+            failureReason?: string | null;
+            cancelReason?: string | null;
             /** @description Провайдер сообщил сумму, отличную от суммы платежа */
             amountMismatch: boolean;
             /** @description Можно запросить возврат (есть остаток и право) */
@@ -5665,7 +5729,8 @@ export interface components {
             /** @enum {string} */
             purpose: "order" | "reservation_deposit" | "banquet_invoice" | "gift_certificate";
             referenceId: string;
-            branchId?: Record<string, never> | null;
+            /** Format: uuid */
+            branchId?: string | null;
             /** @enum {string} */
             method: "online" | "on_receipt" | "gift_certificate" | "bank_transfer";
         };
@@ -5682,11 +5747,12 @@ export interface components {
             mode: "gateway" | "certificate" | "manual";
             reason: string;
             attempts: number;
-            failureReason?: Record<string, never> | null;
-            comment?: Record<string, never> | null;
+            failureReason?: string | null;
+            comment?: string | null;
             /** Format: date-time */
             createdAt: string;
-            completedAt?: Record<string, never> | null;
+            /** Format: date-time */
+            completedAt?: string | null;
             /** @description Ожидает ручного подтверждения финансистом */
             awaitingManualConfirmation: boolean;
             payment: components["schemas"]["RefundPaymentRefDto"];
@@ -5733,10 +5799,10 @@ export interface components {
             /** @enum {string} */
             direction: "outbound" | "inbound";
             operation: string;
-            statusCode?: Record<string, never> | null;
+            statusCode?: number | null;
             success: boolean;
-            durationMs?: Record<string, never> | null;
-            error?: Record<string, never> | null;
+            durationMs?: number | null;
+            error?: string | null;
             /** @description Запрос (платёжные данные замаскированы) */
             request?: {
                 [key: string]: unknown;
@@ -5769,7 +5835,7 @@ export interface components {
             color: string;
             /** @example classic */
             theme: string;
-            imageUrl?: Record<string, never> | null;
+            imageUrl?: string | null;
         };
         CertificateProductDto: {
             id: string;
@@ -5796,7 +5862,7 @@ export interface components {
             color?: string;
             /** @example festive */
             theme?: string;
-            imageUrl?: Record<string, never> | null;
+            imageUrl?: string | null;
         };
         CertificateProductInputDto: {
             /** @example nominal-10000 */
@@ -5817,9 +5883,9 @@ export interface components {
             sortOrder?: number;
         };
         CertificatePersonDto: {
-            name?: Record<string, never> | null;
-            phone?: Record<string, never> | null;
-            email?: Record<string, never> | null;
+            name?: string | null;
+            phone?: string | null;
+            email?: string | null;
         };
         CertificateDto: {
             id: string;
@@ -5829,7 +5895,7 @@ export interface components {
             kind: "amount" | "set";
             /** @enum {string} */
             status: "active" | "redeemed" | "expired" | "blocked";
-            statusReason?: Record<string, never> | null;
+            statusReason?: string | null;
             name: components["schemas"]["TranslatableDto"];
             setDescription?: components["schemas"]["TranslatableDto"] | null;
             nominal: components["schemas"]["MoneyDto"];
@@ -5844,14 +5910,15 @@ export interface components {
             validUntil: string;
             buyer: components["schemas"]["CertificatePersonDto"];
             recipient: components["schemas"]["CertificatePersonDto"];
-            message?: Record<string, never> | null;
+            message?: string | null;
             /** @enum {string} */
             deliveryChannel: "email" | "whatsapp" | "none";
             /** @enum {string} */
             locale: "kk" | "ru" | "en";
             orderId: string;
             deliveryCount: number;
-            lastDeliveredAt?: Record<string, never> | null;
+            /** Format: date-time */
+            lastDeliveredAt?: string | null;
             hasPdf: boolean;
         };
         CertificatesPageDto: {
@@ -5916,7 +5983,7 @@ export interface components {
             /** @description Последний день действия (Asia/Almaty), YYYY-MM-DD */
             validUntil: string;
             /** @description Состав набора */
-            setDescription?: Record<string, never> | null;
+            setDescription?: string | null;
             id: string;
         };
         RedeemCertificateDto: {
@@ -5937,14 +6004,18 @@ export interface components {
             balanceAfter: components["schemas"]["MoneyDto"];
             /** @enum {string} */
             channel: "order" | "point" | "refund" | "sale" | "system" | "admin";
-            paymentId?: Record<string, never> | null;
-            refundId?: Record<string, never> | null;
-            referenceType?: Record<string, never> | null;
-            referenceId?: Record<string, never> | null;
-            branchId?: Record<string, never> | null;
-            actorUserId?: Record<string, never> | null;
+            /** Format: uuid */
+            paymentId?: string | null;
+            /** Format: uuid */
+            refundId?: string | null;
+            referenceType?: string | null;
+            referenceId?: string | null;
+            /** Format: uuid */
+            branchId?: string | null;
+            /** Format: uuid */
+            actorUserId?: string | null;
             actorName: string;
-            comment?: Record<string, never> | null;
+            comment?: string | null;
             /** Format: date-time */
             occurredAt: string;
         };
@@ -5996,20 +6067,23 @@ export interface components {
             status: "awaiting_payment" | "issued" | "payment_failed";
             quantity: number;
             total: components["schemas"]["MoneyDto"];
-            paymentId?: Record<string, never> | null;
-            buyerCompany?: Record<string, never> | null;
+            /** Format: uuid */
+            paymentId?: string | null;
+            buyerCompany?: string | null;
             /** Format: date-time */
             createdAt: string;
-            issuedAt?: Record<string, never> | null;
+            /** Format: date-time */
+            issuedAt?: string | null;
         };
         PaymentLinkDto: {
             id: string;
             /** @enum {string} */
             status: "created" | "pending" | "succeeded" | "failed" | "cancelled" | "partially_refunded" | "refunded";
             /** @description Появляется после инициирования у провайдера */
-            paymentUrl?: Record<string, never> | null;
+            paymentUrl?: string | null;
             amount: components["schemas"]["MoneyDto"];
-            expiresAt?: Record<string, never> | null;
+            /** Format: date-time */
+            expiresAt?: string | null;
         };
         ManualIssueResultDto: {
             order: components["schemas"]["CertificateOrderSummaryDto"];
@@ -6127,7 +6201,8 @@ export interface components {
             payment?: components["schemas"]["PaymentLinkDto"] | null;
             /** @description Выпущенные сертификаты (коды — только в PDF и сообщении) */
             certificates: components["schemas"]["MaskedCertificateDto"][];
-            issuedAt?: Record<string, never> | null;
+            /** Format: date-time */
+            issuedAt?: string | null;
         };
         CertificateBalanceDto: {
             /** @example ****-****-AB12 */
@@ -6143,7 +6218,7 @@ export interface components {
             /** @description Последний день действия (Asia/Almaty), YYYY-MM-DD */
             validUntil: string;
             /** @description Состав набора */
-            setDescription?: Record<string, never> | null;
+            setDescription?: string | null;
         };
         SandboxActionDto: {
             /** @description Подпись ссылки на страницу оплаты */
@@ -6169,10 +6244,10 @@ export interface components {
             items: components["schemas"]["OrderLineInputDto"][];
             /** @description Точка доставки (геокодирование — на витрине) */
             point?: components["schemas"]["GeoPointDto"] | null;
-            promoCode?: Record<string, never> | null;
-            certificateCode?: Record<string, never> | null;
+            promoCode?: string | null;
+            certificateCode?: string | null;
             /** @description Телефон гостя — для лимита промокода на один телефон */
-            phone?: Record<string, never> | null;
+            phone?: string | null;
         };
         OrderModifierViewDto: {
             groupId: string;
@@ -6188,8 +6263,8 @@ export interface components {
             index: number;
             dishId: string;
             /** @description Название на языке запроса (null — блюдо не найдено) */
-            name?: Record<string, never> | null;
-            photoUrl?: Record<string, never> | null;
+            name?: string | null;
+            photoUrl?: string | null;
             quantity: number;
             unitPrice?: components["schemas"]["MoneyDto"] | null;
             lineTotal?: components["schemas"]["MoneyDto"] | null;
@@ -6199,14 +6274,15 @@ export interface components {
              * @description Машинный код проблемы позиции
              * @example catalog.dish_unavailable
              */
-            problem?: Record<string, never> | null;
+            problem?: string | null;
         };
         OrderQuoteDeliveryDto: {
             pointProvided: boolean;
             deliverable: boolean;
-            zoneId?: Record<string, never> | null;
-            zoneName?: Record<string, never> | null;
-            etaMinutes?: Record<string, never> | null;
+            /** Format: uuid */
+            zoneId?: string | null;
+            zoneName?: string | null;
+            etaMinutes?: number | null;
             minOrderAmount?: components["schemas"]["MoneyDto"] | null;
             minOrderReached: boolean;
             /** @description Сколько не хватает до минимальной суммы */
@@ -6223,19 +6299,22 @@ export interface components {
             code: string;
             applied: boolean;
             /** @example promo.min_subtotal */
-            reason?: Record<string, never> | null;
-            details?: Record<string, never> | null;
+            reason?: string | null;
+            details?: {
+                [key: string]: unknown;
+            } | null;
             discount: components["schemas"]["MoneyDto"];
             freeDelivery: boolean;
         };
         OrderQuoteCertificateDto: {
             applied: boolean;
             /** @example order.certificate_not_found */
-            reason?: Record<string, never> | null;
+            reason?: string | null;
             /** @example ****-****-AB12 */
-            maskedCode?: Record<string, never> | null;
+            maskedCode?: string | null;
             balance?: components["schemas"]["MoneyDto"] | null;
-            expiresAt?: Record<string, never> | null;
+            /** Format: date-time */
+            expiresAt?: string | null;
             /** @description Будет списано с сертификата */
             amount: components["schemas"]["MoneyDto"];
         };
@@ -6261,24 +6340,24 @@ export interface components {
             point: components["schemas"]["GeoPointDto"];
             /** @example Астана, пр. Кабанбай батыра, 56 */
             addressText: string;
-            apartment?: Record<string, never> | null;
-            entrance?: Record<string, never> | null;
-            floor?: Record<string, never> | null;
-            intercom?: Record<string, never> | null;
-            courierComment?: Record<string, never> | null;
+            apartment?: string | null;
+            entrance?: string | null;
+            floor?: string | null;
+            intercom?: string | null;
+            courierComment?: string | null;
         };
         OrderCheckoutCustomerDto: {
             /** @example Айгерим */
             name: string;
             /** @example +77771234567 */
             phone: string;
-            email?: Record<string, never> | null;
+            email?: string | null;
         };
         OrderCheckoutConsentDto: {
             /** @description Согласие на обработку персональных данных (обязательно true) */
             personalData: boolean;
             /** @description Согласие на маркетинговые рассылки (необязательно) */
-            marketing?: Record<string, never> | null;
+            marketing?: boolean | null;
         };
         OrderCheckoutDto: {
             branchId: string;
@@ -6292,23 +6371,26 @@ export interface components {
              * @default false
              */
             contactless: boolean;
-            /** @description К определённому времени (ISO); null — как можно скорее */
-            scheduledFor?: Record<string, never> | null;
+            /**
+             * Format: date-time
+             * @description К определённому времени (ISO); null — как можно скорее
+             */
+            scheduledFor?: string | null;
             customer: components["schemas"]["OrderCheckoutCustomerDto"];
-            comment?: Record<string, never> | null;
-            promoCode?: Record<string, never> | null;
-            certificateCode?: Record<string, never> | null;
+            comment?: string | null;
+            promoCode?: string | null;
+            certificateCode?: string | null;
             /** @enum {string} */
             paymentMethod: "online" | "on_receipt";
             /** @description Токен подтверждения телефона (оплата при получении) */
-            phoneVerificationToken?: Record<string, never> | null;
+            phoneVerificationToken?: string | null;
             consent: components["schemas"]["OrderCheckoutConsentDto"];
             /**
              * @description Язык уведомлений гостю
              * @enum {string}
              */
             locale: "kk" | "ru" | "en";
-            analyticsSessionId?: Record<string, never> | null;
+            analyticsSessionId?: string | null;
             /** @description Ключ идемпотентности (UUID, генерирует витрина): повтор возвращает тот же заказ */
             idempotencyKey: string;
         };
@@ -6320,7 +6402,7 @@ export interface components {
             status: "created" | "pending" | "succeeded" | "failed" | "cancelled" | "partially_refunded" | "refunded";
             amount: components["schemas"]["MoneyDto"];
             /** @description Ссылка на оплату (появляется асинхронно — опрашивайте статус заказа) */
-            paymentUrl?: Record<string, never> | null;
+            paymentUrl?: string | null;
         };
         OrderCheckoutResultDto: {
             orderId: string;
@@ -6340,7 +6422,7 @@ export interface components {
             dishId: string;
             /** @description Название на языке запроса (снимок на момент заказа) */
             name: string;
-            photoUrl?: Record<string, never> | null;
+            photoUrl?: string | null;
             quantity: number;
             unitPrice: components["schemas"]["MoneyDto"];
             lineTotal: components["schemas"]["MoneyDto"];
@@ -6358,11 +6440,11 @@ export interface components {
         };
         OrderTrackingDeliveryDto: {
             addressText: string;
-            apartment?: Record<string, never> | null;
-            entrance?: Record<string, never> | null;
-            floor?: Record<string, never> | null;
-            intercom?: Record<string, never> | null;
-            courierComment?: Record<string, never> | null;
+            apartment?: string | null;
+            entrance?: string | null;
+            floor?: string | null;
+            intercom?: string | null;
+            courierComment?: string | null;
             point: components["schemas"]["GeoPointDto"];
             contactless: boolean;
         };
@@ -6378,14 +6460,17 @@ export interface components {
             current?: components["schemas"]["OrderPaymentStateDto"] | null;
             /** @description Можно повторить онлайн-оплату (POST /public/orders/:token/pay) */
             canRetry: boolean;
-            /** @description Срок оплаты онлайн-заказа */
-            payUntil?: Record<string, never> | null;
+            /**
+             * Format: date-time
+             * @description Срок оплаты онлайн-заказа
+             */
+            payUntil?: string | null;
         };
         OrderTrackingCourierDto: {
             /** @enum {string} */
             status: "requested" | "estimating" | "awaiting_confirmation" | "searching" | "courier_assigned" | "picked_up" | "delivered" | "cancelled" | "failed";
-            trackingUrl?: Record<string, never> | null;
-            courierName?: Record<string, never> | null;
+            trackingUrl?: string | null;
+            courierName?: string | null;
         };
         OrderTrackingCancellationDto: {
             /** @enum {string} */
@@ -6408,8 +6493,11 @@ export interface components {
             type: "delivery" | "pickup";
             /** Format: date-time */
             placedAt: string;
-            /** @description Заказ ко времени */
-            scheduledFor?: Record<string, never> | null;
+            /**
+             * Format: date-time
+             * @description Заказ ко времени
+             */
+            scheduledFor?: string | null;
             /**
              * Format: date-time
              * @description Обещанное время выдачи/доставки
@@ -6420,8 +6508,8 @@ export interface components {
             discount: components["schemas"]["MoneyDto"];
             deliveryFee: components["schemas"]["MoneyDto"];
             total: components["schemas"]["MoneyDto"];
-            promoCode?: Record<string, never> | null;
-            comment?: Record<string, never> | null;
+            promoCode?: string | null;
+            comment?: string | null;
             branch: components["schemas"]["OrderBranchDto"];
             delivery?: components["schemas"]["OrderTrackingDeliveryDto"] | null;
             payment: components["schemas"]["OrderTrackingPaymentDto"];
@@ -6433,7 +6521,7 @@ export interface components {
             /** @description Точка на карте (геокодирование адреса — в браузере витрины) */
             point: components["schemas"]["GeoPointDto"];
             /** @description Адрес текстом (для отображения) */
-            address?: Record<string, never> | null;
+            address?: string | null;
         };
         PublicDeliveryZoneDto: {
             id: string;
@@ -6455,7 +6543,7 @@ export interface components {
         DeliveryResolutionDto: {
             /** @description Доставляем ли в эту точку */
             deliverable: boolean;
-            address?: Record<string, never> | null;
+            address?: string | null;
             /** @description Выбранный филиал: меньшая стоимость, затем ближайший */
             best?: components["schemas"]["DeliveryOptionDto"] | null;
             alternatives: components["schemas"]["DeliveryOptionDto"][];
@@ -6464,8 +6552,11 @@ export interface components {
             available: boolean;
             /** @enum {string|null} */
             reason?: "closed" | "closing_soon" | null;
-            /** @description Когда заказ будет готов при оформлении сейчас */
-            readyAt?: Record<string, never> | null;
+            /**
+             * Format: date-time
+             * @description Когда заказ будет готов при оформлении сейчас
+             */
+            readyAt?: string | null;
         };
         OrderSlotDto: {
             /**
@@ -6495,11 +6586,12 @@ export interface components {
             dates: string[];
         };
         OrderCustomerDto: {
-            customerId?: Record<string, never> | null;
-            name?: Record<string, never> | null;
+            /** Format: uuid */
+            customerId?: string | null;
+            name?: string | null;
             /** @example +77771234567 */
             phone: string;
-            email?: Record<string, never> | null;
+            email?: string | null;
         };
         AdminOrderListItemDto: {
             id: string;
@@ -6515,10 +6607,11 @@ export interface components {
             total: components["schemas"]["MoneyDto"];
             /** @enum {string} */
             paymentMethod: "online" | "on_receipt";
-            promoCode?: Record<string, never> | null;
+            promoCode?: string | null;
             /** Format: date-time */
             placedAt: string;
-            scheduledFor?: Record<string, never> | null;
+            /** Format: date-time */
+            scheduledFor?: string | null;
             /** Format: date-time */
             promisedAt: string;
         };
@@ -6539,11 +6632,11 @@ export interface components {
             id: string;
             position: number;
             dishId: string;
-            sku?: Record<string, never> | null;
+            sku?: string | null;
             /** @description Снимок названия на момент заказа */
             name: components["schemas"]["TranslatableDto"];
-            photoUrl?: Record<string, never> | null;
-            weightGrams?: Record<string, never> | null;
+            photoUrl?: string | null;
+            weightGrams?: number | null;
             quantity: number;
             basePrice: components["schemas"]["MoneyDto"];
             unitPrice: components["schemas"]["MoneyDto"];
@@ -6564,16 +6657,17 @@ export interface components {
             total: components["schemas"]["MoneyDto"];
             /** @enum {string} */
             paymentMethod: "online" | "on_receipt";
-            promoCode?: Record<string, never> | null;
+            promoCode?: string | null;
             /** Format: date-time */
             placedAt: string;
-            scheduledFor?: Record<string, never> | null;
+            /** Format: date-time */
+            scheduledFor?: string | null;
             /** Format: date-time */
             promisedAt: string;
             items: components["schemas"]["AdminOrderItemDto"][];
-            comment?: Record<string, never> | null;
+            comment?: string | null;
             /** @description Адрес доставки одной строкой */
-            deliveryAddress?: Record<string, never> | null;
+            deliveryAddress?: string | null;
             contactless: boolean;
             /** @description Доступные сотруднику переходы */
             allowedTransitions: ("draft" | "awaiting_payment" | "paid" | "accepted" | "cooking" | "ready" | "delivering" | "completed" | "cancelled" | "refunded")[];
@@ -6603,12 +6697,15 @@ export interface components {
              * @default false
              */
             contactless: boolean;
-            /** @description К определённому времени (ISO); null — как можно скорее */
-            scheduledFor?: Record<string, never> | null;
+            /**
+             * Format: date-time
+             * @description К определённому времени (ISO); null — как можно скорее
+             */
+            scheduledFor?: string | null;
             customer: components["schemas"]["OrderCheckoutCustomerDto"];
-            comment?: Record<string, never> | null;
-            promoCode?: Record<string, never> | null;
-            certificateCode?: Record<string, never> | null;
+            comment?: string | null;
+            promoCode?: string | null;
+            certificateCode?: string | null;
             /** @enum {string} */
             paymentMethod: "online" | "on_receipt";
             consent: components["schemas"]["OrderCheckoutConsentDto"];
@@ -6623,31 +6720,40 @@ export interface components {
         AdminOrderDeliveryDto: {
             point: components["schemas"]["GeoPointDto"];
             addressText: string;
-            apartment?: Record<string, never> | null;
-            entrance?: Record<string, never> | null;
-            floor?: Record<string, never> | null;
-            intercom?: Record<string, never> | null;
-            courierComment?: Record<string, never> | null;
-            zoneId?: Record<string, never> | null;
+            apartment?: string | null;
+            entrance?: string | null;
+            floor?: string | null;
+            intercom?: string | null;
+            courierComment?: string | null;
+            /** Format: uuid */
+            zoneId?: string | null;
             zoneName?: components["schemas"]["TranslatableDto"] | null;
             contactless: boolean;
         };
         AdminOrderCancellationDto: {
             /** @enum {string} */
             reasonCode: "guest_request" | "not_paid_in_time" | "out_of_stock" | "cannot_deliver" | "duplicate" | "other";
-            reason?: Record<string, never> | null;
+            reason?: string | null;
         };
         AdminOrderTimestampsDto: {
             /** Format: date-time */
             placedAt: string;
-            paidAt?: Record<string, never> | null;
-            acceptedAt?: Record<string, never> | null;
-            cookingAt?: Record<string, never> | null;
-            readyAt?: Record<string, never> | null;
-            deliveringAt?: Record<string, never> | null;
-            completedAt?: Record<string, never> | null;
-            cancelledAt?: Record<string, never> | null;
-            refundedAt?: Record<string, never> | null;
+            /** Format: date-time */
+            paidAt?: string | null;
+            /** Format: date-time */
+            acceptedAt?: string | null;
+            /** Format: date-time */
+            cookingAt?: string | null;
+            /** Format: date-time */
+            readyAt?: string | null;
+            /** Format: date-time */
+            deliveringAt?: string | null;
+            /** Format: date-time */
+            completedAt?: string | null;
+            /** Format: date-time */
+            cancelledAt?: string | null;
+            /** Format: date-time */
+            refundedAt?: string | null;
         };
         AdminOrderPaymentDto: {
             id: string;
@@ -6657,7 +6763,7 @@ export interface components {
              */
             kind?: "certificate" | "online" | "on_receipt" | null;
             /** @description Номер попытки онлайн-оплаты */
-            attempt?: Record<string, never> | null;
+            attempt?: number | null;
             /** @enum {string} */
             method: "online" | "on_receipt" | "gift_certificate" | "bank_transfer";
             provider: string;
@@ -6665,10 +6771,11 @@ export interface components {
             status: "created" | "pending" | "succeeded" | "failed" | "cancelled" | "partially_refunded" | "refunded";
             amount: components["schemas"]["MoneyDto"];
             refundedAmount: components["schemas"]["MoneyDto"];
-            paymentUrl?: Record<string, never> | null;
+            paymentUrl?: string | null;
             /** Format: date-time */
             createdAt: string;
-            paidAt?: Record<string, never> | null;
+            /** Format: date-time */
+            paidAt?: string | null;
         };
         AdminOrderRefundDto: {
             refundId: string;
@@ -6679,10 +6786,12 @@ export interface components {
             status: "pending" | "succeeded" | "failed";
             amount: components["schemas"]["MoneyDto"];
             reason: string;
-            requestedBy?: Record<string, never> | null;
+            /** Format: uuid */
+            requestedBy?: string | null;
             /** Format: date-time */
             createdAt: string;
-            completedAt?: Record<string, never> | null;
+            /** Format: date-time */
+            completedAt?: string | null;
         };
         AdminCourierDispatchDto: {
             id: string;
@@ -6691,17 +6800,18 @@ export interface components {
             /** @enum {string} */
             status: "requested" | "estimating" | "awaiting_confirmation" | "searching" | "courier_assigned" | "picked_up" | "delivered" | "cancelled" | "failed";
             /** @description Статус в терминах службы */
-            providerStatus?: Record<string, never> | null;
-            externalId?: Record<string, never> | null;
-            trackingUrl?: Record<string, never> | null;
-            courierName?: Record<string, never> | null;
-            courierPhone?: Record<string, never> | null;
+            providerStatus?: string | null;
+            externalId?: string | null;
+            trackingUrl?: string | null;
+            courierName?: string | null;
+            courierPhone?: string | null;
             price?: components["schemas"]["MoneyDto"] | null;
             attempts: number;
-            lastError?: Record<string, never> | null;
+            lastError?: string | null;
             /** Format: date-time */
             requestedAt: string;
-            finishedAt?: Record<string, never> | null;
+            /** Format: date-time */
+            finishedAt?: string | null;
         };
         OrderStatusHistoryDto: {
             /** @enum {string|null} */
@@ -6713,9 +6823,10 @@ export interface components {
             /** @enum {string} */
             actorKind: "staff" | "system" | "guest";
             actorName: string;
-            actorUserId?: Record<string, never> | null;
-            reasonCode?: Record<string, never> | null;
-            reason?: Record<string, never> | null;
+            /** Format: uuid */
+            actorUserId?: string | null;
+            reasonCode?: string | null;
+            reason?: string | null;
         };
         AdminOrderDetailsDto: {
             id: string;
@@ -6731,10 +6842,11 @@ export interface components {
             total: components["schemas"]["MoneyDto"];
             /** @enum {string} */
             paymentMethod: "online" | "on_receipt";
-            promoCode?: Record<string, never> | null;
+            promoCode?: string | null;
             /** Format: date-time */
             placedAt: string;
-            scheduledFor?: Record<string, never> | null;
+            /** Format: date-time */
+            scheduledFor?: string | null;
             /** Format: date-time */
             promisedAt: string;
             publicToken: string;
@@ -6746,16 +6858,19 @@ export interface components {
             deliveryFee: components["schemas"]["MoneyDto"];
             /** @enum {string|null} */
             promoKind?: "percent" | "fixed" | "free_delivery" | null;
-            certificateMaskedCode?: Record<string, never> | null;
+            certificateMaskedCode?: string | null;
             certificateAmount: components["schemas"]["MoneyDto"];
             /** @description К оплате онлайн/при получении */
             amountDue: components["schemas"]["MoneyDto"];
             delivery?: components["schemas"]["AdminOrderDeliveryDto"] | null;
-            comment?: Record<string, never> | null;
+            comment?: string | null;
             etaMinutes: number;
-            analyticsSessionId?: Record<string, never> | null;
-            /** @description Сотрудник, оформивший телефонный заказ */
-            createdBy?: Record<string, never> | null;
+            analyticsSessionId?: string | null;
+            /**
+             * Format: uuid
+             * @description Сотрудник, оформивший телефонный заказ
+             */
+            createdBy?: string | null;
             wasPaid: boolean;
             cancellation?: components["schemas"]["AdminOrderCancellationDto"] | null;
             timestamps: components["schemas"]["AdminOrderTimestampsDto"];
@@ -6785,7 +6900,7 @@ export interface components {
         CancelOrderDto: {
             /** @enum {string} */
             reasonCode: "guest_request" | "not_paid_in_time" | "out_of_stock" | "cannot_deliver" | "duplicate" | "other";
-            reason?: Record<string, never> | null;
+            reason?: string | null;
             /** @description Сумма возврата оплаченного заказа (частичный возврат — право orders.refund). Не задана — полный возврат */
             refundAmount?: components["schemas"]["MoneyInputDto"] | null;
         };
@@ -6850,17 +6965,20 @@ export interface components {
         PromoCodeDto: {
             id: string;
             code: string;
-            description?: Record<string, never> | null;
+            description?: string | null;
             /** @enum {string} */
             kind: "percent" | "fixed" | "free_delivery";
-            percentBp?: Record<string, never> | null;
+            percentBp?: number | null;
             fixedAmount?: components["schemas"]["MoneyDto"] | null;
             minSubtotal?: components["schemas"]["MoneyDto"] | null;
-            validFrom?: Record<string, never> | null;
-            validTo?: Record<string, never> | null;
-            totalLimit?: Record<string, never> | null;
-            perPhoneLimit?: Record<string, never> | null;
-            branchId?: Record<string, never> | null;
+            /** Format: date-time */
+            validFrom?: string | null;
+            /** Format: date-time */
+            validTo?: string | null;
+            totalLimit?: number | null;
+            perPhoneLimit?: number | null;
+            /** Format: uuid */
+            branchId?: string | null;
             isActive: boolean;
             usage: components["schemas"]["PromoUsageDto"];
             /** @description Сотрудник может изменить промокод */
@@ -6878,23 +6996,28 @@ export interface components {
              * @example WELCOME10
              */
             code: string;
-            description?: Record<string, never> | null;
+            description?: string | null;
             /** @enum {string} */
             kind: "percent" | "fixed" | "free_delivery";
             /** @description Для percent: базисные пункты (10% = 1000) */
-            percentBp?: Record<string, never> | null;
+            percentBp?: number | null;
             /** @description Для fixed: сумма скидки */
             fixedAmount?: components["schemas"]["MoneyInputDto"] | null;
             /** @description Минимальная сумма блюд */
             minSubtotal?: components["schemas"]["MoneyInputDto"] | null;
-            validFrom?: Record<string, never> | null;
-            validTo?: Record<string, never> | null;
+            /** Format: date-time */
+            validFrom?: string | null;
+            /** Format: date-time */
+            validTo?: string | null;
             /** @description Лимит использований всего */
-            totalLimit?: Record<string, never> | null;
+            totalLimit?: number | null;
             /** @description Лимит использований на один телефон */
-            perPhoneLimit?: Record<string, never> | null;
-            /** @description Филиал; null — вся сеть (нужно глобальное право) */
-            branchId?: Record<string, never> | null;
+            perPhoneLimit?: number | null;
+            /**
+             * Format: uuid
+             * @description Филиал; null — вся сеть (нужно глобальное право)
+             */
+            branchId?: string | null;
             /** @default true */
             isActive: boolean;
         };
@@ -6975,6 +7098,22 @@ export interface components {
             sortOrder?: number;
             isActive?: boolean;
         };
+        VenueImageVariantDto: {
+            width: number;
+            height: number;
+            url: string;
+        };
+        VenueImageDto: {
+            id: string;
+            /** @description Основной вариант (карточка) */
+            url: string;
+            /** @description Уменьшенный вариант (списки, карта зала) */
+            thumbnailUrl: string;
+            width: number;
+            height: number;
+            /** @description Все варианты (srcset) */
+            variants: components["schemas"]["VenueImageVariantDto"][];
+        };
         HallDto: {
             id: string;
             branchId: string;
@@ -6987,7 +7126,7 @@ export interface components {
             /** @description Высота плана зала, условные единицы */
             planHeight: number;
             /** @description Фон плана зала */
-            background?: components["schemas"]["ImageDto"] | null;
+            background?: components["schemas"]["VenueImageDto"] | null;
             sortOrder: number;
             isActive: boolean;
             /** Format: date-time */
@@ -7020,13 +7159,13 @@ export interface components {
             isActive?: boolean;
         };
         VenueRuleOverridesDto: {
-            durationMinutes?: Record<string, never> | null;
-            holdMinutes?: Record<string, never> | null;
-            cancellationDeadlineHours?: Record<string, never> | null;
-            requiresManualConfirmation?: Record<string, never> | null;
-            cleanupMinutes?: Record<string, never> | null;
-            slotStepMinutes?: Record<string, never> | null;
-            bookableOnline?: Record<string, never> | null;
+            durationMinutes?: number | null;
+            holdMinutes?: number | null;
+            cancellationDeadlineHours?: number | null;
+            requiresManualConfirmation?: boolean | null;
+            cleanupMinutes?: number | null;
+            slotStepMinutes?: number | null;
+            bookableOnline?: boolean | null;
         };
         VenuePositionDto: {
             x: number;
@@ -7062,7 +7201,7 @@ export interface components {
             /** @description Действующие правила (тип + переопределения) */
             rules: components["schemas"]["VenueRulesDto"];
             position: components["schemas"]["VenuePositionDto"];
-            photos: components["schemas"]["ImageDto"][];
+            photos: components["schemas"]["VenueImageDto"][];
             sortOrder: number;
             isActive: boolean;
             /** @description Доступно для брони: активны место, зал и тип */
@@ -7138,7 +7277,8 @@ export interface components {
             maxDaysAhead: number;
             /** @description Текст правил брони и отмены для гостя */
             policyText: components["schemas"]["TranslatableDto"];
-            updatedAt?: Record<string, never> | null;
+            /** Format: date-time */
+            updatedAt?: string | null;
         };
         UpdateReservationSettingsDto: {
             reminderHoursBefore?: number;
@@ -7156,12 +7296,15 @@ export interface components {
             typeName: components["schemas"]["TranslatableDto"];
         };
         ReservationCustomerDto: {
-            /** @description Гость в базе гостей */
-            id?: Record<string, never> | null;
-            name?: Record<string, never> | null;
+            /**
+             * Format: uuid
+             * @description Гость в базе гостей
+             */
+            id?: string | null;
+            name?: string | null;
             /** @example +77011234567 */
-            phone?: Record<string, never> | null;
-            email?: Record<string, never> | null;
+            phone?: string | null;
+            email?: string | null;
         };
         ReservationSummaryDto: {
             id: string;
@@ -7197,18 +7340,22 @@ export interface components {
             durationMinutes: number;
             guests: number;
             customer: components["schemas"]["ReservationCustomerDto"];
-            comment?: Record<string, never> | null;
-            occasion?: Record<string, never> | null;
+            comment?: string | null;
+            occasion?: string | null;
             /** @description Служебная заметка персонала */
-            note?: Record<string, never> | null;
+            note?: string | null;
             deposit?: components["schemas"]["MoneyDto"] | null;
             /** @enum {string} */
             depositState: "none" | "waived" | "pending" | "unpaid" | "paid" | "refund_pending" | "refunded" | "refund_failed" | "retained" | "applied";
             /** @enum {string} */
             depositOutcome: "none" | "refunded" | "retained";
-            /** @description Бронь будет снята, если не подтвердят / не оплатят до этого момента */
-            holdExpiresAt?: Record<string, never> | null;
-            banquetRequestId?: Record<string, never> | null;
+            /**
+             * Format: date-time
+             * @description Бронь будет снята, если не подтвердят / не оплатят до этого момента
+             */
+            holdExpiresAt?: string | null;
+            /** Format: uuid */
+            banquetRequestId?: string | null;
             /** @description Требует отметки «пришли / не пришли» */
             needsMark: boolean;
             /** Format: date-time */
@@ -7242,9 +7389,10 @@ export interface components {
             /** Format: date-time */
             blockedUntil: string;
             guests: number;
-            customerName?: Record<string, never> | null;
-            customerPhone?: Record<string, never> | null;
-            banquetRequestId?: Record<string, never> | null;
+            customerName?: string | null;
+            customerPhone?: string | null;
+            /** Format: uuid */
+            banquetRequestId?: string | null;
             /** @enum {string} */
             depositState: "none" | "waived" | "pending" | "unpaid" | "paid" | "refund_pending" | "refunded" | "refund_failed" | "retained" | "applied";
             needsMark: boolean;
@@ -7298,15 +7446,16 @@ export interface components {
             status: string;
             amount: components["schemas"]["MoneyDto"];
             refundedAmount: components["schemas"]["MoneyDto"];
-            paymentUrl?: Record<string, never> | null;
-            paidAt?: Record<string, never> | null;
+            paymentUrl?: string | null;
+            /** Format: date-time */
+            paidAt?: string | null;
         };
         StatusHistoryDto: {
             /** @enum {string|null} */
             from?: "pending" | "awaiting_deposit" | "confirmed" | "arrived" | "no_show" | "cancelled" | "expired" | null;
             /** @enum {string} */
             to: "pending" | "awaiting_deposit" | "confirmed" | "arrived" | "no_show" | "cancelled" | "expired";
-            reason?: Record<string, never> | null;
+            reason?: string | null;
             /** @enum {string} */
             depositOutcome: "none" | "refunded" | "retained";
             /** @example staff */
@@ -7349,18 +7498,22 @@ export interface components {
             durationMinutes: number;
             guests: number;
             customer: components["schemas"]["ReservationCustomerDto"];
-            comment?: Record<string, never> | null;
-            occasion?: Record<string, never> | null;
+            comment?: string | null;
+            occasion?: string | null;
             /** @description Служебная заметка персонала */
-            note?: Record<string, never> | null;
+            note?: string | null;
             deposit?: components["schemas"]["MoneyDto"] | null;
             /** @enum {string} */
             depositState: "none" | "waived" | "pending" | "unpaid" | "paid" | "refund_pending" | "refunded" | "refund_failed" | "retained" | "applied";
             /** @enum {string} */
             depositOutcome: "none" | "refunded" | "retained";
-            /** @description Бронь будет снята, если не подтвердят / не оплатят до этого момента */
-            holdExpiresAt?: Record<string, never> | null;
-            banquetRequestId?: Record<string, never> | null;
+            /**
+             * Format: date-time
+             * @description Бронь будет снята, если не подтвердят / не оплатят до этого момента
+             */
+            holdExpiresAt?: string | null;
+            /** Format: uuid */
+            banquetRequestId?: string | null;
             /** @description Требует отметки «пришли / не пришли» */
             needsMark: boolean;
             /** Format: date-time */
@@ -7381,19 +7534,26 @@ export interface components {
              */
             depositOutcomeIfCancelled: "none" | "refunded" | "retained";
             depositPayment?: components["schemas"]["DepositPaymentDto"] | null;
-            depositWaiveReason?: Record<string, never> | null;
-            depositPaidAt?: Record<string, never> | null;
-            cancelReason?: Record<string, never> | null;
+            depositWaiveReason?: string | null;
+            /** Format: date-time */
+            depositPaidAt?: string | null;
+            cancelReason?: string | null;
             /** @enum {string|null} */
             cancelledBy?: "guest" | "staff" | "system" | "banquet" | null;
-            confirmedAt?: Record<string, never> | null;
-            arrivedAt?: Record<string, never> | null;
-            noShowAt?: Record<string, never> | null;
-            cancelledAt?: Record<string, never> | null;
-            expiredAt?: Record<string, never> | null;
-            reminderSentAt?: Record<string, never> | null;
+            /** Format: date-time */
+            confirmedAt?: string | null;
+            /** Format: date-time */
+            arrivedAt?: string | null;
+            /** Format: date-time */
+            noShowAt?: string | null;
+            /** Format: date-time */
+            cancelledAt?: string | null;
+            /** Format: date-time */
+            expiredAt?: string | null;
+            /** Format: date-time */
+            reminderSentAt?: string | null;
             /** @description Ссылка на страницу брони гостя */
-            manageUrl?: Record<string, never> | null;
+            manageUrl?: string | null;
             history: components["schemas"]["StatusHistoryDto"][];
         };
         StaffCustomerDto: {
@@ -7497,7 +7657,7 @@ export interface components {
             durationMinutes: number;
             rules: components["schemas"]["PublicVenueRulesDto"];
             position: components["schemas"]["VenuePositionDto"];
-            photos: components["schemas"]["ImageDto"][];
+            photos: components["schemas"]["VenueImageDto"][];
         };
         AlternativeTimeDto: {
             /** @example 2026-10-25 */
@@ -7515,7 +7675,7 @@ export interface components {
             date: string;
             time: string;
             guests: number;
-            durationMinutes?: Record<string, never> | null;
+            durationMinutes?: number | null;
             /** @description Есть хотя бы одно свободное место */
             available: boolean;
             /**
@@ -7540,9 +7700,9 @@ export interface components {
             position: components["schemas"]["VenuePositionDto"];
             /** @description Можно забронировать на сайте (иначе — по телефону) */
             bookableOnline: boolean;
-            photos: components["schemas"]["ImageDto"][];
+            photos: components["schemas"]["VenueImageDto"][];
             /** @description Свободно на запрошенное время; null — время не запрошено */
-            available?: Record<string, never> | null;
+            available?: boolean | null;
         };
         PublicHallDto: {
             id: string;
@@ -7550,7 +7710,7 @@ export interface components {
             description: string;
             planWidth: number;
             planHeight: number;
-            background?: components["schemas"]["ImageDto"] | null;
+            background?: components["schemas"]["VenueImageDto"] | null;
             venues: components["schemas"]["PublicMapVenueDto"][];
         };
         PublicHallMapDto: {
@@ -7623,9 +7783,9 @@ export interface components {
              */
             outcome: "none" | "refunded" | "retained";
             /** @example pending */
-            paymentStatus?: Record<string, never> | null;
+            paymentStatus?: string | null;
             /** @description Страница оплаты (появляется асинхронно после создания платежа) */
-            paymentUrl?: Record<string, never> | null;
+            paymentUrl?: string | null;
         };
         PublicPolicyDto: {
             cancellationDeadlineHours: number;
@@ -7651,11 +7811,14 @@ export interface components {
             end: string;
             durationMinutes: number;
             guests: number;
-            customerName?: Record<string, never> | null;
-            comment?: Record<string, never> | null;
-            occasion?: Record<string, never> | null;
-            /** @description Бронь будет снята, если не подтвердят / не оплатят до этого момента */
-            holdExpiresAt?: Record<string, never> | null;
+            customerName?: string | null;
+            comment?: string | null;
+            occasion?: string | null;
+            /**
+             * Format: date-time
+             * @description Бронь будет снята, если не подтвердят / не оплатят до этого момента
+             */
+            holdExpiresAt?: string | null;
             deposit?: components["schemas"]["PublicDepositDto"] | null;
             /** @description Гость может отменить бронь */
             canCancel: boolean;
@@ -7672,8 +7835,9 @@ export interface components {
              */
             depositOutcomeIfCancelled: "none" | "refunded" | "retained";
             policy: components["schemas"]["PublicPolicyDto"];
-            cancelledAt?: Record<string, never> | null;
-            cancelReason?: Record<string, never> | null;
+            /** Format: date-time */
+            cancelledAt?: string | null;
+            cancelReason?: string | null;
         };
         GuestCancelReservationDto: {
             /** @description Причина (необязательно) */
@@ -8086,19 +8250,25 @@ export interface components {
             /** @example 2026-11-14 */
             eventDate?: string;
             /** @example 18:00 */
-            eventTime?: Record<string, never> | null;
+            eventTime?: string | null;
             /** @enum {string} */
             eventType?: "wedding" | "birthday" | "corporate" | "anniversary" | "kudalyk" | "memorial" | "graduation" | "other";
             guests?: number;
             budget?: components["schemas"]["MoneyInputDto"] | null;
-            /** @description Филиал проведения / филиал-исполнитель выезда */
-            branchId?: Record<string, never> | null;
+            /**
+             * Format: uuid
+             * @description Филиал проведения / филиал-исполнитель выезда
+             */
+            branchId?: string | null;
             offsite?: boolean;
-            address?: Record<string, never> | null;
-            wishes?: Record<string, never> | null;
+            address?: string | null;
+            wishes?: string | null;
             contact?: components["schemas"]["BanquetContactInputDto"];
-            /** @description Компания-заказчик (null — физлицо) */
-            companyId?: Record<string, never> | null;
+            /**
+             * Format: uuid
+             * @description Компания-заказчик (null — физлицо)
+             */
+            companyId?: string | null;
         };
         BanquetTransitionDto: {
             /** @enum {string} */
@@ -8901,6 +9071,10 @@ export interface components {
             /** @enum {string} */
             channel: "order" | "point";
         };
+        ReportCertificateBalanceDto: {
+            count: number;
+            balance: components["schemas"]["MoneyDto"];
+        };
         CertificateOutstandingDto: {
             count: number;
             balance: components["schemas"]["MoneyDto"];
@@ -8918,7 +9092,7 @@ export interface components {
             redeemed: components["schemas"]["CertificateAmountDto"];
             redeemedByChannel: components["schemas"]["CertificateRedeemedByChannelDto"][];
             /** @description Только сводный отчёт */
-            expired: components["schemas"]["CertificateBalanceDto"] | null;
+            expired: components["schemas"]["ReportCertificateBalanceDto"] | null;
             /** @description Остаток обязательств (только сводный) */
             outstanding: components["schemas"]["CertificateOutstandingDto"] | null;
         };
@@ -9189,22 +9363,30 @@ export interface components {
             nomenclature: boolean;
         };
         PosStopListStatusDto: {
-            /** @description Последняя успешная синхронизация */
-            syncedAt?: Record<string, never> | null;
-            /** @description Последняя попытка */
-            attemptedAt?: Record<string, never> | null;
+            /**
+             * Format: date-time
+             * @description Последняя успешная синхронизация
+             */
+            syncedAt?: string | null;
+            /**
+             * Format: date-time
+             * @description Последняя попытка
+             */
+            attemptedAt?: string | null;
             /** @description Неудач подряд */
             failures: number;
-            error?: Record<string, never> | null;
+            error?: string | null;
             /** @description Изменений стоп-листа при последней синхронизации */
             lastChanges: number;
         };
         PosProductsStatusDto: {
-            requestedAt?: Record<string, never> | null;
-            importedAt?: Record<string, never> | null;
+            /** Format: date-time */
+            requestedAt?: string | null;
+            /** Format: date-time */
+            importedAt?: string | null;
             /** @description Товаров в импортированной номенклатуре */
             count: number;
-            error?: Record<string, never> | null;
+            error?: string | null;
         };
         OrderExportCountsDto: {
             pending: number;
@@ -9225,7 +9407,7 @@ export interface components {
             configured: boolean;
             capabilities: components["schemas"]["PosCapabilitiesDto"];
             /** @description Ошибка настройки pos.routing */
-            routingError?: Record<string, never> | null;
+            routingError?: string | null;
             stopList: components["schemas"]["PosStopListStatusDto"];
             products: components["schemas"]["PosProductsStatusDto"];
             mappingsCount: number;
@@ -9263,23 +9445,29 @@ export interface components {
             /** @enum {string} */
             status: "pending" | "sent" | "failed" | "skipped";
             /** @description Номер/идентификатор заказа в POS */
-            posOrderId?: Record<string, never> | null;
+            posOrderId?: string | null;
             /** @description Попыток в текущем цикле передачи */
             attempts: number;
             /** @description Ручных повторов */
             manualRetries: number;
-            lastError?: Record<string, never> | null;
+            lastError?: string | null;
             /** @enum {string|null} */
             failureReason?: "missing_mapping" | "not_configured" | "rejected" | "retries_exhausted" | "order_unavailable" | null;
             /** @enum {string|null} */
             skipReason?: "manual_provider" | "order_cancelled" | "order_not_accepted" | null;
             /** @description Блюда и опции без сопоставления (при failureReason=missing_mapping) */
             missingMappings: components["schemas"]["MissingMappingDto"][];
-            lastAttemptAt?: Record<string, never> | null;
-            sentAt?: Record<string, never> | null;
-            /** @description POS подтвердила создание заказа. null при status=sent — заказ принят POS в обработку, подтверждение ожидается */
-            confirmedAt?: Record<string, never> | null;
-            failedAt?: Record<string, never> | null;
+            /** Format: date-time */
+            lastAttemptAt?: string | null;
+            /** Format: date-time */
+            sentAt?: string | null;
+            /**
+             * Format: date-time
+             * @description POS подтвердила создание заказа. null при status=sent — заказ принят POS в обработку, подтверждение ожидается
+             */
+            confirmedAt?: string | null;
+            /** Format: date-time */
+            failedAt?: string | null;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -9299,7 +9487,7 @@ export interface components {
             /** @description Товар-модификатор POS */
             externalProductId: string;
             /** @description Группа модификаторов POS (для групповых модификаторов) */
-            externalGroupId?: Record<string, never> | null;
+            externalGroupId?: string | null;
         };
         ProductMappingDto: {
             id: string;
@@ -9309,7 +9497,7 @@ export interface components {
             dishName?: components["schemas"]["TranslatableDto"] | null;
             provider: string;
             externalProductId: string;
-            externalName?: Record<string, never> | null;
+            externalName?: string | null;
             modifiers: components["schemas"]["ModifierMappingDto"][];
             /** Format: date-time */
             createdAt: string;
@@ -9327,10 +9515,10 @@ export interface components {
             externalProductId: string;
             name: string;
             /** @description Код/артикул товара в POS */
-            sku?: Record<string, never> | null;
+            sku?: string | null;
             /** @enum {string} */
             kind: "dish" | "good" | "modifier" | "service" | "other";
-            groupName?: Record<string, never> | null;
+            groupName?: string | null;
             /** Format: date-time */
             importedAt: string;
             /** @description Товар пропал из номенклатуры POS при последнем импорте */
@@ -9364,7 +9552,7 @@ export interface components {
             /** @description Товар POS (id в номенклатуре POS) */
             externalProductId: string;
             /** @description Название товара в POS (по умолчанию — из импортированной номенклатуры) */
-            externalName?: Record<string, never> | null;
+            externalName?: string | null;
             modifiers?: components["schemas"]["ModifierMappingDto"][];
             branchId: string;
             /** @description Блюдо витрины */
@@ -9375,7 +9563,7 @@ export interface components {
         BulkMappingItemDto: {
             dishId: string;
             externalProductId: string;
-            externalName?: Record<string, never> | null;
+            externalName?: string | null;
         };
         BulkMappingsDto: {
             branchId: string;
@@ -9392,7 +9580,7 @@ export interface components {
             /** @description Товар POS (id в номенклатуре POS) */
             externalProductId: string;
             /** @description Название товара в POS (по умолчанию — из импортированной номенклатуры) */
-            externalName?: Record<string, never> | null;
+            externalName?: string | null;
             modifiers?: components["schemas"]["ModifierMappingDto"][];
         };
         PosProductsPageDto: {
@@ -12799,7 +12987,8 @@ export interface operations {
     PaymentPages_sandbox: {
         parameters: {
             query: {
-                sig: unknown;
+                /** @description Подпись ссылки на страницу оплаты */
+                sig: string;
             };
             header?: never;
             path: {
@@ -12847,7 +13036,8 @@ export interface operations {
     PaymentPages_checkoutPage: {
         parameters: {
             query: {
-                sig: unknown;
+                /** @description Подпись ссылки на страницу оплаты */
+                sig: string;
             };
             header?: never;
             path: {

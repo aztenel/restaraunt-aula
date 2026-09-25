@@ -38,22 +38,22 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 export class CertificateDesignDto {
   @ApiProperty({ example: '#7a4b2a' }) color: string;
   @ApiProperty({ example: 'classic' }) theme: string;
-  @ApiPropertyOptional({ nullable: true }) imageUrl: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) imageUrl: string | null;
 }
 
 export class CertificateDesignInputDto {
   @ApiPropertyOptional({ example: '#7a4b2a' }) @IsOptional() @Matches(/^#[0-9a-fA-F]{6}$/) color?: string;
   @ApiPropertyOptional({ example: 'festive' }) @IsOptional() @IsString() @MaxLength(40) theme?: string;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(1000) imageUrl?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsString() @MaxLength(1000) imageUrl?: string | null;
 }
 
 /** Статус платежа для витрины: витрина опрашивает и перенаправляет гостя по paymentUrl. */
 export class PaymentLinkDto {
   @ApiProperty() id: string;
   @ApiProperty({ enum: ['created', 'pending', 'succeeded', 'failed', 'cancelled', 'partially_refunded', 'refunded'] }) status: string;
-  @ApiPropertyOptional({ nullable: true, description: 'Появляется после инициирования у провайдера' }) paymentUrl: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Появляется после инициирования у провайдера' }) paymentUrl: string | null;
   @ApiProperty({ type: MoneyDto }) amount: MoneyDto;
-  @ApiPropertyOptional({ nullable: true }) expiresAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) expiresAt: Date | null;
 
   static from(p: PaymentView): PaymentLinkDto {
     return { id: p.id, status: p.status, paymentUrl: p.paymentUrl, amount: MoneyDto.from(p.amount), expiresAt: p.expiresAt };
@@ -149,7 +149,7 @@ export class CertificateOrderStatusDto {
   @ApiPropertyOptional({ type: PaymentLinkDto, nullable: true }) payment: PaymentLinkDto | null;
   @ApiProperty({ type: [MaskedCertificateDto], description: 'Выпущенные сертификаты (коды — только в PDF и сообщении)' })
   certificates: MaskedCertificateDto[];
-  @ApiPropertyOptional({ nullable: true }) issuedAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) issuedAt: Date | null;
 
   static from(v: CertificateOrderStatusView, locale: Locale): CertificateOrderStatusDto {
     return {
@@ -182,7 +182,7 @@ export class CertificateBalanceDto {
   @ApiProperty({ type: MoneyDto }) balance: MoneyDto;
   @ApiProperty() expiresAt: Date;
   @ApiProperty({ description: 'Последний день действия (Asia/Almaty), YYYY-MM-DD' }) validUntil: string;
-  @ApiPropertyOptional({ nullable: true, description: 'Состав набора' }) setDescription: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Состав набора' }) setDescription: string | null;
 
   static from(v: CertificateBalanceView): CertificateBalanceDto {
     return {
@@ -257,9 +257,9 @@ export class CertificateProductDto {
 // ---------------------------------------------------------------- Админка: сертификаты
 
 export class CertificatePersonDto {
-  @ApiPropertyOptional({ nullable: true }) name: string | null;
-  @ApiPropertyOptional({ nullable: true }) phone: string | null;
-  @ApiPropertyOptional({ nullable: true }) email: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) name: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) phone: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) email: string | null;
 }
 
 export class CertificateDto {
@@ -267,7 +267,7 @@ export class CertificateDto {
   @ApiProperty({ example: '****-****-AB12' }) maskedCode: string;
   @ApiProperty({ enum: CERTIFICATE_KINDS }) kind: string;
   @ApiProperty({ enum: CERTIFICATE_STATUSES }) status: string;
-  @ApiPropertyOptional({ nullable: true }) statusReason: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) statusReason: string | null;
   @ApiProperty({ type: TranslatableDto }) name: TranslatableDto;
   @ApiPropertyOptional({ type: TranslatableDto, nullable: true }) setDescription: TranslatableDto | null;
   @ApiProperty({ type: MoneyDto }) nominal: MoneyDto;
@@ -278,12 +278,12 @@ export class CertificateDto {
   @ApiProperty({ description: 'Последний день действия (Asia/Almaty)' }) validUntil: string;
   @ApiProperty({ type: CertificatePersonDto }) buyer: CertificatePersonDto;
   @ApiProperty({ type: CertificatePersonDto }) recipient: CertificatePersonDto;
-  @ApiPropertyOptional({ nullable: true }) message: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) message: string | null;
   @ApiProperty({ enum: MANUAL_DELIVERY_CHANNELS }) deliveryChannel: string;
   @ApiProperty({ enum: LOCALES }) locale: string;
   @ApiProperty() orderId: string;
   @ApiProperty() deliveryCount: number;
-  @ApiPropertyOptional({ nullable: true }) lastDeliveredAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) lastDeliveredAt: Date | null;
   @ApiProperty() hasPdf: boolean;
 
   static from(r: CertificateRecord): CertificateDto {
@@ -328,14 +328,14 @@ export class CertificateLedgerEntryDto {
   @ApiProperty({ type: MoneyDto }) amount: MoneyDto;
   @ApiProperty({ type: MoneyDto }) balanceAfter: MoneyDto;
   @ApiProperty({ enum: ['order', 'point', 'refund', 'sale', 'system', 'admin'] }) channel: string;
-  @ApiPropertyOptional({ nullable: true }) paymentId: string | null;
-  @ApiPropertyOptional({ nullable: true }) refundId: string | null;
-  @ApiPropertyOptional({ nullable: true }) referenceType: string | null;
-  @ApiPropertyOptional({ nullable: true }) referenceId: string | null;
-  @ApiPropertyOptional({ nullable: true }) branchId: string | null;
-  @ApiPropertyOptional({ nullable: true }) actorUserId: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) paymentId: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) refundId: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) referenceType: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) referenceId: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) branchId: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) actorUserId: string | null;
   @ApiProperty() actorName: string;
-  @ApiPropertyOptional({ nullable: true }) comment: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) comment: string | null;
   @ApiProperty() occurredAt: Date;
 
   static from(e: LedgerEntry): CertificateLedgerEntryDto {
@@ -349,10 +349,10 @@ export class CertificateOrderSummaryDto {
   @ApiProperty({ enum: ORDER_STATUSES }) status: string;
   @ApiProperty() quantity: number;
   @ApiProperty({ type: MoneyDto }) total: MoneyDto;
-  @ApiPropertyOptional({ nullable: true }) paymentId: string | null;
-  @ApiPropertyOptional({ nullable: true }) buyerCompany: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) paymentId: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) buyerCompany: string | null;
   @ApiProperty() createdAt: Date;
-  @ApiPropertyOptional({ nullable: true }) issuedAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) issuedAt: Date | null;
 
   static from(o: CertificateOrder): CertificateOrderSummaryDto {
     return {

@@ -56,7 +56,7 @@ export async function PromotionCard({
       <div className="flex flex-1 flex-col p-5">
         {period ? <p className="text-sm font-semibold text-gold-700">{period}</p> : null}
         <Heading className="mt-1 text-xl font-semibold text-earth-900">
-          <Link href={routes.promotion(promotion.slug)} className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none">
+          <Link href={routes.promotion(promotion.slug)} className="after:absolute after:inset-0 after:rounded-card after:content-[''] focus-visible:outline-none focus-visible:after:outline-3 focus-visible:after:outline-offset-2 focus-visible:after:outline-gold-500">
             {promotion.title}
           </Link>
         </Heading>

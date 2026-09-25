@@ -1,15 +1,19 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { IsBoolean, IsIn, IsInt, IsOptional, Max, Min } from 'class-validator';
 import { RULE_LIMITS } from '../../domain/venue-rules';
 import { VENUE_SHAPES, VenueShape } from '../../domain/venue';
 
 /** Общие DTO модуля: изображения, правила брони места, позиция на плане зала. */
+
+/** Имена схем изображений брони отличаются от ImageDto/ImageVariantDto каталога (здесь есть thumbnailUrl), иначе схемы в OpenAPI сливаются. */
+@ApiSchema({ name: 'VenueImageVariantDto' })
 export class ImageVariantDto {
   @ApiProperty() width: number;
   @ApiProperty() height: number;
   @ApiProperty() url: string;
 }
 
+@ApiSchema({ name: 'VenueImageDto' })
 export class ImageDto {
   @ApiProperty() id: string;
   @ApiProperty({ description: 'Основной вариант (карточка)' }) url: string;
@@ -79,18 +83,18 @@ export class VenueRulesPatchDto {
 
 /** Переопределения правил типа для места: значение — своё правило, null / отсутствие — «как у типа». */
 export class VenueRuleOverridesDto {
-  @ApiPropertyOptional({ nullable: true, minimum: durMin, maximum: durMax }) @IsOptional() @IsInt() @Min(durMin) @Max(durMax) durationMinutes?: number | null;
-  @ApiPropertyOptional({ nullable: true, minimum: holdMin, maximum: holdMax }) @IsOptional() @IsInt() @Min(holdMin) @Max(holdMax) holdMinutes?: number | null;
-  @ApiPropertyOptional({ nullable: true, minimum: dlMin, maximum: dlMax })
+  @ApiPropertyOptional({ type: Number, nullable: true, minimum: durMin, maximum: durMax }) @IsOptional() @IsInt() @Min(durMin) @Max(durMax) durationMinutes?: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true, minimum: holdMin, maximum: holdMax }) @IsOptional() @IsInt() @Min(holdMin) @Max(holdMax) holdMinutes?: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true, minimum: dlMin, maximum: dlMax })
   @IsOptional()
   @IsInt()
   @Min(dlMin)
   @Max(dlMax)
   cancellationDeadlineHours?: number | null;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsBoolean() requiresManualConfirmation?: boolean | null;
-  @ApiPropertyOptional({ nullable: true, minimum: clMin, maximum: clMax }) @IsOptional() @IsInt() @Min(clMin) @Max(clMax) cleanupMinutes?: number | null;
-  @ApiPropertyOptional({ nullable: true, minimum: stMin, maximum: stMax }) @IsOptional() @IsInt() @Min(stMin) @Max(stMax) slotStepMinutes?: number | null;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsBoolean() bookableOnline?: boolean | null;
+  @ApiPropertyOptional({ type: Boolean, nullable: true }) @IsOptional() @IsBoolean() requiresManualConfirmation?: boolean | null;
+  @ApiPropertyOptional({ type: Number, nullable: true, minimum: clMin, maximum: clMax }) @IsOptional() @IsInt() @Min(clMin) @Max(clMax) cleanupMinutes?: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true, minimum: stMin, maximum: stMax }) @IsOptional() @IsInt() @Min(stMin) @Max(stMax) slotStepMinutes?: number | null;
+  @ApiPropertyOptional({ type: Boolean, nullable: true }) @IsOptional() @IsBoolean() bookableOnline?: boolean | null;
 }
 
 /** Позиция места на плане зала (условные единицы плана). */

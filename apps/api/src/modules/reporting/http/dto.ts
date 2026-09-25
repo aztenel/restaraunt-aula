@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsIn, IsInt, IsOptional, IsString, IsUUID, Length, Matches, Max, MaxLength, Min, ValidateNested } from 'class-validator';
 import { MoneyDto, MoneyInputDto, TranslatableDto } from '../../../shared/infrastructure/http/api-types';
@@ -436,6 +436,8 @@ export class CertificateRedeemedByChannelDto extends CertificateAmountDto {
   @ApiProperty({ enum: ['order', 'point'] }) channel: string;
 }
 
+/** Имя схемы отличается от CertificateBalanceDto модуля платежей (баланс одного сертификата), иначе схемы в OpenAPI сливаются. */
+@ApiSchema({ name: 'ReportCertificateBalanceDto' })
 export class CertificateBalanceDto {
   @ApiProperty() count: number;
   @ApiProperty({ type: MoneyDto }) balance: MoneyDto;

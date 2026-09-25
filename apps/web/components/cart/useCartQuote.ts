@@ -50,7 +50,8 @@ export function useCartQuote(input: {
     }
     const keys = lines.map((line) => line.key);
     const controller = new AbortController();
-    setState((s) => ({ ...s, status: s.quote ? s.status : 'loading', pending: true }));
+    // Прежний расчёт остаётся на экране (приглушён), пока идёт пересчёт; после ошибки — скелетон.
+    setState((s) => ({ ...s, status: s.status === 'ok' ? 'ok' : 'loading', error: null, pending: true }));
     const timer = window.setTimeout(() => {
       void requestQuote(api, { branchId, type, items, promoCode }, { locale, signal: controller.signal }).then((outcome) => {
         if (controller.signal.aborted) return;

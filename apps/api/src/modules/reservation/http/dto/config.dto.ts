@@ -208,7 +208,7 @@ export class ReservationSettingsDto {
   @ApiProperty({ example: 60, description: 'Бронь на витрине — не раньше чем через N минут' }) minLeadMinutes: number;
   @ApiProperty({ example: 60, description: 'На сколько дней вперёд можно бронировать на витрине' }) maxDaysAhead: number;
   @ApiProperty({ type: TranslatableDto, description: 'Текст правил брони и отмены для гостя' }) policyText: TranslatableDto;
-  @ApiPropertyOptional({ nullable: true }) updatedAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) updatedAt: Date | null;
 }
 
 export class UpdateReservationSettingsDto {

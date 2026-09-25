@@ -46,10 +46,10 @@ export class ReservationVenueRefDto {
 }
 
 export class ReservationCustomerDto {
-  @ApiPropertyOptional({ nullable: true, description: 'Гость в базе гостей' }) id: string | null;
-  @ApiPropertyOptional({ nullable: true }) name: string | null;
-  @ApiPropertyOptional({ nullable: true, example: '+77011234567' }) phone: string | null;
-  @ApiPropertyOptional({ nullable: true }) email: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true, description: 'Гость в базе гостей' }) id: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) name: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, example: '+77011234567' }) phone: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) email: string | null;
 }
 
 export class ReservationSummaryDto {
@@ -68,15 +68,15 @@ export class ReservationSummaryDto {
   @ApiProperty() durationMinutes: number;
   @ApiProperty() guests: number;
   @ApiProperty({ type: ReservationCustomerDto }) customer: ReservationCustomerDto;
-  @ApiPropertyOptional({ nullable: true }) comment: string | null;
-  @ApiPropertyOptional({ nullable: true }) occasion: string | null;
-  @ApiPropertyOptional({ nullable: true, description: 'Служебная заметка персонала' }) note: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) comment: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) occasion: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Служебная заметка персонала' }) note: string | null;
   @ApiPropertyOptional({ type: MoneyDto, nullable: true }) deposit: MoneyDto | null;
   @ApiProperty({ enum: DEPOSIT_STATES }) depositState: DepositState;
   @ApiProperty({ enum: DEPOSIT_OUTCOMES }) depositOutcome: DepositOutcome;
-  @ApiPropertyOptional({ nullable: true, description: 'Бронь будет снята, если не подтвердят / не оплатят до этого момента' })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true, description: 'Бронь будет снята, если не подтвердят / не оплатят до этого момента' })
   holdExpiresAt: Date | null;
-  @ApiPropertyOptional({ nullable: true }) banquetRequestId: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) banquetRequestId: string | null;
   @ApiProperty({ description: 'Требует отметки «пришли / не пришли»' }) needsMark: boolean;
   @ApiProperty() createdAt: Date;
 }
@@ -93,14 +93,14 @@ export class DepositPaymentDto {
   @ApiProperty({ example: 'pending' }) status: string;
   @ApiProperty({ type: MoneyDto }) amount: MoneyDto;
   @ApiProperty({ type: MoneyDto }) refundedAmount: MoneyDto;
-  @ApiPropertyOptional({ nullable: true }) paymentUrl: string | null;
-  @ApiPropertyOptional({ nullable: true }) paidAt: Date | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) paymentUrl: string | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) paidAt: Date | null;
 }
 
 export class StatusHistoryDto {
   @ApiPropertyOptional({ enum: ALL_RESERVATION_STATUSES, nullable: true }) from: ReservationStatus | null;
   @ApiProperty({ enum: ALL_RESERVATION_STATUSES }) to: ReservationStatus;
-  @ApiPropertyOptional({ nullable: true }) reason: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) reason: string | null;
   @ApiProperty({ enum: DEPOSIT_OUTCOMES }) depositOutcome: DepositOutcome;
   @ApiProperty({ example: 'staff' }) actorKind: string;
   @ApiProperty() actorName: string;
@@ -115,17 +115,17 @@ export class ReservationDetailDto extends ReservationSummaryDto {
   @ApiProperty({ description: 'Дедлайн бесплатной отмены' }) cancellationDeadline: Date;
   @ApiProperty({ enum: DEPOSIT_OUTCOMES, description: 'Исход депозита при отмене сейчас по правилу' }) depositOutcomeIfCancelled: DepositOutcome;
   @ApiPropertyOptional({ type: DepositPaymentDto, nullable: true }) depositPayment: DepositPaymentDto | null;
-  @ApiPropertyOptional({ nullable: true }) depositWaiveReason: string | null;
-  @ApiPropertyOptional({ nullable: true }) depositPaidAt: Date | null;
-  @ApiPropertyOptional({ nullable: true }) cancelReason: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) depositWaiveReason: string | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) depositPaidAt: Date | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) cancelReason: string | null;
   @ApiPropertyOptional({ enum: CANCELLED_BY, nullable: true }) cancelledBy: (typeof CANCELLED_BY)[number] | null;
-  @ApiPropertyOptional({ nullable: true }) confirmedAt: Date | null;
-  @ApiPropertyOptional({ nullable: true }) arrivedAt: Date | null;
-  @ApiPropertyOptional({ nullable: true }) noShowAt: Date | null;
-  @ApiPropertyOptional({ nullable: true }) cancelledAt: Date | null;
-  @ApiPropertyOptional({ nullable: true }) expiredAt: Date | null;
-  @ApiPropertyOptional({ nullable: true }) reminderSentAt: Date | null;
-  @ApiPropertyOptional({ nullable: true, description: 'Ссылка на страницу брони гостя' }) manageUrl: string | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) confirmedAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) arrivedAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) noShowAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) cancelledAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) expiredAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) reminderSentAt: Date | null;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Ссылка на страницу брони гостя' }) manageUrl: string | null;
   @ApiProperty({ type: [StatusHistoryDto] }) history: StatusHistoryDto[];
 }
 
@@ -139,9 +139,9 @@ export class TimelineItemDto {
   @ApiProperty() end: Date;
   @ApiProperty() blockedUntil: Date;
   @ApiProperty() guests: number;
-  @ApiPropertyOptional({ nullable: true }) customerName: string | null;
-  @ApiPropertyOptional({ nullable: true }) customerPhone: string | null;
-  @ApiPropertyOptional({ nullable: true }) banquetRequestId: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) customerName: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) customerPhone: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) banquetRequestId: string | null;
   @ApiProperty({ enum: DEPOSIT_STATES }) depositState: DepositState;
   @ApiProperty() needsMark: boolean;
 }

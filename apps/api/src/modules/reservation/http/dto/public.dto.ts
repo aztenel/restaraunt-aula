@@ -122,7 +122,7 @@ export class AvailabilityDto {
   @ApiProperty() date: string;
   @ApiProperty() time: string;
   @ApiProperty() guests: number;
-  @ApiPropertyOptional({ nullable: true }) durationMinutes: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true }) durationMinutes: number | null;
   @ApiProperty({ description: 'Есть хотя бы одно свободное место' }) available: boolean;
   @ApiPropertyOptional({ enum: AVAILABILITY_REASONS, nullable: true, description: 'Почему мест нет' })
   reason: (typeof AVAILABILITY_REASONS)[number] | null;
@@ -143,7 +143,7 @@ export class PublicMapVenueDto {
   @ApiProperty({ type: VenuePositionDto }) position: VenuePositionDto;
   @ApiProperty({ description: 'Можно забронировать на сайте (иначе — по телефону)' }) bookableOnline: boolean;
   @ApiProperty({ type: [ImageDto] }) photos: ImageDto[];
-  @ApiPropertyOptional({ nullable: true, description: 'Свободно на запрошенное время; null — время не запрошено' }) available: boolean | null;
+  @ApiPropertyOptional({ type: Boolean, nullable: true, description: 'Свободно на запрошенное время; null — время не запрошено' }) available: boolean | null;
 }
 
 export class PublicHallDto {
@@ -183,8 +183,8 @@ export class PublicDepositDto {
   @ApiProperty({ type: MoneyDto }) amount: MoneyDto;
   @ApiProperty({ enum: DEPOSIT_STATES }) state: DepositState;
   @ApiProperty({ enum: DEPOSIT_OUTCOMES, description: 'Депозит возвращён или удержан (после отмены / неявки)' }) outcome: DepositOutcome;
-  @ApiPropertyOptional({ nullable: true, example: 'pending' }) paymentStatus: string | null;
-  @ApiPropertyOptional({ nullable: true, description: 'Страница оплаты (появляется асинхронно после создания платежа)' }) paymentUrl: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, example: 'pending' }) paymentStatus: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Страница оплаты (появляется асинхронно после создания платежа)' }) paymentUrl: string | null;
 }
 
 export class PublicPolicyDto {
@@ -206,10 +206,10 @@ export class PublicReservationDto {
   @ApiProperty() end: Date;
   @ApiProperty() durationMinutes: number;
   @ApiProperty() guests: number;
-  @ApiPropertyOptional({ nullable: true }) customerName: string | null;
-  @ApiPropertyOptional({ nullable: true }) comment: string | null;
-  @ApiPropertyOptional({ nullable: true }) occasion: string | null;
-  @ApiPropertyOptional({ nullable: true, description: 'Бронь будет снята, если не подтвердят / не оплатят до этого момента' })
+  @ApiPropertyOptional({ type: String, nullable: true }) customerName: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) comment: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) occasion: string | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true, description: 'Бронь будет снята, если не подтвердят / не оплатят до этого момента' })
   holdExpiresAt: Date | null;
   @ApiPropertyOptional({ type: PublicDepositDto, nullable: true }) deposit: PublicDepositDto | null;
   @ApiProperty({ description: 'Гость может отменить бронь' }) canCancel: boolean;
@@ -217,6 +217,6 @@ export class PublicReservationDto {
   @ApiProperty({ description: 'Дедлайн бесплатной отмены (возврат депозита)' }) cancellationDeadline: Date;
   @ApiProperty({ enum: DEPOSIT_OUTCOMES, description: 'Что будет с депозитом при отмене сейчас' }) depositOutcomeIfCancelled: DepositOutcome;
   @ApiProperty({ type: PublicPolicyDto }) policy: PublicPolicyDto;
-  @ApiPropertyOptional({ nullable: true }) cancelledAt: Date | null;
-  @ApiPropertyOptional({ nullable: true }) cancelReason: string | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) cancelledAt: Date | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) cancelReason: string | null;
 }

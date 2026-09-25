@@ -38,18 +38,18 @@ export class PosCapabilitiesDto {
 }
 
 export class PosStopListStatusDto {
-  @ApiPropertyOptional({ nullable: true, description: 'Последняя успешная синхронизация' }) syncedAt: Date | null;
-  @ApiPropertyOptional({ nullable: true, description: 'Последняя попытка' }) attemptedAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true, description: 'Последняя успешная синхронизация' }) syncedAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true, description: 'Последняя попытка' }) attemptedAt: Date | null;
   @ApiProperty({ description: 'Неудач подряд' }) failures: number;
-  @ApiPropertyOptional({ nullable: true }) error: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) error: string | null;
   @ApiProperty({ description: 'Изменений стоп-листа при последней синхронизации' }) lastChanges: number;
 }
 
 export class PosProductsStatusDto {
-  @ApiPropertyOptional({ nullable: true }) requestedAt: Date | null;
-  @ApiPropertyOptional({ nullable: true }) importedAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) requestedAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) importedAt: Date | null;
   @ApiProperty({ description: 'Товаров в импортированной номенклатуре' }) count: number;
-  @ApiPropertyOptional({ nullable: true }) error: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) error: string | null;
 }
 
 export class OrderExportCountsDto {
@@ -68,7 +68,7 @@ export class PosBranchStatusDto {
   @ApiProperty({ description: 'Для провайдера есть адаптер' }) providerKnown: boolean;
   @ApiProperty({ description: 'Интеграция настроена для филиала' }) configured: boolean;
   @ApiProperty({ type: PosCapabilitiesDto }) capabilities: PosCapabilitiesDto;
-  @ApiPropertyOptional({ nullable: true, description: 'Ошибка настройки pos.routing' }) routingError: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Ошибка настройки pos.routing' }) routingError: string | null;
   @ApiProperty({ type: PosStopListStatusDto }) stopList: PosStopListStatusDto;
   @ApiProperty({ type: PosProductsStatusDto }) products: PosProductsStatusDto;
   @ApiProperty() mappingsCount: number;
@@ -123,22 +123,24 @@ export class OrderExportDto {
   @ApiProperty() branchId: string;
   @ApiProperty() provider: string;
   @ApiProperty({ enum: ORDER_EXPORT_STATUSES }) status: OrderExportStatus;
-  @ApiPropertyOptional({ nullable: true, description: 'Номер/идентификатор заказа в POS' }) posOrderId: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Номер/идентификатор заказа в POS' }) posOrderId: string | null;
   @ApiProperty({ description: 'Попыток в текущем цикле передачи' }) attempts: number;
   @ApiProperty({ description: 'Ручных повторов' }) manualRetries: number;
-  @ApiPropertyOptional({ nullable: true }) lastError: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) lastError: string | null;
   @ApiPropertyOptional({ nullable: true, enum: POS_FAILURE_REASONS }) failureReason: string | null;
   @ApiPropertyOptional({ nullable: true, enum: SKIP_REASONS }) skipReason: string | null;
   @ApiProperty({ type: [MissingMappingDto], description: 'Блюда и опции без сопоставления (при failureReason=missing_mapping)' })
   missingMappings: MissingMappingDto[];
-  @ApiPropertyOptional({ nullable: true }) lastAttemptAt: Date | null;
-  @ApiPropertyOptional({ nullable: true }) sentAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) lastAttemptAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) sentAt: Date | null;
   @ApiPropertyOptional({
+    type: String,
+    format: 'date-time',
     nullable: true,
     description: 'POS подтвердила создание заказа. null при status=sent — заказ принят POS в обработку, подтверждение ожидается',
   })
   confirmedAt: Date | null;
-  @ApiPropertyOptional({ nullable: true }) failedAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) failedAt: Date | null;
   @ApiProperty() createdAt: Date;
   @ApiProperty() updatedAt: Date;
   @ApiProperty({ description: 'Можно повторить передачу вручную' }) canRetry: boolean;
@@ -182,7 +184,7 @@ export class OrderExportsQueryDto extends PageQueryDto {
 export class ModifierMappingDto {
   @ApiProperty({ description: 'Опция модификатора витрины' }) @IsUUID() optionId: string;
   @ApiProperty({ description: 'Товар-модификатор POS' }) @IsString() @MinLength(1) @MaxLength(EXTERNAL_ID_MAX_LENGTH) externalProductId: string;
-  @ApiPropertyOptional({ nullable: true, description: 'Группа модификаторов POS (для групповых модификаторов)' })
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Группа модификаторов POS (для групповых модификаторов)' })
   @IsOptional()
   @IsString()
   @MaxLength(EXTERNAL_ID_MAX_LENGTH)
@@ -191,7 +193,7 @@ export class ModifierMappingDto {
 
 export class ProductMappingUpdateDto {
   @ApiProperty({ description: 'Товар POS (id в номенклатуре POS)' }) @IsString() @MinLength(1) @MaxLength(EXTERNAL_ID_MAX_LENGTH) externalProductId: string;
-  @ApiPropertyOptional({ nullable: true, description: 'Название товара в POS (по умолчанию — из импортированной номенклатуры)' })
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Название товара в POS (по умолчанию — из импортированной номенклатуры)' })
   @IsOptional()
   @IsString()
   @MaxLength(EXTERNAL_NAME_MAX_LENGTH)
@@ -222,7 +224,7 @@ export class ProductMappingDto {
   dishName: TranslatableDto | null;
   @ApiProperty() provider: string;
   @ApiProperty() externalProductId: string;
-  @ApiPropertyOptional({ nullable: true }) externalName: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) externalName: string | null;
   @ApiProperty({ type: [ModifierMappingDto] }) modifiers: ModifierMappingDto[];
   @ApiProperty() createdAt: Date;
   @ApiProperty() updatedAt: Date;
@@ -255,7 +257,7 @@ export class ProductMappingsQueryDto extends PageQueryDto {
 export class BulkMappingItemDto {
   @ApiProperty() @IsUUID() dishId: string;
   @ApiProperty() @IsString() @MinLength(1) @MaxLength(EXTERNAL_ID_MAX_LENGTH) externalProductId: string;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(EXTERNAL_NAME_MAX_LENGTH) externalName?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsString() @MaxLength(EXTERNAL_NAME_MAX_LENGTH) externalName?: string | null;
 }
 
 export class BulkMappingsDto {
@@ -283,9 +285,9 @@ export class PosProductDto {
   @ApiProperty() id: string;
   @ApiProperty() externalProductId: string;
   @ApiProperty() name: string;
-  @ApiPropertyOptional({ nullable: true, description: 'Код/артикул товара в POS' }) sku: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Код/артикул товара в POS' }) sku: string | null;
   @ApiProperty({ enum: POS_PRODUCT_KINDS }) kind: PosProductKind;
-  @ApiPropertyOptional({ nullable: true }) groupName: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) groupName: string | null;
   @ApiProperty() importedAt: Date;
   @ApiProperty({ description: 'Товар пропал из номенклатуры POS при последнем импорте' }) removed: boolean;
   @ApiProperty({ type: [String], description: 'Сопоставленные блюда' }) mappedDishIds: string[];

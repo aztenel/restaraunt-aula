@@ -6529,7 +6529,10 @@
             "name": "sig",
             "required": true,
             "in": "query",
-            "schema": {}
+            "description": "Подпись ссылки на страницу оплаты",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -6596,7 +6599,10 @@
             "name": "sig",
             "required": true,
             "in": "query",
-            "schema": {}
+            "description": "Подпись ссылки на страницу оплаты",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -14281,7 +14287,7 @@
             "$ref": "#/components/schemas/StaffUserDto"
           },
           "temporaryPassword": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Показывается один раз"
           }
@@ -14832,11 +14838,13 @@
           },
           "before": {
             "type": "object",
+            "additionalProperties": true,
             "nullable": true,
             "description": "Прежнее значение (JSON)"
           },
           "after": {
             "type": "object",
+            "additionalProperties": true,
             "nullable": true,
             "description": "Новое значение (JSON)"
           },
@@ -15068,11 +15076,13 @@
           },
           "request": {
             "type": "object",
+            "additionalProperties": true,
             "nullable": true,
             "description": "Запрос (маскирован)"
           },
           "response": {
             "type": "object",
+            "additionalProperties": true,
             "nullable": true,
             "description": "Ответ (маскирован)"
           },
@@ -15145,6 +15155,8 @@
           },
           "payload": {
             "type": "object",
+            "additionalProperties": true,
+            "description": "Данные задачи (JSON)",
             "nullable": true
           },
           "error": {
@@ -16403,17 +16415,17 @@
             "type": "string"
           },
           "phone": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "+77011234567",
             "description": "null у обезличенного гостя"
           },
           "name": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "email": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "locale": {
@@ -16425,7 +16437,8 @@
             ]
           },
           "birthday": {
-            "type": "object",
+            "type": "string",
+            "format": "date",
             "nullable": true,
             "example": "1990-05-17"
           },
@@ -16440,37 +16453,39 @@
             }
           },
           "allergies": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "preferences": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "notes": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "personalDataConsent": {
             "type": "boolean"
           },
           "personalDataConsentVersion": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "personalDataConsentAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "marketingConsent": {
             "type": "boolean"
           },
           "marketingConsentVersion": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "marketingConsentAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "ordersCount": {
@@ -16501,11 +16516,13 @@
             "type": "string"
           },
           "lastActivityAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "anonymizedAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "createdAt": {
@@ -16676,11 +16693,12 @@
             ]
           },
           "ip": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "recordedBy": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true,
             "description": "Сотрудник, внёсший согласие"
           },
@@ -16702,11 +16720,13 @@
         "type": "object",
         "properties": {
           "from": {
-            "type": "object",
+            "type": "string",
+            "format": "date",
             "nullable": true
           },
           "to": {
-            "type": "object",
+            "type": "string",
+            "format": "date",
             "nullable": true
           }
         }
@@ -16809,7 +16829,8 @@
             "type": "string"
           },
           "branchId": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "amount": {
@@ -16914,15 +16935,16 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "email": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "birthday": {
-            "type": "object",
+            "type": "string",
+            "format": "date",
             "nullable": true,
             "example": "1990-05-17"
           },
@@ -16942,15 +16964,15 @@
             }
           },
           "allergies": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "preferences": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "notes": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         }
@@ -17007,18 +17029,20 @@
             "type": "string"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "filter": {
             "$ref": "#/components/schemas/CustomerFilterDto"
           },
           "createdBy": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "updatedBy": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "createdAt": {
@@ -17048,18 +17072,20 @@
             "type": "string"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "filter": {
             "$ref": "#/components/schemas/CustomerFilterDto"
           },
           "createdBy": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "updatedBy": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "createdAt": {
@@ -17092,7 +17118,7 @@
             "example": "Постоянные гости GreenLine"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "filter": {
@@ -17128,7 +17154,8 @@
             "type": "string"
           },
           "publishedBy": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "isCurrent": {
@@ -17449,7 +17476,7 @@
         "type": "object",
         "properties": {
           "slug": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "salaty",
             "description": "Человекочитаемый URL; не задан — транслитерация из названия"
@@ -17494,11 +17521,11 @@
             ]
           },
           "sortOrder": {
-            "type": "object",
+            "type": "number",
             "description": "Порядок в меню (по возрастанию)"
           },
           "isActive": {
-            "type": "object",
+            "type": "boolean",
             "default": true
           }
         },
@@ -17572,11 +17599,12 @@
             ]
           },
           "stoppedUntil": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "sku": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         },
@@ -17614,11 +17642,11 @@
             "$ref": "#/components/schemas/TranslatableDto"
           },
           "weightGrams": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "calories": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "isVegetarian": {
@@ -17655,7 +17683,7 @@
             }
           },
           "sku": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "sortOrder": {
@@ -17750,7 +17778,7 @@
         "type": "object",
         "properties": {
           "slug": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "beshbarmak",
             "description": "Не задан — транслитерация из названия"
@@ -17807,28 +17835,28 @@
             ]
           },
           "weightGrams": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "description": "Вес порции, г"
           },
           "calories": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "description": "Калорийность порции, ккал"
           },
           "isVegetarian": {
-            "type": "object",
+            "type": "boolean",
             "default": false
           },
           "spicyLevel": {
-            "type": "object",
+            "type": "number",
             "default": 0,
             "minimum": 0,
             "maximum": 3,
             "description": "Острота 0..3"
           },
           "isHalal": {
-            "type": "object",
+            "type": "boolean",
             "default": true
           },
           "allergens": {
@@ -17854,15 +17882,15 @@
             }
           },
           "sku": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Общий код блюда в POS сети"
           },
           "sortOrder": {
-            "type": "object"
+            "type": "number"
           },
           "isActive": {
-            "type": "object",
+            "type": "boolean",
             "default": true
           },
           "modifierGroupIds": {
@@ -18014,7 +18042,8 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "description": "id существующей опции; не задан — новая опция"
           },
           "name": {
@@ -18037,14 +18066,14 @@
             ]
           },
           "isDefault": {
-            "type": "object",
+            "type": "boolean",
             "default": false
           },
           "sortOrder": {
-            "type": "object"
+            "type": "number"
           },
           "isActive": {
-            "type": "object",
+            "type": "boolean",
             "default": true
           }
         },
@@ -18057,7 +18086,7 @@
         "type": "object",
         "properties": {
           "code": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "portion-size",
             "description": "Код группы; не задан — из названия"
@@ -18094,10 +18123,10 @@
             "maximum": 20
           },
           "sortOrder": {
-            "type": "object"
+            "type": "number"
           },
           "isActive": {
-            "type": "object",
+            "type": "boolean",
             "default": true
           },
           "options": {
@@ -18292,11 +18321,12 @@
             "description": "Как видно на витрине с учётом настройки филиала"
           },
           "stoppedUntil": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "stopReason": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "stopSource": {
@@ -18308,21 +18338,23 @@
             ]
           },
           "stoppedAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "sku": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Код POS филиала"
           },
           "effectiveSku": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Код, который уходит в POS"
           },
           "updatedBy": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "updatedAt": {
@@ -18384,7 +18416,7 @@
             ]
           },
           "sku": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Код POS филиала (если отличается от общего кода блюда)"
           }
@@ -18481,7 +18513,7 @@
             "$ref": "#/components/schemas/MoneyInputDto"
           },
           "sku": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Код POS филиала; не передан — без изменений, null — сбросить"
           }
@@ -18498,7 +18530,8 @@
             "description": "true — вернуть в продажу, false — поставить в стоп-лист"
           },
           "until": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true,
             "description": "Стоп до момента (ISO 8601), затем автоматический возврат; не задан — до ручного возврата"
           },
@@ -18507,7 +18540,7 @@
             "description": "Стоп до конца дня (полночь по времени филиала)"
           },
           "reason": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "Закончилась конина"
           }
@@ -18546,7 +18579,8 @@
             ]
           },
           "branchId": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "title": {
@@ -18559,7 +18593,7 @@
             "$ref": "#/components/schemas/TranslatableDto"
           },
           "linkUrl": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "image": {
@@ -18572,11 +18606,13 @@
             ]
           },
           "activeFrom": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "activeTo": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "sortOrder": {
@@ -18625,7 +18661,8 @@
             ]
           },
           "branchId": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true,
             "description": "Филиал; null — для всех филиалов"
           },
@@ -18652,26 +18689,28 @@
             ]
           },
           "linkUrl": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "/greenline/menu",
             "description": "Путь на сайте или http(s) URL"
           },
           "activeFrom": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true,
             "description": "Показывать с (ISO 8601)"
           },
           "activeTo": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true,
             "description": "Показывать до (ISO 8601, не включая)"
           },
           "sortOrder": {
-            "type": "object"
+            "type": "number"
           },
           "isActive": {
-            "type": "object",
+            "type": "boolean",
             "default": true
           }
         },
@@ -18714,11 +18753,13 @@
             ]
           },
           "validFrom": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "validTo": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "branchIds": {
@@ -18768,7 +18809,7 @@
         "type": "object",
         "properties": {
           "slug": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "kombo-obed",
             "description": "Не задан — из заголовка"
@@ -18814,11 +18855,13 @@
             ]
           },
           "validFrom": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "validTo": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "branchIds": {
@@ -18829,10 +18872,10 @@
             }
           },
           "sortOrder": {
-            "type": "object"
+            "type": "number"
           },
           "isActive": {
-            "type": "object",
+            "type": "boolean",
             "default": true
           }
         },
@@ -18922,7 +18965,7 @@
         "type": "object",
         "properties": {
           "slug": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "delivery",
             "description": "Не задан — из заголовка"
@@ -18952,11 +18995,11 @@
             ]
           },
           "isPublished": {
-            "type": "object",
+            "type": "boolean",
             "default": true
           },
           "sortOrder": {
-            "type": "object"
+            "type": "number"
           }
         },
         "required": [
@@ -19073,12 +19116,12 @@
             ]
           },
           "weightGrams": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "description": "Вес порции, г"
           },
           "calories": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "description": "ккал на порцию"
           },
@@ -19454,12 +19497,12 @@
             ]
           },
           "weightGrams": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "description": "Вес порции, г"
           },
           "calories": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "description": "ккал на порцию"
           },
@@ -19591,7 +19634,8 @@
             "type": "string"
           },
           "updatedAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         },
@@ -19725,7 +19769,7 @@
             "type": "string"
           },
           "linkUrl": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "image": {
@@ -19775,11 +19819,13 @@
             ]
           },
           "validFrom": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "validTo": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "branchIds": {
@@ -19861,16 +19907,16 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "phone": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "+77771234567"
           },
           "email": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         }
@@ -19895,7 +19941,8 @@
             "description": "Объект оплаты: заказ, бронь, счёт банкета, заказ сертификатов"
           },
           "branchId": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "method": {
@@ -19938,11 +19985,11 @@
             ]
           },
           "paymentUrl": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "externalId": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "invoiceNo": {
@@ -19960,19 +20007,21 @@
             "type": "string"
           },
           "paidAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "expiresAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "failureReason": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "cancelReason": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "amountMismatch": {
@@ -20065,7 +20114,8 @@
             "type": "string"
           },
           "branchId": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "method": {
@@ -20120,11 +20170,11 @@
             "type": "number"
           },
           "failureReason": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "comment": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "createdAt": {
@@ -20132,7 +20182,8 @@
             "type": "string"
           },
           "completedAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "awaitingManualConfirmation": {
@@ -20307,18 +20358,18 @@
             "type": "string"
           },
           "statusCode": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "success": {
             "type": "boolean"
           },
           "durationMs": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "error": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "request": {
@@ -20414,7 +20465,7 @@
             "example": "classic"
           },
           "imageUrl": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         },
@@ -20512,7 +20563,7 @@
             "example": "festive"
           },
           "imageUrl": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         }
@@ -20586,15 +20637,15 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "phone": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "email": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         }
@@ -20626,7 +20677,7 @@
             ]
           },
           "statusReason": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "name": {
@@ -20674,7 +20725,7 @@
             "$ref": "#/components/schemas/CertificatePersonDto"
           },
           "message": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "deliveryChannel": {
@@ -20700,7 +20751,8 @@
             "type": "number"
           },
           "lastDeliveredAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "hasPdf": {
@@ -20953,7 +21005,7 @@
             "description": "Последний день действия (Asia/Almaty), YYYY-MM-DD"
           },
           "setDescription": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Состав набора"
           },
@@ -21035,34 +21087,38 @@
             ]
           },
           "paymentId": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "refundId": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "referenceType": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "referenceId": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "branchId": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "actorUserId": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "actorName": {
             "type": "string"
           },
           "comment": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "occurredAt": {
@@ -21236,11 +21292,12 @@
             "$ref": "#/components/schemas/MoneyDto"
           },
           "paymentId": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "buyerCompany": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "createdAt": {
@@ -21248,7 +21305,8 @@
             "type": "string"
           },
           "issuedAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         },
@@ -21280,7 +21338,7 @@
             ]
           },
           "paymentUrl": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Появляется после инициирования у провайдера"
           },
@@ -21288,7 +21346,8 @@
             "$ref": "#/components/schemas/MoneyDto"
           },
           "expiresAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         },
@@ -21679,7 +21738,8 @@
             }
           },
           "issuedAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         },
@@ -21732,7 +21792,7 @@
             "description": "Последний день действия (Asia/Almaty), YYYY-MM-DD"
           },
           "setDescription": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Состав набора"
           }
@@ -21824,15 +21884,15 @@
             ]
           },
           "promoCode": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "certificateCode": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "phone": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Телефон гостя — для лимита промокода на один телефон"
           }
@@ -21883,12 +21943,12 @@
             "type": "string"
           },
           "name": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Название на языке запроса (null — блюдо не найдено)"
           },
           "photoUrl": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "quantity": {
@@ -21922,7 +21982,7 @@
             "type": "boolean"
           },
           "problem": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "catalog.dish_unavailable",
             "description": "Машинный код проблемы позиции"
@@ -21946,15 +22006,16 @@
             "type": "boolean"
           },
           "zoneId": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "zoneName": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "etaMinutes": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "minOrderAmount": {
@@ -22031,12 +22092,13 @@
             "type": "boolean"
           },
           "reason": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "promo.min_subtotal"
           },
           "details": {
             "type": "object",
+            "additionalProperties": true,
             "nullable": true
           },
           "discount": {
@@ -22060,12 +22122,12 @@
             "type": "boolean"
           },
           "reason": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "order.certificate_not_found"
           },
           "maskedCode": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "****-****-AB12"
           },
@@ -22079,7 +22141,8 @@
             ]
           },
           "expiresAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "amount": {
@@ -22197,23 +22260,23 @@
             "example": "Астана, пр. Кабанбай батыра, 56"
           },
           "apartment": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "entrance": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "floor": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "intercom": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "courierComment": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         },
@@ -22234,7 +22297,7 @@
             "example": "+77771234567"
           },
           "email": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         },
@@ -22251,7 +22314,7 @@
             "description": "Согласие на обработку персональных данных (обязательно true)"
           },
           "marketing": {
-            "type": "object",
+            "type": "boolean",
             "nullable": true,
             "description": "Согласие на маркетинговые рассылки (необязательно)"
           }
@@ -22295,7 +22358,8 @@
             "description": "Бесконтактная доставка"
           },
           "scheduledFor": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true,
             "description": "К определённому времени (ISO); null — как можно скорее"
           },
@@ -22303,15 +22367,15 @@
             "$ref": "#/components/schemas/OrderCheckoutCustomerDto"
           },
           "comment": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "promoCode": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "certificateCode": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "paymentMethod": {
@@ -22322,7 +22386,7 @@
             ]
           },
           "phoneVerificationToken": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Токен подтверждения телефона (оплата при получении)"
           },
@@ -22339,7 +22403,7 @@
             "description": "Язык уведомлений гостю"
           },
           "analyticsSessionId": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "idempotencyKey": {
@@ -22389,7 +22453,7 @@
             "$ref": "#/components/schemas/MoneyDto"
           },
           "paymentUrl": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Ссылка на оплату (появляется асинхронно — опрашивайте статус заказа)"
           }
@@ -22468,7 +22532,7 @@
             "description": "Название на языке запроса (снимок на момент заказа)"
           },
           "photoUrl": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "quantity": {
@@ -22536,23 +22600,23 @@
             "type": "string"
           },
           "apartment": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "entrance": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "floor": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "intercom": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "courierComment": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "point": {
@@ -22612,7 +22676,8 @@
             "description": "Можно повторить онлайн-оплату (POST /public/orders/:token/pay)"
           },
           "payUntil": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true,
             "description": "Срок оплаты онлайн-заказа"
           }
@@ -22643,11 +22708,11 @@
             ]
           },
           "trackingUrl": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "courierName": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         },
@@ -22743,7 +22808,8 @@
             "type": "string"
           },
           "scheduledFor": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true,
             "description": "Заказ ко времени"
           },
@@ -22771,11 +22837,11 @@
             "$ref": "#/components/schemas/MoneyDto"
           },
           "promoCode": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "comment": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "branch": {
@@ -22847,7 +22913,7 @@
             ]
           },
           "address": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Адрес текстом (для отображения)"
           }
@@ -22932,7 +22998,7 @@
             "description": "Доставляем ли в эту точку"
           },
           "address": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "best": {
@@ -22972,7 +23038,8 @@
             "nullable": true
           },
           "readyAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true,
             "description": "Когда заказ будет готов при оформлении сейчас"
           }
@@ -23057,11 +23124,12 @@
         "type": "object",
         "properties": {
           "customerId": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "name": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "phone": {
@@ -23069,7 +23137,7 @@
             "example": "+77771234567"
           },
           "email": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         },
@@ -23132,7 +23200,7 @@
             ]
           },
           "promoCode": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "placedAt": {
@@ -23140,7 +23208,8 @@
             "type": "string"
           },
           "scheduledFor": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "promisedAt": {
@@ -23228,7 +23297,7 @@
             "type": "string"
           },
           "sku": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "name": {
@@ -23240,11 +23309,11 @@
             ]
           },
           "photoUrl": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "weightGrams": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "quantity": {
@@ -23333,7 +23402,7 @@
             ]
           },
           "promoCode": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "placedAt": {
@@ -23341,7 +23410,8 @@
             "type": "string"
           },
           "scheduledFor": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "promisedAt": {
@@ -23355,11 +23425,11 @@
             }
           },
           "comment": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "deliveryAddress": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Адрес доставки одной строкой"
           },
@@ -23496,7 +23566,8 @@
             "description": "Бесконтактная доставка"
           },
           "scheduledFor": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true,
             "description": "К определённому времени (ISO); null — как можно скорее"
           },
@@ -23504,15 +23575,15 @@
             "$ref": "#/components/schemas/OrderCheckoutCustomerDto"
           },
           "comment": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "promoCode": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "certificateCode": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "paymentMethod": {
@@ -23560,27 +23631,28 @@
             "type": "string"
           },
           "apartment": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "entrance": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "floor": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "intercom": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "courierComment": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "zoneId": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "zoneName": {
@@ -23617,7 +23689,7 @@
             ]
           },
           "reason": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         },
@@ -23633,35 +23705,43 @@
             "type": "string"
           },
           "paidAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "acceptedAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "cookingAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "readyAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "deliveringAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "completedAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "cancelledAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "refundedAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         },
@@ -23686,7 +23766,7 @@
             "description": "Назначение платежа в заказе"
           },
           "attempt": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "description": "Номер попытки онлайн-оплаты"
           },
@@ -23721,7 +23801,7 @@
             "$ref": "#/components/schemas/MoneyDto"
           },
           "paymentUrl": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "createdAt": {
@@ -23729,7 +23809,8 @@
             "type": "string"
           },
           "paidAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         },
@@ -23777,7 +23858,8 @@
             "type": "string"
           },
           "requestedBy": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "createdAt": {
@@ -23785,7 +23867,8 @@
             "type": "string"
           },
           "completedAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         },
@@ -23824,24 +23907,24 @@
             ]
           },
           "providerStatus": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Статус в терминах службы"
           },
           "externalId": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "trackingUrl": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "courierName": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "courierPhone": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "price": {
@@ -23857,7 +23940,7 @@
             "type": "number"
           },
           "lastError": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "requestedAt": {
@@ -23865,7 +23948,8 @@
             "type": "string"
           },
           "finishedAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         },
@@ -23927,15 +24011,16 @@
             "type": "string"
           },
           "actorUserId": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "reasonCode": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "reason": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         },
@@ -24001,7 +24086,7 @@
             ]
           },
           "promoCode": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "placedAt": {
@@ -24009,7 +24094,8 @@
             "type": "string"
           },
           "scheduledFor": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "promisedAt": {
@@ -24052,7 +24138,7 @@
             "nullable": true
           },
           "certificateMaskedCode": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "certificateAmount": {
@@ -24076,18 +24162,19 @@
             ]
           },
           "comment": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "etaMinutes": {
             "type": "number"
           },
           "analyticsSessionId": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "createdBy": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true,
             "description": "Сотрудник, оформивший телефонный заказ"
           },
@@ -24244,7 +24331,7 @@
             ]
           },
           "reason": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "refundAmount": {
@@ -24483,7 +24570,7 @@
             "type": "string"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "kind": {
@@ -24495,7 +24582,7 @@
             ]
           },
           "percentBp": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "fixedAmount": {
@@ -24517,23 +24604,26 @@
             ]
           },
           "validFrom": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "validTo": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "totalLimit": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "perPhoneLimit": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "branchId": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "isActive": {
@@ -24591,7 +24681,7 @@
             "description": "3-32 символа: латиница, цифры, \"-\", \"_\" (регистр не важен)"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "kind": {
@@ -24603,7 +24693,7 @@
             ]
           },
           "percentBp": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "description": "Для percent: базисные пункты (10% = 1000)",
             "minimum": 1,
@@ -24630,25 +24720,28 @@
             ]
           },
           "validFrom": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "validTo": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "totalLimit": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "description": "Лимит использований всего"
           },
           "perPhoneLimit": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "description": "Лимит использований на один телефон"
           },
           "branchId": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true,
             "description": "Филиал; null — вся сеть (нужно глобальное право)"
           },
@@ -24873,6 +24966,62 @@
           }
         }
       },
+      "VenueImageVariantDto": {
+        "type": "object",
+        "properties": {
+          "width": {
+            "type": "number"
+          },
+          "height": {
+            "type": "number"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "width",
+          "height",
+          "url"
+        ]
+      },
+      "VenueImageDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "description": "Основной вариант (карточка)"
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "description": "Уменьшенный вариант (списки, карта зала)"
+          },
+          "width": {
+            "type": "number"
+          },
+          "height": {
+            "type": "number"
+          },
+          "variants": {
+            "description": "Все варианты (srcset)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VenueImageVariantDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "url",
+          "thumbnailUrl",
+          "width",
+          "height",
+          "variants"
+        ]
+      },
       "HallDto": {
         "type": "object",
         "properties": {
@@ -24906,7 +25055,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ImageDto"
+                "$ref": "#/components/schemas/VenueImageDto"
               }
             ]
           },
@@ -25028,41 +25177,41 @@
         "type": "object",
         "properties": {
           "durationMinutes": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "minimum": 15,
             "maximum": 1440
           },
           "holdMinutes": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "minimum": 1,
             "maximum": 10080
           },
           "cancellationDeadlineHours": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "minimum": 0,
             "maximum": 720
           },
           "requiresManualConfirmation": {
-            "type": "object",
+            "type": "boolean",
             "nullable": true
           },
           "cleanupMinutes": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "minimum": 0,
             "maximum": 720
           },
           "slotStepMinutes": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "minimum": 5,
             "maximum": 240
           },
           "bookableOnline": {
-            "type": "object",
+            "type": "boolean",
             "nullable": true
           }
         }
@@ -25184,7 +25333,7 @@
           "photos": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ImageDto"
+              "$ref": "#/components/schemas/VenueImageDto"
             }
           },
           "sortOrder": {
@@ -25435,7 +25584,8 @@
             ]
           },
           "updatedAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         },
@@ -25509,21 +25659,22 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true,
             "description": "Гость в базе гостей"
           },
           "name": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "phone": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "+77011234567"
           },
           "email": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         }
@@ -25604,15 +25755,15 @@
             "$ref": "#/components/schemas/ReservationCustomerDto"
           },
           "comment": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "occasion": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "note": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Служебная заметка персонала"
           },
@@ -25649,12 +25800,14 @@
             ]
           },
           "holdExpiresAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true,
             "description": "Бронь будет снята, если не подтвердят / не оплатят до этого момента"
           },
           "banquetRequestId": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "needsMark": {
@@ -25779,15 +25932,16 @@
             "type": "number"
           },
           "customerName": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "customerPhone": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "banquetRequestId": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "depositState": {
@@ -25989,11 +26143,12 @@
             "$ref": "#/components/schemas/MoneyDto"
           },
           "paymentUrl": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "paidAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         },
@@ -26033,7 +26188,7 @@
             ]
           },
           "reason": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "depositOutcome": {
@@ -26140,15 +26295,15 @@
             "$ref": "#/components/schemas/ReservationCustomerDto"
           },
           "comment": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "occasion": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "note": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Служебная заметка персонала"
           },
@@ -26185,12 +26340,14 @@
             ]
           },
           "holdExpiresAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true,
             "description": "Бронь будет снята, если не подтвердят / не оплатят до этого момента"
           },
           "banquetRequestId": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           },
           "needsMark": {
@@ -26252,15 +26409,16 @@
             ]
           },
           "depositWaiveReason": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "depositPaidAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "cancelReason": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "cancelledBy": {
@@ -26274,31 +26432,37 @@
             "nullable": true
           },
           "confirmedAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "arrivedAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "noShowAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "cancelledAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "expiredAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "reminderSentAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "manageUrl": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Ссылка на страницу брони гостя"
           },
@@ -26607,7 +26771,7 @@
           "photos": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ImageDto"
+              "$ref": "#/components/schemas/VenueImageDto"
             }
           }
         },
@@ -26678,7 +26842,7 @@
             "type": "number"
           },
           "durationMinutes": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "available": {
@@ -26768,11 +26932,11 @@
           "photos": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ImageDto"
+              "$ref": "#/components/schemas/VenueImageDto"
             }
           },
           "available": {
-            "type": "object",
+            "type": "boolean",
             "nullable": true,
             "description": "Свободно на запрошенное время; null — время не запрошено"
           }
@@ -26813,7 +26977,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/ImageDto"
+                "$ref": "#/components/schemas/VenueImageDto"
               }
             ]
           },
@@ -27053,12 +27217,12 @@
             "description": "Депозит возвращён или удержан (после отмены / неявки)"
           },
           "paymentStatus": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "pending"
           },
           "paymentUrl": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Страница оплаты (появляется асинхронно после создания платежа)"
           }
@@ -27143,19 +27307,20 @@
             "type": "number"
           },
           "customerName": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "comment": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "occasion": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "holdExpiresAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true,
             "description": "Бронь будет снята, если не подтвердят / не оплатят до этого момента"
           },
@@ -27194,11 +27359,12 @@
             "$ref": "#/components/schemas/PublicPolicyDto"
           },
           "cancelledAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "cancelReason": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         },
@@ -28827,7 +28993,7 @@
             "example": "2026-11-14"
           },
           "eventTime": {
-            "type": "object",
+            "type": "string",
             "example": "18:00",
             "nullable": true
           },
@@ -28859,7 +29025,8 @@
             ]
           },
           "branchId": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true,
             "description": "Филиал проведения / филиал-исполнитель выезда"
           },
@@ -28867,18 +29034,19 @@
             "type": "boolean"
           },
           "address": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "wishes": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "contact": {
             "$ref": "#/components/schemas/BanquetContactInputDto"
           },
           "companyId": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true,
             "description": "Компания-заказчик (null — физлицо)"
           }
@@ -31775,6 +31943,21 @@
           "channel"
         ]
       },
+      "ReportCertificateBalanceDto": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number"
+          },
+          "balance": {
+            "$ref": "#/components/schemas/MoneyDto"
+          }
+        },
+        "required": [
+          "count",
+          "balance"
+        ]
+      },
       "CertificateOutstandingDto": {
         "type": "object",
         "properties": {
@@ -31834,7 +32017,7 @@
             "type": "object",
             "allOf": [
               {
-                "$ref": "#/components/schemas/CertificateBalanceDto"
+                "$ref": "#/components/schemas/ReportCertificateBalanceDto"
               }
             ]
           },
@@ -32775,12 +32958,14 @@
         "type": "object",
         "properties": {
           "syncedAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true,
             "description": "Последняя успешная синхронизация"
           },
           "attemptedAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true,
             "description": "Последняя попытка"
           },
@@ -32789,7 +32974,7 @@
             "description": "Неудач подряд"
           },
           "error": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "lastChanges": {
@@ -32806,11 +32991,13 @@
         "type": "object",
         "properties": {
           "requestedAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "importedAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "count": {
@@ -32818,7 +33005,7 @@
             "description": "Товаров в импортированной номенклатуре"
           },
           "error": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         },
@@ -32880,7 +33067,7 @@
             "$ref": "#/components/schemas/PosCapabilitiesDto"
           },
           "routingError": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Ошибка настройки pos.routing"
           },
@@ -33020,7 +33207,7 @@
             ]
           },
           "posOrderId": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Номер/идентификатор заказа в POS"
           },
@@ -33033,7 +33220,7 @@
             "description": "Ручных повторов"
           },
           "lastError": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "failureReason": {
@@ -33064,20 +33251,24 @@
             }
           },
           "lastAttemptAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "sentAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "confirmedAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true,
             "description": "POS подтвердила создание заказа. null при status=sent — заказ принят POS в обработку, подтверждение ожидается"
           },
           "failedAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "createdAt": {
@@ -33146,7 +33337,7 @@
             "description": "Товар-модификатор POS"
           },
           "externalGroupId": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Группа модификаторов POS (для групповых модификаторов)"
           }
@@ -33185,7 +33376,7 @@
             "type": "string"
           },
           "externalName": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "modifiers": {
@@ -33253,7 +33444,7 @@
             "type": "string"
           },
           "sku": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Код/артикул товара в POS"
           },
@@ -33268,7 +33459,7 @@
             ]
           },
           "groupName": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "importedAt": {
@@ -33387,7 +33578,7 @@
             "description": "Товар POS (id в номенклатуре POS)"
           },
           "externalName": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Название товара в POS (по умолчанию — из импортированной номенклатуры)"
           },
@@ -33425,7 +33616,7 @@
             "type": "string"
           },
           "externalName": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         },
@@ -33490,7 +33681,7 @@
             "description": "Товар POS (id в номенклатуре POS)"
           },
           "externalName": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Название товара в POS (по умолчанию — из импортированной номенклатуры)"
           },

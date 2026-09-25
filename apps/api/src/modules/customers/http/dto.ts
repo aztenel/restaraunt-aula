@@ -80,21 +80,21 @@ export class PhoneVerifiedDto {
 
 export class CustomerDto {
   @ApiProperty() id: string;
-  @ApiPropertyOptional({ nullable: true, example: '+77011234567', description: 'null у обезличенного гостя' }) phone: string | null;
-  @ApiPropertyOptional({ nullable: true }) name: string | null;
-  @ApiPropertyOptional({ nullable: true }) email: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, example: '+77011234567', description: 'null у обезличенного гостя' }) phone: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) name: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) email: string | null;
   @ApiProperty({ enum: LOCALES }) locale: Locale;
-  @ApiPropertyOptional({ nullable: true, example: '1990-05-17' }) birthday: string | null;
+  @ApiPropertyOptional({ type: String, format: 'date', nullable: true, example: '1990-05-17' }) birthday: string | null;
   @ApiProperty({ type: [String], example: ['regular', 'vip'] }) tags: string[];
-  @ApiPropertyOptional({ nullable: true }) allergies: string | null;
-  @ApiPropertyOptional({ nullable: true }) preferences: string | null;
-  @ApiPropertyOptional({ nullable: true }) notes: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) allergies: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) preferences: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) notes: string | null;
   @ApiProperty() personalDataConsent: boolean;
-  @ApiPropertyOptional({ nullable: true }) personalDataConsentVersion: string | null;
-  @ApiPropertyOptional({ nullable: true }) personalDataConsentAt: Date | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) personalDataConsentVersion: string | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) personalDataConsentAt: Date | null;
   @ApiProperty() marketingConsent: boolean;
-  @ApiPropertyOptional({ nullable: true }) marketingConsentVersion: string | null;
-  @ApiPropertyOptional({ nullable: true }) marketingConsentAt: Date | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) marketingConsentVersion: string | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) marketingConsentAt: Date | null;
   @ApiProperty() ordersCount: number;
   @ApiProperty() completedOrdersCount: number;
   @ApiProperty({ type: MoneyDto, description: 'Сумма покупок за всё время: выполненные заказы, проведённые банкеты, сертификаты' })
@@ -103,8 +103,8 @@ export class CustomerDto {
   @ApiProperty() noShowCount: number;
   @ApiProperty() banquetsCount: number;
   @ApiProperty() firstSeenAt: Date;
-  @ApiPropertyOptional({ nullable: true }) lastActivityAt: Date | null;
-  @ApiPropertyOptional({ nullable: true }) anonymizedAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) lastActivityAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) anonymizedAt: Date | null;
   @ApiProperty() createdAt: Date;
   @ApiProperty() updatedAt: Date;
 }
@@ -263,8 +263,8 @@ export class ConsentRecordDto {
   @ApiProperty() granted: boolean;
   @ApiProperty() textVersion: string;
   @ApiProperty({ enum: ['web', 'admin', 'phone'] }) source: string;
-  @ApiPropertyOptional({ nullable: true }) ip: string | null;
-  @ApiPropertyOptional({ nullable: true, description: 'Сотрудник, внёсший согласие' }) recordedBy: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) ip: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true, description: 'Сотрудник, внёсший согласие' }) recordedBy: string | null;
   @ApiProperty() recordedAt: Date;
 }
 
@@ -273,7 +273,7 @@ export class ActivityDto {
   @ApiProperty({ enum: ACTIVITY_TYPES }) type: string;
   @ApiProperty({ enum: ['order', 'reservation', 'banquet_request', 'banquet_invoice', 'gift_certificate'] }) entityType: string;
   @ApiProperty() entityId: string;
-  @ApiPropertyOptional({ nullable: true }) branchId: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) branchId: string | null;
   @ApiPropertyOptional({ type: MoneyDto, nullable: true }) amount: MoneyDto | null;
   @ApiProperty({ description: 'Учитывается в сумме покупок (возврат — отрицательная сумма)' }) countsAsSpent: boolean;
   @ApiProperty() summary: string;
@@ -303,8 +303,8 @@ export class PeriodTotalsDto {
 }
 
 export class PeriodDto {
-  @ApiPropertyOptional({ nullable: true }) from: string | null;
-  @ApiPropertyOptional({ nullable: true }) to: string | null;
+  @ApiPropertyOptional({ type: String, format: 'date', nullable: true }) from: string | null;
+  @ApiPropertyOptional({ type: String, format: 'date', nullable: true }) to: string | null;
 }
 
 export class CustomerDetailDto {
@@ -316,9 +316,9 @@ export class CustomerDetailDto {
 }
 
 export class UpdateCustomerDto {
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(120) name?: string | null;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(254) email?: string | null;
-  @ApiPropertyOptional({ nullable: true, example: '1990-05-17' }) @IsOptional() @Matches(DATE_RE) birthday?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsString() @MaxLength(120) name?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsString() @MaxLength(254) email?: string | null;
+  @ApiPropertyOptional({ type: String, format: 'date', nullable: true, example: '1990-05-17' }) @IsOptional() @Matches(DATE_RE) birthday?: string | null;
   @ApiPropertyOptional({ enum: LOCALES }) @IsOptional() @IsIn(LOCALES as unknown as string[]) locale?: Locale;
   @ApiPropertyOptional({ type: [String], description: 'Полный набор тегов (заменяет текущий)' })
   @IsOptional()
@@ -326,9 +326,9 @@ export class UpdateCustomerDto {
   @ArrayMaxSize(30)
   @IsString({ each: true })
   tags?: string[];
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(2000) allergies?: string | null;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(2000) preferences?: string | null;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(5000) notes?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsString() @MaxLength(2000) allergies?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsString() @MaxLength(2000) preferences?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsString() @MaxLength(5000) notes?: string | null;
 }
 
 export class RecordConsentDto {
@@ -362,10 +362,10 @@ export class TagStatDto {
 export class SegmentDto {
   @ApiProperty() id: string;
   @ApiProperty() name: string;
-  @ApiPropertyOptional({ nullable: true }) description: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) description: string | null;
   @ApiProperty({ type: CustomerFilterDto }) filter: CustomerFilterDto;
-  @ApiPropertyOptional({ nullable: true }) createdBy: string | null;
-  @ApiPropertyOptional({ nullable: true }) updatedBy: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) createdBy: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) updatedBy: string | null;
   @ApiProperty() createdAt: Date;
   @ApiProperty() updatedAt: Date;
 }
@@ -376,7 +376,7 @@ export class SegmentDetailDto extends SegmentDto {
 
 export class SaveSegmentDto {
   @ApiProperty({ example: 'Постоянные гости GreenLine' }) @IsString() @Length(1, 120) name: string;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(500) description?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsString() @MaxLength(500) description?: string | null;
   @ApiProperty({ type: CustomerFilterDto }) @ValidateNested() @Type(() => CustomerFilterDto) filter: CustomerFilterDto;
 }
 
@@ -404,7 +404,7 @@ export class ConsentTextDto {
   @ApiProperty() version: string;
   @ApiProperty({ type: TranslatableDto }) text: TranslatableDto;
   @ApiProperty() publishedAt: Date;
-  @ApiPropertyOptional({ nullable: true }) publishedBy: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) publishedBy: string | null;
   @ApiProperty({ description: 'Действующая версия (показывается на формах)' }) isCurrent: boolean;
 }
 

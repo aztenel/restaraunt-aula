@@ -29,7 +29,7 @@ export class PaymentPagesController {
 
   /** Тестовая страница оплаты: кнопки «Оплатить» / «Отказ». */
   @Get('sandbox/:paymentId')
-  @ApiQuery({ name: 'sig', required: true })
+  @ApiQuery({ name: 'sig', type: String, required: true, description: 'Подпись ссылки на страницу оплаты' })
   @ApiProduces('text/html')
   @ApiOkResponse({ description: 'HTML-страница тестовой оплаты', schema: { type: 'string' } })
   async sandbox(@Param('paymentId', ParseUUIDPipe) paymentId: string, @Query('sig') sig: string | undefined, @Res() res: Response): Promise<void> {
@@ -47,7 +47,7 @@ export class PaymentPagesController {
 
   /** Страница оплаты с виджетом провайдера (paymentUrl для провайдеров без собственной страницы). */
   @Get(':paymentId/checkout')
-  @ApiQuery({ name: 'sig', required: true })
+  @ApiQuery({ name: 'sig', type: String, required: true, description: 'Подпись ссылки на страницу оплаты' })
   @ApiProduces('text/html')
   @ApiOkResponse({ description: 'HTML-страница с платёжным виджетом провайдера', schema: { type: 'string' } })
   async checkoutPage(@Param('paymentId', ParseUUIDPipe) paymentId: string, @Query('sig') sig: string | undefined, @Res() res: Response): Promise<void> {

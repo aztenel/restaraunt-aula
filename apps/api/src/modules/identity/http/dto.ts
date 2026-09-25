@@ -150,7 +150,7 @@ export class CreateUserDto {
 
 export class CreatedUserDto {
   @ApiProperty({ type: StaffUserDto }) user: StaffUserDto;
-  @ApiPropertyOptional({ nullable: true, description: 'Показывается один раз' }) temporaryPassword: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Показывается один раз' }) temporaryPassword: string | null;
 }
 
 export class UpdateUserDto {
@@ -320,8 +320,8 @@ export class AuditRecordDto {
   @ApiProperty() entityType: string;
   @ApiProperty() entityId: string;
   @ApiPropertyOptional({ type: String, nullable: true }) branchId: string | null;
-  @ApiPropertyOptional({ nullable: true, description: 'Прежнее значение (JSON)' }) before: unknown;
-  @ApiPropertyOptional({ nullable: true, description: 'Новое значение (JSON)' }) after: unknown;
+  @ApiPropertyOptional({ type: 'object', additionalProperties: true, nullable: true, description: 'Прежнее значение (JSON)' }) before: unknown;
+  @ApiPropertyOptional({ type: 'object', additionalProperties: true, nullable: true, description: 'Новое значение (JSON)' }) after: unknown;
   @ApiProperty({ type: 'object', additionalProperties: true }) meta: Record<string, unknown>;
   @ApiPropertyOptional({ type: String, nullable: true }) ip: string | null;
   @ApiPropertyOptional({ type: String, nullable: true }) requestId: string | null;
@@ -339,7 +339,7 @@ export class FailedJobDto {
   @ApiProperty() kind: string;
   @ApiProperty() topic: string;
   @ApiPropertyOptional({ type: String, nullable: true }) handler: string | null;
-  @ApiPropertyOptional({ nullable: true }) payload: unknown;
+  @ApiPropertyOptional({ type: 'object', additionalProperties: true, description: 'Данные задачи (JSON)', nullable: true }) payload: unknown;
   @ApiProperty() error: string;
   @ApiProperty() attempts: number;
   @ApiProperty({ type: String, format: 'date-time' }) failedAt: Date;
@@ -361,8 +361,8 @@ export class IntegrationLogDto {
   @ApiProperty({ enum: ['outbound', 'inbound'] }) direction: string;
   @ApiProperty() operation: string;
   @ApiPropertyOptional({ type: String, nullable: true }) correlation_id: string | null;
-  @ApiPropertyOptional({ nullable: true, description: 'Запрос (маскирован)' }) request: unknown;
-  @ApiPropertyOptional({ nullable: true, description: 'Ответ (маскирован)' }) response: unknown;
+  @ApiPropertyOptional({ type: 'object', additionalProperties: true, nullable: true, description: 'Запрос (маскирован)' }) request: unknown;
+  @ApiPropertyOptional({ type: 'object', additionalProperties: true, nullable: true, description: 'Ответ (маскирован)' }) response: unknown;
   @ApiPropertyOptional({ type: Number, nullable: true }) status_code: number | null;
   @ApiProperty() success: boolean;
   @ApiPropertyOptional({ type: Number, nullable: true }) duration_ms: number | null;

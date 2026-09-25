@@ -5,6 +5,7 @@
  */
 import { CATALOG_ERROR_MESSAGES } from './error-messages.catalog';
 import { ORDERING_ERROR_MESSAGES } from './error-messages.ordering';
+import { RESERVATION_ERROR_MESSAGES } from './error-messages.reservation';
 
 export type ErrorLanguage = 'ru' | 'kk';
 
@@ -12,6 +13,7 @@ export const ERROR_MESSAGES: Record<ErrorLanguage, Record<string, string>> = {
   ru: {
     ...ORDERING_ERROR_MESSAGES.ru,
     ...CATALOG_ERROR_MESSAGES.ru,
+    ...RESERVATION_ERROR_MESSAGES.ru,
     'auth.invalid_credentials': 'Неверный email или пароль',
     'auth.locked': 'Учётная запись временно заблокирована после нескольких неудачных попыток входа. Повторите после {{until}}.',
     'auth.invalid_refresh': 'Сессия истекла, войдите снова',
@@ -64,6 +66,7 @@ export const ERROR_MESSAGES: Record<ErrorLanguage, Record<string, string>> = {
   kk: {
     ...ORDERING_ERROR_MESSAGES.kk,
     ...CATALOG_ERROR_MESSAGES.kk,
+    ...RESERVATION_ERROR_MESSAGES.kk,
     'auth.invalid_credentials': 'Email немесе құпиясөз қате',
     'auth.locked': 'Бірнеше сәтсіз кіру әрекетінен кейін тіркелгі уақытша бұғатталды. {{until}} кейін қайталаңыз.',
     'auth.invalid_refresh': 'Сеанс мерзімі аяқталды, қайта кіріңіз',

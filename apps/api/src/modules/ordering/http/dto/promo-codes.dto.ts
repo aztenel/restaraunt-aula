@@ -12,10 +12,10 @@ export class PromoCodeInputDto {
   @MaxLength(32)
   code: string;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(500) description?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsString() @MaxLength(500) description?: string | null;
   @ApiProperty({ enum: PROMO_KINDS }) @IsIn(PROMO_KINDS) kind: PromoKind;
 
-  @ApiPropertyOptional({ nullable: true, description: 'Для percent: базисные пункты (10% = 1000)', minimum: 1, maximum: 10_000 })
+  @ApiPropertyOptional({ type: Number, nullable: true, description: 'Для percent: базисные пункты (10% = 1000)', minimum: 1, maximum: 10_000 })
   @IsOptional()
   @IsInt()
   @Min(1)
@@ -34,16 +34,16 @@ export class PromoCodeInputDto {
   @Type(() => MoneyInputDto)
   minSubtotal?: MoneyInputDto | null;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsISO8601({ strict: true }) validFrom?: string | null;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsISO8601({ strict: true }) validTo?: string | null;
-  @ApiPropertyOptional({ nullable: true, description: 'Лимит использований всего' }) @IsOptional() @IsInt() @Min(1) totalLimit?: number | null;
-  @ApiPropertyOptional({ nullable: true, description: 'Лимит использований на один телефон' })
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) @IsOptional() @IsISO8601({ strict: true }) validFrom?: string | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) @IsOptional() @IsISO8601({ strict: true }) validTo?: string | null;
+  @ApiPropertyOptional({ type: Number, nullable: true, description: 'Лимит использований всего' }) @IsOptional() @IsInt() @Min(1) totalLimit?: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true, description: 'Лимит использований на один телефон' })
   @IsOptional()
   @IsInt()
   @Min(1)
   perPhoneLimit?: number | null;
 
-  @ApiPropertyOptional({ nullable: true, description: 'Филиал; null — вся сеть (нужно глобальное право)' })
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true, description: 'Филиал; null — вся сеть (нужно глобальное право)' })
   @IsOptional()
   @IsUUID()
   branchId?: string | null;
@@ -83,16 +83,16 @@ export class PromoUsageDto {
 export class PromoCodeDto {
   @ApiProperty() id: string;
   @ApiProperty() code: string;
-  @ApiPropertyOptional({ nullable: true }) description: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) description: string | null;
   @ApiProperty({ enum: PROMO_KINDS }) kind: PromoKind;
-  @ApiPropertyOptional({ nullable: true }) percentBp: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true }) percentBp: number | null;
   @ApiPropertyOptional({ type: MoneyDto, nullable: true }) fixedAmount: MoneyDto | null;
   @ApiPropertyOptional({ type: MoneyDto, nullable: true }) minSubtotal: MoneyDto | null;
-  @ApiPropertyOptional({ nullable: true }) validFrom: Date | null;
-  @ApiPropertyOptional({ nullable: true }) validTo: Date | null;
-  @ApiPropertyOptional({ nullable: true }) totalLimit: number | null;
-  @ApiPropertyOptional({ nullable: true }) perPhoneLimit: number | null;
-  @ApiPropertyOptional({ nullable: true }) branchId: string | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) validFrom: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) validTo: Date | null;
+  @ApiPropertyOptional({ type: Number, nullable: true }) totalLimit: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true }) perPhoneLimit: number | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) branchId: string | null;
   @ApiProperty() isActive: boolean;
   @ApiProperty({ type: PromoUsageDto }) usage: PromoUsageDto;
   @ApiProperty({ description: 'Сотрудник может изменить промокод' }) editable: boolean;
