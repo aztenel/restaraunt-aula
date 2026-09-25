@@ -1,0 +1,104 @@
+/* Очередь оператора: канбан по статусам, крупные карточки для планшета. */
+.aula-queue-board {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(272px, 1fr));
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  align-items: start;
+  -webkit-overflow-scrolling: touch;
+}
+
+.aula-queue-column {
+  background: #efe6da;
+  border-radius: 12px;
+  padding: 8px;
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.aula-queue-column--new {
+  background: #fbe3d6;
+}
+
+.aula-queue-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 6px;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.aula-queue-card {
+  border-radius: 10px;
+  cursor: default;
+}
+
+.aula-queue-card .ant-card-body {
+  padding: 12px;
+}
+
+.aula-queue-card--late {
+  border-left: 5px solid #b5452c;
+}
+
+.aula-queue-card--new {
+  animation: aula-queue-pulse 1.4s ease-in-out infinite;
+  box-shadow: 0 0 0 3px rgba(212, 56, 13, 0.9);
+}
+
+.aula-queue-number {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.aula-queue-elapsed {
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.aula-queue-items {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+
+.aula-queue-items li + li {
+  margin-top: 2px;
+}
+
+@keyframes aula-queue-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px rgba(212, 56, 13, 0.9);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(212, 56, 13, 0.3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aula-queue-card--new {
+    animation: none;
+  }
+}
+
+/* Планшет в портретной ориентации и телефон: колонки листаются по одной. */
+@media (max-width: 991px) {
+  .aula-queue-board {
+    grid-template-columns: repeat(5, minmax(272px, 86vw));
+    scroll-snap-type: x mandatory;
+  }
+
+  .aula-queue-column {
+    scroll-snap-align: start;
+  }
+}

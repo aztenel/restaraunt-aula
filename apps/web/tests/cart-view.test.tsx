@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -21,8 +21,6 @@ vi.mock('@/i18n/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
 }));
 
-const NNBSP = ' ';
-const NBSP = ' ';
 const kzt = (amount: number) => ({ amount, currency: 'KZT' });
 
 const branches: CartBranchOption[] = [
@@ -89,6 +87,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  cleanup();
   vi.clearAllMocks();
 });
 
@@ -100,7 +99,8 @@ describe('корзина: суммы только с сервера', () => {
     expect(await screen.findByText('Бешбармак')).toBeTruthy();
     expect(screen.getByText('Большая')).toBeTruthy();
     // Итог — ровно то, что прислал сервер (10 400 ₸), клиент не складывает цены.
-    const total = `10${NNBSP}400${NBSP}₸`;
+    // (Testing Library сводит неразрывные пробелы форматирования к обычным.)
+    const total = '10 400 ₸';
     expect(screen.getAllByText(total).length).toBeGreaterThanOrEqual(2);
     expect(screen.getByText(/Блюдо закончилось в этом филиале/)).toBeTruthy();
     expect(screen.getByRole('alert').textContent).toContain(ru.Cart.fixLines);
