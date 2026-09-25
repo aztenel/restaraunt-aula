@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, configure, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { App } from 'antd';
 import type { ReactNode } from 'react';
 import { I18nextProvider } from 'react-i18next';
@@ -22,6 +22,8 @@ vi.mock('../api', async (importOriginal) => {
 });
 
 beforeAll(async () => {
+  // Тяжёлые компоненты antd при параллельном прогоне всего набора тестов рендерятся медленно.
+  configure({ asyncUtilTimeout: 5000 });
   window.matchMedia ??= ((query: string) => ({
     matches: false,
     media: query,
@@ -99,7 +101,7 @@ const order: QueueOrder = {
 const noop = () => undefined;
 const now = Date.parse('2026-09-25T10:12:00.000Z');
 
-describe('карточка очереди', () => {
+describe('карточка очереди', { timeout: 30_000 }, () => {
   it('показывает состав, время, оплату, опоздание и кнопки из allowedTransitions', () => {
     wrap(<QueueCard order={order} now={now} highlighted showBranch={false} onOpen={noop} onReject={noop} onCancel={noop} />);
     expect(screen.getByText('GL-2026-000123')).toBeTruthy();

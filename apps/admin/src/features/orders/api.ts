@@ -4,7 +4,7 @@
  *
  * Ключи запросов заказов начинаются с 'orders' — их инвалидирует лента событий (useAdminFeed).
  */
-import { call, type Page, type Schemas } from '@aula/api-client';
+import { call, type Page } from '@aula/api-client';
 import { api } from '@/shared/api/client';
 import type {
   AdminCreateOrderInput,
@@ -23,10 +23,6 @@ import type {
   RefundOrderInput,
   StaffTransitionTarget,
 } from './types';
-
-function body<T>(value: unknown): T {
-  return value as T;
-}
 
 type Locale = 'kk' | 'ru' | 'en';
 
@@ -72,15 +68,15 @@ export const ordersApi = {
   /** Отказ от оплаченного заказа: paid → accepted → cancelled и возврат. */
   reject: async (id: string, input: CancelOrderInput) =>
     (await call(
-      api.POST('/api/v1/admin/orders/{id}/reject', { params: { path: { id } }, body: body<Schemas['CancelOrderDto']>(input) }),
+      api.POST('/api/v1/admin/orders/{id}/reject', { params: { path: { id } }, body: input }),
     )) as unknown as AdminOrderDetails,
   cancel: async (id: string, input: CancelOrderInput) =>
     (await call(
-      api.POST('/api/v1/admin/orders/{id}/cancel', { params: { path: { id } }, body: body<Schemas['CancelOrderDto']>(input) }),
+      api.POST('/api/v1/admin/orders/{id}/cancel', { params: { path: { id } }, body: input }),
     )) as unknown as AdminOrderDetails,
   refund: async (id: string, input: RefundOrderInput) =>
     (await call(
-      api.POST('/api/v1/admin/orders/{id}/refund', { params: { path: { id } }, body: body<Schemas['RefundOrderDto']>(input) }),
+      api.POST('/api/v1/admin/orders/{id}/refund', { params: { path: { id } }, body: input }),
     )) as unknown as AdminOrderDetails,
   courierRetry: async (id: string) =>
     (await call(api.POST('/api/v1/admin/orders/{id}/courier/retry', { params: { path: { id } } }))) as unknown as AdminOrderDetails,
@@ -88,10 +84,10 @@ export const ordersApi = {
     (await call(api.POST('/api/v1/admin/orders/{id}/courier/cancel', { params: { path: { id } } }))) as unknown as AdminOrderDetails,
   /** Расчёт телефонного заказа: все суммы считает сервер. */
   quote: async (input: QuoteOrderInput) =>
-    (await call(api.POST('/api/v1/admin/orders/quote', { body: body<Schemas['QuoteOrderDto']>(input) }))) as unknown as OrderQuote,
+    (await call(api.POST('/api/v1/admin/orders/quote', { body: input }))) as unknown as OrderQuote,
   /** Телефонный заказ (канал admin). Онлайн-оплата: ссылку гостю отправляет сервер. */
   create: async (input: AdminCreateOrderInput) =>
-    (await call(api.POST('/api/v1/admin/orders', { body: body<Schemas['AdminCreateOrderDto']>(input) }))) as unknown as AdminOrderDetails,
+    (await call(api.POST('/api/v1/admin/orders', { body: input }))) as unknown as AdminOrderDetails,
 };
 
 /** Публичные справочники витрины (меню филиала с ценами, карточка блюда с модификаторами, слоты, зоны). */

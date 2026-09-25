@@ -1,11 +1,13 @@
 import { catalogKk } from './catalog.kk';
 import { orderingKk } from './ordering.kk';
+import { reservationKk } from './reservation.kk';
 import type { AdminMessages } from './ru';
 
 /** Қазақ тілі — ru.ts-тегі барлық кілттерді қайталайды (типпен тексеріледі). */
 export const kk: AdminMessages = {
   ...orderingKk,
   ...catalogKk,
+  ...reservationKk,
   app: {
     title: 'AULA — әкімші панелі',
   },

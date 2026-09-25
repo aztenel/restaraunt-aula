@@ -1,7 +1,8 @@
 /**
- * Формы ответов модуля Ordering (apps/api/src/modules/ordering/http/dto/*.ts), уточнённые относительно
- * docs/openapi.json: там nullable-поля описаны без `type` (openapi-typescript выводит Record<string, never>).
- * Все суммы — тиыны от сервера; фронт их только показывает.
+ * Формы ответов модуля Ordering (apps/api/src/modules/ordering/http/dto/*.ts). В docs/openapi.json
+ * nullable-поля описаны как необязательные (`field?: T | null`), а сервер всегда присылает их (null) —
+ * здесь они обязательные `T | null`, поэтому ответы приводятся к этим типам; тела запросов
+ * передаются в типизированный клиент без приведения. Все суммы — тиыны от сервера; фронт их только показывает.
  */
 import type { GeoPoint, Money, Translatable } from '@aula/api-client';
 
@@ -371,7 +372,7 @@ export interface AdminCreateOrderInput {
   type: OrderType;
   items: OrderLineInput[];
   delivery?: CheckoutDeliveryInput | null;
-  contactless?: boolean;
+  contactless: boolean;
   scheduledFor?: string | null;
   customer: { name: string; phone: string; email?: string | null };
   comment?: string | null;

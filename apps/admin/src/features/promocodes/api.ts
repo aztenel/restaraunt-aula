@@ -2,13 +2,9 @@
  * Промокоды (promocodes.manage): промокод филиала — право в этом филиале, на всю сеть — глобальное право.
  * Удаление логическое. Статистика использований (usage) приходит в списке.
  */
-import { call, type Page, type Schemas } from '@aula/api-client';
+import { call, type Page } from '@aula/api-client';
 import { api } from '@/shared/api/client';
 import type { PromoCode, PromoCodeInput } from './promo-form';
-
-function body<T>(value: unknown): T {
-  return value as T;
-}
 
 export interface PromoListQuery {
   branchId?: string;
@@ -39,10 +35,10 @@ export const promoApi = {
       }),
     )) as unknown as Page<PromoCode>,
   create: async (input: PromoCodeInput) =>
-    (await call(api.POST('/api/v1/admin/promo-codes', { body: body<Schemas['PromoCodeInputDto']>(input) }))) as unknown as PromoCode,
+    (await call(api.POST('/api/v1/admin/promo-codes', { body: input }))) as unknown as PromoCode,
   update: async (id: string, input: PromoCodeInput) =>
     (await call(
-      api.PUT('/api/v1/admin/promo-codes/{id}', { params: { path: { id } }, body: body<Schemas['PromoCodeInputDto']>(input) }),
+      api.PUT('/api/v1/admin/promo-codes/{id}', { params: { path: { id } }, body: input }),
     )) as unknown as PromoCode,
   remove: (id: string) => call(api.DELETE('/api/v1/admin/promo-codes/{id}', { params: { path: { id } } })),
 };

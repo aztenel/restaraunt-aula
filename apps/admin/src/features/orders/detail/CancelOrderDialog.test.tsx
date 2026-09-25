@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, configure, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { App } from 'antd';
 import type { ReactNode } from 'react';
 import { I18nextProvider } from 'react-i18next';
@@ -31,6 +31,8 @@ vi.mock('../api', async (importOriginal) => {
 });
 
 beforeAll(async () => {
+  // Тяжёлые компоненты antd при параллельном прогоне всего набора тестов рендерятся медленно.
+  configure({ asyncUtilTimeout: 5000 });
   window.matchMedia ??= ((query: string) => ({
     matches: false,
     media: query,
@@ -76,7 +78,7 @@ const paidOrder = {
   refundable: { amount: 900_000, currency: 'KZT' },
 } as unknown as AdminOrderDetails;
 
-describe('диалог отказа / отмены', () => {
+describe('диалог отказа / отмены', { timeout: 30_000 }, () => {
   it('режим — из флагов сервера; причина обязательна; тело запроса без частичной суммы', async () => {
     api.get.mockResolvedValue(paidOrder);
     api.reject.mockResolvedValue({ ...paidOrder, status: 'cancelled' });

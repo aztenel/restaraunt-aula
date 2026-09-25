@@ -60,6 +60,8 @@ export const banquetsKeys = {
   all: ['banquets'] as const,
   pipeline: (params: PipelineQuery) => ['banquets', 'pipeline', params] as const,
   list: (params: RequestListQuery) => ['banquets', 'list', params] as const,
+  /** Доска из списка (поиск / «SLA нарушен»): другая форма данных, чем у списка. */
+  boardList: (params: RequestListQuery) => ['banquets', 'board-list', params] as const,
   detail: (id: string) => ['banquets', 'detail', id] as const,
   quote: (quoteId: string) => ['banquets', 'quote', quoteId] as const,
   managers: ['banquets', 'managers'] as const,

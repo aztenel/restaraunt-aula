@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, configure, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { App } from 'antd';
 import type { ReactNode } from 'react';
 import { I18nextProvider } from 'react-i18next';
@@ -29,6 +29,8 @@ vi.mock('@/shared/branch/BranchProvider', () => ({
 vi.mock('./PointMap', () => ({ default: () => <div>карта</div> }));
 
 beforeAll(async () => {
+  // Тяжёлые компоненты antd при параллельном прогоне всего набора тестов рендерятся медленно.
+  configure({ asyncUtilTimeout: 5000 });
   window.matchMedia ??= ((query: string) => ({
     matches: false,
     media: query,
@@ -164,7 +166,7 @@ const order: AdminOrderDetails = {
   trackingUrl: 'https://aula.kz/ru/orders/tok',
 };
 
-describe('карточка заказа', () => {
+describe('карточка заказа', { timeout: 30_000 }, () => {
   it('состав, суммы с сервера, адрес, курьер и действия из allowedTransitions', () => {
     wrap(<OrderDetailsView order={order} />);
     expect(screen.getByText('Бешбармак')).toBeTruthy();

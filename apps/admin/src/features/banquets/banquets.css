@@ -1,0 +1,234 @@
+/* Раздел «Банкеты»: воронка (канбан), карточки заявок, календарь мероприятий. */
+.aula-bq-board {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(250px, 1fr)) auto;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  align-items: start;
+  -webkit-overflow-scrolling: touch;
+}
+
+.aula-bq-column {
+  background: #efe6da;
+  border-radius: 12px;
+  padding: 8px;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.aula-bq-column--new {
+  background: #fbe3d6;
+}
+
+.aula-bq-column--cancelled {
+  background: #ece9e6;
+  min-width: 56px;
+}
+
+.aula-bq-column--collapsed {
+  width: 56px;
+  align-items: center;
+  justify-content: flex-start;
+  cursor: pointer;
+}
+
+.aula-bq-column--collapsed .aula-bq-vertical {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-weight: 600;
+  color: #6b5a4a;
+  margin-top: 8px;
+}
+
+.aula-bq-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 4px;
+  font-weight: 600;
+}
+
+.aula-bq-card {
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.aula-bq-card .ant-card-body {
+  padding: 10px 12px;
+}
+
+.aula-bq-card--breached {
+  border-left: 5px solid #b5452c;
+}
+
+.aula-bq-card--warning {
+  border-left: 5px solid #c8962e;
+}
+
+.aula-bq-card--fresh {
+  animation: aula-bq-pulse 1.4s ease-in-out infinite;
+  box-shadow: 0 0 0 2px #b5452c;
+}
+
+@keyframes aula-bq-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px rgba(181, 69, 44, 0.9);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(181, 69, 44, 0.15);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aula-bq-card--fresh {
+    animation: none;
+  }
+}
+
+.aula-bq-card-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+}
+
+.aula-bq-muted {
+  color: #7a6a5a;
+  font-size: 12px;
+}
+
+.aula-bq-row--fresh > td {
+  background: #fdeee6 !important;
+}
+
+/* Календарь: месяц */
+.aula-bq-month {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(120px, 1fr));
+  border: 1px solid #ede0d0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.aula-bq-month-head {
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b5a4a;
+  background: #faf5ee;
+  border-bottom: 1px solid #ede0d0;
+}
+
+.aula-bq-day {
+  min-height: 116px;
+  padding: 6px;
+  border-right: 1px solid #f3eadf;
+  border-bottom: 1px solid #f3eadf;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.aula-bq-day--other {
+  background: #fcfaf7;
+  color: #b3a595;
+}
+
+.aula-bq-day--today .aula-bq-day-number {
+  background: #8a5a36;
+  color: #fff;
+  border-radius: 10px;
+  padding: 0 6px;
+}
+
+.aula-bq-day-number {
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.aula-bq-event {
+  display: block;
+  font-size: 12px;
+  line-height: 1.3;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: #f1e4f6;
+  border-left: 3px solid #722ed1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: inherit;
+}
+
+.aula-bq-event--cancelled {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+
+/* Календарь: неделя (залы × дни) */
+.aula-bq-week {
+  display: grid;
+  grid-template-columns: 180px repeat(7, minmax(120px, 1fr));
+  border: 1px solid #ede0d0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.aula-bq-week > div {
+  border-right: 1px solid #f3eadf;
+  border-bottom: 1px solid #f3eadf;
+  padding: 6px;
+  min-width: 0;
+}
+
+.aula-bq-week-venue {
+  font-size: 13px;
+  background: #fcfaf7;
+}
+
+.aula-bq-track {
+  position: relative;
+  height: 8px;
+  background: #f5efe7;
+  border-radius: 4px;
+  margin: 2px 0 4px;
+}
+
+.aula-bq-track-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 4px;
+  background: #1677ff;
+}
+
+.aula-bq-track-bar--banquet {
+  background: #722ed1;
+}
+
+.aula-bq-slot {
+  display: block;
+  font-size: 11px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.aula-bq-slot--banquet {
+  color: #531dab;
+  font-weight: 600;
+}
+
+.aula-bq-lines td {
+  vertical-align: top;
+}

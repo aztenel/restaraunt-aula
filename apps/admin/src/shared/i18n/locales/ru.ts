@@ -5,11 +5,15 @@
 import { banquetsRu } from './banquets.ru';
 import { catalogRu } from './catalog.ru';
 import { orderingRu } from './ordering.ru';
+import { paymentsRu } from './payments.ru';
+import { reservationRu } from './reservation.ru';
 
 export const ru = {
+  ...paymentsRu,
   ...orderingRu,
   ...catalogRu,
   ...banquetsRu,
+  ...reservationRu,
   app: {
     title: 'AULA — админ-панель',
   },
