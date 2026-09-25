@@ -6,7 +6,7 @@ import { LOCALES, Locale } from '../../../../shared/kernel/translatable';
 import { DEPOSIT_STATES, DepositOutcome, DepositState } from '../../domain/deposit-policy';
 import { ALL_RESERVATION_STATUSES } from '../../domain/reservation-status';
 import { ReservationStatus } from '../../public';
-import { ImageDto, VenuePositionDto } from './common.dto';
+import { ImageDto, PLAN_HEIGHT_DESCRIPTION, PLAN_WIDTH_DESCRIPTION, VenuePositionDto } from './common.dto';
 import { DATE_RE, TIME_RE } from './reservations.dto';
 
 const DEPOSIT_OUTCOMES = ['none', 'refunded', 'retained'] as const;
@@ -116,6 +116,50 @@ export class AlternativeTimeDto {
   @ApiProperty({ type: [String], description: 'Свободные места на это время' }) venueIds: string[];
 }
 
+export class BookingDayIntervalDto {
+  @ApiProperty({ example: '12:00', description: 'Первое время начала брони, HH:mm (местное время филиала)' }) from: string;
+  @ApiProperty({
+    example: '21:00',
+    description: 'Последнее время начала брони, HH:mm: бронь длительностью durationMinutes ещё помещается в часы работы',
+  })
+  to: string;
+  @ApiProperty({ description: 'from как момент времени (UTC)' }) fromAt: Date;
+  @ApiProperty({ description: 'to как момент времени (UTC)' }) toAt: Date;
+}
+
+export class BookingDayDto {
+  @ApiProperty({ example: '2026-10-25' }) date: string;
+  @ApiProperty({
+    type: [BookingDayIntervalDto],
+    description: 'Интервалы времён начала на сетке slotStepMinutes (от местной полуночи); пусто — в этот день бронь с сайта невозможна',
+  })
+  intervals: BookingDayIntervalDto[];
+}
+
+/**
+ * Окно брони витрины. Времена начала — на сетке slotStepMinutes от местной полуночи, в пределах
+ * [earliestStart, latestStart] и часов работы филиала. Занятость мест не учитывается — её проверяет
+ * запрос свободных мест (reservation-availability).
+ */
+export class BookingWindowDto {
+  @ApiProperty({ example: 'Asia/Almaty', description: 'Часовой пояс филиала (все HH:mm — в нём)' }) timezone: string;
+  @ApiProperty({ example: 30, description: 'Шаг сетки времени, минут (минимальный среди мест онлайн-брони)' }) slotStepMinutes: number;
+  @ApiProperty({
+    example: 120,
+    description: 'Длительность брони для расчёта последнего времени начала: из запроса или минимальная по умолчанию среди мест',
+  })
+  durationMinutes: number;
+  @ApiProperty({ description: 'Бронь не раньше чем через N минут от текущего момента' }) minLeadMinutes: number;
+  @ApiProperty({ description: 'Бронь не дальше N дней вперёд' }) maxDaysAhead: number;
+  @ApiProperty({ description: 'Самое раннее допустимое начало брони' }) earliestStart: Date;
+  @ApiProperty({ description: 'Самое позднее допустимое начало брони' }) latestStart: Date;
+  @ApiProperty({
+    type: [BookingDayDto],
+    description: 'reservation-availability — только запрошенная дата; halls — все даты от сегодня до горизонта',
+  })
+  days: BookingDayDto[];
+}
+
 export class AvailabilityDto {
   @ApiProperty() branchId: string;
   @ApiProperty() branchSlug: string;
@@ -129,6 +173,12 @@ export class AvailabilityDto {
   @ApiProperty({ type: [PublicVenueSlotDto], description: 'Только реально свободные места' }) venues: PublicVenueSlotDto[];
   @ApiProperty({ type: [AlternativeTimeDto], description: 'Ближайшее свободное время в тот же день, если мест нет' })
   alternatives: AlternativeTimeDto[];
+  @ApiPropertyOptional({
+    type: BookingWindowDto,
+    nullable: true,
+    description: 'Окно брони на запрошенную дату (интервалы времён начала, шаг сетки); null — филиал не принимает брони',
+  })
+  bookingWindow: BookingWindowDto | null;
 }
 
 export class PublicMapVenueDto {
@@ -150,9 +200,10 @@ export class PublicHallDto {
   @ApiProperty() id: string;
   @ApiProperty() name: string;
   @ApiProperty() description: string;
-  @ApiProperty() planWidth: number;
-  @ApiProperty() planHeight: number;
-  @ApiPropertyOptional({ type: ImageDto, nullable: true }) background: ImageDto | null;
+  @ApiProperty({ description: PLAN_WIDTH_DESCRIPTION }) planWidth: number;
+  @ApiProperty({ description: PLAN_HEIGHT_DESCRIPTION }) planHeight: number;
+  @ApiPropertyOptional({ type: ImageDto, nullable: true, description: 'Подложка плана: растягивается на весь план (0,0)–(planWidth, planHeight)' })
+  background: ImageDto | null;
   @ApiProperty({ type: [PublicMapVenueDto] }) venues: PublicMapVenueDto[];
 }
 
@@ -161,6 +212,12 @@ export class PublicHallMapDto {
   @ApiProperty() branchSlug: string;
   @ApiProperty() acceptsReservations: boolean;
   @ApiProperty({ type: [PublicHallDto] }) halls: PublicHallDto[];
+  @ApiPropertyOptional({
+    type: BookingWindowDto,
+    nullable: true,
+    description: 'Окно брони по датам от сегодня до горизонта (для выбора даты и времени); null — филиал не принимает брони',
+  })
+  bookingWindow: BookingWindowDto | null;
 }
 
 export class PublicReservationBranchDto {

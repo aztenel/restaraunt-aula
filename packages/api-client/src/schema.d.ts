@@ -1496,6 +1496,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/payments/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminPayments_providerList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/payments/refunds": {
         parameters: {
             query?: never;
@@ -3800,6 +3816,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/reports/aggregator-volumes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["AggregatorVolumes_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/reports/accounting-exports": {
         parameters: {
             query?: never;
@@ -3912,6 +3944,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/pos/exports/retry-failed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PosExports_retryAllFailed"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/pos/exports/{id}/retry": {
         parameters: {
             query?: never;
@@ -4018,6 +4066,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["PosProducts_import"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/pos/dishes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PosDishes_list"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -4446,6 +4510,10 @@ export interface components {
             acceptsReservations: boolean;
             paymentMethods: string[];
             stopListMode: string;
+            /** @description Заказ с оплатой при получении требует подтверждения телефона SMS-кодом (POST /public/phone-verifications) */
+            requirePhoneVerificationForOnReceipt: boolean;
+            /** @description Бронь без депозита требует подтверждения телефона SMS-кодом */
+            requirePhoneVerificationForReservations: boolean;
         };
         TemplateTitleDto: {
             ru: string;
@@ -4863,6 +4931,8 @@ export interface components {
              * @description Сотрудник, внёсший согласие
              */
             recordedBy?: string | null;
+            /** @description Имя сотрудника, внёсшего согласие */
+            recordedByName?: string | null;
             /** Format: date-time */
             recordedAt: string;
         };
@@ -4961,12 +5031,16 @@ export interface components {
             filter: components["schemas"]["CustomerFilterDto"];
             /** Format: uuid */
             createdBy?: string | null;
+            createdByName?: string | null;
             /** Format: uuid */
             updatedBy?: string | null;
+            updatedByName?: string | null;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
             updatedAt: string;
+            /** @description Сколько гостей сейчас в сегменте (без обезличенных) */
+            customersCount: number;
         };
         SegmentDetailDto: {
             id: string;
@@ -4975,13 +5049,15 @@ export interface components {
             filter: components["schemas"]["CustomerFilterDto"];
             /** Format: uuid */
             createdBy?: string | null;
+            createdByName?: string | null;
             /** Format: uuid */
             updatedBy?: string | null;
+            updatedByName?: string | null;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
             updatedAt: string;
-            /** @description Сколько гостей сейчас в сегменте */
+            /** @description Сколько гостей сейчас в сегменте (без обезличенных) */
             customersCount: number;
         };
         SaveSegmentDto: {
@@ -5000,6 +5076,8 @@ export interface components {
             publishedAt: string;
             /** Format: uuid */
             publishedBy?: string | null;
+            /** @description Имя опубликовавшего сотрудника */
+            publishedByName?: string | null;
             /** @description Действующая версия (показывается на формах) */
             isCurrent: boolean;
         };
@@ -5888,6 +5966,36 @@ export interface components {
             page: number;
             perPage: number;
         };
+        PaymentProviderInfoDto: {
+            /** @example sandbox */
+            provider: string;
+            /** @example Тестовый провайдер */
+            title: string;
+            /** @description Включён и настроен (можно принимать новые платежи) */
+            enabled: boolean;
+            /** @description Провайдер по умолчанию для онлайн-оплаты */
+            isDefault: boolean;
+            /** @description Тестовый провайдер вне production, если маршрутизация не настроена */
+            devFallback: boolean;
+            /** @description Филиалы, переопределённые на этого провайдера */
+            branchIds: string[];
+        };
+        PaymentMethodInfoDto: {
+            /** @enum {string} */
+            method: "online" | "on_receipt" | "gift_certificate" | "bank_transfer";
+            title: string;
+            /** @description Провайдер: для online — провайдер по умолчанию; для остальных — сам способ */
+            provider?: string | null;
+            /** @description Доступен сейчас */
+            available: boolean;
+        };
+        PaymentProvidersDto: {
+            /** @description Маршрутизация онлайн-оплаты настроена (payments.routing) */
+            routingConfigured: boolean;
+            defaultProvider?: string | null;
+            providers: components["schemas"]["PaymentProviderInfoDto"][];
+            methods: components["schemas"]["PaymentMethodInfoDto"][];
+        };
         RefundPaymentRefDto: {
             /** @enum {string} */
             purpose: "order" | "reservation_deposit" | "banquet_invoice" | "gift_certificate";
@@ -5919,6 +6027,18 @@ export interface components {
             /** @description Ожидает ручного подтверждения финансистом */
             awaitingManualConfirmation: boolean;
             payment: components["schemas"]["RefundPaymentRefDto"];
+            /**
+             * Format: uuid
+             * @description Сотрудник, запросивший возврат (null — система)
+             */
+            requestedBy?: string | null;
+            requestedByName?: string | null;
+            /**
+             * Format: uuid
+             * @description Сотрудник, подтвердивший (или отклонивший) ручной возврат
+             */
+            confirmedBy?: string | null;
+            confirmedByName?: string | null;
         };
         RefundsPageDto: {
             items: components["schemas"]["RefundDto"][];
@@ -5942,6 +6062,29 @@ export interface components {
         };
         RejectRefundDto: {
             reason: string;
+        };
+        PaymentHistoryEventDto: {
+            /** Format: date-time */
+            at: string;
+            /**
+             * @description status — переход статуса платежа; refund_* — события возврата
+             * @enum {string}
+             */
+            type: "status" | "refund_requested" | "refund_succeeded" | "refund_failed";
+            /**
+             * @description Прежний статус (null — создание)
+             * @enum {string|null}
+             */
+            fromStatus?: "created" | "pending" | "succeeded" | "failed" | "cancelled" | "partially_refunded" | "refunded" | null;
+            /** @enum {string|null} */
+            toStatus?: "created" | "pending" | "succeeded" | "failed" | "cancelled" | "partially_refunded" | "refunded" | null;
+            /** Format: uuid */
+            refundId?: string | null;
+            amount?: components["schemas"]["MoneyDto"] | null;
+            /** @description Причина отказа/отмены, причина возврата, комментарий подтверждения */
+            reason?: string | null;
+            /** @description Сотрудник (null — система, провайдер или гость) */
+            actorName?: string | null;
         };
         WebhookEventDto: {
             id: string;
@@ -5977,6 +6120,8 @@ export interface components {
         };
         PaymentDetailsDto: {
             payment: components["schemas"]["PaymentDto"];
+            /** @description История: создание, переходы статуса, возвраты — по времени */
+            history: components["schemas"]["PaymentHistoryEventDto"][];
             refunds: components["schemas"]["RefundDto"][];
             webhookEvents: components["schemas"]["WebhookEventDto"][];
             /** @description Обмен с провайдером (журнал интеграций, с маскированием) */
@@ -6114,6 +6259,19 @@ export interface components {
             /** @description Заблокированные (остаток, не доступный к списанию) */
             blocked: components["schemas"]["ReportCountAmountDto"];
         };
+        CertificateBranchTotalsDto: {
+            /**
+             * Format: uuid
+             * @description null — продажа на сайте или по счёту (без филиала)
+             */
+            branchId?: string | null;
+            /** @description Выпущено (количество, выручка от продажи) */
+            issued: components["schemas"]["ReportCountAmountDto"];
+            /** @description Погашено (операций, сумма) */
+            redeemed: components["schemas"]["ReportCountAmountDto"];
+            /** @description Возвращено на сертификаты (операций, сумма) */
+            returned: components["schemas"]["ReportCountAmountDto"];
+        };
         CertificateReportDto: {
             from: string;
             to: string;
@@ -6125,8 +6283,17 @@ export interface components {
             expired: components["schemas"]["ReportCountAmountDto"];
             /** @description Восстановлено продлением срока */
             reinstated: components["schemas"]["ReportCountAmountDto"];
-            /** @description Остаток обязательств на момент запроса */
+            /** @description Остаток обязательств на момент запроса (в отчёте филиала — нули, см. liabilityIncluded) */
             liability: components["schemas"]["ReportLiabilityDto"];
+            /**
+             * Format: uuid
+             * @description Филиал отчёта; null — вся сеть
+             */
+            branchId?: string | null;
+            /** @description Остаток обязательств включён (только сетевой отчёт: по филиалам не делится) */
+            liabilityIncluded: boolean;
+            /** @description Движения по филиалам (продажа, погашение, возврат) */
+            byBranch: components["schemas"]["CertificateBranchTotalsDto"][];
         };
         CheckCertificateDto: {
             /** @example ABCD-EFGH-JKMN */
@@ -6616,8 +6783,10 @@ export interface components {
         OrderTrackingPaymentDto: {
             /** @enum {string} */
             method: "online" | "on_receipt";
-            /** @description Заказ оплачен (или оплата обеспечена — при получении) */
+            /** @description Заказ оплачен (или оплата обеспечена — при получении). Для отображения «Оплачено» используйте isPaidOnline */
             isPaid: boolean;
+            /** @description Оплачено заранее (онлайн и/или сертификатом) — при получении платить не нужно; для оплаты при получении — false. Всегда присутствует в ответе (необязательно в схеме для совместимости существующих клиентов) */
+            isPaidOnline?: boolean;
             /** @description Списано с подарочного сертификата */
             certificateAmount: components["schemas"]["MoneyDto"];
             /** @description К оплате онлайн или при получении */
@@ -6681,6 +6850,13 @@ export interface components {
             courier?: components["schemas"]["OrderTrackingCourierDto"] | null;
             cancellation?: components["schemas"]["OrderTrackingCancellationDto"] | null;
             timeline: components["schemas"]["OrderTimelineEntryDto"][];
+            /**
+             * @description Способ оплаты остатка (то же, что payment.method). Всегда присутствует в ответе (необязательно в схеме для совместимости клиентов)
+             * @enum {string}
+             */
+            paymentMethod?: "online" | "on_receipt";
+            /** @description Заказ оплачен заранее (онлайн и/или сертификатом) — показывать «Оплачено». Для оплаты при получении — false, хотя статус заказа paid («оплата обеспечена»). Всегда присутствует в ответе (необязательно в схеме для совместимости клиентов) */
+            isPaidOnline?: boolean;
         };
         ResolveDeliveryDto: {
             /** @description Точка на карте (геокодирование адреса — в браузере витрины) */
@@ -7357,9 +7533,9 @@ export interface components {
             code: string;
             name: components["schemas"]["TranslatableDto"];
             description: components["schemas"]["TranslatableDto"];
-            /** @description Ширина плана зала, условные единицы */
+            /** @description Ширина плана зала, условные единицы (целые, не пиксели). Координаты мест: начало (0,0) — левый верхний угол плана, x — вправо, y — вниз */
             planWidth: number;
-            /** @description Высота плана зала, условные единицы */
+            /** @description Высота плана зала, условные единицы (ось y направлена вниз) */
             planHeight: number;
             /** @description Фон плана зала */
             background?: components["schemas"]["VenueImageDto"] | null;
@@ -7376,9 +7552,15 @@ export interface components {
             code: string;
             name: components["schemas"]["TranslatableDto"];
             description?: components["schemas"]["TranslatableDto"] | null;
-            /** @default 1000 */
+            /**
+             * @description Ширина плана зала, условные единицы (целые, не пиксели). Координаты мест: начало (0,0) — левый верхний угол плана, x — вправо, y — вниз
+             * @default 1000
+             */
             planWidth: number;
-            /** @default 600 */
+            /**
+             * @description Высота плана зала, условные единицы (ось y направлена вниз)
+             * @default 600
+             */
             planHeight: number;
             /** @default 0 */
             sortOrder: number;
@@ -7404,15 +7586,20 @@ export interface components {
             bookableOnline?: boolean | null;
         };
         VenuePositionDto: {
+            /** @description Левая граница места до поворота, единицы плана (от левого края плана) */
             x: number;
+            /** @description Верхняя граница места до поворота, единицы плана (от верхнего края плана, y — вниз) */
             y: number;
-            /** @description Ширина */
+            /** @description Ширина места до поворота, единицы плана */
             w: number;
-            /** @description Высота */
+            /** @description Высота места до поворота, единицы плана */
             h: number;
-            /** @enum {string} */
+            /**
+             * @description rect — прямоугольник w × h; circle — эллипс (круг при w = h), вписанный в прямоугольник w × h
+             * @enum {string}
+             */
             shape: "rect" | "circle";
-            /** @description Поворот, градусы */
+            /** @description Поворот в градусах (целые 0–359) по часовой стрелке на экране (ось y вниз) вокруг центра места (x + w/2, y + h/2); SVG: rotate(rotation, x + w/2, y + h/2). В границы плана должен помещаться прямоугольник до поворота */
             rotation: number;
         };
         VenueDto: {
@@ -7448,12 +7635,20 @@ export interface components {
             updatedAt: string;
         };
         VenuePositionInputDto: {
+            /** @description Левая граница места до поворота, единицы плана (от левого края плана) */
             x?: number;
+            /** @description Верхняя граница места до поворота, единицы плана (от верхнего края плана, y — вниз) */
             y?: number;
+            /** @description Ширина места до поворота, единицы плана */
             w?: number;
+            /** @description Высота места до поворота, единицы плана */
             h?: number;
-            /** @enum {string} */
+            /**
+             * @description rect — прямоугольник w × h; circle — эллипс (круг при w = h), вписанный в прямоугольник w × h
+             * @enum {string}
+             */
             shape?: "rect" | "circle";
+            /** @description Поворот в градусах (целые 0–359) по часовой стрелке на экране (ось y вниз) вокруг центра места (x + w/2, y + h/2); SVG: rotate(rotation, x + w/2, y + h/2). В границы плана должен помещаться прямоугольник до поворота */
             rotation?: number;
         };
         CreateVenueDto: {
@@ -7662,7 +7857,9 @@ export interface components {
             id: string;
             code: string;
             name: components["schemas"]["TranslatableDto"];
+            /** @description Ширина плана зала, условные единицы (целые, не пиксели). Координаты мест: начало (0,0) — левый верхний угол плана, x — вправо, y — вниз */
             planWidth: number;
+            /** @description Высота плана зала, условные единицы (ось y направлена вниз) */
             planHeight: number;
             isActive: boolean;
             /** @description Подложка плана зала */
@@ -7966,6 +8163,67 @@ export interface components {
             position: components["schemas"]["VenuePositionDto"];
             photos: components["schemas"]["VenueImageDto"][];
         };
+        BookingDayIntervalDto: {
+            /**
+             * @description Первое время начала брони, HH:mm (местное время филиала)
+             * @example 12:00
+             */
+            from: string;
+            /**
+             * @description Последнее время начала брони, HH:mm: бронь длительностью durationMinutes ещё помещается в часы работы
+             * @example 21:00
+             */
+            to: string;
+            /**
+             * Format: date-time
+             * @description from как момент времени (UTC)
+             */
+            fromAt: string;
+            /**
+             * Format: date-time
+             * @description to как момент времени (UTC)
+             */
+            toAt: string;
+        };
+        BookingDayDto: {
+            /** @example 2026-10-25 */
+            date: string;
+            /** @description Интервалы времён начала на сетке slotStepMinutes (от местной полуночи); пусто — в этот день бронь с сайта невозможна */
+            intervals: components["schemas"]["BookingDayIntervalDto"][];
+        };
+        BookingWindowDto: {
+            /**
+             * @description Часовой пояс филиала (все HH:mm — в нём)
+             * @example Asia/Almaty
+             */
+            timezone: string;
+            /**
+             * @description Шаг сетки времени, минут (минимальный среди мест онлайн-брони)
+             * @example 30
+             */
+            slotStepMinutes: number;
+            /**
+             * @description Длительность брони для расчёта последнего времени начала: из запроса или минимальная по умолчанию среди мест
+             * @example 120
+             */
+            durationMinutes: number;
+            /** @description Бронь не раньше чем через N минут от текущего момента */
+            minLeadMinutes: number;
+            /** @description Бронь не дальше N дней вперёд */
+            maxDaysAhead: number;
+            /**
+             * Format: date-time
+             * @description Самое раннее допустимое начало брони
+             */
+            earliestStart: string;
+            /**
+             * Format: date-time
+             * @description Самое позднее допустимое начало брони
+             */
+            latestStart: string;
+            /** @description reservation-availability — только запрошенная дата; halls — все даты от сегодня до горизонта */
+            days: components["schemas"]["BookingDayDto"][];
+        };
         AvailabilityDto: {
             branchId: string;
             branchSlug: string;
@@ -7984,6 +8242,8 @@ export interface components {
             venues: components["schemas"]["PublicVenueSlotDto"][];
             /** @description Ближайшее свободное время в тот же день, если мест нет */
             alternatives: components["schemas"]["AlternativeTimeDto"][];
+            /** @description Окно брони на запрошенную дату (интервалы времён начала, шаг сетки); null — филиал не принимает брони */
+            bookingWindow?: components["schemas"]["BookingWindowDto"] | null;
         };
         PublicMapVenueDto: {
             id: string;
@@ -8005,8 +8265,11 @@ export interface components {
             id: string;
             name: string;
             description: string;
+            /** @description Ширина плана зала, условные единицы (целые, не пиксели). Координаты мест: начало (0,0) — левый верхний угол плана, x — вправо, y — вниз */
             planWidth: number;
+            /** @description Высота плана зала, условные единицы (ось y направлена вниз) */
             planHeight: number;
+            /** @description Подложка плана: растягивается на весь план (0,0)–(planWidth, planHeight) */
             background?: components["schemas"]["VenueImageDto"] | null;
             venues: components["schemas"]["PublicMapVenueDto"][];
         };
@@ -8015,6 +8278,8 @@ export interface components {
             branchSlug: string;
             acceptsReservations: boolean;
             halls: components["schemas"]["PublicHallDto"][];
+            /** @description Окно брони по датам от сегодня до горизонта (для выбора даты и времени); null — филиал не принимает брони */
+            bookingWindow?: components["schemas"]["BookingWindowDto"] | null;
         };
         GuestCustomerDto: {
             /** @example Айгерим */
@@ -9807,6 +10072,8 @@ export interface components {
             dishMissing: boolean;
             /** @description Опции модификаторов без сопоставления */
             options: components["schemas"]["MissingOptionDto"][];
+            /** @description id опций без сопоставления (то же, что options[].optionId) — для перехода к сопоставлению */
+            optionIds: string[];
         };
         OrderExportDto: {
             id: string;
@@ -9852,6 +10119,14 @@ export interface components {
             total: number;
             page: number;
             perPage: number;
+        };
+        RetryFailedExportsResultDto: {
+            /** @description Сколько неудачных передач поставлено на повтор */
+            retried: number;
+            /** @description id повторённых передач */
+            exportIds: string[];
+            /** @description Неудачных передач осталось сверх лимита одного запроса (200) — повторите запрос */
+            remaining: number;
         };
         ModifierMappingDto: {
             /** @description Опция модификатора витрины */
@@ -9962,6 +10237,53 @@ export interface components {
             perPage: number;
             /** @description Провайдер, чья номенклатура показана */
             provider: string;
+        };
+        PosDishCategoryDto: {
+            id: string;
+            slug: string;
+            name: components["schemas"]["TranslatableDto"];
+        };
+        PosDishMappingRefDto: {
+            /** @description id сопоставления (PUT/DELETE /admin/pos/mappings/{id}) */
+            mappingId: string;
+            externalProductId: string;
+            externalName?: string | null;
+        };
+        PosDishOptionDto: {
+            optionId: string;
+            name: components["schemas"]["TranslatableDto"];
+            /** @description Товар-модификатор POS; null — опция не сопоставлена */
+            externalProductId?: string | null;
+            /** @description Группа модификаторов POS */
+            externalGroupId?: string | null;
+        };
+        PosDishGroupDto: {
+            groupId: string;
+            name: components["schemas"]["TranslatableDto"];
+            isRequired: boolean;
+            options: components["schemas"]["PosDishOptionDto"][];
+        };
+        PosDishDto: {
+            dishId: string;
+            categoryId: string;
+            name: components["schemas"]["TranslatableDto"];
+            sku?: string | null;
+            price: components["schemas"]["MoneyDto"];
+            /** @description Блюдо в стоп-листе филиала */
+            stopped: boolean;
+            /** @description null — блюдо не сопоставлено с товаром POS */
+            mapping?: components["schemas"]["PosDishMappingRefDto"] | null;
+            /** @description Опции модификаторов без сопоставления */
+            unmappedOptionIds: string[];
+            modifierGroups: components["schemas"]["PosDishGroupDto"][];
+        };
+        PosDishesDto: {
+            branchId: string;
+            /** @description Провайдер, чьи сопоставления показаны */
+            provider: string;
+            categories: components["schemas"]["PosDishCategoryDto"][];
+            /** @description Все блюда меню филиала (включая стоп-лист) с модификаторами */
+            dishes: components["schemas"]["PosDishDto"][];
         };
     };
     responses: never;
@@ -10727,7 +11049,7 @@ export interface operations {
                 from?: string;
                 /** @description До момента (ISO 8601, не включая) */
                 to?: string;
-                /** @description Адресат: телефон, email или id чата (точное совпадение; в ответе — маска) */
+                /** @description Адресат: полный телефон или email — точное совпадение; фрагмент (не меньше 4 цифр телефона, например последние цифры, или не меньше 3 символов email/id чата) — поиск по части адреса. В ответе адресаты всегда маскированы. */
                 recipient?: string;
                 /** @description Тип связанного объекта: order, reservation, banquet_request, gift_certificate... */
                 relatedType?: string;
@@ -12851,6 +13173,8 @@ export interface operations {
                 from?: string;
                 /** @description Создан раньше (ISO 8601) */
                 to?: string;
+                /** @description Телефон гостя: полный номер или часть (от 4 цифр) */
+                phone?: string;
             };
             header?: never;
             path?: never;
@@ -12868,6 +13192,25 @@ export interface operations {
             };
         };
     };
+    AdminPayments_providerList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentProvidersDto"];
+                };
+            };
+        };
+    };
     AdminPayments_refunds: {
         parameters: {
             query?: {
@@ -12876,6 +13219,12 @@ export interface operations {
                 branchId?: string;
                 status?: "pending" | "succeeded" | "failed";
                 mode?: "gateway" | "certificate" | "manual";
+                /** @description Запрошен не раньше (ISO 8601) */
+                from?: string;
+                /** @description Запрошен раньше (ISO 8601) */
+                to?: string;
+                /** @description Поиск: id возврата/платежа/объекта оплаты, сумма в тенге («1500», «1500.50») или текст описания платежа (номер заказа, брони, счёта) */
+                q?: string;
             };
             header?: never;
             path?: never;
@@ -13107,6 +13456,12 @@ export interface operations {
                 phone?: string;
                 status?: "active" | "redeemed" | "expired" | "blocked";
                 orderId?: string;
+                /** @description Покупатель: имя, email или компания (часть, без учёта регистра) */
+                buyer?: string;
+                /** @description Выпущен с даты (Asia/Almaty, включительно) */
+                issuedFrom?: string;
+                /** @description Выпущен по дату (включительно) */
+                issuedTo?: string;
             };
             header?: never;
             path?: never;
@@ -13129,6 +13484,8 @@ export interface operations {
             query: {
                 from: string;
                 to: string;
+                /** @description Филиал (где продан/погашен сертификат): certificates.view или reports.branch в филиале. Не задан — вся сеть (глобальные роли) */
+                branchId?: string;
             };
             header?: never;
             path?: never;
@@ -13151,6 +13508,8 @@ export interface operations {
             query: {
                 from: string;
                 to: string;
+                /** @description Филиал (где продан/погашен сертификат): certificates.view или reports.branch в филиале. Не задан — вся сеть (глобальные роли) */
+                branchId?: string;
             };
             header?: never;
             path?: never;
@@ -17096,11 +17455,35 @@ export interface operations {
             };
         };
     };
+    AggregatorVolumes_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     AccountingExports_list: {
         parameters: {
             query?: {
                 page?: number;
                 perPage?: number;
+                /** @description Только выгрузки филиала (право reports.export в нём) */
+                branchId?: string;
+                /** @description Период выгрузки пересекается с [from, to] (YYYY-MM-DD) */
+                from?: string;
+                to?: string;
             };
             header?: never;
             path?: never;
@@ -17275,6 +17658,29 @@ export interface operations {
             };
         };
     };
+    PosExports_retryAllFailed: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BranchRefDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RetryFailedExportsResultDto"];
+                };
+            };
+        };
+    };
     PosExports_retry: {
         parameters: {
             query?: never;
@@ -17305,6 +17711,8 @@ export interface operations {
                 provider?: string;
                 dishId?: string;
                 externalProductId?: string;
+                /** @description Поиск по части названия товара POS (externalName) или его id, без учёта регистра */
+                q?: string;
             };
             header?: never;
             path?: never;
@@ -17487,6 +17895,33 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["QueuedJobDto"];
+                };
+            };
+        };
+    };
+    PosDishes_list: {
+        parameters: {
+            query: {
+                branchId: string;
+                /** @description Провайдер; по умолчанию — провайдер филиала */
+                provider?: string;
+                /** @description Поиск по названию блюда или артикулу (sku) */
+                q?: string;
+                /** @description Только блюда без сопоставления */
+                unmappedOnly?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PosDishesDto"];
                 };
             };
         };

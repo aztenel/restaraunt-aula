@@ -1577,7 +1577,7 @@
             "name": "recipient",
             "required": false,
             "in": "query",
-            "description": "Адресат: телефон, email или id чата (точное совпадение; в ответе — маска)",
+            "description": "Адресат: полный телефон или email — точное совпадение; фрагмент (не меньше 4 цифр телефона, например последние цифры, или не меньше 3 символов email/id чата) — поиск по части адреса. В ответе адресаты всегда маскированы.",
             "schema": {
               "type": "string"
             }
@@ -5574,6 +5574,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "phone",
+            "required": false,
+            "in": "query",
+            "description": "Телефон гостя: полный номер или часть (от 4 цифр)",
+            "schema": {
+              "example": "7011234567",
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -5583,6 +5593,32 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PaymentsPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/payments/providers": {
+      "get": {
+        "operationId": "AdminPayments_providerList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentProvidersDto"
                 }
               }
             }
@@ -5655,6 +5691,33 @@
                 "certificate",
                 "manual"
               ]
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Запрошен не раньше (ISO 8601)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "Запрошен раньше (ISO 8601)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Поиск: id возврата/платежа/объекта оплаты, сумма в тенге («1500», «1500.50») или текст описания платежа (номер заказа, брони, счёта)",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -6083,6 +6146,35 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "buyer",
+            "required": false,
+            "in": "query",
+            "description": "Покупатель: имя, email или компания (часть, без учёта регистра)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "issuedFrom",
+            "required": false,
+            "in": "query",
+            "description": "Выпущен с даты (Asia/Almaty, включительно)",
+            "schema": {
+              "example": "2026-10-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "issuedTo",
+            "required": false,
+            "in": "query",
+            "description": "Выпущен по дату (включительно)",
+            "schema": {
+              "example": "2026-10-31",
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -6128,6 +6220,15 @@
               "example": "2026-10-31",
               "type": "string"
             }
+          },
+          {
+            "name": "branchId",
+            "required": false,
+            "in": "query",
+            "description": "Филиал (где продан/погашен сертификат): certificates.view или reports.branch в филиале. Не задан — вся сеть (глобальные роли)",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -6171,6 +6272,15 @@
             "in": "query",
             "schema": {
               "example": "2026-10-31",
+              "type": "string"
+            }
+          },
+          {
+            "name": "branchId",
+            "required": false,
+            "in": "query",
+            "description": "Филиал (где продан/погашен сертификат): certificates.view или reports.branch в филиале. Не задан — вся сеть (глобальные роли)",
+            "schema": {
               "type": "string"
             }
           }
@@ -13691,6 +13801,34 @@
         ]
       }
     },
+    "/api/v1/admin/reports/aggregator-volumes/{id}": {
+      "delete": {
+        "operationId": "AggregatorVolumes_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/v1/admin/reports/accounting-exports": {
       "post": {
         "operationId": "AccountingExports_create",
@@ -13748,6 +13886,34 @@
               "maximum": 200,
               "default": 50,
               "type": "number"
+            }
+          },
+          {
+            "name": "branchId",
+            "required": false,
+            "in": "query",
+            "description": "Только выгрузки филиала (право reports.export в нём)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Период выгрузки пересекается с [from, to] (YYYY-MM-DD)",
+            "schema": {
+              "example": "2026-09-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09-30",
+              "type": "string"
             }
           }
         ],
@@ -14020,6 +14186,42 @@
         ]
       }
     },
+    "/api/v1/admin/pos/exports/retry-failed": {
+      "post": {
+        "operationId": "PosExports_retryAllFailed",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BranchRefDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetryFailedExportsResultDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/v1/admin/pos/exports/{id}/retry": {
       "post": {
         "operationId": "PosExports_retry",
@@ -14108,6 +14310,15 @@
             "name": "externalProductId",
             "required": false,
             "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Поиск по части названия товара POS (externalName) или его id, без учёта регистра",
             "schema": {
               "type": "string"
             }
@@ -14468,6 +14679,68 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/QueuedJobDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/pos/dishes": {
+      "get": {
+        "operationId": "PosDishes_list",
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "required": false,
+            "in": "query",
+            "description": "Провайдер; по умолчанию — провайдер филиала",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Поиск по названию блюда или артикулу (sku)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "unmappedOnly",
+            "required": false,
+            "in": "query",
+            "description": "Только блюда без сопоставления",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PosDishesDto"
                 }
               }
             }
@@ -15813,6 +16086,14 @@
           },
           "stopListMode": {
             "type": "string"
+          },
+          "requirePhoneVerificationForOnReceipt": {
+            "type": "boolean",
+            "description": "Заказ с оплатой при получении требует подтверждения телефона SMS-кодом (POST /public/phone-verifications)"
+          },
+          "requirePhoneVerificationForReservations": {
+            "type": "boolean",
+            "description": "Бронь без депозита требует подтверждения телефона SMS-кодом"
           }
         },
         "required": [
@@ -15829,7 +16110,9 @@
           "acceptsPickup",
           "acceptsReservations",
           "paymentMethods",
-          "stopListMode"
+          "stopListMode",
+          "requirePhoneVerificationForOnReceipt",
+          "requirePhoneVerificationForReservations"
         ]
       },
       "TemplateTitleDto": {
@@ -17233,6 +17516,11 @@
             "nullable": true,
             "description": "Сотрудник, внёсший согласие"
           },
+          "recordedByName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Имя сотрудника, внёсшего согласие"
+          },
           "recordedAt": {
             "format": "date-time",
             "type": "string"
@@ -17571,9 +17859,17 @@
             "format": "uuid",
             "nullable": true
           },
+          "createdByName": {
+            "type": "string",
+            "nullable": true
+          },
           "updatedBy": {
             "type": "string",
             "format": "uuid",
+            "nullable": true
+          },
+          "updatedByName": {
+            "type": "string",
             "nullable": true
           },
           "createdAt": {
@@ -17583,6 +17879,10 @@
           "updatedAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "customersCount": {
+            "type": "number",
+            "description": "Сколько гостей сейчас в сегменте (без обезличенных)"
           }
         },
         "required": [
@@ -17590,7 +17890,8 @@
           "name",
           "filter",
           "createdAt",
-          "updatedAt"
+          "updatedAt",
+          "customersCount"
         ]
       },
       "SegmentDetailDto": {
@@ -17614,9 +17915,17 @@
             "format": "uuid",
             "nullable": true
           },
+          "createdByName": {
+            "type": "string",
+            "nullable": true
+          },
           "updatedBy": {
             "type": "string",
             "format": "uuid",
+            "nullable": true
+          },
+          "updatedByName": {
+            "type": "string",
             "nullable": true
           },
           "createdAt": {
@@ -17629,7 +17938,7 @@
           },
           "customersCount": {
             "type": "number",
-            "description": "Сколько гостей сейчас в сегменте"
+            "description": "Сколько гостей сейчас в сегменте (без обезличенных)"
           }
         },
         "required": [
@@ -17688,6 +17997,11 @@
             "type": "string",
             "format": "uuid",
             "nullable": true
+          },
+          "publishedByName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Имя опубликовавшего сотрудника"
           },
           "isCurrent": {
             "type": "boolean",
@@ -20724,6 +21038,107 @@
           "perPage"
         ]
       },
+      "PaymentProviderInfoDto": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "example": "sandbox"
+          },
+          "title": {
+            "type": "string",
+            "example": "Тестовый провайдер"
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Включён и настроен (можно принимать новые платежи)"
+          },
+          "isDefault": {
+            "type": "boolean",
+            "description": "Провайдер по умолчанию для онлайн-оплаты"
+          },
+          "devFallback": {
+            "type": "boolean",
+            "description": "Тестовый провайдер вне production, если маршрутизация не настроена"
+          },
+          "branchIds": {
+            "description": "Филиалы, переопределённые на этого провайдера",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "provider",
+          "title",
+          "enabled",
+          "isDefault",
+          "devFallback",
+          "branchIds"
+        ]
+      },
+      "PaymentMethodInfoDto": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "online",
+              "on_receipt",
+              "gift_certificate",
+              "bank_transfer"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string",
+            "nullable": true,
+            "description": "Провайдер: для online — провайдер по умолчанию; для остальных — сам способ"
+          },
+          "available": {
+            "type": "boolean",
+            "description": "Доступен сейчас"
+          }
+        },
+        "required": [
+          "method",
+          "title",
+          "available"
+        ]
+      },
+      "PaymentProvidersDto": {
+        "type": "object",
+        "properties": {
+          "routingConfigured": {
+            "type": "boolean",
+            "description": "Маршрутизация онлайн-оплаты настроена (payments.routing)"
+          },
+          "defaultProvider": {
+            "type": "string",
+            "nullable": true
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentProviderInfoDto"
+            }
+          },
+          "methods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentMethodInfoDto"
+            }
+          }
+        },
+        "required": [
+          "routingConfigured",
+          "providers",
+          "methods"
+        ]
+      },
       "RefundPaymentRefDto": {
         "type": "object",
         "properties": {
@@ -20818,6 +21233,26 @@
           },
           "payment": {
             "$ref": "#/components/schemas/RefundPaymentRefDto"
+          },
+          "requestedBy": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Сотрудник, запросивший возврат (null — система)"
+          },
+          "requestedByName": {
+            "type": "string",
+            "nullable": true
+          },
+          "confirmedBy": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Сотрудник, подтвердивший (или отклонивший) ручной возврат"
+          },
+          "confirmedByName": {
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -20914,6 +21349,80 @@
         },
         "required": [
           "reason"
+        ]
+      },
+      "PaymentHistoryEventDto": {
+        "type": "object",
+        "properties": {
+          "at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "status",
+              "refund_requested",
+              "refund_succeeded",
+              "refund_failed"
+            ],
+            "description": "status — переход статуса платежа; refund_* — события возврата"
+          },
+          "fromStatus": {
+            "type": "string",
+            "enum": [
+              "created",
+              "pending",
+              "succeeded",
+              "failed",
+              "cancelled",
+              "partially_refunded",
+              "refunded"
+            ],
+            "nullable": true,
+            "description": "Прежний статус (null — создание)"
+          },
+          "toStatus": {
+            "type": "string",
+            "enum": [
+              "created",
+              "pending",
+              "succeeded",
+              "failed",
+              "cancelled",
+              "partially_refunded",
+              "refunded"
+            ],
+            "nullable": true
+          },
+          "refundId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "amount": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Причина отказа/отмены, причина возврата, комментарий подтверждения"
+          },
+          "actorName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Сотрудник (null — система, провайдер или гость)"
+          }
+        },
+        "required": [
+          "at",
+          "type"
         ]
       },
       "WebhookEventDto": {
@@ -21026,6 +21535,13 @@
           "payment": {
             "$ref": "#/components/schemas/PaymentDto"
           },
+          "history": {
+            "description": "История: создание, переходы статуса, возвраты — по времени",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentHistoryEventDto"
+            }
+          },
           "refunds": {
             "type": "array",
             "items": {
@@ -21048,6 +21564,7 @@
         },
         "required": [
           "payment",
+          "history",
           "refunds",
           "webhookEvents",
           "providerLog"
@@ -21522,6 +22039,46 @@
           "blocked"
         ]
       },
+      "CertificateBranchTotalsDto": {
+        "type": "object",
+        "properties": {
+          "branchId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "null — продажа на сайте или по счёту (без филиала)"
+          },
+          "issued": {
+            "description": "Выпущено (количество, выручка от продажи)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReportCountAmountDto"
+              }
+            ]
+          },
+          "redeemed": {
+            "description": "Погашено (операций, сумма)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReportCountAmountDto"
+              }
+            ]
+          },
+          "returned": {
+            "description": "Возвращено на сертификаты (операций, сумма)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReportCountAmountDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "issued",
+          "redeemed",
+          "returned"
+        ]
+      },
       "CertificateReportDto": {
         "type": "object",
         "properties": {
@@ -21562,12 +22119,29 @@
             ]
           },
           "liability": {
-            "description": "Остаток обязательств на момент запроса",
+            "description": "Остаток обязательств на момент запроса (в отчёте филиала — нули, см. liabilityIncluded)",
             "allOf": [
               {
                 "$ref": "#/components/schemas/ReportLiabilityDto"
               }
             ]
+          },
+          "branchId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Филиал отчёта; null — вся сеть"
+          },
+          "liabilityIncluded": {
+            "type": "boolean",
+            "description": "Остаток обязательств включён (только сетевой отчёт: по филиалам не делится)"
+          },
+          "byBranch": {
+            "description": "Движения по филиалам (продажа, погашение, возврат)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CertificateBranchTotalsDto"
+            }
           }
         },
         "required": [
@@ -21578,7 +22152,9 @@
           "returned",
           "expired",
           "reinstated",
-          "liability"
+          "liability",
+          "liabilityIncluded",
+          "byBranch"
         ]
       },
       "CheckCertificateDto": {
@@ -23275,7 +23851,11 @@
           },
           "isPaid": {
             "type": "boolean",
-            "description": "Заказ оплачен (или оплата обеспечена — при получении)"
+            "description": "Заказ оплачен (или оплата обеспечена — при получении). Для отображения «Оплачено» используйте isPaidOnline"
+          },
+          "isPaidOnline": {
+            "type": "boolean",
+            "description": "Оплачено заранее (онлайн и/или сертификатом) — при получении платить не нужно; для оплаты при получении — false. Всегда присутствует в ответе (необязательно в схеме для совместимости существующих клиентов)"
           },
           "certificateAmount": {
             "description": "Списано с подарочного сертификата",
@@ -23513,6 +24093,18 @@
             "items": {
               "$ref": "#/components/schemas/OrderTimelineEntryDto"
             }
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "online",
+              "on_receipt"
+            ],
+            "description": "Способ оплаты остатка (то же, что payment.method). Всегда присутствует в ответе (необязательно в схеме для совместимости клиентов)"
+          },
+          "isPaidOnline": {
+            "type": "boolean",
+            "description": "Заказ оплачен заранее (онлайн и/или сертификатом) — показывать «Оплачено». Для оплаты при получении — false, хотя статус заказа paid («оплата обеспечена»). Всегда присутствует в ответе (необязательно в схеме для совместимости клиентов)"
           }
         },
         "required": [
@@ -25927,11 +26519,11 @@
           },
           "planWidth": {
             "type": "number",
-            "description": "Ширина плана зала, условные единицы"
+            "description": "Ширина плана зала, условные единицы (целые, не пиксели). Координаты мест: начало (0,0) — левый верхний угол плана, x — вправо, y — вниз"
           },
           "planHeight": {
             "type": "number",
-            "description": "Высота плана зала, условные единицы"
+            "description": "Высота плана зала, условные единицы (ось y направлена вниз)"
           },
           "background": {
             "nullable": true,
@@ -25998,13 +26590,15 @@
             "type": "number",
             "default": 1000,
             "minimum": 100,
-            "maximum": 10000
+            "maximum": 10000,
+            "description": "Ширина плана зала, условные единицы (целые, не пиксели). Координаты мест: начало (0,0) — левый верхний угол плана, x — вправо, y — вниз"
           },
           "planHeight": {
             "type": "number",
             "default": 600,
             "minimum": 100,
-            "maximum": 10000
+            "maximum": 10000,
+            "description": "Высота плана зала, условные единицы (ось y направлена вниз)"
           },
           "sortOrder": {
             "type": "number",
@@ -26105,34 +26699,37 @@
         "properties": {
           "x": {
             "type": "number",
-            "minimum": 0
+            "minimum": 0,
+            "description": "Левая граница места до поворота, единицы плана (от левого края плана)"
           },
           "y": {
             "type": "number",
-            "minimum": 0
+            "minimum": 0,
+            "description": "Верхняя граница места до поворота, единицы плана (от верхнего края плана, y — вниз)"
           },
           "w": {
             "type": "number",
             "minimum": 1,
-            "description": "Ширина"
+            "description": "Ширина места до поворота, единицы плана"
           },
           "h": {
             "type": "number",
             "minimum": 1,
-            "description": "Высота"
+            "description": "Высота места до поворота, единицы плана"
           },
           "shape": {
             "type": "string",
             "enum": [
               "rect",
               "circle"
-            ]
+            ],
+            "description": "rect — прямоугольник w × h; circle — эллипс (круг при w = h), вписанный в прямоугольник w × h"
           },
           "rotation": {
             "type": "number",
             "minimum": 0,
             "maximum": 359,
-            "description": "Поворот, градусы"
+            "description": "Поворот в градусах (целые 0–359) по часовой стрелке на экране (ось y вниз) вокруг центра места (x + w/2, y + h/2); SVG: rotate(rotation, x + w/2, y + h/2). В границы плана должен помещаться прямоугольник до поворота"
           }
         },
         "required": [
@@ -26268,31 +26865,37 @@
         "properties": {
           "x": {
             "type": "number",
-            "minimum": 0
+            "minimum": 0,
+            "description": "Левая граница места до поворота, единицы плана (от левого края плана)"
           },
           "y": {
             "type": "number",
-            "minimum": 0
+            "minimum": 0,
+            "description": "Верхняя граница места до поворота, единицы плана (от верхнего края плана, y — вниз)"
           },
           "w": {
             "type": "number",
-            "minimum": 1
+            "minimum": 1,
+            "description": "Ширина места до поворота, единицы плана"
           },
           "h": {
             "type": "number",
-            "minimum": 1
+            "minimum": 1,
+            "description": "Высота места до поворота, единицы плана"
           },
           "shape": {
             "type": "string",
             "enum": [
               "rect",
               "circle"
-            ]
+            ],
+            "description": "rect — прямоугольник w × h; circle — эллипс (круг при w = h), вписанный в прямоугольник w × h"
           },
           "rotation": {
             "type": "number",
             "minimum": 0,
-            "maximum": 359
+            "maximum": 359,
+            "description": "Поворот в градусах (целые 0–359) по часовой стрелке на экране (ось y вниз) вокруг центра места (x + w/2, y + h/2); SVG: rotate(rotation, x + w/2, y + h/2). В границы плана должен помещаться прямоугольник до поворота"
           }
         }
       },
@@ -26974,10 +27577,12 @@
             "$ref": "#/components/schemas/TranslatableDto"
           },
           "planWidth": {
-            "type": "number"
+            "type": "number",
+            "description": "Ширина плана зала, условные единицы (целые, не пиксели). Координаты мест: начало (0,0) — левый верхний угол плана, x — вправо, y — вниз"
           },
           "planHeight": {
-            "type": "number"
+            "type": "number",
+            "description": "Высота плана зала, условные единицы (ось y направлена вниз)"
           },
           "isActive": {
             "type": "boolean"
@@ -27912,6 +28517,112 @@
           "photos"
         ]
       },
+      "BookingDayIntervalDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "example": "12:00",
+            "description": "Первое время начала брони, HH:mm (местное время филиала)"
+          },
+          "to": {
+            "type": "string",
+            "example": "21:00",
+            "description": "Последнее время начала брони, HH:mm: бронь длительностью durationMinutes ещё помещается в часы работы"
+          },
+          "fromAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "from как момент времени (UTC)"
+          },
+          "toAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "to как момент времени (UTC)"
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "fromAt",
+          "toAt"
+        ]
+      },
+      "BookingDayDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "2026-10-25"
+          },
+          "intervals": {
+            "description": "Интервалы времён начала на сетке slotStepMinutes (от местной полуночи); пусто — в этот день бронь с сайта невозможна",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BookingDayIntervalDto"
+            }
+          }
+        },
+        "required": [
+          "date",
+          "intervals"
+        ]
+      },
+      "BookingWindowDto": {
+        "type": "object",
+        "properties": {
+          "timezone": {
+            "type": "string",
+            "example": "Asia/Almaty",
+            "description": "Часовой пояс филиала (все HH:mm — в нём)"
+          },
+          "slotStepMinutes": {
+            "type": "number",
+            "example": 30,
+            "description": "Шаг сетки времени, минут (минимальный среди мест онлайн-брони)"
+          },
+          "durationMinutes": {
+            "type": "number",
+            "example": 120,
+            "description": "Длительность брони для расчёта последнего времени начала: из запроса или минимальная по умолчанию среди мест"
+          },
+          "minLeadMinutes": {
+            "type": "number",
+            "description": "Бронь не раньше чем через N минут от текущего момента"
+          },
+          "maxDaysAhead": {
+            "type": "number",
+            "description": "Бронь не дальше N дней вперёд"
+          },
+          "earliestStart": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Самое раннее допустимое начало брони"
+          },
+          "latestStart": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Самое позднее допустимое начало брони"
+          },
+          "days": {
+            "description": "reservation-availability — только запрошенная дата; halls — все даты от сегодня до горизонта",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BookingDayDto"
+            }
+          }
+        },
+        "required": [
+          "timezone",
+          "slotStepMinutes",
+          "durationMinutes",
+          "minLeadMinutes",
+          "maxDaysAhead",
+          "earliestStart",
+          "latestStart",
+          "days"
+        ]
+      },
       "AvailabilityDto": {
         "type": "object",
         "properties": {
@@ -27965,6 +28676,16 @@
             "items": {
               "$ref": "#/components/schemas/AlternativeTimeDto"
             }
+          },
+          "bookingWindow": {
+            "nullable": true,
+            "description": "Окно брони на запрошенную дату (интервалы времён начала, шаг сетки); null — филиал не принимает брони",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BookingWindowDto"
+              }
+            ]
           }
         },
         "required": [
@@ -28056,13 +28777,16 @@
             "type": "string"
           },
           "planWidth": {
-            "type": "number"
+            "type": "number",
+            "description": "Ширина плана зала, условные единицы (целые, не пиксели). Координаты мест: начало (0,0) — левый верхний угол плана, x — вправо, y — вниз"
           },
           "planHeight": {
-            "type": "number"
+            "type": "number",
+            "description": "Высота плана зала, условные единицы (ось y направлена вниз)"
           },
           "background": {
             "nullable": true,
+            "description": "Подложка плана: растягивается на весь план (0,0)–(planWidth, planHeight)",
             "type": "object",
             "allOf": [
               {
@@ -28103,6 +28827,16 @@
             "items": {
               "$ref": "#/components/schemas/PublicHallDto"
             }
+          },
+          "bookingWindow": {
+            "nullable": true,
+            "description": "Окно брони по датам от сегодня до горизонта (для выбора даты и времени); null — филиал не принимает брони",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BookingWindowDto"
+              }
+            ]
           }
         },
         "required": [
@@ -34488,13 +35222,21 @@
             "items": {
               "$ref": "#/components/schemas/MissingOptionDto"
             }
+          },
+          "optionIds": {
+            "description": "id опций без сопоставления (то же, что options[].optionId) — для перехода к сопоставлению",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
           "dishId",
           "dishName",
           "dishMissing",
-          "options"
+          "options",
+          "optionIds"
         ]
       },
       "OrderExportDto": {
@@ -34641,6 +35383,31 @@
           "total",
           "page",
           "perPage"
+        ]
+      },
+      "RetryFailedExportsResultDto": {
+        "type": "object",
+        "properties": {
+          "retried": {
+            "type": "number",
+            "description": "Сколько неудачных передач поставлено на повтор"
+          },
+          "exportIds": {
+            "description": "id повторённых передач",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "remaining": {
+            "type": "number",
+            "description": "Неудачных передач осталось сверх лимита одного запроса (200) — повторите запрос"
+          }
+        },
+        "required": [
+          "retried",
+          "exportIds",
+          "remaining"
         ]
       },
       "ModifierMappingDto": {
@@ -35043,6 +35810,184 @@
           "page",
           "perPage",
           "provider"
+        ]
+      },
+      "PosDishCategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name"
+        ]
+      },
+      "PosDishMappingRefDto": {
+        "type": "object",
+        "properties": {
+          "mappingId": {
+            "type": "string",
+            "description": "id сопоставления (PUT/DELETE /admin/pos/mappings/{id})"
+          },
+          "externalProductId": {
+            "type": "string"
+          },
+          "externalName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "mappingId",
+          "externalProductId"
+        ]
+      },
+      "PosDishOptionDto": {
+        "type": "object",
+        "properties": {
+          "optionId": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "externalProductId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Товар-модификатор POS; null — опция не сопоставлена"
+          },
+          "externalGroupId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Группа модификаторов POS"
+          }
+        },
+        "required": [
+          "optionId",
+          "name"
+        ]
+      },
+      "PosDishGroupDto": {
+        "type": "object",
+        "properties": {
+          "groupId": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "isRequired": {
+            "type": "boolean"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PosDishOptionDto"
+            }
+          }
+        },
+        "required": [
+          "groupId",
+          "name",
+          "isRequired",
+          "options"
+        ]
+      },
+      "PosDishDto": {
+        "type": "object",
+        "properties": {
+          "dishId": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "sku": {
+            "type": "string",
+            "nullable": true
+          },
+          "price": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "stopped": {
+            "type": "boolean",
+            "description": "Блюдо в стоп-листе филиала"
+          },
+          "mapping": {
+            "nullable": true,
+            "description": "null — блюдо не сопоставлено с товаром POS",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PosDishMappingRefDto"
+              }
+            ]
+          },
+          "unmappedOptionIds": {
+            "description": "Опции модификаторов без сопоставления",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "modifierGroups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PosDishGroupDto"
+            }
+          }
+        },
+        "required": [
+          "dishId",
+          "categoryId",
+          "name",
+          "price",
+          "stopped",
+          "unmappedOptionIds",
+          "modifierGroups"
+        ]
+      },
+      "PosDishesDto": {
+        "type": "object",
+        "properties": {
+          "branchId": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Провайдер, чьи сопоставления показаны"
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PosDishCategoryDto"
+            }
+          },
+          "dishes": {
+            "description": "Все блюда меню филиала (включая стоп-лист) с модификаторами",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PosDishDto"
+            }
+          }
+        },
+        "required": [
+          "branchId",
+          "provider",
+          "categories",
+          "dishes"
         ]
       }
     }

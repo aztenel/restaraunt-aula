@@ -97,23 +97,44 @@ export class VenueRuleOverridesDto {
   @ApiPropertyOptional({ type: Boolean, nullable: true }) @IsOptional() @IsBoolean() bookableOnline?: boolean | null;
 }
 
-/** Позиция места на плане зала (условные единицы плана). */
+/**
+ * Система координат плана зала: целые условные единицы плана (не пиксели; план planWidth × planHeight
+ * масштабируется в область показа с сохранением пропорций), начало (0,0) — левый верхний угол плана,
+ * ось x — вправо, ось y — вниз.
+ */
+export const PLAN_WIDTH_DESCRIPTION =
+  'Ширина плана зала, условные единицы (целые, не пиксели). Координаты мест: начало (0,0) — левый верхний угол плана, x — вправо, y — вниз';
+export const PLAN_HEIGHT_DESCRIPTION = 'Высота плана зала, условные единицы (ось y направлена вниз)';
+
+const POSITION_X = 'Левая граница места до поворота, единицы плана (от левого края плана)';
+const POSITION_Y = 'Верхняя граница места до поворота, единицы плана (от верхнего края плана, y — вниз)';
+const POSITION_W = 'Ширина места до поворота, единицы плана';
+const POSITION_H = 'Высота места до поворота, единицы плана';
+const POSITION_SHAPE = 'rect — прямоугольник w × h; circle — эллипс (круг при w = h), вписанный в прямоугольник w × h';
+const POSITION_ROTATION =
+  'Поворот в градусах (целые 0–359) по часовой стрелке на экране (ось y вниз) вокруг центра места (x + w/2, y + h/2); ' +
+  'SVG: rotate(rotation, x + w/2, y + h/2). В границы плана должен помещаться прямоугольник до поворота';
+
+/**
+ * Позиция места на плане зала: прямоугольник (x, y, w, h) в целых условных единицах плана (не пикселях),
+ * начало координат — левый верхний угол плана, y — вниз; поворот — градусы по часовой стрелке вокруг центра места.
+ */
 export class VenuePositionDto {
-  @ApiProperty({ minimum: 0 }) x: number;
-  @ApiProperty({ minimum: 0 }) y: number;
-  @ApiProperty({ minimum: 1, description: 'Ширина' }) w: number;
-  @ApiProperty({ minimum: 1, description: 'Высота' }) h: number;
-  @ApiProperty({ enum: VENUE_SHAPES }) shape: VenueShape;
-  @ApiProperty({ minimum: 0, maximum: 359, description: 'Поворот, градусы' }) rotation: number;
+  @ApiProperty({ minimum: 0, description: POSITION_X }) x: number;
+  @ApiProperty({ minimum: 0, description: POSITION_Y }) y: number;
+  @ApiProperty({ minimum: 1, description: POSITION_W }) w: number;
+  @ApiProperty({ minimum: 1, description: POSITION_H }) h: number;
+  @ApiProperty({ enum: VENUE_SHAPES, description: POSITION_SHAPE }) shape: VenueShape;
+  @ApiProperty({ minimum: 0, maximum: 359, description: POSITION_ROTATION }) rotation: number;
 }
 
 export class VenuePositionInputDto {
-  @ApiPropertyOptional({ minimum: 0 }) @IsOptional() @IsInt() @Min(0) x?: number;
-  @ApiPropertyOptional({ minimum: 0 }) @IsOptional() @IsInt() @Min(0) y?: number;
-  @ApiPropertyOptional({ minimum: 1 }) @IsOptional() @IsInt() @Min(1) w?: number;
-  @ApiPropertyOptional({ minimum: 1 }) @IsOptional() @IsInt() @Min(1) h?: number;
-  @ApiPropertyOptional({ enum: VENUE_SHAPES }) @IsOptional() @IsIn(VENUE_SHAPES as unknown as string[]) shape?: VenueShape;
-  @ApiPropertyOptional({ minimum: 0, maximum: 359 }) @IsOptional() @IsInt() @Min(0) @Max(359) rotation?: number;
+  @ApiPropertyOptional({ minimum: 0, description: POSITION_X }) @IsOptional() @IsInt() @Min(0) x?: number;
+  @ApiPropertyOptional({ minimum: 0, description: POSITION_Y }) @IsOptional() @IsInt() @Min(0) y?: number;
+  @ApiPropertyOptional({ minimum: 1, description: POSITION_W }) @IsOptional() @IsInt() @Min(1) w?: number;
+  @ApiPropertyOptional({ minimum: 1, description: POSITION_H }) @IsOptional() @IsInt() @Min(1) h?: number;
+  @ApiPropertyOptional({ enum: VENUE_SHAPES, description: POSITION_SHAPE }) @IsOptional() @IsIn(VENUE_SHAPES as unknown as string[]) shape?: VenueShape;
+  @ApiPropertyOptional({ minimum: 0, maximum: 359, description: POSITION_ROTATION }) @IsOptional() @IsInt() @Min(0) @Max(359) rotation?: number;
 }
 
 export class TimeRangeDto {

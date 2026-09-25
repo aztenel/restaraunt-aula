@@ -22,6 +22,9 @@
 | 202609250900_pos_init.sql | pos |
 | 202609250901_pos_order_confirmation.sql | pos |
 | 202609260000_reporting_certificate_credits.sql | reporting |
+| 202609260100_notifications_feed_entity_type.sql | notifications |
+| 202609260200_payments_certificate_check_user.sql | payments |
+| 202609260300_payments_status_history.sql | payments |
 
 ## Схема `platform` — Платформа (outbox, аудит, интеграции, нумерация)
 
@@ -1826,6 +1829,7 @@
 | id | uuid | нет |  |
 | ip | text | нет |  |
 | occurred_at | timestamp with time zone | нет |  |
+| user_id | uuid | да |  |
 
 Ограничения:
 
@@ -1835,6 +1839,7 @@
 
 - `CREATE INDEX certificate_check_failures_ip_idx ON payments.certificate_check_failures USING btree (ip, occurred_at DESC)`
 - `CREATE INDEX certificate_check_failures_time_idx ON payments.certificate_check_failures USING btree (occurred_at)`
+- `CREATE INDEX certificate_check_failures_user_idx ON payments.certificate_check_failures USING btree (user_id, occurred_at DESC) WHERE (user_id IS NOT NULL)`
 
 ### `payments.certificate_ip_blocks`
 
@@ -2050,6 +2055,35 @@
 
 - `CREATE TRIGGER gift_certificates_forbid_delete BEFORE DELETE ON payments.gift_certificates FOR EACH ROW EXECUTE FUNCTION platform.forbid_delete()`
 - `CREATE TRIGGER gift_certificates_touch BEFORE UPDATE ON payments.gift_certificates FOR EACH ROW EXECUTE FUNCTION platform.touch_updated_at()`
+
+### `payments.payment_status_history`
+
+| Столбец | Тип | NULL | По умолчанию |
+| --- | --- | --- | --- |
+| id | uuid | нет |  |
+| payment_id | uuid | нет |  |
+| from_status | text | да |  |
+| to_status | text | нет |  |
+| reason | text | да |  |
+| actor_kind | text | нет |  |
+| actor_user_id | uuid | да |  |
+| actor_name | text | нет |  |
+| occurred_at | timestamp with time zone | нет |  |
+
+Ограничения:
+
+- CHECK `payment_status_history_actor_kind_check`: `CHECK ((actor_kind = ANY (ARRAY['staff'::text, 'system'::text, 'guest'::text])))`
+- CHECK `payment_status_history_to_status_check`: `CHECK ((to_status = ANY (ARRAY['created'::text, 'pending'::text, 'succeeded'::text, 'failed'::text, 'cancelled'::text, 'partially_refunded'::text, 'refunded'::text])))`
+- FOREIGN KEY `payment_status_history_payment_id_fkey`: `FOREIGN KEY (payment_id) REFERENCES payments.payments(id)`
+- PRIMARY KEY `payment_status_history_pkey`: `PRIMARY KEY (id)`
+
+Индексы:
+
+- `CREATE INDEX payment_status_history_payment_idx ON payments.payment_status_history USING btree (payment_id, occurred_at, id)`
+
+Триггеры:
+
+- `CREATE TRIGGER payment_status_history_append_only BEFORE DELETE OR UPDATE ON payments.payment_status_history FOR EACH ROW EXECUTE FUNCTION platform.forbid_update_delete()`
 
 ### `payments.payments`
 
@@ -2456,6 +2490,7 @@
 | entity_id | text | нет |  |
 | title | text | нет |  |
 | sound | boolean | нет | `false` |
+| entity_type | text | да |  |
 
 Ограничения:
 

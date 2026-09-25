@@ -2,13 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { Clock } from '../../../shared/kernel/clock';
 import { NotFoundError } from '../../../shared/kernel/errors';
 import { MoneyJson } from '../../../shared/kernel/money';
-import { addDays, startOfLocalDay } from '../../../shared/kernel/time';
+import { addDays, addMinutes, startOfLocalDay } from '../../../shared/kernel/time';
 import { Locale, Translatable, translate } from '../../../shared/kernel/translatable';
 import { BranchDirectory, BranchInfo } from '../../identity/public';
 import {
   assertLocalDateTime,
+  bookingCalendarDates,
   BookingChannel,
+  BookingDay,
+  bookingDays,
+  BookingWindow,
   bookingWindow,
+  DEFAULT_SLOT_STEP_MINUTES,
   findFreeVenues,
   SlotRejection,
   suggestAlternatives,
@@ -50,6 +55,18 @@ export interface AlternativeTimeView {
   venueIds: string[];
 }
 
+/** Окно брони витрины: сетка времени, длительность, упреждение, горизонт и допустимые времена начала по датам. */
+export interface BookingWindowView {
+  timezone: string;
+  slotStepMinutes: number;
+  durationMinutes: number;
+  minLeadMinutes: number;
+  maxDaysAhead: number;
+  earliestStart: Date;
+  latestStart: Date;
+  days: BookingDay[];
+}
+
 export interface AvailabilityView {
   branchId: string;
   branchSlug: string;
@@ -61,6 +78,8 @@ export interface AvailabilityView {
   reason: AvailabilityReason | null;
   venues: PublicVenueSlotView[];
   alternatives: AlternativeTimeView[];
+  /** Окно брони на запрошенную дату (null — филиал не принимает брони). */
+  bookingWindow: BookingWindowView | null;
 }
 
 export interface PublicMapVenueView {
@@ -94,6 +113,8 @@ export interface PublicHallMapView {
   branchSlug: string;
   acceptsReservations: boolean;
   halls: PublicHallView[];
+  /** Окно брони по датам от сегодня до горизонта (null — филиал не принимает брони). */
+  bookingWindow: BookingWindowView | null;
 }
 
 export interface AdminVenueSlotView {
@@ -180,12 +201,12 @@ export class AvailabilityQueries {
       durationMinutes: query.durationMinutes ?? null,
     };
     if (!branch.settings.acceptsReservations) {
-      return { ...base, available: false, reason: 'not_accepting', venues: [], alternatives: [] };
+      return { ...base, available: false, reason: 'not_accepting', venues: [], alternatives: [], bookingWindow: null };
     }
     const venues = (await this.venues.listDetailed({ branchIds: [branch.id], activeOnly: true, typeCode: query.typeCode ?? undefined })).filter(
       (v) => v.rules.bookableOnline,
     );
-    const { candidates, busy, window } = await this.slotInputs(branch, venues, query.date);
+    const { candidates, busy, window, settings } = await this.slotInputs(branch, venues, query.date);
     const result = findFreeVenues({
       candidates,
       busy,
@@ -238,6 +259,7 @@ export class AvailabilityQueries {
         };
       }),
       alternatives: alternatives.map((a) => ({ date: a.date, time: a.time, start: a.start, venueIds: a.venueIds })),
+      bookingWindow: bookingWindowView(window, settings, candidates, [query.date], query.durationMinutes),
     };
   }
 
@@ -303,10 +325,16 @@ export class AvailabilityQueries {
     const branch = await this.branchBySlug(slug);
     const halls = await this.halls.list({ branchIds: [branch.id], activeOnly: true });
     const venues = await this.venues.listDetailed({ branchIds: [branch.id], activeOnly: true });
+    const online = branch.settings.acceptsReservations ? venues.filter((v) => v.rules.bookableOnline) : [];
     let free: Set<string> | null = null;
+    let calendar: BookingWindowView | null = null;
+    if (branch.settings.acceptsReservations) {
+      const settings = await this.settings.get(branch.id);
+      const window = this.webWindow(branch, settings);
+      calendar = bookingWindowView(window, settings, online.map(candidateOf), bookingCalendarDates(window), slot?.durationMinutes);
+    }
     if (slot) {
       assertLocalDateTime(slot.date, slot.time);
-      const online = branch.settings.acceptsReservations ? venues.filter((v) => v.rules.bookableOnline) : [];
       const { candidates, busy, window } = await this.slotInputs(branch, online, slot.date);
       const result = findFreeVenues({
         candidates,
@@ -347,17 +375,23 @@ export class AvailabilityQueries {
             available: free ? free.has(v.id) : null,
           })),
       })),
+      bookingWindow: calendar,
     };
+  }
+
+  private webWindow(branch: BranchInfo, settings: { minLeadMinutes: number; maxDaysAhead: number }): BookingWindow {
+    return bookingWindow('web', {
+      now: this.clock.now(),
+      timezone: branch.timezone,
+      openingHours: branch.openingHours,
+      minLeadMinutes: settings.minLeadMinutes,
+      maxDaysAhead: settings.maxDaysAhead,
+    });
   }
 
   /** Кандидаты, занятость (день запроса с запасом на длительность брони) и окно брони канала (по умолчанию — витрины). */
   private async slotInputs(branch: BranchInfo, venues: readonly VenueDetails[], date: string, channel: BookingChannel = 'web') {
-    const candidates: VenueCandidate[] = venues.map((v) => ({
-      venueId: v.id,
-      capacityMin: v.capacityMin,
-      capacityMax: v.capacityMax,
-      rules: v.rules,
-    }));
+    const candidates: VenueCandidate[] = venues.map(candidateOf);
     const from = startOfLocalDay(date, branch.timezone);
     const to = startOfLocalDay(addDays(date, 3), branch.timezone);
     const busy = await this.reservations.busyIntervals(
@@ -373,6 +407,38 @@ export class AvailabilityQueries {
       minLeadMinutes: settings.minLeadMinutes,
       maxDaysAhead: settings.maxDaysAhead,
     });
-    return { candidates, busy, window };
+    return { candidates, busy, window, settings };
   }
+}
+
+function candidateOf(v: VenueDetails): VenueCandidate {
+  return { venueId: v.id, capacityMin: v.capacityMin, capacityMax: v.capacityMax, rules: v.rules };
+}
+
+/** Длительность брони места по умолчанию, если мест для онлайн-брони нет (для расчёта окна). */
+const FALLBACK_DURATION_MINUTES = 120;
+
+/**
+ * Окно брони витрины: шаг сетки — минимальный среди мест онлайн-брони (как у подбора альтернатив),
+ * длительность — из запроса или минимальная по умолчанию среди этих мест.
+ */
+function bookingWindowView(
+  window: BookingWindow,
+  settings: { minLeadMinutes: number; maxDaysAhead: number },
+  candidates: readonly VenueCandidate[],
+  dates: readonly string[],
+  durationMinutes?: number | null,
+): BookingWindowView {
+  const slotStepMinutes = candidates.length > 0 ? Math.min(...candidates.map((c) => c.rules.slotStepMinutes || DEFAULT_SLOT_STEP_MINUTES)) : DEFAULT_SLOT_STEP_MINUTES;
+  const duration = durationMinutes ?? (candidates.length > 0 ? Math.min(...candidates.map((c) => c.rules.durationMinutes)) : FALLBACK_DURATION_MINUTES);
+  return {
+    timezone: window.timezone,
+    slotStepMinutes,
+    durationMinutes: duration,
+    minLeadMinutes: settings.minLeadMinutes,
+    maxDaysAhead: settings.maxDaysAhead,
+    earliestStart: addMinutes(window.now, settings.minLeadMinutes),
+    latestStart: addMinutes(window.now, settings.maxDaysAhead * 1440),
+    days: bookingDays({ window, stepMinutes: slotStepMinutes, durationMinutes: duration, dates }),
+  };
 }

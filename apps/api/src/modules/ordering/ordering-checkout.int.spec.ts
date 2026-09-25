@@ -94,12 +94,14 @@ describe('Ordering: checkout (integration)', () => {
     expect(tracking.body).toMatchObject({
       status: 'awaiting_payment',
       payment: { method: 'online', isPaid: false, amountDue: { amount: 960_000 }, current: { paymentUrl: expect.stringContaining('https://pay.test/') } },
+      paymentMethod: 'online',
+      isPaidOnline: false,
     });
     expect(tracking.body.items[0]).toMatchObject({ name: 'Плов', quantity: 2 });
 
     await paymentSucceeded(ctx, res.body.payment.id);
     const paid = await api().get(`/api/v1/public/orders/${res.body.publicToken}`).expect(200);
-    expect(paid.body.status).toBe('paid');
+    expect(paid.body).toMatchObject({ status: 'paid', paymentMethod: 'online', isPaidOnline: true, payment: { isPaid: true, isPaidOnline: true } });
     expect(ctx.fakes.notifier.staff.map((s) => s.template)).toEqual(['staff.order_new']);
     expect(ctx.fakes.adminFeed.events.find((e) => e.kind === 'created')).toMatchObject({ entityId: orderId, stream: 'orders', sound: true });
     expect(ctx.fakes.notifier.guest.map((g) => g.template)).toContain('order.paid');
@@ -163,6 +165,14 @@ describe('Ordering: checkout (integration)', () => {
     expect(ctx.fakes.adminFeed.events.find((e) => e.kind === 'created')?.sound).toBe(true);
     const placed = await publishedEvents(ctx.t, OrderingEvents.OrderPlaced);
     expect(placed[0]!.payload).toMatchObject({ status: 'awaiting_payment', paymentMethod: 'on_receipt' });
+    // Оплата при получении: «оплата обеспечена» (isPaid), но витрина не показывает «Оплачено».
+    const tracking = await api().get(`/api/v1/public/orders/${res.body.publicToken}`).expect(200);
+    expect(tracking.body).toMatchObject({
+      status: 'paid',
+      paymentMethod: 'on_receipt',
+      isPaidOnline: false,
+      payment: { method: 'on_receipt', isPaid: true, isPaidOnline: false },
+    });
 
     const kitchen = await ctx.t.get(OrderQuery).getKitchenOrder(orderId);
     expect(kitchen).toMatchObject({
@@ -374,6 +384,7 @@ describe('Ordering: checkout (integration)', () => {
       .send(checkoutBody(branchId, [{ dishId: dish.dishId, quantity: 1 }], { type: 'pickup', certificateCode: 'WXYZ-WXYZ-9999' }))
       .expect(201);
     expect(full.body).toMatchObject({ status: 'paid', payment: null });
+    expect((await api().get(`/api/v1/public/orders/${full.body.publicToken}`).expect(200)).body).toMatchObject({ isPaidOnline: true, payment: { amountDue: { amount: 0 } } });
     expect((await ctx.t.get(OrderQuery).getKitchenOrder(full.body.orderId)).isPaidOnline).toBe(true);
   });
 

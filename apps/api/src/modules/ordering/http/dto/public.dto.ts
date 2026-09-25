@@ -422,7 +422,14 @@ export class OrderTrackingDeliveryDto {
 
 export class OrderTrackingPaymentDto {
   @ApiProperty({ enum: CHECKOUT_PAYMENT_METHODS }) method: 'online' | 'on_receipt';
-  @ApiProperty({ description: 'Заказ оплачен (или оплата обеспечена — при получении)' }) isPaid: boolean;
+  @ApiProperty({ description: 'Заказ оплачен (или оплата обеспечена — при получении). Для отображения «Оплачено» используйте isPaidOnline' })
+  isPaid: boolean;
+  @ApiPropertyOptional({
+    description:
+      'Оплачено заранее (онлайн и/или сертификатом) — при получении платить не нужно; для оплаты при получении — false. ' +
+      'Всегда присутствует в ответе (необязательно в схеме для совместимости существующих клиентов)',
+  })
+  isPaidOnline: boolean;
   @ApiProperty({ type: MoneyDto, description: 'Списано с подарочного сертификата' }) certificateAmount: MoneyDto;
   @ApiProperty({ type: MoneyDto, description: 'К оплате онлайн или при получении' }) amountDue: MoneyDto;
   @ApiPropertyOptional({ type: OrderPaymentStateDto, nullable: true }) current: OrderPaymentStateDto | null;
@@ -462,6 +469,17 @@ export class OrderTrackingDto {
   @ApiPropertyOptional({ type: OrderTrackingCourierDto, nullable: true }) courier: OrderTrackingCourierDto | null;
   @ApiPropertyOptional({ type: OrderTrackingCancellationDto, nullable: true }) cancellation: OrderTrackingCancellationDto | null;
   @ApiProperty({ type: [OrderTimelineEntryDto] }) timeline: OrderTimelineEntryDto[];
+  @ApiPropertyOptional({
+    enum: CHECKOUT_PAYMENT_METHODS,
+    description: 'Способ оплаты остатка (то же, что payment.method). Всегда присутствует в ответе (необязательно в схеме для совместимости клиентов)',
+  })
+  paymentMethod: 'online' | 'on_receipt';
+  @ApiPropertyOptional({
+    description:
+      'Заказ оплачен заранее (онлайн и/или сертификатом) — показывать «Оплачено». Для оплаты при получении — false, ' +
+      'хотя статус заказа paid («оплата обеспечена»). Всегда присутствует в ответе (необязательно в схеме для совместимости клиентов)',
+  })
+  isPaidOnline: boolean;
 
   static from(v: OrderTrackingView, locale: Locale): OrderTrackingDto {
     const s = v.order;
@@ -496,6 +514,7 @@ export class OrderTrackingDto {
       payment: {
         method: s.paymentMethod,
         isPaid: s.wasPaid,
+        isPaidOnline: v.payment.isPaidOnline,
         certificateAmount: money(v.payment.certificateAmount),
         amountDue: money(v.payment.amountDue),
         current: v.payment.current ? OrderPaymentStateDto.from(v.payment.current) : null,
@@ -505,6 +524,8 @@ export class OrderTrackingDto {
       courier: v.courier,
       cancellation: s.cancellation ? { reasonCode: s.cancellation.reasonCode, reason: cancelReasonLabel(s.cancellation.reasonCode, locale) } : null,
       timeline: v.history.map((h) => ({ status: h.to, at: h.at })),
+      paymentMethod: s.paymentMethod,
+      isPaidOnline: v.payment.isPaidOnline,
     };
   }
 }

@@ -260,6 +260,10 @@ export class PublicBranchDto {
   @ApiProperty() acceptsReservations: boolean;
   @ApiProperty({ type: [String] }) paymentMethods: string[];
   @ApiProperty() stopListMode: string;
+  @ApiProperty({ description: 'Заказ с оплатой при получении требует подтверждения телефона SMS-кодом (POST /public/phone-verifications)' })
+  requirePhoneVerificationForOnReceipt: boolean;
+  @ApiProperty({ description: 'Бронь без депозита требует подтверждения телефона SMS-кодом' })
+  requirePhoneVerificationForReservations: boolean;
 }
 
 export class LegalEntityInputDto {

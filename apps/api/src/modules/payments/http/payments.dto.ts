@@ -267,8 +267,8 @@ export class RefundListQueryDto extends PageQueryDto {
 }
 
 export class PaymentProviderInfoDto {
-  @ApiProperty({ example: 'kaspi' }) provider: string;
-  @ApiProperty({ example: 'Kaspi Pay' }) title: string;
+  @ApiProperty({ example: 'sandbox' }) provider: string;
+  @ApiProperty({ example: 'Тестовый провайдер' }) title: string;
   @ApiProperty({ description: 'Включён и настроен (можно принимать новые платежи)' }) enabled: boolean;
   @ApiProperty({ description: 'Провайдер по умолчанию для онлайн-оплаты' }) isDefault: boolean;
   @ApiProperty({ description: 'Тестовый провайдер вне production, если маршрутизация не настроена' }) devFallback: boolean;

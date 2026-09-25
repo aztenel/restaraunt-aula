@@ -5,6 +5,8 @@ import { MoneyDto, MoneyInputDto, TranslatableDto } from '../../../../shared/inf
 import { MAX_VENUE_CAPACITY, PLAN_LIMITS } from '../../domain/venue';
 import {
   ImageDto,
+  PLAN_HEIGHT_DESCRIPTION,
+  PLAN_WIDTH_DESCRIPTION,
   VenuePositionDto,
   VenuePositionInputDto,
   VenueRuleOverridesDto,
@@ -60,8 +62,8 @@ export class HallDto {
   @ApiProperty({ example: 'main' }) code: string;
   @ApiProperty({ type: TranslatableDto }) name: TranslatableDto;
   @ApiProperty({ type: TranslatableDto }) description: TranslatableDto;
-  @ApiProperty({ description: 'Ширина плана зала, условные единицы' }) planWidth: number;
-  @ApiProperty({ description: 'Высота плана зала, условные единицы' }) planHeight: number;
+  @ApiProperty({ description: PLAN_WIDTH_DESCRIPTION }) planWidth: number;
+  @ApiProperty({ description: PLAN_HEIGHT_DESCRIPTION }) planHeight: number;
   @ApiPropertyOptional({ type: ImageDto, nullable: true, description: 'Фон плана зала' }) background: ImageDto | null;
   @ApiProperty() sortOrder: number;
   @ApiProperty() isActive: boolean;
@@ -82,13 +84,13 @@ export class CreateHallDto {
   @ValidateNested()
   @Type(() => TranslatableDto)
   description?: TranslatableDto | null;
-  @ApiPropertyOptional({ default: 1000, minimum: PLAN_LIMITS.min, maximum: PLAN_LIMITS.max })
+  @ApiPropertyOptional({ default: 1000, minimum: PLAN_LIMITS.min, maximum: PLAN_LIMITS.max, description: PLAN_WIDTH_DESCRIPTION })
   @IsOptional()
   @IsInt()
   @Min(PLAN_LIMITS.min)
   @Max(PLAN_LIMITS.max)
   planWidth?: number;
-  @ApiPropertyOptional({ default: 600, minimum: PLAN_LIMITS.min, maximum: PLAN_LIMITS.max })
+  @ApiPropertyOptional({ default: 600, minimum: PLAN_LIMITS.min, maximum: PLAN_LIMITS.max, description: PLAN_HEIGHT_DESCRIPTION })
   @IsOptional()
   @IsInt()
   @Min(PLAN_LIMITS.min)

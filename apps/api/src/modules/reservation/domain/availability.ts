@@ -1,10 +1,12 @@
 import { ValidationError } from '../../../shared/kernel/errors';
 import {
+  addDays,
   addMinutes,
   isHhMm,
   isIsoDate,
   OpeningHours,
   openingRangesForDate,
+  startOfLocalDay,
   TimeRange,
   toLocalDate,
   toLocalTime,
@@ -254,4 +256,69 @@ export function suggestAlternatives(input: {
 /** Локальные дата и время начала брони (для текстов и витрины). */
 export function localDateTime(at: Date, timezone: string): { date: string; time: string } {
   return { date: toLocalDate(at, timezone), time: toLocalTime(at, timezone) };
+}
+
+/** Интервал допустимых времён начала брони в локальную дату (сетка шага от локальной полуночи). */
+export interface BookingDayInterval {
+  /** Первое время начала, HH:mm (местное время филиала). */
+  from: string;
+  /** Последнее время начала, HH:mm (бронь длительностью durationMinutes ещё помещается в часы работы). */
+  to: string;
+  fromAt: Date;
+  toAt: Date;
+}
+
+export interface BookingDay {
+  date: string;
+  /** Пусто — в этот день бронь с витрины невозможна (выходной, прошло, вне горизонта). */
+  intervals: BookingDayInterval[];
+}
+
+/** Горизонт календаря брони не больше года. */
+const MAX_CALENDAR_DAYS = 366;
+
+/**
+ * Окно брони по датам для выбора даты и времени на витрине: для каждой локальной даты — интервалы
+ * времён начала на сетке stepMinutes (от локальной полуночи, как у подбора альтернатив), в которые
+ * бронь длительностью durationMinutes целиком помещается в часы работы, не раньше упреждения и не
+ * дальше горизонта окна. Занятость мест не учитывается — её проверяет запрос свободных мест.
+ */
+export function bookingDays(input: { window: BookingWindow; stepMinutes: number; durationMinutes: number; dates: readonly string[] }): BookingDay[] {
+  const { window } = input;
+  const step = Math.max(1, Math.floor(input.stepMinutes));
+  const earliest = addMinutes(window.now, window.minLeadMinutes ?? 0).getTime();
+  const latest = window.maxDaysAhead !== null ? addMinutes(window.now, window.maxDaysAhead * 1440).getTime() : Number.POSITIVE_INFINITY;
+  const lastGrid = Math.floor((1440 - 1) / step) * step;
+  return input.dates.map((date) => {
+    const dayStart = startOfLocalDay(date, window.timezone).getTime();
+    const ranges = openingRangesForDate(window.openingHours, date, window.timezone).sort((a, b) => a.start.getTime() - b.start.getTime());
+    const intervals: BookingDayInterval[] = [];
+    for (const range of ranges) {
+      const lo = Math.max(range.start.getTime(), dayStart, earliest);
+      const hi = Math.min(range.end.getTime() - input.durationMinutes * 60_000, latest);
+      if (hi < lo) continue;
+      const fromMin = Math.ceil((lo - dayStart) / 60_000 / step) * step;
+      const toMin = Math.min(Math.floor((hi - dayStart) / 60_000 / step) * step, lastGrid);
+      if (fromMin > toMin || fromMin >= 1440) continue;
+      const last = intervals[intervals.length - 1];
+      const from = hhmm(fromMin);
+      const to = hhmm(toMin);
+      if (last && minutesOf(last.to) + step >= fromMin) {
+        if (toMin > minutesOf(last.to)) {
+          last.to = to;
+          last.toAt = zonedTimeToUtc(date, to, window.timezone);
+        }
+        continue;
+      }
+      intervals.push({ from, to, fromAt: zonedTimeToUtc(date, from, window.timezone), toAt: zonedTimeToUtc(date, to, window.timezone) });
+    }
+    return { date, intervals };
+  });
+}
+
+/** Локальные даты от сегодняшней до последней даты горизонта окна (включительно), не больше года. */
+export function bookingCalendarDates(window: BookingWindow): string[] {
+  const today = toLocalDate(window.now, window.timezone);
+  const days = window.maxDaysAhead !== null ? Math.min(window.maxDaysAhead, MAX_CALENDAR_DAYS - 1) : 0;
+  return Array.from({ length: days + 1 }, (_, i) => addDays(today, i));
 }

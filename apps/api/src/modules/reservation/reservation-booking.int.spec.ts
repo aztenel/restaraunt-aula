@@ -272,7 +272,9 @@ describe('Reservation: storefront booking (integration)', () => {
     const res = await book(t, bookingBody(closed), 409);
     expect(res.error.code).toBe('reservation.branch_not_accepting');
     const availability = await t.http().get(`${API}/branches/${closed.branchSlug}/reservation-availability?date=2026-10-02&time=19:00&guests=2`);
-    expect(availability.body).toMatchObject({ available: false, reason: 'not_accepting', venues: [] });
+    expect(availability.body).toMatchObject({ available: false, reason: 'not_accepting', venues: [], bookingWindow: null });
+    const map = await t.http().get(`${API}/branches/${closed.branchSlug}/halls`);
+    expect(map.body).toMatchObject({ acceptsReservations: false, bookingWindow: null });
   });
 
   it('guest anonymized in the guest base: contacts are erased from reservation snapshots', async () => {
@@ -331,6 +333,25 @@ describe('Reservation: availability and hall map (integration)', () => {
       rules: { cancellationDeadlineHours: 2, requiresManualConfirmation: false },
     });
 
+    // Окно брони на запрошенную дату: сетка, длительность, интервал времён начала.
+    expect(res.body.bookingWindow).toEqual({
+      timezone: 'Asia/Almaty',
+      slotStepMinutes: 30,
+      durationMinutes: 120,
+      minLeadMinutes: 60,
+      maxDaysAhead: 60,
+      earliestStart: local('2026-10-01', '12:00').toISOString(),
+      latestStart: local('2026-11-30', '11:00').toISOString(),
+      days: [
+        {
+          date: '2026-10-02',
+          intervals: [{ from: '10:00', to: '22:00', fromAt: local('2026-10-02', '10:00').toISOString(), toAt: local('2026-10-02', '22:00').toISOString() }],
+        },
+      ],
+    });
+    const longer = await availability('date=2026-10-02&time=19:00&guests=4&durationMinutes=180');
+    expect(longer.body.bookingWindow).toMatchObject({ durationMinutes: 180, days: [{ intervals: [{ from: '10:00', to: '21:00' }] }] });
+
     const vip = await availability('date=2026-10-02&time=19:00&guests=8&typeCode=vip_hall');
     expect(vip.body.venues).toEqual([
       expect.objectContaining({ venueId: layout.vip, deposit: { amount: 5_000_000, currency: 'KZT' }, durationMinutes: 180 }),
@@ -382,6 +403,13 @@ describe('Reservation: availability and hall map (integration)', () => {
       available: null,
     });
     expect(hall.venues.find((v: { id: string }) => v.id === layout.phoneOnly).bookableOnline).toBe(false);
+    // Календарь брони: от сегодня до горизонта (60 дней), сегодня — с учётом упреждения.
+    const calendar = map.body.bookingWindow;
+    expect(calendar).toMatchObject({ slotStepMinutes: 30, durationMinutes: 120, minLeadMinutes: 60, maxDaysAhead: 60 });
+    expect(calendar.days).toHaveLength(61);
+    expect(calendar.days[0]).toMatchObject({ date: '2026-10-01', intervals: [{ from: '12:00', to: '22:00' }] });
+    expect(calendar.days[1]).toMatchObject({ date: '2026-10-02', intervals: [{ from: '10:00', to: '22:00' }] });
+    expect(calendar.days[60]).toMatchObject({ date: '2026-11-30', intervals: [{ from: '10:00', to: '11:00' }] });
 
     const slot = await t.http().get(`${API}/branches/${layout.branchSlug}/halls?date=2026-10-02&time=19:30&guests=4`);
     const flags = Object.fromEntries(slot.body.halls[0].venues.map((v: { id: string; available: boolean }) => [v.id, v.available]));

@@ -120,7 +120,7 @@ describe('Identity (integration)', () => {
         location: { lat: 51.09, lng: 71.42 },
         phone: '8 717 200 00 00',
         openingHours: { mon: [{ open: '10:00', close: '00:00' }] },
-        settings: { deliveryLeadMinutes: 50 },
+        settings: { deliveryLeadMinutes: 50, requirePhoneVerificationForReservations: true },
       });
     expect(res.status).toBe(201);
     expect(res.body.phone).toBe('+77172000000');
@@ -131,6 +131,8 @@ describe('Identity (integration)', () => {
     expect(pub.status).toBe(200);
     expect(pub.body).not.toHaveProperty('settings');
     expect(pub.body.acceptsDelivery).toBe(true);
+    expect(pub.body).toMatchObject({ requirePhoneVerificationForOnReceipt: true, requirePhoneVerificationForReservations: true });
+    expect(pub.body).not.toHaveProperty('staffNotifyPhone');
 
     const audit = await t.http().get('/api/v1/admin/system/audit-log?entityType=branch').set('authorization', auth);
     expect(audit.status).toBe(200);

@@ -32,6 +32,11 @@ export interface OrderPaymentSummary {
   canRetry: boolean;
   /** Срок оплаты неоплаченного онлайн-заказа. */
   payUntil: Date | null;
+  /**
+   * Заказ оплачен заранее (онлайн и/или сертификатом): при получении платить не нужно.
+   * Для оплаты при получении — false (статус paid означает лишь «оплата обеспечена»).
+   */
+  isPaidOnline: boolean;
 }
 
 export interface OrderTrackingView {
@@ -206,7 +211,14 @@ export class OrderQueries {
       order: s,
       branch,
       history,
-      payment: { certificateAmount, amountDue: s.totals.total.subtract(certificateAmount).clampToZero(), current, canRetry, payUntil },
+      payment: {
+        certificateAmount,
+        amountDue: s.totals.total.subtract(certificateAmount).clampToZero(),
+        current,
+        canRetry,
+        payUntil,
+        isPaidOnline: s.wasPaid && !snapshot.links.some((l) => l.kind === 'on_receipt'),
+      },
       courier: dispatch ? { status: dispatch.status, trackingUrl: dispatch.trackingUrl, courierName: dispatch.courierName } : null,
     };
     return { tracking, snapshot, dispatch };

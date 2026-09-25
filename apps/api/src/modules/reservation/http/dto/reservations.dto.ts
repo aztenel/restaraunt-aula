@@ -19,7 +19,7 @@ import { LOCALES, Locale } from '../../../../shared/kernel/translatable';
 import { DEPOSIT_STATES, DepositOutcome, DepositState } from '../../domain/deposit-policy';
 import { ALL_RESERVATION_STATUSES } from '../../domain/reservation-status';
 import { ReservationKind, ReservationSource, ReservationStatus } from '../../public';
-import { ImageDto, TimeRangeDto, VenuePositionDto, VenueRulesDto } from './common.dto';
+import { ImageDto, PLAN_HEIGHT_DESCRIPTION, PLAN_WIDTH_DESCRIPTION, TimeRangeDto, VenuePositionDto, VenueRulesDto } from './common.dto';
 
 export const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 export const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -168,8 +168,8 @@ export class TimelineHallDto {
   @ApiProperty() id: string;
   @ApiProperty() code: string;
   @ApiProperty({ type: TranslatableDto }) name: TranslatableDto;
-  @ApiProperty() planWidth: number;
-  @ApiProperty() planHeight: number;
+  @ApiProperty({ description: PLAN_WIDTH_DESCRIPTION }) planWidth: number;
+  @ApiProperty({ description: PLAN_HEIGHT_DESCRIPTION }) planHeight: number;
   @ApiProperty() isActive: boolean;
   @ApiPropertyOptional({ type: ImageDto, nullable: true, description: 'Подложка плана зала' }) background: ImageDto | null;
   @ApiProperty({ type: [TimelineVenueDto] }) venues: TimelineVenueDto[];

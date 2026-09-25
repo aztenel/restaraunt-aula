@@ -33,6 +33,8 @@ export class PublicBranchesController {
       acceptsReservations: b.settings.acceptsReservations,
       paymentMethods: b.settings.paymentMethods,
       stopListMode: b.settings.stopListMode,
+      requirePhoneVerificationForOnReceipt: b.settings.requirePhoneVerificationForOnReceipt,
+      requirePhoneVerificationForReservations: b.settings.requirePhoneVerificationForReservations,
     };
   }
 

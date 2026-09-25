@@ -3,6 +3,8 @@ import { ValidationError } from '../../../shared/kernel/errors';
 import { OpeningHours, TimeRange, WEEKDAYS, zonedTimeToUtc } from '../../../shared/kernel/time';
 import {
   blockedRange,
+  bookingCalendarDates,
+  bookingDays,
   bookingWindow,
   BookingWindow,
   BusyInterval,
@@ -185,5 +187,30 @@ describe('bookingWindow', () => {
     expect(checkBookingWindow(slotRange('2026-10-25', '18:45', TZ, 120), w)).toBe('past');
     expect(checkBookingWindow(slotRange('2026-12-01', '19:30', TZ, 120), w)).toBeNull();
     expect(checkBookingWindow(slotRange('2026-10-25', '23:00', TZ, 120), w)).toBe('closed');
+  });
+});
+
+describe('bookingDays (storefront calendar)', () => {
+  it('start times on the step grid within opening hours, lead time and horizon; closed days are empty', () => {
+    const w = window({ now: local('2026-10-25', '11:10'), maxDaysAhead: 2 });
+    const hours: OpeningHours = { ...DAILY_10_TO_MIDNIGHT, tue: [] };
+    const days = bookingDays({ window: { ...w, openingHours: hours }, stepMinutes: 30, durationMinutes: 120, dates: bookingCalendarDates(w) });
+    expect(days.map((d) => d.date)).toEqual(['2026-10-25', '2026-10-26', '2026-10-27']);
+    // Сегодня: не раньше 12:10 -> 12:30 по сетке; последнее начало 22:00 (бронь 2 часа до полуночи).
+    expect(days[0]!.intervals).toEqual([{ from: '12:30', to: '22:00', fromAt: local('2026-10-25', '12:30'), toAt: local('2026-10-25', '22:00') }]);
+    expect(days[1]!.intervals.map((i) => [i.from, i.to])).toEqual([['10:00', '22:00']]);
+    // 27.10 — вторник, выходной.
+    expect(days[2]!.intervals).toEqual([]);
+  });
+
+  it('horizon cuts the last day; step and duration are respected; late-night hours stay within the local day', () => {
+    const w = window({ now: local('2026-10-25', '09:00'), maxDaysAhead: 1, openingHours: LATE_NIGHT });
+    const days = bookingDays({ window: w, stepMinutes: 45, durationMinutes: 90, dates: bookingCalendarDates(w) });
+    // Сегодня: работа 12:00–02:00, шаг 45 минут от полуночи (12:00 = 16 × 45), последнее начало до 23:59.
+    expect(days[0]!.intervals.map((i) => [i.from, i.to])).toEqual([['12:00', '23:15']]);
+    // Завтра: хвост работы после полуночи (00:00–00:30 при длительности 90) и горизонт до 09:00.
+    expect(days[1]!.intervals.map((i) => [i.from, i.to])).toEqual([['00:00', '00:00']]);
+    const short = bookingDays({ window: w, stepMinutes: 30, durationMinutes: 60, dates: ['2026-10-26'] });
+    expect(short[0]!.intervals.map((i) => [i.from, i.to])).toEqual([['00:00', '01:00']]);
   });
 });
