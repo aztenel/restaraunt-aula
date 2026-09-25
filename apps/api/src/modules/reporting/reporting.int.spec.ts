@@ -583,6 +583,23 @@ describe('Reporting (integration)', () => {
       const list = await t.http().get(`/api/v1/admin/reports/aggregator-volumes?fromMonth=2026-09&toMonth=2026-10&branchId=${branchA}`).set('authorization', manager);
       expect(list.body).toHaveLength(1);
 
+      // Ошибочный ввод удаляется (журнал действий); чужой филиал — 403, повтор — 404.
+      const wrong = await put(manager, { branchId: branchA, month: '2026-10', source: 'agg_b', sourceName: 'Ошибка', orders: 99 });
+      expect(wrong.status).toBe(200);
+      const ownerB = (await tokenFor(t, [{ role: 'branch_manager', branchId: branchB }])).auth;
+      expect((await t.http().delete(`/api/v1/admin/reports/aggregator-volumes/${wrong.body.id}`).set('authorization', ownerB)).status).toBe(403);
+      const removed = await t.http().delete(`/api/v1/admin/reports/aggregator-volumes/${wrong.body.id}`).set('authorization', manager);
+      expect(removed.status).toBe(204);
+      expect((await t.http().delete(`/api/v1/admin/reports/aggregator-volumes/${wrong.body.id}`).set('authorization', manager)).status).toBe(404);
+      const deletedAudit = await sql<any>`
+        select before, after, branch_id from platform.audit_log where action = 'reporting.aggregator_volume_deleted' and entity_id = ${wrong.body.id}`.execute(
+        t.database.rootConnection(),
+      );
+      expect(deletedAudit.rows).toHaveLength(1);
+      expect(deletedAudit.rows[0]).toMatchObject({ branch_id: branchA, before: { sourceName: 'Ошибка', orders: 99 }, after: null });
+      const afterDelete = await t.http().get(`/api/v1/admin/reports/aggregator-volumes?fromMonth=2026-09&toMonth=2026-10&branchId=${branchA}`).set('authorization', manager);
+      expect(afterDelete.body.map((v: { id: string }) => v.id)).toEqual([saved.body.id]);
+
       const own = await get(`own-channel?from=2026-09-01&to=2026-10-31&branchId=${branchA}`, manager);
       expect(own.status).toBe(200);
       expect(own.body.months).toHaveLength(2);

@@ -10,6 +10,7 @@ import { newId } from '../../../../shared/kernel/ids';
 import { Page, pageOf, pageRequest } from '../../../../shared/kernel/pagination';
 import { Permission } from '../../../../shared/kernel/permissions';
 import { isEnumValue } from '../../../../shared/kernel/state-machine';
+import { isIsoDate } from '../../../../shared/kernel/time';
 import { BranchDirectory } from '../../../identity/public';
 import {
   AccountingExport,
@@ -79,13 +80,26 @@ export class AccountingExportQueries {
     return this.view(e);
   }
 
-  async list(actor: Actor, query: { page?: number; perPage?: number }): Promise<Page<AccountingExportView>> {
+  async list(
+    actor: Actor,
+    query: { page?: number; perPage?: number; branchId?: string; from?: string; to?: string },
+  ): Promise<Page<AccountingExportView>> {
     const branches = actor.branchesWith(Permission.ReportsExport);
     if (branches !== 'all' && branches.length === 0) {
       throw new ForbiddenError('access.forbidden', `Permission ${Permission.ReportsExport} required`, { permission: Permission.ReportsExport });
     }
+    if (query.branchId) actor.assertCan(Permission.ReportsExport, query.branchId);
+    for (const [field, value] of [
+      ['from', query.from],
+      ['to', query.to],
+    ] as const) {
+      if (value !== undefined && !isIsoDate(value)) throw new ValidationError('report.invalid_date', `${field} must be a date YYYY-MM-DD`, { field, value });
+    }
+    if (query.from && query.to && query.from > query.to) {
+      throw new ValidationError('report.invalid_period', 'Period start must not be after its end', { from: query.from, to: query.to });
+    }
     const req = pageRequest(query.page, query.perPage);
-    const result = await this.exports.list(branches, req);
+    const result = await this.exports.list(branches, req, { branchId: query.branchId, from: query.from, to: query.to });
     const items: AccountingExportView[] = [];
     for (const e of result.items) items.push(await this.view(e));
     return pageOf(items, result.total, req);

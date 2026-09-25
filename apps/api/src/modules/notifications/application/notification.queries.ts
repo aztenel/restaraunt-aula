@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Actor } from '../../../shared/kernel/actor';
-import { NotFoundError } from '../../../shared/kernel/errors';
+import { NotFoundError, ValidationError } from '../../../shared/kernel/errors';
 import { Page, PageRequest } from '../../../shared/kernel/pagination';
 import { Permission } from '../../../shared/kernel/permissions';
 import { tryNormalizePhone } from '../../../shared/kernel/phone';
@@ -130,12 +130,38 @@ function toLogItem(row: DeliveryLogRow): DeliveryLogItem {
   };
 }
 
-/** Поиск адресата в журнале: телефон нормализуется, email — в нижнем регистре, иначе — как есть (id чата). */
-export function recipientSearchKey(value: string | undefined): string | undefined {
+/** Минимум цифр во фрагменте телефона / символов во фрагменте email или id чата. */
+export const RECIPIENT_FRAGMENT_MIN_DIGITS = 4;
+export const RECIPIENT_FRAGMENT_MIN_LENGTH = 3;
+const FULL_EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+const PHONE_CHARS_RE = /^[\d\s()+-]+$/;
+
+/**
+ * Поиск адресата в журнале: полный телефон/email — точное совпадение (как раньше); фрагмент
+ * (последние цифры телефона, часть email или id чата) — совпадение по части адреса.
+ * В ответе адресаты остаются маской; слишком короткий фрагмент — ошибка notification.recipient_search_too_short.
+ */
+export function recipientSearch(value: string | undefined): Pick<DeliveryLogFilter, 'address' | 'addressContains'> {
   const raw = value?.trim();
-  if (!raw) return undefined;
-  if (raw.includes('@') && !raw.startsWith('@')) return raw.toLowerCase();
-  return tryNormalizePhone(raw) ?? raw;
+  if (!raw) return {};
+  if (FULL_EMAIL_RE.test(raw)) return { address: raw.toLowerCase() };
+  const phone = tryNormalizePhone(raw);
+  if (phone) return { address: phone };
+  if (PHONE_CHARS_RE.test(raw)) {
+    const digits = raw.replace(/\D/g, '');
+    if (digits.length < RECIPIENT_FRAGMENT_MIN_DIGITS) {
+      throw new ValidationError('notification.recipient_search_too_short', `Recipient fragment must contain at least ${RECIPIENT_FRAGMENT_MIN_DIGITS} digits`, {
+        minDigits: RECIPIENT_FRAGMENT_MIN_DIGITS,
+      });
+    }
+    return { addressContains: digits };
+  }
+  if (raw.length < RECIPIENT_FRAGMENT_MIN_LENGTH) {
+    throw new ValidationError('notification.recipient_search_too_short', `Recipient fragment must be at least ${RECIPIENT_FRAGMENT_MIN_LENGTH} characters`, {
+      minLength: RECIPIENT_FRAGMENT_MIN_LENGTH,
+    });
+  }
+  return { addressContains: raw.toLowerCase() };
 }
 
 /** Запросы админки модуля уведомлений (только чтение). */
@@ -193,7 +219,8 @@ export class NotificationQueries {
 
   async deliveryLog(actor: Actor, filter: DeliveryLogFilter & { recipient?: string }, page: PageRequest): Promise<Page<DeliveryLogItem>> {
     actor.assertCan(Permission.IntegrationsManage);
-    const result = await this.deliveries.search({ ...filter, address: recipientSearchKey(filter.recipient) }, page);
+    const { recipient, ...rest } = filter;
+    const result = await this.deliveries.search({ ...rest, ...recipientSearch(recipient) }, page);
     return { ...result, items: result.items.map(toLogItem) };
   }
 

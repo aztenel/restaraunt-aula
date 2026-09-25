@@ -67,6 +67,16 @@ export class AggregatorVolumeRepository {
     return row ? this.map(row) : null;
   }
 
+  async findById(id: string): Promise<AggregatorVolumeRecord | null> {
+    const row = await this.db().selectFrom('reporting.aggregator_volumes').selectAll().where('id', '=', id).executeTakeFirst();
+    return row ? this.map(row) : null;
+  }
+
+  async delete(id: string): Promise<boolean> {
+    const result = await this.db().deleteFrom('reporting.aggregator_volumes').where('id', '=', id).executeTakeFirst();
+    return Number(result.numDeletedRows) > 0;
+  }
+
   async upsert(input: {
     branchId: string;
     month: string;

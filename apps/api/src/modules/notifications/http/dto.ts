@@ -155,7 +155,11 @@ export class DeliveryLogQueryDto extends PageQueryDto {
   @ApiPropertyOptional({ enum: AUDIENCES }) @IsOptional() @IsIn(AUDIENCES) audience?: 'guest' | 'staff';
   @ApiPropertyOptional({ description: 'С момента (ISO 8601)', format: 'date-time' }) @IsOptional() @IsISO8601() from?: string;
   @ApiPropertyOptional({ description: 'До момента (ISO 8601, не включая)', format: 'date-time' }) @IsOptional() @IsISO8601() to?: string;
-  @ApiPropertyOptional({ description: 'Адресат: телефон, email или id чата (точное совпадение; в ответе — маска)' })
+  @ApiPropertyOptional({
+    description:
+      'Адресат: полный телефон или email — точное совпадение; фрагмент (не меньше 4 цифр телефона, например последние цифры, ' +
+      'или не меньше 3 символов email/id чата) — поиск по части адреса. В ответе адресаты всегда маскированы.',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(120)

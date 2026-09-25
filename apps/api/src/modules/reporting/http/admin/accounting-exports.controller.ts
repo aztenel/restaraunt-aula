@@ -10,7 +10,7 @@ import {
   RequestAccountingExport,
   RetryAccountingExportPush,
 } from '../../application/accounting/accounting-export.actions';
-import { AccountingExportDto, AccountingExportsPageDto, CreateAccountingExportDto, PageQueryDto } from '../dto';
+import { AccountingExportDto, AccountingExportsPageDto, AccountingExportsQueryDto, CreateAccountingExportDto } from '../dto';
 
 /**
  * Выгрузка продаж и документов в учёт (1С, этап 3). Файл строится задачей в очереди,
@@ -36,7 +36,7 @@ export class AccountingExportsController {
   @RequirePermissions(Permission.ReportsExport)
   @Get()
   @ApiOkResponse({ type: AccountingExportsPageDto })
-  list(@CurrentActor() actor: Actor, @Query() q: PageQueryDto): Promise<Page<AccountingExportView>> {
+  list(@CurrentActor() actor: Actor, @Query() q: AccountingExportsQueryDto): Promise<Page<AccountingExportView>> {
     return this.queries.list(actor, q);
   }
 

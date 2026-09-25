@@ -1,10 +1,10 @@
-import { Body, Controller, Get, Put, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Put, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentActor, RequirePermissions } from '../../../../shared/infrastructure/http/decorators';
 import { MoneyInputDto } from '../../../../shared/infrastructure/http/api-types';
 import { Actor } from '../../../../shared/kernel/actor';
 import { Permission } from '../../../../shared/kernel/permissions';
-import { AggregatorVolumeQueries, SaveAggregatorVolume } from '../../application/aggregator-volume.actions';
+import { AggregatorVolumeQueries, DeleteAggregatorVolume, SaveAggregatorVolume } from '../../application/aggregator-volume.actions';
 import { AggregatorVolumeRecord } from '../../infrastructure/aggregator-volume.repository';
 import { AggregatorVolumeDto, AggregatorVolumeInputDto, AggregatorVolumesQueryDto } from '../dto';
 
@@ -19,6 +19,7 @@ export class AggregatorVolumesController {
   constructor(
     private readonly save: SaveAggregatorVolume,
     private readonly queries: AggregatorVolumeQueries,
+    private readonly remove: DeleteAggregatorVolume,
   ) {}
 
   @RequirePermissions(Permission.ReportsBranch, Permission.ReportsConsolidated)
@@ -41,5 +42,14 @@ export class AggregatorVolumesController {
       orders: dto.orders,
       revenue: dto.revenue ? MoneyInputDto.toMoney(dto.revenue) : null,
     });
+  }
+
+  /** Удалить ошибочно введённый итог (журнал действий). */
+  @RequirePermissions(Permission.ReportsBranch)
+  @Delete(':id')
+  @HttpCode(204)
+  @ApiNoContentResponse()
+  async delete(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string): Promise<void> {
+    await this.remove.execute(actor, id);
   }
 }

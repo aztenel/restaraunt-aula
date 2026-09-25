@@ -14,7 +14,7 @@ import {
   AccountingExporterRegistry,
   AccountingPushGateway,
 } from './application/accounting/accounting-exporter';
-import { AggregatorVolumeQueries, SaveAggregatorVolume } from './application/aggregator-volume.actions';
+import { AggregatorVolumeQueries, DeleteAggregatorVolume, SaveAggregatorVolume } from './application/aggregator-volume.actions';
 import { DailyReportQueries } from './application/daily-reports/daily-report.queries';
 import { DailySummaryBuilder } from './application/daily-reports/daily-summary.builder';
 import { GenerateDailyReports } from './application/daily-reports/generate-daily-reports.action';
@@ -102,6 +102,7 @@ import { StorefrontEventsRepository } from './infrastructure/storefront-events.r
     RecordStorefrontEvent,
     PurgeStorefrontEvents,
     SaveAggregatorVolume,
+    DeleteAggregatorVolume,
     GenerateDailyReports,
     RequestAccountingExport,
     BuildAccountingExport,

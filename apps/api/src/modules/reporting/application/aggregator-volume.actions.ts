@@ -58,6 +58,34 @@ export class SaveAggregatorVolume {
   }
 }
 
+/** Удаление ошибочно введённого итога агрегатора (право reports.branch в филиале записи), с записью в журнал. */
+@Injectable()
+export class DeleteAggregatorVolume {
+  constructor(
+    private readonly volumes: AggregatorVolumeRepository,
+    private readonly database: Database,
+    private readonly audit: AuditLog,
+  ) {}
+
+  async execute(actor: Actor, id: string): Promise<void> {
+    const found = await this.volumes.findById(id);
+    if (!found) throw new NotFoundError('aggregator_volume', id);
+    actor.assertCan(Permission.ReportsBranch, found.branchId);
+    await this.database.transaction(async () => {
+      if (!(await this.volumes.delete(id))) throw new NotFoundError('aggregator_volume', id);
+      await this.audit.record({
+        action: 'reporting.aggregator_volume_deleted',
+        entityType: 'aggregator_volume',
+        entityId: id,
+        branchId: found.branchId,
+        before: auditState(found),
+        after: null,
+        meta: { month: found.month, source: found.source },
+      });
+    });
+  }
+}
+
 /** Список введённых итогов агрегаторов за месяцы (по филиалам, доступным сотруднику). */
 @Injectable()
 export class AggregatorVolumeQueries {

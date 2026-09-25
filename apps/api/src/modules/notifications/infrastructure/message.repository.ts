@@ -124,6 +124,8 @@ export interface DeliveryLogFilter {
   to?: Date;
   /** Точный адрес (нормализованный телефон, email или id чата). */
   address?: string;
+  /** Часть адреса (цифры телефона, часть email/id чата в нижнем регистре). */
+  addressContains?: string;
   relatedType?: string;
   relatedId?: string;
 }
@@ -513,6 +515,10 @@ export class DeliveryRepository {
     if (filter.from) q = q.where('d.created_at', '>=', filter.from);
     if (filter.to) q = q.where('d.created_at', '<', filter.to);
     if (filter.address) q = q.where('d.address', '=', filter.address);
+    if (filter.addressContains) {
+      const pattern = `%${filter.addressContains.replace(/[%_\\]/g, (c) => `\\${c}`)}%`;
+      q = q.where(sql<boolean>`lower(d.address) like ${pattern}`);
+    }
     if (filter.relatedType) q = q.where('m.related_type', '=', filter.relatedType);
     if (filter.relatedId) q = q.where('m.related_id', '=', filter.relatedId);
     const total = await q.select((eb) => eb.fn.countAll<number>().as('n')).executeTakeFirst();

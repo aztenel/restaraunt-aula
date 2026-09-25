@@ -229,5 +229,26 @@ describe('Reporting: accounting export to 1C (integration)', () => {
     const list = await t.http().get('/api/v1/admin/reports/accounting-exports').set('authorization', finance);
     expect(list.body).toMatchObject({ total: 1, page: 1 });
     expect(list.body.items[0].id).toBe(created.body.id);
+
+    // Фильтры списка: филиал и период (пересечение периода выгрузки).
+    t.clock.advance(60_000);
+    const network = await post(finance, { from: '2026-08-01', to: '2026-08-31', format: 'xlsx' });
+    expect(network.status).toBe(201);
+    const listOf = async (query: string) => {
+      const res = await t.http().get(`/api/v1/admin/reports/accounting-exports?${query}`).set('authorization', finance);
+      expect(res.status).toBe(200);
+      return res.body.items.map((i: { id: string }) => i.id);
+    };
+    expect(await listOf('')).toEqual([network.body.id, created.body.id]);
+    expect(await listOf(`branchId=${branchA}`)).toEqual([created.body.id]);
+    expect(await listOf(`branchId=${branchB}`)).toEqual([]);
+    expect(await listOf('from=2026-08-15&to=2026-08-20')).toEqual([network.body.id]);
+    expect(await listOf('from=2026-08-31&to=2026-09-01')).toEqual([network.body.id, created.body.id]);
+    expect(await listOf('from=2026-09-30')).toEqual([created.body.id]);
+    expect(await listOf('to=2026-07-31')).toEqual([]);
+    const badPeriod = await t.http().get('/api/v1/admin/reports/accounting-exports?from=2026-09-30&to=2026-09-01').set('authorization', finance);
+    expect(badPeriod.status).toBe(422);
+    expect(badPeriod.body.error.code).toBe('report.invalid_period');
+    expect((await t.http().get('/api/v1/admin/reports/accounting-exports?from=30.09.2026').set('authorization', finance)).status).toBe(400);
   });
 });

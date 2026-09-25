@@ -94,6 +94,13 @@ function toRow(s: AccountingExportState) {
 }
 
 /** Выгрузки в учёт (1С): состояние построения файла и отправки. */
+export interface AccountingExportListFilter {
+  branchId?: string;
+  /** YYYY-MM-DD (включительно). */
+  from?: string;
+  to?: string;
+}
+
 @Injectable()
 export class AccountingExportRepository {
   constructor(private readonly database: Database) {}
@@ -143,10 +150,16 @@ export class AccountingExportRepository {
     return row?.push_attempts ?? 0;
   }
 
-  /** branchIds: 'all' — все выгрузки; иначе — по этим филиалам (без сводных). */
-  async list(branchIds: 'all' | readonly string[], page: PageRequest) {
+  /**
+   * branchIds: 'all' — все выгрузки; иначе — по этим филиалам (без сводных).
+   * filter.branchId — только выгрузки филиала; filter.from/to — период выгрузки пересекается с заданным.
+   */
+  async list(branchIds: 'all' | readonly string[], page: PageRequest, filter: AccountingExportListFilter = {}) {
     let q = this.db().selectFrom('reporting.accounting_exports');
     if (branchIds !== 'all') q = branchIds.length === 0 ? q.where(sql<boolean>`false`) : q.where('branch_id', 'in', [...branchIds]);
+    if (filter.branchId) q = q.where('branch_id', '=', filter.branchId);
+    if (filter.from) q = q.where('period_to', '>=', filter.from);
+    if (filter.to) q = q.where('period_from', '<=', filter.to);
     const total = await q.select((eb) => eb.fn.countAll<number>().as('n')).executeTakeFirst();
     const rows = await q.selectAll().orderBy('requested_at', 'desc').limit(page.perPage).offset(offsetOf(page)).execute();
     return { total: Number(total?.n ?? 0), items: rows.map((r) => AccountingExport.restore(toState(r))) };

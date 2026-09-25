@@ -571,6 +571,15 @@ export class DailyReportsPageDto {
 
 // ---------------------------------------------------------------- выгрузка в учёт
 
+export class AccountingExportsQueryDto extends PageQueryDto {
+  @ApiPropertyOptional({ description: 'Только выгрузки филиала (право reports.export в нём)' }) @IsOptional() @IsUUID() branchId?: string;
+  @ApiPropertyOptional({ example: '2026-09-01', description: 'Период выгрузки пересекается с [from, to] (YYYY-MM-DD)' })
+  @IsOptional()
+  @Matches(DATE_RE)
+  from?: string;
+  @ApiPropertyOptional({ example: '2026-09-30' }) @IsOptional() @Matches(DATE_RE) to?: string;
+}
+
 export class CreateAccountingExportDto {
   @ApiProperty({ example: '2026-09-01' }) @Matches(DATE_RE) from: string;
   @ApiProperty({ example: '2026-09-30' }) @Matches(DATE_RE) to: string;

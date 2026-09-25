@@ -190,6 +190,7 @@ describe('Notifications admin API (integration)', () => {
       const { auth } = await tokenFor(t, [{ role: 'sysadmin' }]);
       const log = (query: Record<string, string | number> = {}) => t.http().get(api('/deliveries')).query(query).set('authorization', auth);
       expect((await log({ recipient: '+77011234567' })).body.total).toBe(0);
+      expect((await log({ recipient: '4567' })).body.total).toBe(0);
       const created = (await log({ relatedId: 'o1' })).body.items[0];
       expect(created).toMatchObject({ template: 'order.created', status: 'sent', recipient: '—', recipientName: null });
       const detail = await t.http().get(api(`/deliveries/${created.id}`)).set('authorization', auth);
@@ -241,6 +242,19 @@ describe('Notifications admin API (integration)', () => {
       expect((await log({ template: 'otp.code' })).body.items[0].locale).toBe('kk');
       expect((await log({ recipient: '8 701 123 45 67' })).body.total).toBe(1);
       expect((await log({ recipient: '+77010000000' })).body.total).toBe(0);
+      // Поиск по фрагменту адреса; адресаты в ответе — только маски.
+      const byTail = await log({ recipient: '45 67' });
+      expect(byTail.status).toBe(200);
+      expect(byTail.body.total).toBe(1);
+      expect(byTail.body.items[0]).toMatchObject({ template: 'order.created', recipient: '+7 701 *** ** 67' });
+      expect(JSON.stringify(byTail.body)).not.toContain('1234567');
+      expect((await log({ recipient: '9999' })).body.items.map((i: Row) => i.template)).toEqual(['otp.code']);
+      expect((await log({ recipient: '7701' })).body.total).toBe(2);
+      expect((await log({ recipient: '%%%' })).body.total).toBe(0);
+      const short = await log({ recipient: '567' });
+      expect(short.status).toBe(422);
+      expect(short.body.error.code).toBe('notification.recipient_search_too_short');
+      expect((await log({ recipient: 'ab' })).status).toBe(422);
       expect((await log({ relatedType: 'order', relatedId: 'o1' })).body.total).toBe(1);
       expect((await log({ from: '2026-10-01T05:00:00Z', to: '2026-10-01T07:00:00Z' })).body.total).toBe(3);
       expect((await log({ from: '2026-10-02T00:00:00Z' })).body.total).toBe(0);
@@ -320,6 +334,7 @@ describe('Notifications admin API (integration)', () => {
       const detail = await t.http().get(api(`/deliveries/${res.body.deliveryId}`)).set('authorization', auth);
       expect(detail.body).toMatchObject({
         template: 'staff.system_alert',
+        locale: 'ru',
         channel: 'sms',
         provider: 'log',
         status: 'sent',
