@@ -159,15 +159,17 @@ describe('E2E 8: banquet full cycle with real payments', () => {
       .post(`/api/v1/admin/banquets/requests/${requestId}/invoices`)
       .set('Authorization', finance.auth)
       .send({ payerType: 'company', companyId: company.body.id, amount: { amount: 100 } });
-    expect(overInvoice.status).toBe(409);
+    expect(overInvoice.status).toBe(422);
+    expect(overInvoice.body.error.code).toBe('banquet_invoice.exceeds_quote');
     // Переплата по счёту отклоняется (сумма оплат не превышает сумму счёта).
-    const paidAt = '2026-10-01T12:00:00+05:00';
+    const paidAt = '2026-10-01T11:10:00+05:00'; // по выписке банка (не в будущем)
     const over = await ctx
       .api()
       .post(`/api/v1/admin/banquets/invoices/${companyInvoice.body.id}/payments`)
       .set('Authorization', finance.auth)
       .send({ amount: { amount: 15_235_001 }, paidAt, documentNumber: 'PP-771' });
     expect(over.status).toBe(409);
+    expect(over.body.error.code).toBe('banquet_invoice.overpayment');
     const transfer = await ctx
       .api()
       .post(`/api/v1/admin/banquets/invoices/${companyInvoice.body.id}/payments`)
@@ -189,7 +191,9 @@ describe('E2E 8: banquet full cycle with real payments', () => {
     expect(detail.balance).toMatchObject({ quoteTotal: money(304_700), paid: money(304_700), remaining: money(0) });
     // Мероприятие ещё не наступило — «проведено» недоступно.
     expect(detail.allowedTransitions).not.toContain('held');
-    await ctx.api().post(`/api/v1/admin/banquets/requests/${requestId}/transition`).set('Authorization', manager.auth).send({ to: 'held' }).expect(409);
+    const early = await ctx.api().post(`/api/v1/admin/banquets/requests/${requestId}/transition`).set('Authorization', manager.auth).send({ to: 'held' });
+    expect(early.status).toBe(422);
+    expect(early.body.error.code).toMatch(/^banquet\./);
 
     // ---------------------------------------------------------------- День мероприятия: проведено
     ctx.t.clock.set(new Date('2026-10-20T17:00:00.000Z')); // 22:00 по Астане
@@ -204,8 +208,12 @@ describe('E2E 8: banquet full cycle with real payments', () => {
     expect(revenue.totals).toMatchObject({ banquet: money(304_700), total: money(304_700) });
     expect(revenue.counts.banquet).toBe(1);
     const funnel = await report(ctx, 'banquet-funnel', { from: '2026-10-01', to: '2026-10-01', branchId: greenline });
-    // В периоде две заявки филиала: наша (проведена, ответ позже SLA) и демо-заявка из сидов (без ответа).
-    expect(funnel).toMatchObject({ total: 2, held: 1, heldTotal: money(304_700), answeredWithinSla: 0, unansweredOverdue: 1 });
+    // В периоде две заявки филиала: наша (проведена, ответ позже SLA) и демо-заявка из сидов (смета сохранена
+    // сразу — ответ в пределах SLA). Метрики SLA в Reporting совпадают со статистикой модуля Banquet.
+    expect(funnel).toMatchObject({ total: 2, held: 1, heldTotal: money(304_700), answerDue: 2, answeredWithinSla: 1, unansweredOverdue: 0 });
+    const slaStats = await ctx.api().get('/api/v1/admin/banquets/sla-stats').query({ from: '2026-10-01', to: '2026-10-01', branchId: greenline }).set('Authorization', owner.auth).expect(200);
+    expect(slaStats.body).toMatchObject({ total: 2, answered: 2, answeredWithinSla: funnel.answeredWithinSla, breached: 1 });
+    expect(slaStats.body.byManager.find((m: any) => m.managerId === manager.userId)).toMatchObject({ total: 1, breached: 1, answeredWithinSla: 0 });
     expect(funnel.stages.find((s: any) => s.status === 'held')).toMatchObject({ reached: 1, current: 1 });
     const cash = await report(ctx, 'payments', { from: '2026-10-01', to: '2026-10-01', branchId: greenline });
     expect(cash.purposes).toEqual(expect.arrayContaining([expect.objectContaining({ purpose: 'banquet_invoice', received: money(304_700) })]));

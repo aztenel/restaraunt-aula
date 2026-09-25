@@ -112,7 +112,7 @@ describe('Reservation: admin (integration)', () => {
       date: '2026-10-02',
       time: '19:00',
     });
-    expect(res.manageUrl).toContain('/kk/reservations/');
+    expect(res.manageUrl).toContain('/kk/booking/');
     expect(res.history).toEqual([expect.objectContaining({ from: null, to: 'confirmed', actorKind: 'staff' })]);
     expect(fakes.customers.consents).toEqual([expect.objectContaining({ kind: 'personal_data', granted: true })]);
     expect(fakes.notifier.guest.map((g) => g.template)).toEqual(['reservation.confirmed']);

@@ -155,7 +155,7 @@ export class PurchaseCertificate {
         amount: order.total,
         description: describe(product, input.quantity, input.locale),
         customer: { phone: buyerPhone, name: order.buyer.name, email: buyerEmail },
-        returnUrl: this.links.certificateOrderUrl(order.token),
+        returnUrl: this.links.certificateOrderUrl(order.token, input.locale),
         idempotencyKey: `certificate-order:${order.id}`,
       });
       await this.orders.attachPayment(order.id, payment.id);

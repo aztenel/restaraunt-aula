@@ -10,7 +10,7 @@ export class ReservationLinks {
   /** Страница брони гостя (витрина: /<locale>/reservations/<token>): статус, оплата депозита, отмена. */
   manage(publicToken: string | null, locale: Locale): string {
     if (!publicToken) return this.config.app.publicWebUrl;
-    return `${this.config.app.publicWebUrl}/${locale}/reservations/${encodeURIComponent(publicToken)}`;
+    return `${this.config.app.publicWebUrl}/${locale}/booking/${encodeURIComponent(publicToken)}`;
   }
 
   /** Оплата депозита: та же страница брони — ссылка провайдера создаётся асинхронно и показывается там. */

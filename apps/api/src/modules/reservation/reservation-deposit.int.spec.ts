@@ -58,7 +58,7 @@ describe('Reservation: deposit, holds, guest self-service, reminders (integratio
     expect(res.deposit.paymentUrl).toBe(payment.paymentUrl);
     expect(fakes.notifier.guest.map((g) => g.template)).toEqual(['reservation.awaiting_deposit']);
     expect(fakes.notifier.guest[0]!.params).toMatchObject({ deposit: '50 000 ₸', holdUntil: '11:30, 01.10.2026' });
-    expect((fakes.notifier.guest[0]!.params as { paymentUrl: string }).paymentUrl).toContain(`/ru/reservations/${res.token}?pay=1`);
+    expect((fakes.notifier.guest[0]!.params as { paymentUrl: string }).paymentUrl).toContain(`/ru/booking/${res.token}?pay=1`);
     const [created] = await outboxEvents(t, ReservationEvents.ReservationCreated);
     expect(created!.payload).toMatchObject({ status: 'awaiting_deposit', deposit: { amount: 5_000_000, currency: 'KZT' } });
 

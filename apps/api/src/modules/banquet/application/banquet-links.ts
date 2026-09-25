@@ -7,14 +7,14 @@ import { Locale } from '../../../shared/kernel/translatable';
 export class BanquetLinks {
   constructor(private readonly config: Config) {}
 
-  /** Страница сметы для клиента (витрина: /<locale>/banquet/quote/<token>). */
+  /** Страница сметы для клиента (витрина: /<locale>/banquets/quote/<token>). */
   quote(token: string, locale: Locale): string {
-    return `${this.config.app.publicWebUrl}/${locale}/banquet/quote/${encodeURIComponent(token)}`;
+    return `${this.config.app.publicWebUrl}/${locale}/banquets/quote/${encodeURIComponent(token)}`;
   }
 
   /** Страница счёта: сумма, статус, ссылка на оплату или PDF счёта. */
   invoice(token: string, locale: Locale): string {
-    return `${this.config.app.publicWebUrl}/${locale}/banquet/invoice/${encodeURIComponent(token)}`;
+    return `${this.config.app.publicWebUrl}/${locale}/banquets/invoice/${encodeURIComponent(token)}`;
   }
 
   admin(requestId: string): string {

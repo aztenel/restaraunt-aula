@@ -44,7 +44,8 @@ export class PaymentLinks {
     return explicit ?? this.config.app.publicWebUrl;
   }
 
-  certificateOrderUrl(token: string): string {
-    return `${this.config.app.publicWebUrl}/certificates/orders/${token}`;
+  /** Страница заказа сертификата на витрине: /{locale}/certificates/order/{token}. */
+  certificateOrderUrl(token: string, locale: string = 'ru'): string {
+    return `${this.config.app.publicWebUrl}/${locale}/certificates/order/${encodeURIComponent(token)}`;
   }
 }
