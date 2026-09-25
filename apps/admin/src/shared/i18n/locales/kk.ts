@@ -1,15 +1,21 @@
+import { banquetsKk } from './banquets.kk';
 import { catalogKk } from './catalog.kk';
+import { certificatesKk } from './certificates.kk';
 import { orderingKk } from './ordering.kk';
 import { paymentsKk } from './payments.kk';
+import { reportingKk } from './reporting.kk';
 import { reservationKk } from './reservation.kk';
 import type { AdminMessages } from './ru';
 
 /** Қазақ тілі — ru.ts-тегі барлық кілттерді қайталайды (типпен тексеріледі). */
 export const kk: AdminMessages = {
   ...paymentsKk,
+  ...certificatesKk,
   ...orderingKk,
   ...catalogKk,
+  ...banquetsKk,
   ...reservationKk,
+  ...reportingKk,
   app: {
     title: 'AULA — әкімші панелі',
   },
@@ -95,6 +101,8 @@ export const kk: AdminMessages = {
     branches: 'Филиалдар',
     legalEntities: 'Заңды тұлғалар',
     integrations: 'Интеграциялар',
+    pos: 'POS жүйесі',
+    notifications: 'Хабарламалар',
     auditLog: 'Әрекеттер журналы',
     system: 'Жүйе',
     groups: {
@@ -123,6 +131,8 @@ export const kk: AdminMessages = {
     branches: 'Филиалдардың мекенжайлары, жұмыс уақыты, координаттары мен баптаулары',
     legalEntities: 'Шоттар, актілер, шарттар мен ЭШФ үшін заңды тұлғалардың деректемелері',
     integrations: 'Төлем провайдерлері, мессенджерлер, POS, жеткізу, есеп',
+    pos: 'Тапсырыстарды асүйге жіберу, кассадан стоп-парақ, тағамдарды POS тауарларымен сәйкестендіру',
+    notifications: 'Қонақтар мен қызметкерлерге хабарлама үлгілері, жеткізу журналы, арналар',
     auditLog: 'Кім, қашан және нені өзгертті: ақша, мәртебелер, мәзір, баптаулар',
     system: 'Сәтсіз тапсырмалар кезегі және сыртқы жүйелермен алмасу журналы',
   },

@@ -102,7 +102,7 @@ export function VenueHoldModal({ open, request, onClose }: { open: boolean; requ
       onClose();
     } catch (error) {
       const apiError = toApiError(error);
-      if (CONFLICT_CODES.includes(apiError.code) || apiError.status === 409) setConflict(errorMessage(apiError, i18n.language));
+      if (CONFLICT_CODES.includes(apiError.code)) setConflict(errorMessage(apiError, i18n.language));
       else notifyError(error);
     }
   };

@@ -107,7 +107,7 @@ export const banquetsApi = {
   get: (id: string): Promise<BanquetRequestDetail> => call(api.GET('/api/v1/admin/banquets/requests/{id}', { params: { path: { id } } })),
   create: (input: CreateRequestInput): Promise<BanquetRequestDetail> => call(api.POST('/api/v1/admin/banquets/requests', { body: input })),
   update: (id: string, input: UpdateRequestInput): Promise<BanquetRequestDetail> =>
-    call(api.PATCH('/api/v1/admin/banquets/requests/{id}', { params: { path: { id } }, body: body<Schemas['BanquetUpdateRequestDto']>(input) })),
+    call(api.PATCH('/api/v1/admin/banquets/requests/{id}', { params: { path: { id } }, body: input })),
   transition: (id: string, to: BanquetStatus, reason?: string): Promise<BanquetRequestDetail> =>
     call(api.POST('/api/v1/admin/banquets/requests/{id}/transition', { params: { path: { id } }, body: { to, reason: text(reason) } })),
   assign: (id: string, managerId: string): Promise<BanquetRequestDetail> =>

@@ -7,6 +7,7 @@ import {
   CertificateExpiredPayload,
   CertificateIssuedPayload,
   CertificateRedeemedPayload,
+  CertificateReinstatedPayload,
   PaymentEventPayload,
   PaymentsEvents,
   RefundEventPayload,
@@ -121,6 +122,12 @@ export class ReportingPaymentsProjection {
       creditedAt,
       creditedDate: localDateOf(creditedAt),
     });
+  }
+
+  /** Продление истёкшего сертификата: остаток снова в обязательствах (снимаем «сгоревший» остаток). */
+  @OnEvent(PaymentsEvents.CertificateReinstated)
+  async onCertificateReinstated(e: EventEnvelope<CertificateReinstatedPayload>): Promise<void> {
+    await this.certificates.applyReinstated({ certificateId: e.payload.certificateId, expiresAt: new Date(e.payload.expiresAt) });
   }
 
   @OnEvent(PaymentsEvents.CertificateExpired)

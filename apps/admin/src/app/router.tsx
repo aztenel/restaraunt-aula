@@ -35,6 +35,8 @@ const SECTION_PAGES: Record<Exclude<SectionKey, 'dashboard'>, Loader> = {
   branches: () => import('@/features/branches/BranchesPage').then((m) => m.BranchesPage),
   legalEntities: () => import('@/features/legal-entities/LegalEntitiesPage').then((m) => m.LegalEntitiesPage),
   integrations: () => import('@/features/integrations/IntegrationsPage').then((m) => m.IntegrationsPage),
+  pos: () => import('@/features/pos/PosPage').then((m) => m.PosPage),
+  notifications: () => import('@/features/notifications/NotificationsPage').then((m) => m.NotificationsPage),
   auditLog: () => import('@/features/audit/AuditLogPage').then((m) => m.AuditLogPage),
   system: () => import('@/features/system/SystemPage').then((m) => m.SystemPage),
 };

@@ -13,7 +13,7 @@ import { isIsoDate } from '../../../../shared/kernel/time';
 import { BranchDirectory } from '../../../identity/public';
 import { expiresAtForLastDay } from '../../domain/gift-certificate';
 import { CertificateRecord, CertificateRepository, LedgerEntry } from '../../infrastructure/certificate.repository';
-import { CertificateExpiredPayload, PaymentsEvents } from '../../public';
+import { CertificateExpiredPayload, CertificateReinstatedPayload, PaymentsEvents } from '../../public';
 import { DebitCertificate } from './certificate-ledger.actions';
 import { certificateAuditState } from './certificate-views';
 import { DeliverCertificate } from './deliver-certificate.action';
@@ -122,13 +122,15 @@ export class UnblockCertificate {
 
 /**
  * Продление срока действия (последний день действия включительно). Истёкший сертификат с остатком
- * снова активен — в журнале движений запись «восстановление» (для отчёта по обязательствам).
+ * снова активен — в журнале движений запись «восстановление» (для отчёта по обязательствам)
+ * и событие CertificateReinstated (проекция обязательств в Reporting возвращает остаток).
  */
 @Injectable()
 export class ExtendCertificate {
   constructor(
     private readonly certificates: CertificateRepository,
     private readonly database: Database,
+    private readonly events: EventBus,
     private readonly audit: AuditLog,
     private readonly clock: Clock,
   ) {}
@@ -160,6 +162,18 @@ export class ExtendCertificate {
           comment: input.reason,
           occurredAt: now,
         });
+        const s = record.certificate.snapshot();
+        await this.events.publish(
+          PaymentsEvents.CertificateReinstated,
+          {
+            certificateId: id,
+            kind: s.kind,
+            balance: s.balance.toJSON(),
+            expiresAt: s.expiresAt.toISOString(),
+            occurredAt: now.toISOString(),
+          } satisfies CertificateReinstatedPayload,
+          { aggregateId: id },
+        );
       }
       await this.audit.record({
         action: 'certificate.extended',

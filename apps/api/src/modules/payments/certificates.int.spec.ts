@@ -414,6 +414,11 @@ describe('Gift certificates (integration)', () => {
         .set('authorization', owner.auth)
         .send({ validUntil: '2027-12-31', reason: 'Жалоба гостя' });
       expect(extended.body).toMatchObject({ status: 'active', validUntil: '2027-12-31' });
+      // Восстановление остатка объявляется событием (проекция обязательств в Reporting).
+      const reinstated = await publishedEvents(ctx.t, PaymentsEvents.CertificateReinstated);
+      expect(reinstated.map((e) => e.payload)).toEqual([
+        expect.objectContaining({ certificateId: cert!.id, kind: 'amount', balance: { amount: 1_000_000, currency: 'KZT' } }),
+      ]);
       const audit = await auditEntries(ctx.t, 'certificate.extended');
       expect(audit[0]!.before.status).toBe('expired');
       expect(audit[0]!.after.expiresAt).not.toBe(audit[0]!.before.expiresAt);

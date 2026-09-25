@@ -107,7 +107,7 @@ describe('E2E 10: security / NFR smoke', () => {
       const req = (ctx.api() as any)[r.method](url);
       const res = r.method === 'get' || r.method === 'delete' ? await req : await req.send({});
       if (res.status !== 401) failures.push(`${r.method.toUpperCase()} ${r.path} → ${res.status}`);
-      else expect(res.body.error.code).toBe('auth.unauthenticated');
+      else expect(res.body.error.code).toBe('auth.required');
     }
     expect(failures).toEqual([]);
     // Поддельный токен — тоже 401; поток ленты без билета/с чужим билетом не открывается.

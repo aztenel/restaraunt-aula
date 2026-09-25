@@ -155,6 +155,8 @@ export function toBookingBody(input: {
     date: input.search.date,
     time: input.search.time,
     guests: input.search.guests,
+    // Длительность показанного слота (по правилу места) — чтобы бронь совпала с тем, что видел гость.
+    durationMinutes: input.venue.durationMinutes,
     customer: { name: contact.name.trim(), phone: contact.phone.trim(), ...(email ? { email } : {}) },
     ...(comment ? { comment } : {}),
     ...(occasion ? { occasion } : {}),

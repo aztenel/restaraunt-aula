@@ -1,12 +1,14 @@
+'use client';
+
 import clsx from 'clsx';
-import { getTranslations } from 'next-intl/server';
+import { useTranslations } from 'next-intl';
 
 const STEPS = ['cart', 'details', 'payment', 'status'] as const;
-export type CheckoutStep = (typeof STEPS)[number];
+export type FlowStep = (typeof STEPS)[number];
 
 /** Оформление — не больше 4 экранов (ТЗ): корзина → данные → оплата → статус заказа. */
-export async function CheckoutSteps({ current }: { current: CheckoutStep }) {
-  const t = await getTranslations('Checkout.steps');
+export function StepIndicator({ current }: { current: FlowStep }) {
+  const t = useTranslations('Checkout.steps');
   const currentIndex = STEPS.indexOf(current);
   return (
     <ol className="mb-6 grid grid-cols-4 gap-2 text-center text-xs font-semibold sm:text-sm">

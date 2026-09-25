@@ -53,6 +53,7 @@ const DOCUMENTED_CONSUMERS: Record<string, string[]> = {
   [PaymentsEvents.CertificateRedeemed]: ['ReportingModule'],
   [PaymentsEvents.CertificateCredited]: ['ReportingModule'],
   [PaymentsEvents.CertificateExpired]: ['ReportingModule'],
+  [PaymentsEvents.CertificateReinstated]: ['ReportingModule'],
   // Заказы: история гостя, отчётность, передача на кухню (POS).
   [OrderingEvents.OrderPlaced]: ['CustomersModule', 'ReportingModule'],
   [OrderingEvents.OrderStatusChanged]: ['ReportingModule', 'PosModule'],

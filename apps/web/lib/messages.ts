@@ -10,6 +10,14 @@ export const CLIENT_NAMESPACES = ['Header', 'Nav', 'Languages', 'Common', 'Map',
 export const MENU_CLIENT_NAMESPACES = ['Dish', 'Filters'] as const;
 /** Корзина: расчёт на сервере, проблемы позиций. */
 export const CART_CLIENT_NAMESPACES = ['Cart', 'OrderProblems', 'ApiErrors'] as const;
+/** Оформление заказа: экраны «Данные» и «Оплата», адрес, время, SMS-подтверждение. */
+export const CHECKOUT_CLIENT_NAMESPACES = ['Checkout', 'Forms', 'PhoneVerification', 'OrderProblems', 'ApiErrors'] as const;
+/** Статус заказа по токену. */
+export const ORDER_CLIENT_NAMESPACES = ['Order', 'Checkout', 'ApiErrors'] as const;
+/** Бронь: поиск мест, карта залов, контакты, страница брони. */
+export const BOOKING_CLIENT_NAMESPACES = ['Booking', 'BookingStatus', 'Forms', 'PhoneVerification', 'ApiErrors'] as const;
+/** Банкеты: заявка, смета, счёт. */
+export const BANQUET_CLIENT_NAMESPACES = ['Banquets', 'BanquetQuote', 'BanquetInvoice', 'Forms', 'ApiErrors'] as const;
 /** Сертификаты: покупка, проверка баланса, статус заказа. */
 export const CERTIFICATE_CLIENT_NAMESPACES = ['Certificates', 'CertificateForm', 'CertificateCheck', 'CertificateOrder', 'ApiErrors'] as const;
 

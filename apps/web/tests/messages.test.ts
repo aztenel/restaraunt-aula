@@ -48,7 +48,6 @@ describe('переводы витрины', () => {
       'Header.branch',
       'Menu.branchLabel',
       'Branches.mapAria',
-      'BanquetQuote.placeholderTitle',
       // «Филиал», «Промокод», «Халал», единицы «г» и «ккал» пишутся по-казахски так же.
       'Cart.branchLabel',
       'Cart.promoLabel',

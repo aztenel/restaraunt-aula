@@ -139,6 +139,7 @@ export function banquetFieldForError(error: Pick<ApiError, 'code'>): BanquetFiel
     'banquet.invalid_event_time': 'eventTime',
     'banquet.invalid_guests': 'guests',
     'banquet.branch_required': 'branchId',
+    'banquet.unknown_branch': 'branchId',
     'banquet.offsite_address_required': 'address',
     'banquet.invalid_budget': 'budget',
     'banquet.contact_name_invalid': 'name',
@@ -164,4 +165,28 @@ export function invoicePhase(invoice: Pick<BanquetInvoice, 'status' | 'payerType
   if (invoice.payerType === 'company') return 'company';
   const failed = invoice.paymentStatus === 'failed' || invoice.paymentStatus === 'cancelled';
   return invoice.paymentUrl && !failed && isSafePaymentUrl(invoice.paymentUrl) ? 'payment_ready' : 'payment_needed';
+}
+
+/**
+ * Опрос счёта: пока ждём ссылку после «Оплатить» — часто; пока платёж создан/в обработке (гость
+ * вернулся с оплаты) — раз в 5 с; иначе не опрашиваем. Итог оплаты подтверждает сервер.
+ */
+export function invoicePollDelay(
+  invoice: Pick<BanquetInvoice, 'status' | 'payerType' | 'paymentUrl' | 'paymentStatus'>,
+  input: { awaitingLink: boolean },
+): number | null {
+  if (invoice.status === 'paid' || invoice.status === 'cancelled' || invoice.payerType === 'company') return null;
+  if (input.awaitingLink && !isSafePaymentUrl(invoice.paymentUrl)) return 1500;
+  // succeeded при неоплаченном счёте — событие об оплате ещё обрабатывается.
+  if (invoice.paymentStatus === 'created' || invoice.paymentStatus === 'pending' || invoice.paymentStatus === 'succeeded') return 5000;
+  return null;
+}
+
+/** Куда перевести после «Оплатить» (одна попытка на ссылку): ссылка готова и платёж не завершён неудачей. */
+export function invoicePaymentRedirect(
+  invoice: Pick<BanquetInvoice, 'status' | 'payerType' | 'paymentUrl' | 'paymentStatus'>,
+  input: { payNow: boolean; alreadyRedirected: boolean },
+): string | null {
+  if (!input.payNow || input.alreadyRedirected) return null;
+  return invoicePhase(invoice) === 'payment_ready' ? invoice.paymentUrl : null;
 }

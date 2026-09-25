@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createE2eApp, E2eContext, outboxEvents } from './support/e2e-app';
 import { adminBanquetRequest, guestBooking, holdVenue, vipVenues } from './support/banquet';
+import { report } from './support/ordering';
 
 /**
  * Сценарий 7: зал не может быть одновременно занят банкетом и обычной бронью — с НАСТОЯЩИМИ модулями
@@ -113,5 +114,11 @@ describe('E2E 7: banquet ↔ reservation venue conflicts', () => {
       const blocking = (list.body.items as any[]).filter((r) => ['pending', 'awaiting_deposit', 'confirmed', 'arrived'].includes(r.status));
       expect(blocking, date).toHaveLength(1);
     }
+    // Проекция Reporting (загрузка залов) тоже не видит накладок — цель ТЗ «0 накладок в месяц».
+    await ctx.drain();
+    const load = await report(ctx, 'hall-load', { from: dates[0], to: dates[dates.length - 1], branchId: greenline });
+    expect(load.overbookingCount).toBe(0);
+    const vipRows = load.rows.filter((r: any) => r.venueTypeCode === 'vip_hall');
+    expect(vipRows.reduce((sum: number, r: any) => sum + r.reservations, 0)).toBe(dates.length);
   });
 });

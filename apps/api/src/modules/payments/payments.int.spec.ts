@@ -387,6 +387,17 @@ describe('Payments (integration)', () => {
         ctx.t.database.rootConnection(),
       );
       expect(ledger.rows.map((r) => r.kind).sort()).toEqual(['credit', 'debit', 'issue']);
+      // Возврат на сертификат объявляется событием: проекции обязательств (Reporting) учитывают его.
+      const credited = await publishedEvents(ctx.t, PaymentsEvents.CertificateCredited);
+      expect(credited.map((e) => e.payload)).toEqual([
+        expect.objectContaining({
+          certificateId: cert!.id,
+          amount: { amount: 100_000, currency: 'KZT' },
+          balanceAfter: { amount: 500_000, currency: 'KZT' },
+          paymentId: certPay.id,
+          refundId: certRefund.id,
+        }),
+      ]);
     });
 
     it('on_receipt refund stays pending for manual confirmation by finance', async () => {

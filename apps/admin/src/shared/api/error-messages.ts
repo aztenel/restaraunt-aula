@@ -3,17 +3,25 @@
  * Параметры в {{...}} подставляются из error.details (lockedUntil, retryAfterSeconds, max, dishCount...).
  * Ключ '<code>.<reason>' уточняет текст по details.reason (catalog.modifier_group_invalid.*).
  */
+import { BANQUET_ERROR_MESSAGES } from './error-messages.banquets';
 import { CATALOG_ERROR_MESSAGES } from './error-messages.catalog';
+import { CUSTOMERS_ERROR_MESSAGES } from './error-messages.customers';
 import { ORDERING_ERROR_MESSAGES } from './error-messages.ordering';
+import { PAYMENTS_ERROR_MESSAGES } from './error-messages.payments';
+import { REPORTING_ERROR_MESSAGES } from './error-messages.reporting';
 import { RESERVATION_ERROR_MESSAGES } from './error-messages.reservation';
 
 export type ErrorLanguage = 'ru' | 'kk';
 
 export const ERROR_MESSAGES: Record<ErrorLanguage, Record<string, string>> = {
   ru: {
+    ...PAYMENTS_ERROR_MESSAGES.ru,
+    ...CUSTOMERS_ERROR_MESSAGES.ru,
     ...ORDERING_ERROR_MESSAGES.ru,
     ...CATALOG_ERROR_MESSAGES.ru,
+    ...BANQUET_ERROR_MESSAGES.ru,
     ...RESERVATION_ERROR_MESSAGES.ru,
+    ...REPORTING_ERROR_MESSAGES.ru,
     'auth.invalid_credentials': 'Неверный email или пароль',
     'auth.locked': 'Учётная запись временно заблокирована после нескольких неудачных попыток входа. Повторите после {{until}}.',
     'auth.invalid_refresh': 'Сессия истекла, войдите снова',
@@ -64,9 +72,13 @@ export const ERROR_MESSAGES: Record<ErrorLanguage, Record<string, string>> = {
     unknown: 'Неизвестная ошибка',
   },
   kk: {
+    ...PAYMENTS_ERROR_MESSAGES.kk,
+    ...CUSTOMERS_ERROR_MESSAGES.kk,
     ...ORDERING_ERROR_MESSAGES.kk,
     ...CATALOG_ERROR_MESSAGES.kk,
+    ...BANQUET_ERROR_MESSAGES.kk,
     ...RESERVATION_ERROR_MESSAGES.kk,
+    ...REPORTING_ERROR_MESSAGES.kk,
     'auth.invalid_credentials': 'Email немесе құпиясөз қате',
     'auth.locked': 'Бірнеше сәтсіз кіру әрекетінен кейін тіркелгі уақытша бұғатталды. {{until}} кейін қайталаңыз.',
     'auth.invalid_refresh': 'Сеанс мерзімі аяқталды, қайта кіріңіз',

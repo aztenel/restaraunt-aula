@@ -83,23 +83,8 @@ export interface ContactInput {
 
 export type CreateRequestInput = Schemas['BanquetAdminCreateRequestDto'];
 
-/**
- * PATCH /admin/banquets/requests/{id}. В docs/openapi.json nullable-строки описаны без `type`
- * (openapi-typescript выводит Record<string, never>) — здесь реальная форма DTO.
- */
-export interface UpdateRequestInput {
-  eventDate?: string;
-  eventTime?: string | null;
-  eventType?: BanquetEventType;
-  guests?: number;
-  budget?: MoneyInput | null;
-  branchId?: string | null;
-  offsite?: boolean;
-  address?: string | null;
-  wishes?: string | null;
-  contact?: ContactInput;
-  companyId?: string | null;
-}
+/** PATCH /admin/banquets/requests/{id}: nullable-поля (время, бюджет, филиал, адрес, пожелания, компания) очищаются явным null. */
+export type UpdateRequestInput = Schemas['BanquetUpdateRequestDto'];
 
 export type DiscountInput = { type: 'percent'; bp: number } | { type: 'amount'; amount: MoneyInput };
 

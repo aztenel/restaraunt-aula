@@ -4,16 +4,22 @@
  */
 import { banquetsRu } from './banquets.ru';
 import { catalogRu } from './catalog.ru';
+import { certificatesRu } from './certificates.ru';
+import { customersRu } from './customers.ru';
 import { orderingRu } from './ordering.ru';
 import { paymentsRu } from './payments.ru';
+import { reportingRu } from './reporting.ru';
 import { reservationRu } from './reservation.ru';
 
 export const ru = {
   ...paymentsRu,
+  ...certificatesRu,
+  ...customersRu,
   ...orderingRu,
   ...catalogRu,
   ...banquetsRu,
   ...reservationRu,
+  ...reportingRu,
   app: {
     title: 'AULA — админ-панель',
   },
@@ -99,6 +105,8 @@ export const ru = {
     branches: 'Филиалы',
     legalEntities: 'Юрлица',
     integrations: 'Интеграции',
+    pos: 'POS',
+    notifications: 'Уведомления',
     auditLog: 'Журнал действий',
     system: 'Система',
     groups: {
@@ -127,6 +135,8 @@ export const ru = {
     branches: 'Адреса, часы работы, координаты и настройки филиалов',
     legalEntities: 'Реквизиты юрлиц для счетов, актов, договоров и ЭСФ',
     integrations: 'Платёжные провайдеры, мессенджеры, POS, доставка, учёт',
+    pos: 'Передача заказов на кухню, стоп-лист из кассы, сопоставление блюд с товарами POS',
+    notifications: 'Шаблоны сообщений гостям и персоналу, журнал доставки, каналы',
     auditLog: 'Кто, когда и что изменил: деньги, статусы, меню, настройки',
     system: 'Очередь неудачных задач и журнал обменов с внешними системами',
   },

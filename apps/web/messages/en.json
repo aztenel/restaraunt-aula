@@ -13,7 +13,6 @@
     "details": "Details",
     "menu": "Menu",
     "loading": "Loading…",
-    "comingSoon": "Coming soon",
     "backHome": "Back to home",
     "retry": "Retry",
     "route": "Get directions",
@@ -234,42 +233,30 @@
     }
   },
   "Order": {
-    "title": "Order",
-    "placeholderTitle": "Order status",
-    "placeholderText": "Your order status will be shown here in real time."
+    "title": "Order"
   },
   "Booking": {
     "title": "Table and room reservations",
     "subtitle": "Tables, VIP rooms and yurts",
     "metaTitle": "Book a table at AULA — tables, VIP rooms, yurts",
     "metaDescription": "Book a table, a VIP room or a yurt at AULA, a Kazakh cuisine restaurant in Astana.",
-    "placeholderTitle": "Online booking is coming soon",
-    "placeholderText": "For now, you can book a table by phone or via the WhatsApp of the chosen location — we reply within minutes.",
     "whatsappText": "Hello! I would like to book a table."
   },
   "BookingStatus": {
-    "title": "Your reservation",
-    "placeholderTitle": "Reservation details",
-    "placeholderText": "Reservation details will be shown here: date, time, room, confirmation and deposit status."
+    "title": "Your reservation"
   },
   "Banquets": {
     "title": "Banquets and catering",
     "subtitle": "Toi, anniversary, wedding, corporate party or outside catering",
     "metaTitle": "Banquets and toi at AULA — rooms, menu, quote",
     "metaDescription": "Banquets, toi, anniversaries and corporate parties at AULA, Astana. Outside catering. A quote and a manager reply within 30 minutes.",
-    "placeholderTitle": "Online requests are coming soon",
-    "placeholderText": "Our banquet manager replies within 30 minutes: we will choose a room and menu and prepare a quote. Meanwhile, message us on WhatsApp or call the location.",
     "whatsappText": "Hello! I would like to discuss a banquet."
   },
   "BanquetQuote": {
-    "title": "Banquet quote",
-    "placeholderTitle": "Quote",
-    "placeholderText": "The quote will be shown here: items, discounts and total — with an option to approve it online."
+    "title": "Banquet quote"
   },
   "BanquetInvoice": {
-    "title": "Invoice",
-    "placeholderTitle": "Invoice",
-    "placeholderText": "The banquet prepayment invoice will be shown here, with an option to pay online."
+    "title": "Invoice"
   },
   "Certificates": {
     "title": "Gift certificates",

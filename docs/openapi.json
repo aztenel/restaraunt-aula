@@ -32011,6 +32011,14 @@
               "$ref": "#/components/schemas/CertificateRedeemedByChannelDto"
             }
           },
+          "returned": {
+            "description": "Возвращено на сертификаты (отмена заказов, оплаченных сертификатом)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CertificateAmountDto"
+              }
+            ]
+          },
           "expired": {
             "nullable": true,
             "description": "Только сводный отчёт",
@@ -32040,6 +32048,7 @@
           "issuedByKind",
           "redeemed",
           "redeemedByChannel",
+          "returned",
           "expired",
           "outstanding"
         ]

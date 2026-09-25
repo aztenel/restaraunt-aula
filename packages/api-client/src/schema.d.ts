@@ -9091,6 +9091,8 @@ export interface components {
             issuedByKind: components["schemas"]["CertificateIssuedByKindDto"][];
             redeemed: components["schemas"]["CertificateAmountDto"];
             redeemedByChannel: components["schemas"]["CertificateRedeemedByChannelDto"][];
+            /** @description Возвращено на сертификаты (отмена заказов, оплаченных сертификатом) */
+            returned: components["schemas"]["CertificateAmountDto"];
             /** @description Только сводный отчёт */
             expired: components["schemas"]["ReportCertificateBalanceDto"] | null;
             /** @description Остаток обязательств (только сводный) */

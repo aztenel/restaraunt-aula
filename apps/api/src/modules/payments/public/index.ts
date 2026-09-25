@@ -145,6 +145,11 @@ export const PaymentsEvents = {
    */
   CertificateCredited: 'payments.certificate_credited',
   CertificateExpired: 'payments.certificate_expired',
+  /**
+   * Истёкший сертификат продлён — его остаток снова действует (обратное CertificateExpired).
+   * Проекции обязательств (Reporting) снимают отметку «истёк» и возвращают остаток в обязательства.
+   */
+  CertificateReinstated: 'payments.certificate_reinstated',
 } as const;
 
 export interface PaymentEventPayload {
@@ -214,6 +219,16 @@ export interface CertificateCreditedPayload {
   /** Возврат платежа gift_certificate, по которому сумма вернулась на сертификат. */
   refundId: string | null;
   paymentId: string | null;
+  occurredAt: string;
+}
+
+export interface CertificateReinstatedPayload {
+  certificateId: string;
+  kind: 'amount' | 'set';
+  /** Восстановленный остаток (тот, что сгорел при истечении срока). */
+  balance: MoneyJson;
+  /** Новый срок действия. */
+  expiresAt: string;
   occurredAt: string;
 }
 

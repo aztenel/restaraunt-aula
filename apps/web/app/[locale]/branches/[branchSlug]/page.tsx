@@ -96,7 +96,7 @@ export default async function BranchPage({ params }: { params: Params }) {
           {t('menuCta')}
         </Link>
         {branch.acceptsReservations ? (
-          <Link href={routes.booking()} className={buttonClasses('secondary', 'lg')}>
+          <Link href={{ pathname: routes.booking(), query: { branch: branch.slug } }} className={buttonClasses('secondary', 'lg')}>
             <CalendarIcon />
             {t('bookCta')}
           </Link>

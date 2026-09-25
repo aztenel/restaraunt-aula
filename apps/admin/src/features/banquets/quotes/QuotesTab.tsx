@@ -38,7 +38,8 @@ export function QuotesTab({ request, canManage }: { request: BanquetRequestDetai
 
   const pdf = (quoteId: string) => openSignedLink(() => banquetsApi.quotePdf(quoteId)).catch(notifyError);
 
-  const confirmSend = (q: QuoteSummary) =>
+  type Sendable = Pick<QuoteSummary, 'id' | 'version' | 'isLatest' | 'sentAt'>;
+  const confirmSend = (q: Sendable) =>
     modal.confirm({
       title: t('banquets.quote.sendConfirm', { version: q.version }),
       content: t('banquets.actions.confirmText.sendQuote'),
@@ -47,7 +48,7 @@ export function QuotesTab({ request, canManage }: { request: BanquetRequestDetai
       onOk: () => send.mutateAsync(q.id).catch(() => undefined),
     });
 
-  const sendButton = (q: QuoteSummary, size: 'small' | 'middle' = 'small') =>
+  const sendButton = (q: Sendable, size: 'small' | 'middle' = 'small') =>
     canManage && canSendQuoteVersion(request.status, q) ? (
       <Button size={size} type="primary" icon={<SendOutlined />} onClick={() => confirmSend(q)} loading={send.isPending && send.variables === q.id}>
         {t('banquets.quote.send')}

@@ -8,12 +8,14 @@ import {
   BankOutlined,
   BarChartOutlined,
   CalendarOutlined,
+  CloudSyncOutlined,
   CrownOutlined,
   DashboardOutlined,
   EnvironmentOutlined,
   FileImageOutlined,
   GiftOutlined,
   HomeOutlined,
+  NotificationOutlined,
   ReadOutlined,
   ShopOutlined,
   ShoppingCartOutlined,
@@ -47,6 +49,8 @@ export type SectionKey =
   | 'branches'
   | 'legalEntities'
   | 'integrations'
+  | 'pos'
+  | 'notifications'
   | 'auditLog'
   | 'system';
 
@@ -98,6 +102,10 @@ export const SECTIONS: SectionDef[] = [
   { key: 'branches', path: '/branches', icon: <ShopOutlined />, anyOf: [P.BranchesManage], group: 'admin' },
   { key: 'legalEntities', path: '/legal-entities', icon: <BankOutlined />, anyOf: [P.BranchesManage, P.BanquetsInvoice], group: 'admin' },
   { key: 'integrations', path: '/integrations', icon: <ApiOutlined />, anyOf: [P.IntegrationsManage], group: 'admin' },
+  // POS: состояние и передачи заказов — также сотрудникам с orders.manage; сопоставление — integrations.manage.
+  { key: 'pos', path: '/pos', icon: <CloudSyncOutlined />, anyOf: [P.IntegrationsManage, P.OrdersManage], group: 'admin' },
+  // Шаблоны уведомлений правит и контент-менеджер (тексты — контент); журнал и каналы — integrations.manage.
+  { key: 'notifications', path: '/notifications', icon: <NotificationOutlined />, anyOf: [P.IntegrationsManage, P.ContentManage], group: 'admin' },
   { key: 'auditLog', path: '/audit-log', icon: <AuditOutlined />, anyOf: [P.AuditView], group: 'admin' },
   { key: 'system', path: '/system', icon: <ToolOutlined />, anyOf: [P.SystemJobs, P.IntegrationsManage], group: 'admin' },
 ];

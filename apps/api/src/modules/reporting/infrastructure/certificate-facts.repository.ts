@@ -118,6 +118,18 @@ export class CertificateFactsRepository {
       .execute();
   }
 
+  /**
+   * Истёкший сертификат продлён (событие CertificateReinstated): остаток больше не «сгоревший» —
+   * отметка истечения снимается, остаток возвращается в обязательства. Повторное истечение ставит её снова.
+   */
+  async applyReinstated(c: { certificateId: string; expiresAt: Date }): Promise<void> {
+    await this.db()
+      .updateTable(T)
+      .set({ expires_at: c.expiresAt, expired_at: null, expired_date: null, expired_balance_amount: null })
+      .where('certificate_id', '=', c.certificateId)
+      .execute();
+  }
+
   /** Возврат суммы на сертификат (отмена заказа, оплаченного сертификатом). Идемпотентно по событию. */
   async insertCredit(c: {
     eventId: string;

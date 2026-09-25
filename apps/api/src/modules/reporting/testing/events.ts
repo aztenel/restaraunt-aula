@@ -25,9 +25,11 @@ import {
   OrderStatusChangedPayload,
 } from '../../ordering/public';
 import {
+  CertificateCreditedPayload,
   CertificateExpiredPayload,
   CertificateIssuedPayload,
   CertificateRedeemedPayload,
+  CertificateReinstatedPayload,
   PaymentEventPayload,
   PaymentMethod,
   PaymentPurpose,
@@ -515,6 +517,36 @@ export class ReportingEvents {
         occurredAt: c.at.toISOString(),
       } satisfies CertificateRedeemedPayload,
       { aggregateId: c.certificateId, branchId: c.branchId },
+    );
+  }
+
+  async certificateCredited(c: { certificateId: string; amount: number; balanceAfter: number; branchId: string | null; at: Date }) {
+    await this.bus.publish(
+      PaymentsEvents.CertificateCredited,
+      {
+        certificateId: c.certificateId,
+        amount: kzt(c.amount),
+        balanceAfter: kzt(c.balanceAfter),
+        branchId: c.branchId,
+        refundId: newId(),
+        paymentId: newId(),
+        occurredAt: c.at.toISOString(),
+      } satisfies CertificateCreditedPayload,
+      { aggregateId: c.certificateId, branchId: c.branchId },
+    );
+  }
+
+  async certificateReinstated(c: { certificateId: string; balance: number; expiresAt: Date; at: Date }) {
+    await this.bus.publish(
+      PaymentsEvents.CertificateReinstated,
+      {
+        certificateId: c.certificateId,
+        kind: 'amount',
+        balance: kzt(c.balance),
+        expiresAt: c.expiresAt.toISOString(),
+        occurredAt: c.at.toISOString(),
+      } satisfies CertificateReinstatedPayload,
+      { aggregateId: c.certificateId },
     );
   }
 

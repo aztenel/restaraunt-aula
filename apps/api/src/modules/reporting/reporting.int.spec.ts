@@ -497,6 +497,40 @@ describe('Reporting (integration)', () => {
       const wb = await workbook(file.body);
       expect(wb.getWorksheet('Сертификаты')!.getRow(2).getCell(3).value).toBe(35_000);
     });
+    it('certificates: a sum credited back to a certificate (cancelled order) restores the outstanding liability', async () => {
+      const c1 = await ev.certificateIssued({ nominal: 2_000_000, price: 2_000_000, at: local('2026-10-01', '09:00') });
+      await ev.certificateRedeemed({ certificateId: c1, amount: 2_000_000, balanceAfter: 0, branchId: branchA, at: local('2026-10-01', '12:00') });
+      await ev.certificateCredited({ certificateId: c1, amount: 2_000_000, balanceAfter: 2_000_000, branchId: branchA, at: local('2026-10-01', '12:30') });
+      await ev.certificateRedeemed({ certificateId: c1, amount: 500_000, balanceAfter: 1_500_000, branchId: branchA, at: local('2026-10-02', '12:00') });
+      await t.drain();
+
+      const day1 = await get('certificates?from=2026-10-01&to=2026-10-01', owner);
+      expect(day1.body).toMatchObject({
+        redeemed: { count: 1, amount: { amount: 2_000_000 } },
+        returned: { count: 1, amount: { amount: 2_000_000 } },
+        outstanding: { count: 1, balance: { amount: 2_000_000 } },
+      });
+      const both = await get('certificates?from=2026-10-01&to=2026-10-02', owner);
+      expect(both.body).toMatchObject({
+        redeemed: { count: 2, amount: { amount: 2_500_000 } },
+        returned: { count: 1, amount: { amount: 2_000_000 } },
+        outstanding: { count: 1, balance: { amount: 1_500_000 } },
+      });
+      const branch = await get(`certificates?from=2026-10-01&to=2026-10-02&branchId=${branchA}`, owner);
+      expect(branch.body.returned).toEqual({ count: 1, amount: { amount: 2_000_000, currency: 'KZT' } });
+    });
+
+    it('certificates: an expired certificate reinstated by extension is back in the outstanding liability', async () => {
+      const c1 = await ev.certificateIssued({ nominal: 1_000_000, price: 1_000_000, at: local('2026-09-01', '09:00') });
+      await ev.certificateExpired({ certificateId: c1, nominal: 1_000_000, balance: 1_000_000, at: local('2026-09-30', '00:00') });
+      await t.drain();
+      const expired = await get('certificates?from=2026-09-01&to=2026-09-30', owner);
+      expect(expired.body).toMatchObject({ expired: { count: 1, balance: { amount: 1_000_000 } }, outstanding: { count: 0, balance: { amount: 0 } } });
+      await ev.certificateReinstated({ certificateId: c1, balance: 1_000_000, expiresAt: local('2027-03-31', '23:59'), at: local('2026-10-01', '10:00') });
+      await t.drain();
+      const after = await get('certificates?from=2026-09-01&to=2026-10-01', owner);
+      expect(after.body).toMatchObject({ expired: { count: 0, balance: { amount: 0 } }, outstanding: { count: 1, balance: { amount: 1_000_000 } } });
+    });
   });
 
   describe('dashboard, own channel, goals', () => {
