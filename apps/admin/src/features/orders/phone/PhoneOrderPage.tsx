@@ -372,7 +372,7 @@ function PhoneOrderForm({ branchId, onCreated }: { branchId: string; onCreated: 
                   options={[
                     { value: 'kk', label: t('languages.kk') },
                     { value: 'ru', label: t('languages.ru') },
-                    { value: 'en', label: 'English' },
+                    { value: 'en', label: t('translatable.en') },
                   ]}
                 />
               </Form.Item>

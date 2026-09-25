@@ -3,6 +3,7 @@ import { OnEvent } from '../../../shared/infrastructure/events/decorators';
 import { EventEnvelope } from '../../../shared/infrastructure/events/types';
 import { Money } from '../../../shared/kernel/money';
 import {
+  CertificateCreditedPayload,
   CertificateExpiredPayload,
   CertificateIssuedPayload,
   CertificateRedeemedPayload,
@@ -101,6 +102,24 @@ export class ReportingPaymentsProjection {
       referenceId: p.referenceId,
       redeemedAt,
       redeemedDate: localDateOf(redeemedAt),
+    });
+  }
+
+  /** Возврат на сертификат (отмена заказа, оплаченного сертификатом): обязательства снова растут. */
+  @OnEvent(PaymentsEvents.CertificateCredited)
+  async onCertificateCredited(e: EventEnvelope<CertificateCreditedPayload>): Promise<void> {
+    const p = e.payload;
+    const creditedAt = new Date(p.occurredAt);
+    await this.certificates.insertCredit({
+      eventId: e.id,
+      certificateId: p.certificateId,
+      amount: Money.fromJson(p.amount),
+      balanceAfter: Money.fromJson(p.balanceAfter),
+      branchId: p.branchId,
+      refundId: p.refundId,
+      paymentId: p.paymentId,
+      creditedAt,
+      creditedDate: localDateOf(creditedAt),
     });
   }
 

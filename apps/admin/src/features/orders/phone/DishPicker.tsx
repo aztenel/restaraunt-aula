@@ -73,7 +73,7 @@ export function DishPicker({
               </Typography.Text>
               <Flex gap={6} align="center" wrap>
                 <MoneyText value={dish.price} type="secondary" />
-                {dish.weightGrams ? <Typography.Text type="secondary">· {dish.weightGrams} г</Typography.Text> : null}
+                {dish.weightGrams ? <Typography.Text type="secondary">· {t('orders.phone.grams', { value: dish.weightGrams })}</Typography.Text> : null}
                 {!dish.available ? <Tag color="error">{t('orders.phone.unavailable')}</Tag> : null}
               </Flex>
             </div>

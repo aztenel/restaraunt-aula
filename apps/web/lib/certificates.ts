@@ -6,6 +6,10 @@
  */
 import type { ApiError } from '@aula/api-client';
 import type { PurchaseCertificateBody } from './api-types';
+import { isSafePaymentUrl } from './payment-flow';
+import { isEmailLike, isPhoneLike } from './validation';
+
+export { isEmailLike, isPhoneLike, isSafePaymentUrl };
 
 export type DeliveryChannel = 'email' | 'whatsapp';
 export const DELIVERY_CHANNELS: readonly DeliveryChannel[] = ['email', 'whatsapp'];
@@ -55,18 +59,6 @@ export function emptyCertificateForm(productId = ''): CertificateFormValues {
     consentPersonalData: false,
     consentMarketing: false,
   };
-}
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-export function isEmailLike(value: string): boolean {
-  return EMAIL_RE.test(value.trim());
-}
-
-/** Похоже на телефон: 10–11 цифр (формат +7 проверит сервер — phone.invalid). */
-export function isPhoneLike(value: string): boolean {
-  const digits = value.replace(/\D/g, '');
-  return digits.length >= 10 && digits.length <= 11;
 }
 
 /** Поля по порядку в форме — для фокуса на первой ошибке. */
@@ -196,7 +188,7 @@ export type CertificateOrderPhase = 'preparing' | 'awaiting' | 'issued' | 'faile
  */
 export function certificateOrderPhase(order: {
   status: string;
-  payment: { status: string; paymentUrl: string | null } | null;
+  payment?: { status: string; paymentUrl?: string | null } | null;
 }): CertificateOrderPhase {
   if (order.status === 'issued') return 'issued';
   if (order.status === 'payment_failed' || order.payment?.status === 'failed') return 'failed';
@@ -207,17 +199,6 @@ export function certificateOrderPhase(order: {
 /** Экран, на котором опрос статуса продолжается. */
 export function isPendingPhase(phase: CertificateOrderPhase): boolean {
   return phase === 'preparing' || phase === 'awaiting';
-}
-
-/** Переход на оплату только по http(s)-ссылке от API. */
-export function isSafePaymentUrl(url: string | null | undefined): url is string {
-  if (!url) return false;
-  try {
-    const parsed = new URL(url, 'https://placeholder.invalid');
-    return parsed.protocol === 'https:' || parsed.protocol === 'http:';
-  } catch {
-    return false;
-  }
 }
 
 // ---------------------------------------------------------------- Код сертификата

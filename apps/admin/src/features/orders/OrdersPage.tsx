@@ -8,6 +8,7 @@ import { RequirePermission } from '@/shared/auth/RequirePermission';
 import { useCan } from '@/shared/auth/useCan';
 import { useBranch } from '@/shared/branch/BranchProvider';
 import { PageHeader } from '@/shared/ui/PageHeader';
+import { BranchScope } from './common/BranchScope';
 import { OrderDetailPage } from './detail/OrderDetailPage';
 import { OrdersListPage } from './list/OrdersListPage';
 import { PhoneOrderPage } from './phone/PhoneOrderPage';
@@ -29,8 +30,10 @@ function OrdersShell({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { canSomewhere } = useCan();
+  const { can, canSomewhere } = useCan();
   const { selectedBranchId, branchName } = useBranch();
+  // Выбран филиал без права orders.view (у сотрудника разные роли в филиалах) — предложить другой.
+  const allowedHere = selectedBranchId === null || can(Permission.OrdersView, selectedBranchId);
   const tab = currentTab(pathname) ?? 'queue';
   const options: Array<{ value: Tab; label: ReactNode; icon: ReactNode }> = [
     { value: 'queue', label: t('orders.tabs.queue'), icon: <ProjectOutlined /> },
@@ -47,7 +50,13 @@ function OrdersShell({ children }: { children: ReactNode }) {
         subtitle={subtitles[tab]}
         extra={<Segmented<Tab> size="large" value={tab} onChange={(value) => navigate(TAB_PATHS[value])} options={options} />}
       />
-      {children}
+      {allowedHere ? (
+        children
+      ) : (
+        <BranchScope permission={Permission.OrdersView} title={t('orders.branchScope.title')} none={t('orders.branchScope.none')}>
+          {() => null}
+        </BranchScope>
+      )}
     </>
   );
 }

@@ -1,20 +1,14 @@
 /**
- * Уточнённые типы публичных ответов API для витрины.
- *
- * В docs/openapi.json nullable-поля без явного `type` (вес, ссылки, даты, paymentUrl) выводятся
- * openapi-typescript как `Record<string, never> | null`. Здесь — типы, совпадающие с DTO бэкенда
- * (apps/api/src/modules/catalog/http/dto/public.dto.ts, payments/http/certificates.dto.ts).
- * Типы строятся ОТ сгенерированной схемы (Omit + уточнение), поэтому расхождение со схемой
- * ловит компилятор. Когда DTO получат явные типы, уточнения можно убрать.
+ * Типы публичных ответов API для витрины — короткие имена для сгенерированной схемы
+ * (packages/api-client/src/schema.d.ts из docs/openapi.json; nullable-поля в схеме описаны точно).
+ * Уточнений поверх схемы здесь нет: расхождение с API ловит компилятор после регенерации.
  */
 import type { components } from '@aula/api-client';
 
 type Schemas = components['schemas'];
 
-/** Заменить поля типа T уточнёнными. */
-type Refine<T, R> = Omit<T, keyof R> & R;
-
 export type Money = Schemas['MoneyDto'];
+export type GeoPoint = Schemas['GeoPointDto'];
 
 // ---------------------------------------------------------------- Изображения (webp-варианты)
 
@@ -28,53 +22,22 @@ export type DishAvailability = Schemas['PublicDishCardDto']['availability'];
 export type Seo = Schemas['SeoDto'];
 export type Allergen = Schemas['AllergenDto'];
 export type BranchRef = Schemas['PublicBranchRefDto'];
-
-export type DishCard = Refine<
-  Schemas['PublicDishCardDto'],
-  {
-    weightGrams: number | null;
-    calories: number | null;
-    photo: ApiImage | null;
-  }
->;
-
+export type DishCard = Schemas['PublicDishCardDto'];
 export type ModifierOption = Schemas['PublicModifierOptionDto'];
 export type ModifierGroup = Schemas['PublicModifierGroupDto'];
-
-export type DishDetail = Refine<
-  Schemas['PublicDishDetailDto'],
-  {
-    weightGrams: number | null;
-    calories: number | null;
-    photo: ApiImage | null;
-  }
->;
-
-export type Category = Refine<Schemas['PublicCategoryDto'], { image: ApiImage | null }>;
-export type MenuCategory = Category & { dishes: DishCard[] };
-
-export type BranchMenu = Refine<Schemas['PublicMenuDto'], { categories: MenuCategory[] }>;
-
-export type CategoryPage = Refine<
-  Schemas['PublicCategoryPageDto'],
-  { category: Category; categories: Category[]; dishes: DishCard[] }
->;
-
-export type DishPage = Refine<Schemas['PublicDishPageDto'], { items: DishCard[] }>;
+export type DishDetail = Schemas['PublicDishDetailDto'];
+export type Category = Schemas['PublicCategoryDto'];
+export type MenuCategory = Schemas['PublicMenuCategoryDto'];
+export type BranchMenu = Schemas['PublicMenuDto'];
+export type CategoryPage = Schemas['PublicCategoryPageDto'];
+export type DishPage = Schemas['PublicDishPageDto'];
 
 // ---------------------------------------------------------------- Контент
 
-export type BannerPlacement = Schemas['PublicBannerDto']['placement'];
-
-export type Banner = Refine<Schemas['PublicBannerDto'], { linkUrl: string | null; image: ApiImage | null }>;
-
-export type Promotion = Refine<
-  Schemas['PublicPromotionDto'],
-  { image: ApiImage | null; validFrom: string | null; validTo: string | null }
->;
-
+export type Banner = Schemas['PublicBannerDto'];
+export type BannerPlacement = Banner['placement'];
+export type Promotion = Schemas['PublicPromotionDto'];
 export type ContentPage = Schemas['PublicPageDto'];
-
 export type ConsentText = Schemas['PublicConsentTextDto'];
 export type ConsentKind = ConsentText['kind'];
 
@@ -82,27 +45,58 @@ export type ConsentKind = ConsentText['kind'];
 
 export type CertificateProduct = Schemas['PublicCertificateProductDto'];
 export type CertificateKind = CertificateProduct['kind'];
-
-export type PaymentLink = Refine<Schemas['PaymentLinkDto'], { paymentUrl: string | null; expiresAt: string | null }>;
+export type PaymentLink = Schemas['PaymentLinkDto'];
 export type PaymentStatus = PaymentLink['status'];
+export type PurchaseCertificateBody = Schemas['PurchaseCertificateDto'];
+export type PurchaseResult = Schemas['PurchaseResultDto'];
+export type CertificateOrderStatus = Schemas['CertificateOrderStatusDto'];
+export type CertificateBalance = Schemas['CertificateBalanceDto'];
 
-export type PurchaseCertificateBody = Schemas['PurchaseCertificateDto'] & {
-  consent: { personalData: boolean; marketing?: boolean };
-};
+// ---------------------------------------------------------------- Заказ
 
-export type PurchaseResult = Refine<Schemas['PurchaseResultDto'], { payment: PaymentLink }>;
+export type OrderType = Schemas['QuoteOrderDto']['type'];
+export type QuoteOrderBody = Schemas['QuoteOrderDto'];
+export type Quote = Schemas['OrderQuoteDto'];
+export type QuoteLine = Schemas['OrderQuoteLineDto'];
+export type QuoteModifier = Schemas['OrderModifierViewDto'];
+export type QuoteDelivery = Schemas['OrderQuoteDeliveryDto'];
+export type QuotePromo = Schemas['OrderQuotePromoDto'];
+export type QuoteCertificate = Schemas['OrderQuoteCertificateDto'];
+export type CheckoutBody = Schemas['OrderCheckoutDto'];
+export type CheckoutResult = Schemas['OrderCheckoutResultDto'];
+export type OrderTracking = Schemas['OrderTrackingDto'];
+export type OrderStatus = OrderTracking['status'];
+export type OrderPaymentState = Schemas['OrderPaymentStateDto'];
+export type OrderBranch = Schemas['OrderBranchDto'];
+export type DeliveryResolution = Schemas['DeliveryResolutionDto'];
+export type DeliveryOption = Schemas['DeliveryOptionDto'];
+export type DeliveryZone = Schemas['PublicDeliveryZoneDto'];
+export type OrderSlots = Schemas['OrderSlotsDto'];
 
-export type CertificateOrderStatus = Refine<
-  Schemas['CertificateOrderStatusDto'],
-  { payment: PaymentLink | null; issuedAt: string | null }
->;
+// ---------------------------------------------------------------- Подтверждение телефона
 
-export type CertificateBalance = Refine<Schemas['CertificateBalanceDto'], { setDescription: string | null }>;
+export type PhoneVerificationStarted = Schemas['PhoneVerificationStartedDto'];
+export type PhoneVerified = Schemas['PhoneVerifiedDto'];
 
-// ---------------------------------------------------------------- Заказ: расчёт корзины
+// ---------------------------------------------------------------- Бронирование
 
-/** Тело POST /public/orders/quote (QuoteOrderDto; строковые nullable-поля в схеме выведены неточно). */
-export type QuoteOrderBody = Refine<
-  Schemas['QuoteOrderDto'],
-  { promoCode?: string | null; certificateCode?: string | null; phone?: string | null }
->;
+export type Availability = Schemas['AvailabilityDto'];
+export type VenueSlot = Schemas['PublicVenueSlotDto'];
+export type AlternativeTime = Schemas['AlternativeTimeDto'];
+export type HallMap = Schemas['PublicHallMapDto'];
+export type Hall = Schemas['PublicHallDto'];
+export type MapVenue = Schemas['PublicMapVenueDto'];
+export type VenuePosition = Schemas['VenuePositionDto'];
+export type BookReservationBody = Schemas['BookReservationDto'];
+export type Reservation = Schemas['PublicReservationDto'];
+export type ReservationStatus = Reservation['status'];
+
+// ---------------------------------------------------------------- Банкеты
+
+export type BanquetEventType = Schemas['BanquetEventTypeDto'];
+export type BanquetRequestBody = Schemas['BanquetPublicCreateRequestDto'];
+export type BanquetRequestCreated = Schemas['BanquetPublicRequestCreatedDto'];
+export type BanquetQuote = Schemas['BanquetPublicQuoteDto'];
+export type BanquetQuoteLine = Schemas['BanquetPublicQuoteLineDto'];
+export type BanquetAcceptResult = Schemas['BanquetPublicAcceptResultDto'];
+export type BanquetInvoice = Schemas['BanquetPublicInvoiceDto'];

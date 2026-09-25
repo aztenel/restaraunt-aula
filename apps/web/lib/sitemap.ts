@@ -124,8 +124,7 @@ export function buildSitemapEntries(input: {
 export async function fetchSitemapData(): Promise<SitemapData | null> {
   try {
     const api = createServerApi({ revalidate: 3600, tags: ['sitemap'] });
-    // Nullable-даты в OpenAPI описаны без type — приводим к уточнённому SitemapData.
-    return (await call(api.GET(SITEMAP_DATA_PATH))) as unknown as SitemapData;
+    return await call(api.GET(SITEMAP_DATA_PATH));
   } catch (error) {
     if (!(error instanceof ApiError) || !error.isNotFound) {
       console.warn('[sitemap] sitemap-data unavailable:', error instanceof Error ? error.message : error);

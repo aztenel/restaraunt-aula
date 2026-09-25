@@ -6,6 +6,7 @@ import { useEffect, useId, useMemo, useState, type FormEvent } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { call } from '@aula/api-client';
 import { Link } from '@/i18n/navigation';
+import type { AppLocale } from '@/i18n/routing';
 import { DishPhotoPlaceholder } from '@/components/menu/DishPhotoPlaceholder';
 import { buttonClasses } from '@/components/ui/button';
 import { BagIcon, CartIcon, MinusIcon, PlusIcon, TrashIcon, TruckIcon } from '@/components/ui/icons';
@@ -46,7 +47,7 @@ function acceptedTypes(branch: CartBranchOption | undefined): OrderType[] {
  * названия (недоступная позиция приходит с name: null): меню филиала
  * (GET /public/catalog/branches/{slug}/menu). Только подписи — без цен и сумм.
  */
-function useFallbackLabels(locale: string, branchSlug: string | null, enabled: boolean): Map<string, DishLabel> {
+function useFallbackLabels(locale: AppLocale, branchSlug: string | null, enabled: boolean): Map<string, DishLabel> {
   const [labels, setLabels] = useState<Map<string, DishLabel>>(() => new Map());
   useEffect(() => {
     if (!enabled || !branchSlug) return;
@@ -54,12 +55,12 @@ function useFallbackLabels(locale: string, branchSlug: string | null, enabled: b
     const api = getBrowserApi(locale);
     call(
       api.GET('/api/v1/public/catalog/branches/{branchSlug}/menu', {
-        params: { path: { branchSlug }, query: { locale: locale as 'kk' | 'ru' | 'en' } },
+        params: { path: { branchSlug }, query: { locale } },
         signal: controller.signal,
       }),
     )
       .then((data) => {
-        const menu = data as unknown as BranchMenu;
+        const menu: BranchMenu = data;
         const map = new Map<string, DishLabel>();
         for (const category of menu.categories) {
           for (const dish of category.dishes) map.set(dish.id, { name: dish.name, photoUrl: dish.photo?.variants[0]?.url ?? dish.photo?.url ?? null });
@@ -162,7 +163,7 @@ export function CartView({ branches }: { branches: CartBranchOption[] }) {
   const current: Quote | null = quote.status === 'ok' ? quote.quote : null;
   const lineIssues = cart.lines.some((line) => {
     const q = quoteLines.get(line.key);
-    return q ? !q.available || q.problem !== null : false;
+    return q ? !q.available || Boolean(q.problem) : false;
   });
   const checkoutAllowed = current ? canProceedToCheckout(current) : quote.status !== 'loading';
   const orderProblems = (current?.problems ?? []).filter(
@@ -381,7 +382,7 @@ function CartLineItem({
   const problems = useTranslations('OrderProblems');
   const name = quoteLine?.name ?? fallback?.name ?? t('dishPending');
   const photoUrl = quoteLine?.photoUrl ?? fallback?.photoUrl ?? null;
-  const unavailable = quoteLine ? !quoteLine.available || quoteLine.problem !== null : false;
+  const unavailable = quoteLine ? !quoteLine.available || Boolean(quoteLine.problem) : false;
   const modifiers = quoteLine?.modifiers ?? [];
   return (
     <li

@@ -32,7 +32,7 @@ export const getBranchMenu = cache(async (locale: AppLocale, branchSlug: string)
   const api = menuApi(locale, branchSlug);
   return notFoundAsNull(
     call(api.GET('/api/v1/public/catalog/branches/{branchSlug}/menu', { params: { path: { branchSlug }, query: { locale } } })),
-  ) as Promise<BranchMenu | null>;
+  );
 });
 
 /** Меню для второстепенных блоков (главная): любая ошибка → null. */
@@ -55,7 +55,7 @@ export const getCategoryPage = cache(
           params: { path: { branchSlug, categorySlug }, query: { locale } },
         }),
       ),
-    ) as Promise<CategoryPage | null>;
+    );
   },
 );
 
@@ -68,7 +68,7 @@ export const getDish = cache(async (locale: AppLocale, branchSlug: string, dishS
         params: { path: { branchSlug, dishSlug }, query: { locale } },
       }),
     ),
-  ) as Promise<DishDetail | null>;
+  );
 });
 
 const searchCached = cache(async (locale: AppLocale, branchSlug: string, queryJson: string): Promise<DishPage> => {
@@ -78,7 +78,7 @@ const searchCached = cache(async (locale: AppLocale, branchSlug: string, queryJs
     api.GET('/api/v1/public/catalog/branches/{branchSlug}/search', {
       params: { path: { branchSlug }, query: { ...query, locale } },
     }),
-  )) as unknown as DishPage;
+  ));
 });
 
 /** Поиск и фильтры (фильтрует сервер). */

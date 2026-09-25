@@ -118,6 +118,37 @@ export class CertificateFactsRepository {
       .execute();
   }
 
+  /** Возврат суммы на сертификат (отмена заказа, оплаченного сертификатом). Идемпотентно по событию. */
+  async insertCredit(c: {
+    eventId: string;
+    certificateId: string;
+    amount: Money;
+    balanceAfter: Money;
+    branchId: string | null;
+    refundId: string | null;
+    paymentId: string | null;
+    creditedAt: Date;
+    creditedDate: string;
+  }): Promise<void> {
+    await this.db()
+      .insertInto('reporting.certificate_credits')
+      .values({
+        event_id: c.eventId,
+        certificate_id: c.certificateId,
+        credited_amount: c.amount.amount,
+        credited_currency: c.amount.currency,
+        balance_after_amount: c.balanceAfter.amount,
+        balance_after_currency: c.balanceAfter.currency,
+        branch_id: c.branchId,
+        refund_id: c.refundId,
+        payment_id: c.paymentId,
+        credited_at: c.creditedAt,
+        credited_date: c.creditedDate,
+      })
+      .onConflict((oc) => oc.column('event_id').doNothing())
+      .execute();
+  }
+
   // ---------------------------------------------------------------- отчёты
 
   async issuedByKind(period: ReportPeriod, branchIds: readonly string[] | null) {
@@ -147,6 +178,16 @@ export class CertificateFactsRepository {
     return result.rows.map((r) => ({ channel: r.channel, count: Number(r.count), amount: Money.of(Number(r.amount)) }));
   }
 
+  /** Возвращено на сертификаты в периоде (отмены заказов, оплаченных сертификатом). */
+  async credited(period: ReportPeriod, branchIds: readonly string[] | null) {
+    const result = await sql<{ count: number; amount: number }>`
+      select count(*) as count, coalesce(sum(credited_amount), 0)::bigint as amount
+      from reporting.certificate_credits
+      where ${inPeriod('credited_date', period)} and ${branchFilter('branch_id', branchIds)}
+    `.execute(this.db());
+    return { count: Number(result.rows[0]?.count ?? 0), amount: Money.of(Number(result.rows[0]?.amount ?? 0)) };
+  }
+
   /** Истёкшие в периоде: количество и сгоревший остаток (обязательства по сети). */
   async expired(period: ReportPeriod) {
     const result = await sql<{ count: number; balance: number }>`
@@ -158,15 +199,17 @@ export class CertificateFactsRepository {
   }
 
   /**
-   * Остаток обязательств на конец дня asOf: номинал выпущенных − погашения − сгоревшие остатки.
-   * Количество — сертификаты с ненулевым остатком, не истёкшие к этой дате.
+   * Остаток обязательств на конец дня asOf: номинал выпущенных − погашения + возвраты на сертификат −
+   * сгоревшие остатки. Количество — сертификаты с ненулевым остатком, не истёкшие к этой дате.
    */
   async outstanding(asOf: string) {
     const result = await sql<{ count: number; balance: number }>`
       with c as (
         select c.certificate_id, c.nominal_amount,
                coalesce((select sum(r.redeemed_amount) from reporting.certificate_redemptions r
-                         where r.certificate_id = c.certificate_id and r.redeemed_date <= ${asOf}::date), 0) as redeemed,
+                         where r.certificate_id = c.certificate_id and r.redeemed_date <= ${asOf}::date), 0)
+               - coalesce((select sum(k.credited_amount) from reporting.certificate_credits k
+                         where k.certificate_id = c.certificate_id and k.credited_date <= ${asOf}::date), 0) as redeemed,
                case when c.expired_date is not null and c.expired_date <= ${asOf}::date then coalesce(c.expired_balance_amount, 0) else 0 end as burned,
                (c.expired_date is not null and c.expired_date <= ${asOf}::date) as is_expired
         from reporting.certificates c

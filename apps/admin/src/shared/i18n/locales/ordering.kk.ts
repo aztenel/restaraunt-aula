@@ -5,6 +5,10 @@ type DeepMessages<T> = { [K in keyof T]: T[K] extends string ? string : DeepMess
 /** Тапсырыстар, оператор кезегі, телефон арқылы тапсырыс, жеткізу аймақтары, промокодтар — қазақша. */
 export const orderingKk: DeepMessages<typeof orderingRu> = {
   orders: {
+    branchScope: {
+      title: 'Бұл филиалда тапсырыстарға қолжетімділігіңіз жоқ — басқа филиалды таңдаңыз',
+      none: 'Тапсырыстар қолжетімді филиалдар жоқ',
+    },
     tabs: {
       queue: 'Кезек',
       list: 'Барлық тапсырыстар',
@@ -19,8 +23,6 @@ export const orderingKk: DeepMessages<typeof orderingRu> = {
       admin: 'Телефон арқылы',
     },
     payment: {
-      online: 'Онлайн төлем',
-      on_receipt: 'Алған кезде',
       paidOnline: 'Онлайн төленген',
       payOnReceipt: 'Алған кезде төлеу',
       awaitingOnline: 'Онлайн төлемді күтуде',
@@ -30,11 +32,6 @@ export const orderingKk: DeepMessages<typeof orderingRu> = {
       on_receipt: 'Алған кезде төлеу',
       gift_certificate: 'Сыйлық сертификаты',
       bank_transfer: 'Шот бойынша аударым',
-    },
-    paymentKinds: {
-      certificate: 'Сертификатпен',
-      online: 'Онлайн арқылы',
-      on_receipt: 'Алған кезде',
     },
     refundKinds: {
       cancellation: 'Тапсырысты болдырмау',
@@ -101,7 +98,6 @@ export const orderingKk: DeepMessages<typeof orderingRu> = {
       contactless: 'Байланыссыз',
       more: 'Тағы {{count}} позиция',
       details: 'Толығырақ',
-      courierLoading: 'Курьер жүктелуде…',
       branchHint: 'Барлық филиалдардың тапсырыстары көрсетілген. Ауысыммен жұмыс үшін жоғарғы жақтан филиалды таңдаңыз.',
     },
     list: {
@@ -170,7 +166,6 @@ export const orderingKk: DeepMessages<typeof orderingRu> = {
       payments: {
         title: 'Төлемдер',
         method: 'Тәсілі',
-        kind: 'Мақсаты',
         status: 'Мәртебесі',
         amount: 'Сомасы',
         refunded: 'Қайтарылды',
@@ -328,6 +323,7 @@ export const orderingKk: DeepMessages<typeof orderingRu> = {
       choose: 'Таңдау',
       menuError: 'Филиал мәзірін жүктеу мүмкін болмады',
       noDishes: 'Тағамдар табылмады',
+      grams: '{{value}} г',
       modifiers: {
         title: '{{name}}: таңдау',
         required: 'міндетті',
@@ -404,7 +400,6 @@ export const orderingKk: DeepMessages<typeof orderingRu> = {
     drawHint: 'Төбелерді қою үшін картаны басыңыз. Бірінші төбені басу арқылы көпбұрышты тұйықтаңыз.',
     cancelDraw: 'Сызуды болдырмау',
     editHint: 'Төбелерді сүйреңіз. Қабырға ортасын басу төбе қосады, төбені оң жақпен басу — жояды.',
-    branchMarker: 'Филиал орны',
     inactive: 'Өшірілген',
     summary: 'Жеткізу {{fee}} · {{min}} бастап · ~{{eta}} мин',
     freeFrom: '{{amount}} бастап тегін',

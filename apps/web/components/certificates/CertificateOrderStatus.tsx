@@ -12,6 +12,7 @@ import type { CertificateOrderStatus as OrderStatus } from '@/lib/api-types';
 import { certificateOrderPhase, isPendingPhase, isSafePaymentUrl, type CertificateOrderPhase } from '@/lib/certificates';
 import { formatDate, formatDateTime, formatPrice } from '@/lib/format';
 import { analyticsValue, Goals, reachGoal } from '@/lib/goals';
+import { storageFlag } from '@/lib/payment-flow';
 import { routes } from '@/lib/routes';
 
 /** Интервалы опроса: пока готовится ссылка — часто, после возврата с оплаты — реже. */
@@ -22,16 +23,6 @@ const POLL_RATE_LIMITED_MS = 20_000;
 /** Через сколько показать «подтверждение задерживается» и когда прекратить опрос. */
 const SLOW_AFTER_MS = 3 * 60_000;
 const STOP_AFTER_MS = 15 * 60_000;
-
-function storageFlag(storage: 'local' | 'session', key: string, set = false): boolean {
-  try {
-    const target = storage === 'local' ? window.localStorage : window.sessionStorage;
-    if (set) target.setItem(key, '1');
-    return target.getItem(key) === '1';
-  } catch {
-    return false;
-  }
-}
 
 /**
  * Статус покупки сертификата: опрос GET /public/certificates/orders/{token}, переход на оплату,
@@ -56,7 +47,7 @@ export function CertificateOrderStatus({ token, initial, autoPay }: { token: str
         getBrowserApi(locale).GET('/api/v1/public/certificates/orders/{token}', {
           params: { path: { token }, query: { locale } },
         }),
-      )) as unknown as OrderStatus;
+      ));
       setOrder(data);
       setPollError(false);
       return certificateOrderPhase(data) === 'preparing' ? POLL_PREPARING_MS : POLL_AWAITING_MS;

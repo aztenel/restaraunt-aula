@@ -221,6 +221,20 @@ export interface CertificateRedemptionsTable {
   redeemed_date: string;
 }
 
+export interface CertificateCreditsTable {
+  event_id: string;
+  certificate_id: string;
+  credited_amount: number;
+  credited_currency: Generated<string>;
+  balance_after_amount: number;
+  balance_after_currency: Generated<string>;
+  branch_id: string | null;
+  refund_id: string | null;
+  payment_id: string | null;
+  credited_at: Date;
+  credited_date: string;
+}
+
 export interface StorefrontEventsTable {
   id: string;
   session_id: string;
@@ -296,6 +310,7 @@ export interface ReportingTables {
   'reporting.documents': DocumentsTable;
   'reporting.certificates': CertificatesTable;
   'reporting.certificate_redemptions': CertificateRedemptionsTable;
+  'reporting.certificate_credits': CertificateCreditsTable;
   'reporting.storefront_events': StorefrontEventsTable;
   'reporting.aggregator_volumes': AggregatorVolumesTable;
   'reporting.daily_reports': DailyReportsTable;

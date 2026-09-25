@@ -10,6 +10,7 @@ import { FEED_STREAMS, type FeedStream } from '@/shared/feed/types';
 import { formatDateTime } from '@/shared/lib/dates';
 import { PageHeader } from '@/shared/ui/PageHeader';
 import { OrdersQueueWidget } from '@/features/orders/OrdersQueueWidget';
+import { ReservationsQueueWidget } from '@/features/reservations/ReservationsQueueWidget';
 
 const STREAM_PERMISSIONS: Record<FeedStream, Permission[]> = {
   orders: [Permission.OrdersView],
@@ -73,6 +74,7 @@ export function DashboardPage() {
         ))}
       </Row>
       <OrdersQueueWidget />
+      <ReservationsQueueWidget />
       <Card title={t('dashboard.recent')} style={{ marginTop: 16 }}>
         {visibleItems.length === 0 ? (
           <Empty description={t('feed.empty')} />

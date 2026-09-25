@@ -201,8 +201,9 @@ describe('E2E 5: promo code + gift certificate at checkout', () => {
     });
     const rep = await report(ctx, 'certificates', { from: E2E_TODAY, to: E2E_TODAY });
     expect(rep.issued).toMatchObject({ count: 1, nominal: money(20_000), price: money(20_000) });
-    // Чистое погашение: 26 800 списано − 20 000 возвращено на сертификат = 6 800.
-    expect(rep.redeemed.amount).toEqual(money(6_800));
+    // Погашено 26 800 (как в отчёте модуля платежей), из них 20 000 возвращено на сертификат при отмене заказа.
+    expect(rep.redeemed).toMatchObject({ count: 2, amount: own.body.redeemed.amount });
+    expect(rep.returned).toEqual({ count: 1, amount: money(20_000) });
     expect(rep.outstanding).toMatchObject({ count: 1, balance: money(13_200) });
     expect(rep.outstanding.balance).toEqual(own.body.liability.active.amount);
 
@@ -211,7 +212,8 @@ describe('E2E 5: promo code + gift certificate at checkout', () => {
     // но заказ выполнен на 6 800 ₸; отменённый заказ выручки не даёт).
     expect(revenue.totals).toMatchObject({ certificate: money(20_000), pickup: money(6_800), total: money(26_800) });
     const cash = await report(ctx, 'payments', { from: E2E_TODAY, to: E2E_TODAY });
-    expect(cash.totals).toMatchObject({ moneyReceived: money(23_220) }); // 20 000 сертификат + 3 220 онлайн (деньги)
+    // Деньгами: покупка сертификата 20 000 + онлайн-остаток 3 220; оплаты сертификатом (20 000 + 6 800) — не деньги.
+    expect(cash.totals).toMatchObject({ moneyReceived: money(23_220), certificateRedemptions: money(26_800) });
 
     const buyer = await customerByPhone(ctx, BUYER_PHONE);
     expect(buyer.customer).toMatchObject({ ordersCount: 2, completedOrdersCount: 1 });

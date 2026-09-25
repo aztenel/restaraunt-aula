@@ -2,13 +2,12 @@ import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ApiError } from '@aula/api-client';
 import ru from '@/messages/ru.json';
 import { CartView, type CartBranchOption } from '@/components/cart/CartView';
 import { CartProvider, createCartStore } from '@/lib/cart';
-import { QUOTE_PATH } from '@/lib/ordering';
+import { fail, ok } from './support/api';
 
-const api = vi.hoisted(() => ({ raw: vi.fn(), GET: vi.fn() }));
+const api = vi.hoisted(() => ({ POST: vi.fn(), GET: vi.fn() }));
 
 vi.mock('@/lib/api', () => ({ getBrowserApi: () => api }));
 vi.mock('@/i18n/navigation', () => ({
@@ -83,7 +82,7 @@ const quote = {
 };
 
 beforeEach(() => {
-  api.raw.mockReset();
+  api.POST.mockReset();
   api.GET.mockReset();
 });
 
@@ -94,7 +93,7 @@ afterEach(() => {
 
 describe('корзина: суммы только с сервера', () => {
   it('показывает названия, добавки, суммы из расчёта и проблему недоступной позиции', async () => {
-    api.raw.mockResolvedValue(quote);
+    api.POST.mockResolvedValue(ok(quote));
     api.GET.mockResolvedValue({
       data: { categories: [{ dishes: [{ id: 'd2', name: 'Казы', photo: null }] }] },
       response: new Response(null, { status: 200 }),
@@ -114,11 +113,10 @@ describe('корзина: суммы только с сервера', () => {
     const checkout = screen.getByRole('button', { name: ru.Cart.checkout }) as HTMLButtonElement;
     expect(checkout.disabled).toBe(true);
 
-    expect(api.raw).toHaveBeenCalledWith(
-      'POST',
-      QUOTE_PATH,
+    expect(api.POST).toHaveBeenCalledWith(
+      '/api/v1/public/orders/quote',
       expect.objectContaining({
-        query: { locale: 'ru' },
+        params: { query: { locale: 'ru' } },
         body: {
           branchId: 'b1',
           type: 'pickup',
@@ -132,7 +130,7 @@ describe('корзина: суммы только с сервера', () => {
   });
 
   it('если расчёт ещё не развёрнут (404) — позиции без сумм и понятное сообщение', async () => {
-    api.raw.mockRejectedValue(new ApiError({ status: 404, code: 'http.404', message: 'Cannot POST /api/v1/public/orders/quote' }));
+    api.POST.mockResolvedValue(fail(404, 'http.404'));
     api.GET.mockResolvedValue({
       data: { categories: [{ dishes: [{ id: 'd1', name: 'Бешбармак', photo: null }] }] },
       response: new Response(null, { status: 200 }),
@@ -149,7 +147,7 @@ describe('корзина: суммы только с сервера', () => {
   });
 
   it('сетевая ошибка — сообщение и повтор', async () => {
-    api.raw.mockRejectedValue(new TypeError('Failed to fetch'));
+    api.POST.mockRejectedValue(new TypeError('Failed to fetch'));
     api.GET.mockRejectedValue(new TypeError('Failed to fetch'));
     renderCart();
     expect(await screen.findByText(ru.Cart.quoteError)).toBeTruthy();

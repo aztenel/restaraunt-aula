@@ -45,7 +45,7 @@ export function RefundDialog({ order, open, onClose }: { order: AdminOrderDetail
           extra={<Typography.Text type="secondary">{t('orders.detail.refundable', { amount: formatMoney(order.refundable, i18n.language) })}</Typography.Text>}
           rules={[fieldRule('amount')]}
         >
-          <MoneyInput size="large" max={refundable} style={{ maxWidth: 240 }} />
+          <MoneyInput size="large" style={{ maxWidth: 240 }} />
         </Form.Item>
         <Form.Item name="reason" label={t('orders.refundDialog.reason')} rules={[fieldRule('reason')]}>
           <Input.TextArea rows={2} maxLength={REASON_MAX_LENGTH} showCount placeholder={t('orders.refundDialog.reasonPlaceholder')} />

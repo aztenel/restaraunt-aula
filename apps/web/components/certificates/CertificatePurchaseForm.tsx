@@ -9,7 +9,7 @@ import { buttonClasses } from '@/components/ui/button';
 import { MinusIcon, PlusIcon } from '@/components/ui/icons';
 import { getBrowserApi } from '@/lib/api';
 import { apiErrorKey, retryAfterMinutes } from '@/lib/api-errors';
-import type { CertificateProduct, PurchaseResult } from '@/lib/api-types';
+import type { CertificateProduct } from '@/lib/api-types';
 import {
   DELIVERY_CHANNELS,
   emptyCertificateForm,
@@ -143,7 +143,7 @@ export function CertificatePurchaseForm({ products, consent }: { products: Certi
         api.POST('/api/v1/public/certificates/purchase', {
           body: toPurchaseBody(values, { locale, idempotencyKey: idempotencyKey.current }),
         }),
-      )) as unknown as PurchaseResult;
+      ));
       // Ссылка на оплату появляется асинхронно — страница заказа дождётся её и перенаправит.
       router.push({ pathname: routes.certificateOrder(result.orderToken), query: { pay: '1' } });
     } catch (error) {

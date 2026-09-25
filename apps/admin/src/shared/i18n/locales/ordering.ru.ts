@@ -4,6 +4,10 @@
  */
 export const orderingRu = {
   orders: {
+    branchScope: {
+      title: 'В этом филиале у вас нет доступа к заказам — выберите другой филиал',
+      none: 'Нет филиалов, где вам доступны заказы',
+    },
     tabs: {
       queue: 'Очередь',
       list: 'Все заказы',
@@ -18,8 +22,6 @@ export const orderingRu = {
       admin: 'По телефону',
     },
     payment: {
-      online: 'Онлайн',
-      on_receipt: 'При получении',
       paidOnline: 'Оплачен онлайн',
       payOnReceipt: 'Оплата при получении',
       awaitingOnline: 'Ждёт онлайн-оплату',
@@ -29,11 +31,6 @@ export const orderingRu = {
       on_receipt: 'Оплата при получении',
       gift_certificate: 'Подарочный сертификат',
       bank_transfer: 'Перевод по счёту',
-    },
-    paymentKinds: {
-      certificate: 'Сертификат',
-      online: 'Онлайн',
-      on_receipt: 'При получении',
     },
     refundKinds: {
       cancellation: 'Отмена заказа',
@@ -100,7 +97,6 @@ export const orderingRu = {
       contactless: 'Бесконтактно',
       more: 'Ещё {{count}} поз.',
       details: 'Подробнее',
-      courierLoading: 'Курьер…',
       branchHint: 'Показаны заказы всех филиалов. Для работы смены выберите филиал в шапке.',
     },
     list: {
@@ -169,7 +165,6 @@ export const orderingRu = {
       payments: {
         title: 'Платежи',
         method: 'Способ',
-        kind: 'Назначение',
         status: 'Статус',
         amount: 'Сумма',
         refunded: 'Возвращено',
@@ -327,6 +322,7 @@ export const orderingRu = {
       choose: 'Выбрать',
       menuError: 'Не удалось загрузить меню филиала',
       noDishes: 'Блюда не найдены',
+      grams: '{{value}} г',
       modifiers: {
         title: '{{name}}: выбор',
         required: 'обязательно',
@@ -403,7 +399,6 @@ export const orderingRu = {
     drawHint: 'Кликайте по карте, чтобы поставить вершины. Замкните полигон щелчком по первой вершине.',
     cancelDraw: 'Отменить рисование',
     editHint: 'Перетаскивайте вершины. Щелчок по середине стороны добавляет вершину, правый клик по вершине — удаляет.',
-    branchMarker: 'Филиал',
     inactive: 'Выключена',
     summary: 'Доставка {{fee}} · от {{min}} · ~{{eta}} мин',
     freeFrom: 'бесплатно от {{amount}}',

@@ -69,6 +69,11 @@ function ItemsTable({ items }: { items: AdminOrderItem[] }) {
           render: (_, item) => (
             <div style={{ minWidth: 180 }}>
               <Typography.Text strong>{translate(item.name, i18n.language)}</Typography.Text>
+              {item.basePrice.amount !== item.unitPrice.amount ? (
+                <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
+                  {t('orders.detail.basePrice', { price: formatMoney(item.basePrice, i18n.language) })}
+                </Typography.Text>
+              ) : null}
               {item.modifiers.length > 0 ? (
                 <div>
                   {item.modifiers.map((m) => (
@@ -203,7 +208,7 @@ function InfoTab({ order }: { order: AdminOrderDetails }) {
         ) : null}
       </Col>
       <Col xs={24} xl={10}>
-        <Descriptions size="small" column={1} bordered>
+        <Descriptions size="small" column={1} bordered title={t('orders.detail.customer')}>
           <Descriptions.Item label={t('orders.detail.name')}>{order.customer.name ?? '—'}</Descriptions.Item>
           <Descriptions.Item label={t('orders.detail.phone')}>
             <a href={`tel:${order.customer.phone}`}>{order.customer.phone}</a>
@@ -215,9 +220,21 @@ function InfoTab({ order }: { order: AdminOrderDetails }) {
           <Descriptions.Item label={t('orders.detail.scheduledFor')}>
             {order.scheduledFor ? <Tag color="orange">{formatDateTime(order.scheduledFor)}</Tag> : t('orders.detail.asap')}
           </Descriptions.Item>
-          <Descriptions.Item label={t('orders.detail.promisedAt')}>{formatDateTime(order.promisedAt)}</Descriptions.Item>
-          {delivery ? (
-            <>
+          <Descriptions.Item label={t('orders.detail.promisedAt')}>
+            {formatDateTime(order.promisedAt)}
+            <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
+              {t('orders.detail.eta', { minutes: order.etaMinutes })}
+            </Typography.Text>
+          </Descriptions.Item>
+          <Descriptions.Item label={t('orders.detail.trackingUrl')}>
+            <Typography.Link href={order.trackingUrl} target="_blank" copyable={{ text: order.trackingUrl, icon: <CopyOutlined /> }}>
+              <ExportOutlined />
+            </Typography.Link>
+          </Descriptions.Item>
+        </Descriptions>
+        {delivery ? (
+          <>
+            <Descriptions size="small" column={1} bordered title={t('orders.detail.delivery')} style={{ marginTop: 16 }}>
               <Descriptions.Item label={t('orders.detail.address')}>
                 <Typography.Text strong>{delivery.addressText}</Typography.Text>
                 {[
@@ -238,20 +255,13 @@ function InfoTab({ order }: { order: AdminOrderDetails }) {
                   <Tag color="purple">{t('orders.queue.contactless')}</Tag>
                 </Descriptions.Item>
               ) : null}
-            </>
-          ) : null}
-          <Descriptions.Item label={t('orders.detail.trackingUrl')}>
-            <Typography.Link href={order.trackingUrl} target="_blank" copyable={{ text: order.trackingUrl, icon: <CopyOutlined /> }}>
-              <ExportOutlined />
-            </Typography.Link>
-          </Descriptions.Item>
-        </Descriptions>
-        {delivery ? (
-          <div style={{ marginTop: 12 }}>
-            <Suspense fallback={<Spin />}>
-              <PointMap point={delivery.point} branch={branch?.location} pointLabel={delivery.addressText} branchLabel={branchName(order.branchId)} />
-            </Suspense>
-          </div>
+            </Descriptions>
+            <div style={{ marginTop: 12 }} role="region" aria-label={t('orders.detail.map')}>
+              <Suspense fallback={<Spin />}>
+                <PointMap point={delivery.point} branch={branch?.location} pointLabel={delivery.addressText} branchLabel={branchName(order.branchId)} />
+              </Suspense>
+            </div>
+          </>
         ) : null}
         {order.type === 'delivery' ? <CourierCard order={order} /> : null}
       </Col>

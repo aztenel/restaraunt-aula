@@ -80,6 +80,8 @@ export interface CertificatesReportView extends ReportHeader {
   issuedByKind: Array<{ kind: string; count: number; nominal: Money; price: Money }>;
   redeemed: { count: number; amount: Money };
   redeemedByChannel: Array<{ channel: string; count: number; amount: Money }>;
+  /** Возвращено на сертификаты (отмена заказов, оплаченных сертификатом): погашение отменено. */
+  returned: { count: number; amount: Money };
   /** Истёкшие и сгоревший остаток (только сводный отчёт: обязательства по сети). */
   expired: { count: number; balance: Money } | null;
   /** Остаток обязательств на конец периода (только сводный отчёт). */
@@ -113,6 +115,7 @@ export class CertificatesReport {
       issuedByKind,
       redeemed: { count: redeemedByChannel.reduce((a, r) => a + r.count, 0), amount: Money.sum(redeemedByChannel.map((r) => r.amount)) },
       redeemedByChannel,
+      returned: await this.certificates.credited(period, scope.branchIds),
       expired: consolidated ? await this.certificates.expired(period) : null,
       outstanding: consolidated ? { ...(await this.certificates.outstanding(period.to)), asOf: period.to } : null,
     };

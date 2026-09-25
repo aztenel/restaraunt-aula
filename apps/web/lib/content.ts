@@ -41,7 +41,7 @@ export const getBanners = cache(
           params: { query: { placement, locale, ...(branchSlug ? { branch: branchSlug } : {}) } },
         }),
       );
-      return data as unknown as Banner[];
+      return data;
     } catch (error) {
       warn(`banners(${placement})`, error);
       return [];
@@ -58,7 +58,7 @@ export const getPromotions = cache(async (locale: AppLocale, branchSlug: string 
         params: { query: { locale, ...(branchSlug ? { branch: branchSlug } : {}) } },
       }),
     );
-    return data as unknown as Promotion[];
+    return data;
   } catch (error) {
     warn('promotions', error);
     return null;
@@ -70,7 +70,7 @@ export const getPromotion = cache(async (locale: AppLocale, slug: string): Promi
   const api = createServerApi({ locale, tags: ['content', 'promotions', `promotion:${slug}`] });
   return notFoundAsNull(
     call(api.GET('/api/v1/public/content/promotions/{slug}', { params: { path: { slug }, query: { locale } } })),
-  ) as Promise<Promotion | null>;
+  );
 });
 
 /** Опубликованная текстовая страница. null — нет (404). */
@@ -106,5 +106,5 @@ export async function getCertificateOrder(locale: AppLocale, token: string): Pro
   const api = createServerApi({ locale, revalidate: false });
   return notFoundAsNull(
     call(api.GET('/api/v1/public/certificates/orders/{token}', { params: { path: { token }, query: { locale } } })),
-  ) as Promise<CertificateOrderStatus | null>;
+  );
 }

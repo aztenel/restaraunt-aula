@@ -452,6 +452,8 @@ export class CertificatesReportDto extends ReportHeaderDto {
   @ApiProperty({ type: [CertificateIssuedByKindDto] }) issuedByKind: CertificateIssuedByKindDto[];
   @ApiProperty({ type: CertificateAmountDto }) redeemed: CertificateAmountDto;
   @ApiProperty({ type: [CertificateRedeemedByChannelDto] }) redeemedByChannel: CertificateRedeemedByChannelDto[];
+  @ApiProperty({ type: CertificateAmountDto, description: 'Возвращено на сертификаты (отмена заказов, оплаченных сертификатом)' })
+  returned: CertificateAmountDto;
   @ApiProperty({ type: CertificateBalanceDto, nullable: true, description: 'Только сводный отчёт' }) expired: CertificateBalanceDto | null;
   @ApiProperty({ type: CertificateOutstandingDto, nullable: true, description: 'Остаток обязательств (только сводный)' })
   outstanding: CertificateOutstandingDto | null;

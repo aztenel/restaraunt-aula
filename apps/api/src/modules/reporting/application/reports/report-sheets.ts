@@ -306,6 +306,7 @@ export function certificatesSheets(v: CertificatesReportView): XlsxSheet<any>[] 
     { metric: 'Выпущено', count: v.issued.count, amount: v.issued.nominal },
     { metric: 'Выпущено (цена продажи)', count: v.issued.count, amount: v.issued.price },
     { metric: 'Погашено', count: v.redeemed.count, amount: v.redeemed.amount },
+    { metric: 'Возвращено на сертификаты (отмены заказов)', count: v.returned.count, amount: v.returned.amount },
   ];
   if (v.expired) rows.push({ metric: 'Просрочено (сгоревший остаток)', count: v.expired.count, amount: v.expired.balance });
   if (v.outstanding) rows.push({ metric: `Остаток обязательств на ${v.outstanding.asOf}`, count: v.outstanding.count, amount: v.outstanding.balance });

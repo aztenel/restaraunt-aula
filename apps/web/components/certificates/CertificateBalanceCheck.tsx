@@ -56,7 +56,7 @@ export function CertificateBalanceCheck() {
     try {
       const api = getBrowserApi(locale);
       const data = await call(api.POST('/api/v1/public/certificates/check', { body: { code } }));
-      setResult(data as unknown as CertificateBalance);
+      setResult(data);
     } catch (e) {
       setError(messageFor(toApiError(e)));
     } finally {

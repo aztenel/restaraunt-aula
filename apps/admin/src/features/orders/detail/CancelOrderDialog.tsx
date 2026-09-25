@@ -144,7 +144,7 @@ export function CancelOrderDialog({
                   dependencies={['partialRefund']}
                   rules={[fieldRule('refundAmount')]}
                 >
-                  <MoneyInput size="large" max={order.refundable.amount} style={{ maxWidth: 240 }} />
+                  <MoneyInput size="large" style={{ maxWidth: 240 }} />
                 </Form.Item>
               ) : null}
             </>

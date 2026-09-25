@@ -2,12 +2,14 @@
  * Русский — язык админки по умолчанию и эталон структуры переводов (kk.ts обязан повторять ключи).
  * Тексты ошибок API по кодам — в shared/api/error-messages.ts.
  */
+import { banquetsRu } from './banquets.ru';
 import { catalogRu } from './catalog.ru';
 import { orderingRu } from './ordering.ru';
 
 export const ru = {
   ...orderingRu,
   ...catalogRu,
+  ...banquetsRu,
   app: {
     title: 'AULA — админ-панель',
   },
