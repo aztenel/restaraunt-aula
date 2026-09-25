@@ -54,7 +54,6 @@ export function RedeemTab() {
     onSuccess: (certificate, value) => {
       setChecked({ code: value, certificate });
       setResult(null);
-      form.resetFields();
     },
   });
   const redeem = useApiMutation((body: RedeemBody) => certificatesApi.redeem(body), {
@@ -72,7 +71,6 @@ export function RedeemTab() {
     setResult(null);
     check.reset();
     redeem.reset();
-    form.resetFields();
     window.setTimeout(() => inputRef.current?.focus(), 0);
   };
 
@@ -234,7 +232,7 @@ export function RedeemTab() {
               ) : !branchId ? (
                 <Alert type="info" showIcon message={abilities.redeemSomewhere ? t('certificates.redeem.branchHint') : t('certificates.redeem.viewOnly')} />
               ) : (
-                <Form<RedeemFormValues> form={form} layout="vertical" requiredMark={false} onFinish={() => void submit()}>
+                <Form<RedeemFormValues> form={form} layout="vertical" requiredMark={false} preserve={false} onFinish={() => void submit()}>
                   {redeemMode(certificate.kind) === 'partial' ? (
                     <Form.Item label={t('certificates.redeem.amount')} required>
                       <Flex gap={8} wrap>

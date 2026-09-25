@@ -29,7 +29,6 @@ export const paymentsRu = {
       bank_transfer: 'Банковский перевод',
     },
     filters: {
-      branch: 'Филиал',
       allBranches: 'Все доступные филиалы',
       purpose: 'Назначение',
       method: 'Способ оплаты',
@@ -40,7 +39,6 @@ export const paymentsRu = {
     columns: {
       createdAt: 'Создан',
       payment: 'Платёж',
-      purpose: 'Назначение',
       method: 'Способ оплаты',
       amount: 'Сумма',
       status: 'Статус',
@@ -50,7 +48,6 @@ export const paymentsRu = {
     list: {
       refunded: 'Возвращено: {{amount}}',
       paidAt: 'Оплачен {{date}}',
-      invoice: 'Счёт № {{number}}',
       noBranch: 'Без филиала',
       mismatch: 'Провайдер сообщил другую сумму',
     },
@@ -63,7 +60,6 @@ export const paymentsRu = {
       purpose: 'Назначение',
       reference: 'Объект оплаты',
       method: 'Способ',
-      provider: 'Провайдер',
       branch: 'Филиал',
       invoiceNo: 'Номер счёта у провайдера',
       externalId: 'Идентификатор у провайдера',
@@ -74,7 +70,6 @@ export const paymentsRu = {
       description: 'Описание',
       paymentUrl: 'Страница оплаты',
       openPaymentUrl: 'Открыть',
-      openOrder: 'Открыть заказ',
       mismatch: 'Провайдер сообщил сумму, отличную от суммы платежа — сверьте поступление с выпиской',
       failureReason: 'Причина ошибки: {{reason}}',
       cancelReason: 'Причина отмены: {{reason}}',
@@ -92,8 +87,6 @@ export const paymentsRu = {
       response: 'Ответ',
       error: 'Ошибка',
       duration: '{{ms}} мс',
-      success: 'Успешно',
-      failed: 'Ошибка',
     },
     history: {
       created: 'Платёж создан',
@@ -177,7 +170,6 @@ export const paymentsRu = {
         payment: 'Платёж',
         amount: 'Сумма',
         reason: 'Причина',
-        mode: 'Как возвращается',
         status: 'Статус',
       },
       attempts: 'Попыток: {{count}}',

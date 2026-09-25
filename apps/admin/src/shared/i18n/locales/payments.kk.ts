@@ -30,7 +30,6 @@ export const paymentsKk: DeepMessages<typeof paymentsRu> = {
       bank_transfer: 'Банк аударымы',
     },
     filters: {
-      branch: 'Филиалы',
       allBranches: 'Қолжетімді барлық филиалдар',
       purpose: 'Мақсаты',
       method: 'Төлем тәсілі',
@@ -41,7 +40,6 @@ export const paymentsKk: DeepMessages<typeof paymentsRu> = {
     columns: {
       createdAt: 'Құрылған',
       payment: 'Төлем',
-      purpose: 'Мақсаты',
       method: 'Төлем тәсілі',
       amount: 'Сомасы',
       status: 'Мәртебесі',
@@ -51,7 +49,6 @@ export const paymentsKk: DeepMessages<typeof paymentsRu> = {
     list: {
       refunded: 'Қайтарылды: {{amount}}',
       paidAt: '{{date}} төленді',
-      invoice: 'Шот № {{number}}',
       noBranch: 'Филиалсыз',
       mismatch: 'Провайдер басқа соманы хабарлады',
     },
@@ -64,7 +61,6 @@ export const paymentsKk: DeepMessages<typeof paymentsRu> = {
       purpose: 'Мақсаты',
       reference: 'Төлем нысаны',
       method: 'Тәсілі',
-      provider: 'Төлем провайдері',
       branch: 'Филиалы',
       invoiceNo: 'Провайдердегі шот нөмірі',
       externalId: 'Провайдердегі идентификатор',
@@ -75,7 +71,6 @@ export const paymentsKk: DeepMessages<typeof paymentsRu> = {
       description: 'Сипаттамасы',
       paymentUrl: 'Төлем беті',
       openPaymentUrl: 'Ашу',
-      openOrder: 'Тапсырысты ашу',
       mismatch: 'Провайдер төлем сомасынан өзгеше соманы хабарлады — түсімді үзінді көшірмемен салыстырыңыз',
       failureReason: 'Қате себебі: {{reason}}',
       cancelReason: 'Бас тарту себебі: {{reason}}',
@@ -93,8 +88,6 @@ export const paymentsKk: DeepMessages<typeof paymentsRu> = {
       response: 'Жауап',
       error: 'Қате',
       duration: '{{ms}} мс',
-      success: 'Сәтті',
-      failed: 'Қате',
     },
     history: {
       created: 'Төлем құрылды',
@@ -178,7 +171,6 @@ export const paymentsKk: DeepMessages<typeof paymentsRu> = {
         payment: 'Төлем',
         amount: 'Сомасы',
         reason: 'Себебі',
-        mode: 'Қалай қайтарылады',
         status: 'Мәртебесі',
       },
       attempts: 'Әрекеттер: {{count}}',

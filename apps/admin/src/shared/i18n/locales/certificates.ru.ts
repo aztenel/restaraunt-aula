@@ -199,7 +199,6 @@ export const certificatesRu = {
       phone: 'Телефон',
       email: 'Email',
       recipientIsBuyer: 'Получатель — покупатель',
-      recipient: 'Получатель',
       recipientName: 'Имя получателя',
       message: 'Поздравление (печатается в сертификате)',
       deliveryChannel: 'Отправка сертификатов',

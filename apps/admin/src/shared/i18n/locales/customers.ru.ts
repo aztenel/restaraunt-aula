@@ -186,7 +186,6 @@ export const customersRu = {
     },
     activity: {
       title: 'История',
-      allTime: 'За всё время',
       totals: 'Итоги за период',
       totalsAllTime: 'Итоги за всё время',
       spent: 'Сумма покупок',

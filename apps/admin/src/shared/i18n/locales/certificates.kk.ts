@@ -200,7 +200,6 @@ export const certificatesKk: DeepMessages<typeof certificatesRu> = {
       phone: 'Телефоны',
       email: 'Email',
       recipientIsBuyer: 'Алушы — сатып алушының өзі',
-      recipient: 'Алушы',
       recipientName: 'Алушының аты',
       message: 'Құттықтау (сертификатта басылады)',
       deliveryChannel: 'Сертификаттарды жіберу',

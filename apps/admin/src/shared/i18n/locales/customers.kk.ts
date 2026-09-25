@@ -187,7 +187,6 @@ export const customersKk: DeepMessages<typeof customersRu> = {
     },
     activity: {
       title: 'Тарих',
-      allTime: 'Барлық уақыт',
       totals: 'Кезең қорытындысы',
       totalsAllTime: 'Барлық уақыттағы қорытынды',
       spent: 'Сатып алу сомасы',

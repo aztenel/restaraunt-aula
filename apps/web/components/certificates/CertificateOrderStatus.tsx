@@ -12,7 +12,7 @@ import type { CertificateOrderStatus as OrderStatus } from '@/lib/api-types';
 import { certificateOrderPhase, isPendingPhase, isSafePaymentUrl, type CertificateOrderPhase } from '@/lib/certificates';
 import { formatDate, formatDateTime, formatPrice } from '@/lib/format';
 import { analyticsValue, Goals, reachGoal } from '@/lib/goals';
-import { storageFlag } from '@/lib/payment-flow';
+import { goToPayment, storageFlag } from '@/lib/payment-flow';
 import { routes } from '@/lib/routes';
 
 /** Интервалы опроса: пока готовится ссылка — часто, после возврата с оплаты — реже. */
@@ -90,7 +90,7 @@ export function CertificateOrderStatus({ token, initial, autoPay }: { token: str
     if (storageFlag('session', key)) return;
     storageFlag('session', key, true);
     setRedirecting(true);
-    window.location.assign(paymentUrl);
+    goToPayment(paymentUrl);
   }, [autoPay, phase, paymentUrl, token]);
 
   // Цель «покупка сертификата» — один раз на заказ (после выпуска).

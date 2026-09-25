@@ -48,7 +48,10 @@ export function orderSalesChannel(type: OrderTypeCode): SalesChannel {
   return type === 'pickup' ? SalesChannel.Pickup : SalesChannel.Delivery;
 }
 
-/** Выручка по выполненному заказу. */
+/**
+ * Выручка по выполненному заказу: итог заказа без части, оплаченной подарочным сертификатом
+ * (эти деньги признаны в канале «сертификаты» при продаже — без двойного счёта, docs/decisions.md).
+ */
 export function orderSale(order: {
   orderId: string;
   type: OrderTypeCode;
@@ -56,6 +59,8 @@ export function orderSale(order: {
   branchId: string;
   total: Money;
   completedAt: Date;
+  /** Оплачено сертификатом (не новые деньги). */
+  certificatePaid?: Money | null;
 }): SalesFact {
   return {
     sourceType: SalesSourceType.Order,
@@ -67,8 +72,13 @@ export function orderSale(order: {
     referenceId: order.orderId,
     occurredAt: order.completedAt,
     localDate: localDateOf(order.completedAt),
-    amount: order.total.clampToZero(),
+    amount: orderRevenueAmount(order.total, order.certificatePaid ?? null),
   };
+}
+
+/** Выручка заказа деньгами: итог минус оплаченное сертификатом, не меньше нуля. */
+export function orderRevenueAmount(total: Money, certificatePaid: Money | null): Money {
+  return (certificatePaid ? total.subtract(certificatePaid) : total).clampToZero();
 }
 
 /** Выручка по проведённому банкету (итог сметы; без сметы — ноль, но банкет учитывается в количестве). */
@@ -110,6 +120,8 @@ export interface RefundFactInput {
   branchId: string | null;
   amount: Money;
   refundedAt: Date;
+  /** Способ оплаты возвращаемого платежа (если известен). */
+  paymentMethod?: string | null;
 }
 
 /** Состояние объекта возврата в проекциях (что известно на момент обработки). */
@@ -134,6 +146,9 @@ export function refundRevenueFact(refund: RefundFactInput, target: RefundTarget)
   };
   switch (refund.purpose) {
     case 'order': {
+      // Возврат на сертификат (часть заказа, оплаченная сертификатом) выручку заказа не меняет:
+      // эта часть в выручку доставки/самовывоза не входила.
+      if (refund.paymentMethod === 'gift_certificate') return null;
       const order = target.order;
       if (!order?.completedAt || refund.refundedAt < order.completedAt) return null;
       return {

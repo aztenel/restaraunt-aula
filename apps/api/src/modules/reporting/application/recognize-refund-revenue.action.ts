@@ -39,6 +39,7 @@ export class RecognizeRefundRevenue {
         branchId: refund.branchId,
         amount: refund.amount,
         refundedAt: refund.refundedAt,
+        paymentMethod: await this.payments.methodOf(refund.paymentId),
       },
       target,
     );

@@ -47,3 +47,8 @@ export function reachGoalOnce(key: string, fire: () => void): void {
   storageFlag('local', key, true);
   fire();
 }
+
+/** Переход на страницу оплаты провайдера (отдельная функция — подменяется в тестах). */
+export function goToPayment(url: string): void {
+  window.location.assign(url);
+}

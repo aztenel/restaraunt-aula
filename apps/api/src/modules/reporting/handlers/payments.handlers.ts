@@ -14,8 +14,9 @@ import {
 } from '../../payments/public';
 import { RecognizeRefundRevenue } from '../application/recognize-refund-revenue.action';
 import { localDateOf } from '../domain/period';
-import { certificateSale } from '../domain/revenue';
+import { certificateSale, orderRevenueAmount, SalesSourceType } from '../domain/revenue';
 import { CertificateFactsRepository } from '../infrastructure/certificate-facts.repository';
+import { OrderFactsRepository } from '../infrastructure/order-facts.repository';
 import { PaymentFactsRepository } from '../infrastructure/payment-facts.repository';
 import { SalesFactsRepository } from '../infrastructure/sales-facts.repository';
 
@@ -31,6 +32,7 @@ export class ReportingPaymentsProjection {
     private readonly certificates: CertificateFactsRepository,
     private readonly sales: SalesFactsRepository,
     private readonly recognizeRefund: RecognizeRefundRevenue,
+    private readonly orders: OrderFactsRepository,
   ) {}
 
   @OnEvent(PaymentsEvents.PaymentSucceeded)
@@ -49,6 +51,15 @@ export class ReportingPaymentsProjection {
       paidDate: localDateOf(paidAt),
       late: p.previousStatus === 'failed' || p.previousStatus === 'cancelled',
     });
+    // Оплата заказа сертификатом пришла после признания выручки заказа (события не по порядку):
+    // выручка заказа — итог минус оплаченное сертификатом.
+    if (p.purpose === 'order' && p.method === 'gift_certificate') {
+      const total = await this.orders.completedTotal(p.referenceId);
+      if (total) {
+        const certificatePaid = await this.payments.capturedAmount('order', p.referenceId, 'gift_certificate');
+        await this.sales.setSaleAmount(SalesSourceType.Order, p.referenceId, orderRevenueAmount(total, certificatePaid));
+      }
+    }
   }
 
   @OnEvent(PaymentsEvents.RefundSucceeded)

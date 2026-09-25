@@ -32,6 +32,8 @@ import { RegisterBankTransfer } from './application/register-bank-transfer.actio
 import { RenderCheckoutPage } from './application/render-checkout-page.action';
 import { PaymentGateway } from './domain/payment-gateway';
 import { CertificatePaymentHandlers } from './handlers/certificate.handlers';
+import { PaymentsCustomerHandlers } from './handlers/customer.handlers';
+import { AnonymizePaymentContacts } from './application/anonymize-contacts.action';
 import { PaymentJobHandlers, PaymentSchedules } from './handlers/payment.handlers';
 import { AdminCertificatesController } from './http/admin/certificates.controller';
 import { AdminPaymentsController } from './http/admin/payments.controller';
@@ -139,6 +141,8 @@ import { GiftCertificates, PaymentsService } from './public';
     PaymentJobHandlers,
     PaymentSchedules,
     CertificatePaymentHandlers,
+    PaymentsCustomerHandlers,
+    AnonymizePaymentContacts,
     // Публичный контракт
     PaymentsFacade,
     GiftCertificatesService,

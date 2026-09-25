@@ -21,6 +21,8 @@ import { PreviewTemplate, ResetTemplateText, UpdateTemplateText } from './applic
 import { TemplateRenderer } from './application/template-renderer';
 import { NotificationsDeliveryJob } from './handlers/deliver.job';
 import { NotificationsJobFailedHandler } from './handlers/job-failed.handler';
+import { NotificationsCustomerHandler } from './handlers/customer.handler';
+import { EraseGuestContacts } from './application/erase-guest-contacts.action';
 import { NotificationsMaintenance } from './handlers/maintenance.schedule';
 import { NotificationDeliveriesController } from './http/admin/deliveries.controller';
 import { AdminFeedController } from './http/admin/feed.controller';
@@ -104,6 +106,8 @@ import { AdminFeed, Notifier } from './public';
     NotificationsDeliveryJob,
     NotificationsJobFailedHandler,
     NotificationsMaintenance,
+    NotificationsCustomerHandler,
+    EraseGuestContacts,
     // Публичный контракт
     { provide: Notifier, useClass: NotifierService },
     { provide: AdminFeed, useClass: AdminFeedService },

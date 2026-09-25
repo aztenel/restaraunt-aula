@@ -93,7 +93,9 @@ export class ReportingOrderingProjection {
         lineTotal: Money.fromJson(item.lineTotal),
       })),
     );
-    await this.sales.insert(orderSale({ orderId: p.orderId, type: p.type, channel: p.channel, branchId: p.branchId, total, completedAt }));
+    // Часть, оплаченная сертификатом, — не выручка заказа (признана в канале «сертификаты» при продаже).
+    const certificatePaid = await this.payments.capturedAmount('order', p.orderId, 'gift_certificate');
+    await this.sales.insert(orderSale({ orderId: p.orderId, type: p.type, channel: p.channel, branchId: p.branchId, total, completedAt, certificatePaid }));
     // Возвраты, пришедшие раньше события о выполнении (частичный возврат по выполненному заказу).
     for (const refund of await this.payments.refundsFor('order', [p.orderId])) {
       await this.recognizeRefund.execute(refund.refundId);

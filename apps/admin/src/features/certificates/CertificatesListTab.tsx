@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 import { translate } from '@aula/api-client';
+import { messageForCode } from '@/shared/api/errors';
 import { useApiQuery } from '@/shared/api/hooks';
 import { formatDateTime } from '@/shared/lib/dates';
 import { ErrorAlert } from '@/shared/ui/ErrorAlert';
@@ -14,6 +15,7 @@ import { formatLocalDate, useCertificateAbilities } from './abilities';
 import { certificateKeys, certificatesApi } from './api';
 import { CertificateDrawer } from './CertificateDrawer';
 import { IssueCertificatesModal } from './IssueCertificatesModal';
+import { compactCode } from './redeem-form';
 import { CERTIFICATE_STATUSES, type Certificate, type CertificateListQuery, type CertificateStatus } from './types';
 
 function contact(p: { name?: string | null; phone?: string | null; email?: string | null }) {
@@ -54,8 +56,10 @@ export function CertificatesListTab() {
     else next.delete(key);
     setParams(next);
   };
+  const last4Short = compactCode(last4).length > 0 && compactCode(last4).length < 4;
   const apply = () => {
-    setSearch({ q: last4.trim() || undefined, phone: phone.trim() || undefined });
+    if (last4Short) return;
+    setSearch({ q: compactCode(last4) || undefined, phone: phone.trim() || undefined });
     setPage(1);
   };
 
@@ -69,6 +73,8 @@ export function CertificatesListTab() {
             style={{ width: 230 }}
             value={last4}
             maxLength={14}
+            status={last4Short ? 'warning' : undefined}
+            title={last4Short ? messageForCode('certificate.search_last4', i18n.language) : undefined}
             onChange={(e) => setLast4(e.target.value.toUpperCase())}
             onPressEnter={apply}
           />

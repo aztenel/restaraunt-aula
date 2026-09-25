@@ -293,6 +293,12 @@ export class OrderFactsRepository {
       : null;
   }
 
+  /** Итог выполненного заказа (null — заказ ещё не выполнен или неизвестен). */
+  async completedTotal(orderId: string): Promise<Money | null> {
+    const row = await this.db().selectFrom(T).select(['total_amount', 'completed_at']).where('order_id', '=', orderId).executeTakeFirst();
+    return row?.completed_at && row.total_amount !== null ? Money.of(Number(row.total_amount)) : null;
+  }
+
   async statusOf(orderId: string): Promise<string | null> {
     const row = await this.db().selectFrom(T).select('status').where('order_id', '=', orderId).executeTakeFirst();
     return row?.status ?? null;

@@ -368,6 +368,9 @@ describe('Customers: admin (integration)', () => {
     expect(JSON.stringify(audit.rows[0])).not.toContain('+77011111111');
     const events = await sql<{ payload: { payload: unknown } }>`
       select payload from platform.outbox where topic = ${CustomersEvents.CustomerAnonymized}`.execute(t.database.rootConnection());
-    expect(events.rows.map((r) => r.payload.payload)).toEqual([{ customerId: g.aigerim, occurredAt: t.clock.now().toISOString() }]);
+    // Прежние контакты — в событии: модули без customerId (платежи, уведомления) стирают копии по ним.
+    expect(events.rows.map((r) => r.payload.payload)).toEqual([
+      { customerId: g.aigerim, phone: '+77011111111', email: 'aigerim@mail.kz', occurredAt: t.clock.now().toISOString() },
+    ]);
   });
 });

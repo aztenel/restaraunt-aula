@@ -13,7 +13,7 @@ import type { OrderStatus, OrderTracking } from '@/lib/api-types';
 import { formatDateTime, formatPhone, formatPrice, telHref } from '@/lib/format';
 import { analyticsValue, Goals, reachGoal } from '@/lib/goals';
 import { isPurchaseComplete, orderPaymentRedirect, orderPhase, orderPollDelay, timelineSteps } from '@/lib/order-status';
-import { isSafePaymentUrl, reachGoalOnce, redirectFlagKey, storageFlag } from '@/lib/payment-flow';
+import { goToPayment, isSafePaymentUrl, reachGoalOnce, redirectFlagKey, storageFlag } from '@/lib/payment-flow';
 import { routes } from '@/lib/routes';
 
 const STATUS_KEYS: Record<OrderStatus, `status.${OrderStatus}`> = {
@@ -81,7 +81,7 @@ export function OrderStatusView({ token, initial, autoPay }: { token: string; in
     const url = orderPaymentRedirect(order, { autoPay: payNow, alreadyRedirected: storageFlag('session', flag) });
     if (!url) return;
     storageFlag('session', flag, true);
-    window.location.assign(url);
+    goToPayment(url);
   }, [order, payNow, paymentId, token]);
 
   // Цель «покупка» — один раз, когда заказ оплачен (или оплата при получении обеспечена).
@@ -100,7 +100,7 @@ export function OrderStatusView({ token, initial, autoPay }: { token: string; in
       const flag = redirectFlagKey('order', token, payment.id);
       if (isSafePaymentUrl(payment.paymentUrl) && !storageFlag('session', flag)) {
         storageFlag('session', flag, true);
-        window.location.assign(payment.paymentUrl);
+        goToPayment(payment.paymentUrl);
         return;
       }
       setPayNow(true);

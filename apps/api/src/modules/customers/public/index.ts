@@ -73,8 +73,9 @@ export const CustomersEvents = {
   CustomerCreated: 'customers.customer_created',
   /**
    * Гость обезличен по требованию (закон РК о ПД): телефон, имя, почта стёрты, агрегаты сохранены.
-   * Модули, хранящие снимки контактов гостя (заказы, брони, заявки), могут обезличить их у себя
-   * по customerId. В payload нет персональных данных.
+   * Модули, хранящие копии контактов гостя, стирают их у себя: по customerId (заказы, брони, заявки)
+   * или по телефону/почте из payload (платежи, сертификаты, журнал уведомлений). Payload содержит
+   * прежние телефон и почту — событие хранится в outbox не дольше 30 дней (очистка платформы).
    */
   CustomerAnonymized: 'customers.customer_anonymized',
 } as const;
@@ -87,5 +88,12 @@ export interface CustomerCreatedPayload {
 
 export interface CustomerAnonymizedPayload {
   customerId: string;
+  /**
+   * Прежний телефон гостя (+7XXXXXXXXXX) — чтобы модули без customerId (платежи, сертификаты,
+   * уведомления) нашли и стёрли свои копии. Нет в событиях, опубликованных до добавления поля.
+   */
+  phone?: string | null;
+  /** Прежняя почта гостя (если была). */
+  email?: string | null;
   occurredAt: string;
 }

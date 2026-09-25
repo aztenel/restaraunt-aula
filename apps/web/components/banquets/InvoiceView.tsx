@@ -11,7 +11,7 @@ import { apiErrorKey } from '@/lib/api-errors';
 import type { BanquetInvoice } from '@/lib/api-types';
 import { formatBasisPoints, invoicePaymentRedirect, invoicePhase, invoicePollDelay } from '@/lib/banquets';
 import { formatLocalDate, formatPrice } from '@/lib/format';
-import { isSafePaymentUrl, redirectFlagKey, storageFlag } from '@/lib/payment-flow';
+import { goToPayment, isSafePaymentUrl, redirectFlagKey, storageFlag } from '@/lib/payment-flow';
 
 /**
  * Счёт по банкету по ссылке: физлицо — «Оплатить» (POST /pay обновляет ссылку на оплату, затем
@@ -51,7 +51,7 @@ export function InvoiceView({ token, initial }: { token: string; initial: Banque
     const url = invoicePaymentRedirect(invoice, { payNow, alreadyRedirected: storageFlag('session', flag) });
     if (!url) return;
     storageFlag('session', flag, true);
-    window.location.assign(url);
+    goToPayment(url);
   }, [invoice, payNow, token]);
 
   const pay = async () => {

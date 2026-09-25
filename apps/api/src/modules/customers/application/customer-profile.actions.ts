@@ -163,7 +163,7 @@ export class AnonymizeCustomer {
       });
       await this.events.publish<CustomerAnonymizedPayload>(
         CustomersEvents.CustomerAnonymized,
-        { customerId, occurredAt: now.toISOString() },
+        { customerId, phone: customer.phone, email: customer.email ?? null, occurredAt: now.toISOString() },
         { aggregateId: customerId },
       );
       return toAdminView((await this.customers.findById(customerId))!);

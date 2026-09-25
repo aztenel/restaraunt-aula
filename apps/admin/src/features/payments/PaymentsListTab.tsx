@@ -39,6 +39,7 @@ export function PaymentsListTab({ onOpen }: { onOpen: (paymentId: string) => voi
   const initialBranch = selectedBranchId && (scope === 'all' || scope.includes(selectedBranchId)) ? selectedBranchId : null;
   const [filters, setFilters] = useState<PaymentFilters>(() => emptyPaymentFilters(initialBranch));
   const [reference, setReference] = useState('');
+  const [provider, setProvider] = useState('');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(50);
 
@@ -46,6 +47,8 @@ export function PaymentsListTab({ onOpen }: { onOpen: (paymentId: string) => voi
   const list = useApiQuery(paymentKeys.list(query), () => paymentsApi.list(query), { keepPrevious: true });
 
   const update = (patch: Partial<PaymentFilters>) => {
+    const changed = (Object.keys(patch) as Array<keyof PaymentFilters>).some((key) => patch[key] !== filters[key]);
+    if (!changed) return;
     setFilters((current) => ({ ...current, ...patch }));
     setPage(1);
   };
@@ -82,8 +85,17 @@ export function PaymentsListTab({ onOpen }: { onOpen: (paymentId: string) => voi
           allowClear
           placeholder={t('payments.filters.provider')}
           style={{ width: 180 }}
-          value={filters.provider}
-          onChange={(provider: string | undefined) => update({ provider: provider || undefined })}
+          value={provider}
+          onChange={(value: string | undefined) => {
+            setProvider(value ?? '');
+            // Очистка крестиком — сразу, ввод вручную — по выбору, Enter или уходу с поля.
+            if (!value) update({ provider: undefined });
+          }}
+          onSelect={(value: string) => update({ provider: value })}
+          onBlur={() => update({ provider: provider.trim() || undefined })}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') update({ provider: provider.trim() || undefined });
+          }}
           options={PAYMENT_PROVIDERS.map((value) => ({ value, label: t(`payments.provider.${value}`) }))}
         />
         <Select<PaymentStatus>
@@ -107,6 +119,7 @@ export function PaymentsListTab({ onOpen }: { onOpen: (paymentId: string) => voi
           onClick={() => {
             setFilters(emptyPaymentFilters(initialBranch));
             setReference('');
+            setProvider('');
             setPage(1);
           }}
         >

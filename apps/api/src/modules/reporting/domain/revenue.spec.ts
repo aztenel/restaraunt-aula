@@ -8,6 +8,7 @@ import {
   emptyChannelAmounts,
   isNewerStatus,
   ORDER_STATUS_RANK,
+  orderRevenueAmount,
   orderSale,
   orderSalesChannel,
   refundRevenueFact,
@@ -21,6 +22,13 @@ describe('revenue recognition', () => {
     expect(fact).toMatchObject({ kind: 'sale', channel: 'pickup', localDate: '2026-10-01', orderChannel: 'web', branchId: 'b1' });
     expect(fact.amount.amount).toBe(500_000);
     expect(orderSalesChannel('delivery')).toBe('delivery');
+  });
+
+  it('order revenue excludes the part paid by gift certificate (recognized at certificate sale)', () => {
+    const fact = orderSale({ orderId: 'o1', type: 'pickup', channel: 'web', branchId: 'b1', total: Money.of(500_000), completedAt, certificatePaid: Money.of(200_000) });
+    expect(fact.amount.amount).toBe(300_000);
+    expect(orderRevenueAmount(Money.of(500_000), Money.of(700_000)).amount).toBe(0);
+    expect(orderRevenueAmount(Money.of(500_000), null).amount).toBe(500_000);
   });
 
   it('banquet revenue at held (quote total), certificate at sale (price)', () => {
@@ -44,6 +52,13 @@ describe('revenue recognition', () => {
       );
       expect(fact).toMatchObject({ kind: 'refund', channel: 'delivery', localDate: '2026-10-03', referenceId: 'o1' });
       expect(fact!.amount.amount).toBe(-100_000);
+    });
+
+    it('refund of the certificate part of a completed order (credited back to the certificate) does not touch revenue', () => {
+      const refundedAt = zonedTimeToUtc('2026-10-03', '10:00');
+      const target = { order: { orderId: 'o1', type: 'delivery' as const, channel: 'web' as const, branchId: 'b1', completedAt } };
+      expect(refundRevenueFact({ ...base, purpose: 'order', refundedAt, paymentMethod: 'gift_certificate' }, target)).toBeNull();
+      expect(refundRevenueFact({ ...base, purpose: 'order', refundedAt, paymentMethod: 'online' }, target)).not.toBeNull();
     });
 
     it('refund of a cancelled (never completed) order does not touch revenue', () => {

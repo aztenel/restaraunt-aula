@@ -354,13 +354,18 @@ export function checkoutErrorTarget(error: Pick<ApiError, 'code'>): CheckoutErro
   if (code === 'phone.not_verified') return target('payment', null, { needsVerification: true });
   if (code === 'phone.invalid') return target('details', 'phone');
   if (code === 'order.consent_required') return target('details', 'consentPersonalData');
-  if (code === 'order.type_not_accepted') return target('details', 'type');
+  if (code === 'order.type_not_accepted' || code === 'order.delivery_not_allowed') return target('details', 'type');
   if (['order.address_required', 'order.address_not_deliverable', 'order.delivery_required'].includes(code)) return target('details', 'point');
   if (code.startsWith('order.schedule_') || code === 'order.asap_closing_soon' || code === 'order.branch_closed') return target('details', 'time');
   if (code === 'order.payment_method_not_accepted') return target('payment', 'paymentMethod');
   if (code.startsWith('promo.')) return target('payment', 'promoCode');
   if (code.startsWith('order.certificate_') || code.startsWith('certificate.')) return target('payment', 'certificateCode');
-  if (code.startsWith('catalog.') || code === 'order.empty' || code === 'order.too_many_lines') return target('payment', null, { cart: true });
+  if (
+    code.startsWith('catalog.') ||
+    ['order.empty', 'order.too_many_lines', 'order.invalid_quantity', 'order.min_order_not_reached', 'order.branch_inactive'].includes(code)
+  ) {
+    return target('payment', null, { cart: true });
+  }
   return target('payment', null);
 }
 

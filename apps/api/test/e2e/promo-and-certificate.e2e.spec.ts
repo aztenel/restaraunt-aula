@@ -208,15 +208,18 @@ describe('E2E 5: promo code + gift certificate at checkout', () => {
     expect(rep.outstanding.balance).toEqual(own.body.liability.active.amount);
 
     revenue = await report(ctx, 'revenue', { from: E2E_TODAY, to: E2E_TODAY });
-    // Выручка: сертификат при продаже + выполненный заказ (оплата сертификатом — не новая выручка по деньгам,
-    // но заказ выполнен на 6 800 ₸; отменённый заказ выручки не даёт).
-    expect(revenue.totals).toMatchObject({ certificate: money(20_000), pickup: money(6_800), total: money(26_800) });
+    // Выручка = реально полученные деньги (docs/decisions.md): сертификат — при продаже (20 000); выполненный заказ,
+    // целиком оплаченный сертификатом, в выручку самовывоза не входит (двойного счёта нет), но учитывается в количестве.
+    // Отменённый заказ выручки не даёт.
+    expect(revenue.totals).toMatchObject({ certificate: money(20_000), pickup: money(0), total: money(20_000) });
+    expect(revenue.counts).toMatchObject({ certificate: 1, pickup: 1 });
     const cash = await report(ctx, 'payments', { from: E2E_TODAY, to: E2E_TODAY });
     // Деньгами: покупка сертификата 20 000 + онлайн-остаток 3 220; оплаты сертификатом (20 000 + 6 800) — не деньги.
     expect(cash.totals).toMatchObject({ moneyReceived: money(23_220), certificateRedemptions: money(26_800) });
 
     const buyer = await customerByPhone(ctx, BUYER_PHONE);
-    expect(buyer.customer).toMatchObject({ ordersCount: 2, completedOrdersCount: 1 });
+    // В истории гостя заказ учитывается полностью (это его покупка): сертификат 20 000 + заказ 6 800.
+    expect(buyer.customer).toMatchObject({ ordersCount: 2, completedOrdersCount: 1, totalSpent: money(26_800) });
     expect(buyer.activities.items.map((a: any) => a.type)).toEqual(expect.arrayContaining(['certificate_purchased', 'order_placed', 'order_completed', 'order_cancelled']));
   });
 });

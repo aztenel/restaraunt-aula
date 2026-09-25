@@ -112,6 +112,24 @@ export class PaymentFactsRepository {
     };
   }
 
+  /** Способ оплаты платежа (для возвратов: деньги или сертификат). */
+  async methodOf(paymentId: string): Promise<string | null> {
+    const row = await this.db().selectFrom('reporting.payments').select('method').where('payment_id', '=', paymentId).executeTakeFirst();
+    return row?.method ?? null;
+  }
+
+  /** Сколько по объекту оплачено данным способом (например, сертификатом по заказу). */
+  async capturedAmount(purpose: PaymentPurposeCode, referenceId: string, method: string): Promise<Money> {
+    const row = await this.db()
+      .selectFrom('reporting.payments')
+      .select((eb) => eb.fn.coalesce(eb.fn.sum<number>('payment_amount'), sql<number>`0`).as('amount'))
+      .where('purpose', '=', purpose)
+      .where('reference_id', '=', referenceId)
+      .where('method', '=', method)
+      .executeTakeFirst();
+    return Money.of(Number(row?.amount ?? 0));
+  }
+
   async findRefund(refundId: string): Promise<RefundFact | null> {
     const row = await this.db().selectFrom('reporting.refunds').selectAll().where('refund_id', '=', refundId).executeTakeFirst();
     return row ? this.mapRefund(row) : null;

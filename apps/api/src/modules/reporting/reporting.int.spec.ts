@@ -138,6 +138,35 @@ describe('Reporting (integration)', () => {
       expect(branch.body.totals.total.amount).toBe(700_000);
     });
 
+    it('the part of an order paid by gift certificate is not order revenue (no double counting); certificate refunds do not touch revenue', async () => {
+      const a = testOrder(branchA, [{ dishId: PLOV, name: 'Плов', quantity: 2, unitPrice: 250_000 }], { type: 'pickup' });
+      await ev.orderPlaced(a, local('2026-10-01', '12:00'), 'paid');
+      const certPay = await ev.paymentSucceeded({ purpose: 'order', referenceId: a.orderId, branchId: branchA, method: 'gift_certificate', amount: 200_000, at: local('2026-10-01', '12:00') });
+      const onlinePay = await ev.paymentSucceeded({ purpose: 'order', referenceId: a.orderId, branchId: branchA, method: 'online', amount: 300_000, at: local('2026-10-01', '12:01') });
+      await t.drain();
+      await ev.orderCompleted(a, local('2026-10-01', '12:00'), local('2026-10-01', '13:00'));
+      // Второй заказ: оплата сертификатом дошла до отчётов уже после выполнения (события не по порядку).
+      const b = testOrder(branchA, [{ dishId: TEA, name: 'Чай', quantity: 2, unitPrice: 50_000 }], { type: 'pickup' });
+      await ev.orderPlaced(b, local('2026-10-01', '14:00'), 'paid');
+      await ev.orderCompleted(b, local('2026-10-01', '14:00'), local('2026-10-01', '14:30'));
+      await t.drain();
+      await ev.paymentSucceeded({ purpose: 'order', referenceId: b.orderId, branchId: branchA, method: 'gift_certificate', amount: 100_000, at: local('2026-10-01', '14:00') });
+      await t.drain();
+
+      let res = await get(`revenue?from=2026-10-01&to=2026-10-01&branchId=${branchA}`, owner);
+      expect(res.body.totals).toMatchObject({ pickup: { amount: 300_000 }, total: { amount: 300_000 } });
+      expect(res.body.counts.pickup).toBe(2);
+
+      // Частичный возврат по выполненному заказу: деньгами — уменьшает выручку, на сертификат — нет.
+      await ev.refundSucceeded({ paymentId: onlinePay, purpose: 'order', referenceId: a.orderId, branchId: branchA, amount: 50_000, at: local('2026-10-02', '10:00') });
+      await ev.refundSucceeded({ paymentId: certPay, purpose: 'order', referenceId: a.orderId, branchId: branchA, amount: 70_000, at: local('2026-10-02', '10:05') });
+      await t.drain();
+      res = await get(`revenue?from=2026-10-01&to=2026-10-02&branchId=${branchA}`, owner);
+      expect(res.body.totals).toMatchObject({ pickup: { amount: 250_000 }, refunds: { amount: -50_000 }, total: { amount: 250_000 } });
+      const cash = await get(`payments?from=2026-10-01&to=2026-10-02&branchId=${branchA}`, owner);
+      expect(cash.body.totals).toMatchObject({ moneyReceived: { amount: 300_000 }, certificateRedemptions: { amount: 300_000 } });
+    });
+
     it('average check per channel', async () => {
       await seedSales();
       const res = await get('average-check?from=2026-09-30&to=2026-10-01', owner);

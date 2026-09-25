@@ -49,6 +49,17 @@ export class SalesFactsRepository {
     return !!inserted;
   }
 
+  /** Пересчёт суммы строки продажи (часть заказа, оплаченная сертификатом, пришла после признания). */
+  async setSaleAmount(sourceType: SalesFact['sourceType'], sourceId: string, amount: Money): Promise<void> {
+    await this.db()
+      .updateTable('reporting.sales_facts')
+      .set({ revenue_amount: amount.amount })
+      .where('source_type', '=', sourceType)
+      .where('source_id', '=', sourceId)
+      .where('kind', '=', 'sale')
+      .execute();
+  }
+
   async byDayAndChannel(period: ReportPeriod, branchIds: readonly string[] | null): Promise<SalesDayChannelRow[]> {
     const result = await sql<{ date: string; channel: SalesChannel; sales: number; refunds: number; sales_count: number }>`
       select local_date as date, channel,

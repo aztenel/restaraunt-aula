@@ -12,7 +12,7 @@ import { apiErrorKey } from '@/lib/api-errors';
 import type { Reservation } from '@/lib/api-types';
 import { reservationPaymentRedirect, reservationPhase, reservationPollDelay, type ReservationPhase } from '@/lib/booking';
 import { formatDate, formatDateTime, formatLocalDate, formatPhone, formatPrice, telHref } from '@/lib/format';
-import { isSafePaymentUrl, redirectFlagKey, storageFlag } from '@/lib/payment-flow';
+import { goToPayment, isSafePaymentUrl, redirectFlagKey, storageFlag } from '@/lib/payment-flow';
 import { routes } from '@/lib/routes';
 
 const PHASE_TONE: Record<ReservationPhase, string> = {
@@ -78,7 +78,7 @@ export function ReservationStatusView({ token, initial, autoPay }: { token: stri
     const target = reservationPaymentRedirect(reservation, { autoPay: payNow, alreadyRedirected: storageFlag('session', flag) });
     if (!target) return;
     storageFlag('session', flag, true);
-    window.location.assign(target);
+    goToPayment(target);
   }, [reservation, payNow, token]);
 
   const errorText = (e: unknown) => {
