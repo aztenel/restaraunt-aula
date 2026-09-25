@@ -100,7 +100,7 @@ const REQUIRED_SCHEDULES = [
   'payments.certificates_expire',
   'reporting.daily_report',
   'notifications.purge_secrets',
-  'catalog.restore_stop_list',
+  'catalog.stop_list_auto_restore',
   'pos.sync_stop_lists',
 ];
 

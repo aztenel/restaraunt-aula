@@ -5,7 +5,7 @@
  * и сертификат считает сервер (расчёт на каждом шаге и при оформлении).
  */
 import type { ApiError } from '@aula/api-client';
-import type { CheckoutBody, GeoPoint, OrderType } from './api-types';
+import type { CheckoutBody, DeliveryOption, DeliveryResolution, GeoPoint, OrderType } from './api-types';
 import { comparablePhone, hasErrors, validateContact, type ContactValues, type FormErrors } from './validation';
 
 export type CheckoutStep = 'details' | 'payment';
@@ -164,6 +164,8 @@ export interface CheckoutContext {
   /** Доставка в точку: true/false — ответ POST /public/delivery/resolve; null — ещё не проверено. */
   deliverable: boolean | null;
   paymentMethods: readonly PaymentMethod[];
+  /** «Как можно скорее» доступно (слоты филиала); null/undefined — ещё не известно. */
+  asapAvailable?: boolean | null;
 }
 
 export type DetailsField =
@@ -218,6 +220,7 @@ export function validateDetails(state: CheckoutState, ctx: CheckoutContext): For
     if (state.address.courierComment.trim().length > CHECKOUT_LIMITS.courierCommentMax) errors.courierComment = 'tooLong';
   }
   if (state.timeMode === 'scheduled' && !state.scheduledFor) errors.time = 'required';
+  if (state.timeMode === 'asap' && ctx.asapAvailable === false) errors.time = 'invalid';
   Object.assign(errors, validateContact(state.customer, { nameMax: CHECKOUT_LIMITS.nameMax }));
   if (state.comment.trim().length > CHECKOUT_LIMITS.commentMax) errors.comment = 'tooLong';
   if (!state.consentPersonalData) errors.consentPersonalData = 'consent';
@@ -251,6 +254,32 @@ export function advance(
 /** Можно ли отправлять заказ: оба экрана заполнены. */
 export function readyToSubmit(state: CheckoutState, ctx: CheckoutContext): boolean {
   return !hasErrors(validateDetails(state, ctx)) && !hasErrors(validatePayment(state, ctx));
+}
+
+// ---------------------------------------------------------------- Адрес доставки → филиал
+
+export type DeliveryDecision =
+  /** Доставляет текущий филиал корзины (его зона). */
+  | { status: 'deliverable'; option: DeliveryOption }
+  /** Адрес обслуживает другой филиал — предложить переключиться (цены и наличие пересчитает сервер). */
+  | { status: 'switch'; option: DeliveryOption }
+  | { status: 'not_deliverable' };
+
+/**
+ * Ответ POST /public/delivery/resolve для текущего филиала корзины: если зона текущего филиала
+ * покрывает точку — остаёмся; иначе — лучший филиал по правилу сервера (дешевле доставка, затем ближе).
+ */
+export function deliveryDecision(resolution: Pick<DeliveryResolution, 'deliverable' | 'best' | 'alternatives'>, branchId: string | null): DeliveryDecision {
+  if (!resolution.deliverable || !resolution.best) return { status: 'not_deliverable' };
+  const options = [resolution.best, ...resolution.alternatives];
+  const own = options.find((option) => option.branch.id === branchId);
+  if (own) return { status: 'deliverable', option: own };
+  return { status: 'switch', option: resolution.best };
+}
+
+/** Ключ точки для повторной проверки: точка (до ~10 см) + филиал. */
+export function pointKey(point: GeoPoint | null, branchId: string | null): string | null {
+  return point ? `${point.lat.toFixed(6)},${point.lng.toFixed(6)}|${branchId ?? ''}` : null;
 }
 
 // ---------------------------------------------------------------- Тело заказа
