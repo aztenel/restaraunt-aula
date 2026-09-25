@@ -3,6 +3,7 @@ import { ApiCreatedResponse, ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/sw
 import { ClientIp, Public, RequestLocale } from '../../../../shared/infrastructure/http/decorators';
 import { RateLimit } from '../../../../shared/infrastructure/rate-limit/rate-limit.guard';
 import { Locale, LOCALES } from '../../../../shared/kernel/translatable';
+import { RetryCertificateOrderPayment } from '../../application/certificates/certificate-order.actions';
 import { CertificateQueries } from '../../application/certificates/certificate.queries';
 import { PurchaseCertificate } from '../../application/certificates/purchase-certificate.action';
 import { GiftCertificates } from '../../public';
@@ -24,6 +25,7 @@ export class PublicCertificatesController {
     private readonly queries: CertificateQueries,
     private readonly purchase: PurchaseCertificate,
     private readonly giftCertificates: GiftCertificates,
+    private readonly retryPayment: RetryCertificateOrderPayment,
   ) {}
 
   @Get('products')
@@ -60,6 +62,20 @@ export class PublicCertificatesController {
   @ApiQuery({ name: 'locale', required: false, enum: LOCALES })
   @ApiOkResponse({ type: CertificateOrderStatusDto })
   async order(@Param('token') token: string, @RequestLocale() locale: Locale): Promise<CertificateOrderStatusDto> {
+    return CertificateOrderStatusDto.from(await this.queries.orderStatus(token), locale);
+  }
+
+  /**
+   * Повторить оплату заказа сертификатов (прошлая попытка отклонена или отменена по сроку). Пока текущий
+   * платёж ждёт оплату — возвращается он же. Ссылка на оплату появляется асинхронно (опрашивайте статус заказа).
+   */
+  @RateLimit('forms')
+  @Post('orders/:token/pay')
+  @HttpCode(200)
+  @ApiQuery({ name: 'locale', required: false, enum: LOCALES })
+  @ApiOkResponse({ type: CertificateOrderStatusDto })
+  async pay(@Param('token') token: string, @RequestLocale() locale: Locale): Promise<CertificateOrderStatusDto> {
+    await this.retryPayment.execute(token);
     return CertificateOrderStatusDto.from(await this.queries.orderStatus(token), locale);
   }
 

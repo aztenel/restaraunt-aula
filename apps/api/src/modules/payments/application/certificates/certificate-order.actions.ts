@@ -12,6 +12,9 @@ import { PaymentView } from '../../public';
 import { CreatePayment } from '../create-payment.action';
 import { PaymentLinks } from '../payment-links';
 import { PaymentQueries } from '../payment.queries';
+import { CancelPayment } from '../payment-status.actions';
+import { RequestRefund } from '../refund.actions';
+import { IssueCertificatesForOrder } from './issue-certificates.action';
 import { certificateAuditState } from './certificate-views';
 import { certificatePaymentDescription } from './purchase-certificate.action';
 
@@ -143,6 +146,56 @@ export class RetryCertificateOrderPayment {
         actor: Actor.guest(),
       });
       return { order: { ...reopened, paymentId: payment.id }, payment };
+    });
+  }
+}
+
+/**
+ * Оплата заказа сертификатов прошла (PaymentSucceeded, purpose gift_certificate). После повтора оплаты
+ * у заказа может быть несколько платежей: оплаченный выпускает сертификаты и становится платежом заказа
+ * (другой ждущий платёж отменяется); оплата уже выпущенного заказа другим платежом возвращается полностью.
+ */
+@Injectable()
+export class ApplyCertificateOrderPayment {
+  constructor(
+    private readonly orders: CertificateOrderRepository,
+    private readonly issue: IssueCertificatesForOrder,
+    private readonly cancelPayment: CancelPayment,
+    private readonly requestRefund: RequestRefund,
+    private readonly database: Database,
+    private readonly audit: AuditLog,
+  ) {}
+
+  async execute(orderId: string, paymentId: string): Promise<void> {
+    await this.database.transaction(async () => {
+      const order = await this.orders.findById(orderId, { forUpdate: true });
+      if (order?.status === 'issued') {
+        if (order.paymentId && order.paymentId !== paymentId) await this.refundDuplicate(order, paymentId);
+        return;
+      }
+      if (order && order.paymentId !== paymentId) {
+        // Оплачена прежняя попытка (поздняя оплата), а гость уже начал новую — новую отменяем.
+        await this.orders.attachPayment(order.id, paymentId);
+        if (order.paymentId) await this.cancelPayment.execute(order.paymentId, 'certificate_order_paid_by_other_payment');
+      }
+      await this.issue.execute(orderId, paymentId);
+    });
+  }
+
+  private async refundDuplicate(order: CertificateOrder, paymentId: string): Promise<void> {
+    const refund = await this.requestRefund.execute({
+      paymentId,
+      reason: 'Повторная оплата заказа сертификатов',
+      idempotencyKey: `certificate-order:${order.id}:duplicate:${paymentId}`,
+    });
+    await this.audit.record({
+      action: 'certificate_order.duplicate_payment_refunded',
+      entityType: 'certificate_order',
+      entityId: order.id,
+      before: { status: order.status, paymentId: order.paymentId },
+      after: { status: order.status, paymentId: order.paymentId },
+      meta: { duplicatePaymentId: paymentId, refundId: refund.id, amount: refund.amount.toJSON() },
+      actor: Actor.system('payments.certificates'),
     });
   }
 }

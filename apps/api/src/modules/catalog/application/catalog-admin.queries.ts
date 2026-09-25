@@ -6,7 +6,7 @@ import { Money } from '../../../shared/kernel/money';
 import { Page, PageRequest } from '../../../shared/kernel/pagination';
 import { Permission } from '../../../shared/kernel/permissions';
 import { Translatable } from '../../../shared/kernel/translatable';
-import { BranchDirectory } from '../../identity/public';
+import { BranchDirectory, StaffDirectory } from '../../identity/public';
 import { ALLERGEN_CODES, allergenLabel, AllergenCode } from '../domain/allergens';
 import { isRequiredGroup } from '../domain/modifiers';
 import { normalizeSearchQuery } from '../domain/search';
@@ -86,6 +86,8 @@ export interface AdminBranchMenuItemView {
   /** Код, который уходит в POS: филиала или общий код блюда. */
   effectiveSku: string | null;
   updatedBy: string | null;
+  /** Имя сотрудника, последним менявшего позицию (null — система или сотрудник не найден). */
+  updatedByName: string | null;
   updatedAt: Date;
 }
 
@@ -121,6 +123,7 @@ export class CatalogAdminQueries {
     private readonly branches: BranchDirectory,
     private readonly images: ImageUrls,
     private readonly clock: Clock,
+    private readonly staff: StaffDirectory,
   ) {}
 
   private categoryView(c: CategoryRecord, dishCount: number): AdminCategoryView {
@@ -249,6 +252,10 @@ export class CatalogAdminQueries {
         a.dish.sortOrder - b.dish.sortOrder ||
         a.dish.createdAt.getTime() - b.dish.createdAt.getTime(),
     );
+    const names = new Map<string, string | null>();
+    for (const userId of new Set(rows.map((r) => r.item.updatedBy).filter((id): id is string => !!id))) {
+      names.set(userId, (await this.staff.get(userId))?.name ?? null);
+    }
     return rows.map(({ item, dish }) => {
       const effective = effectiveAvailability(item, now);
       return {
@@ -269,6 +276,7 @@ export class CatalogAdminQueries {
         sku: item.sku,
         effectiveSku: item.sku ?? dish.sku,
         updatedBy: item.updatedBy,
+        updatedByName: item.updatedBy ? (names.get(item.updatedBy) ?? null) : null,
         updatedAt: item.updatedAt,
       };
     });

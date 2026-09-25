@@ -10,7 +10,12 @@ import {
   UnblockCertificate,
 } from './application/certificates/certificate-admin.actions';
 import { CreditCertificate, DebitCertificate } from './application/certificates/certificate-ledger.actions';
-import { BlockCertificatesOfRefundedOrder, MarkCertificateOrderPaymentFailed } from './application/certificates/certificate-order.actions';
+import {
+  ApplyCertificateOrderPayment,
+  BlockCertificatesOfRefundedOrder,
+  MarkCertificateOrderPaymentFailed,
+  RetryCertificateOrderPayment,
+} from './application/certificates/certificate-order.actions';
 import { CreateCertificateProduct, DeleteCertificateProduct, UpdateCertificateProduct } from './application/certificates/certificate-product.actions';
 import { CertificateQueries } from './application/certificates/certificate.queries';
 import { DeliverCertificate } from './application/certificates/deliver-certificate.action';
@@ -122,6 +127,8 @@ import { GiftCertificates, PaymentsService } from './public';
     IssueCertificatesForOrder,
     MarkCertificateOrderPaymentFailed,
     BlockCertificatesOfRefundedOrder,
+    ApplyCertificateOrderPayment,
+    RetryCertificateOrderPayment,
     CreateCertificateProduct,
     UpdateCertificateProduct,
     DeleteCertificateProduct,

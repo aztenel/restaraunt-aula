@@ -123,15 +123,18 @@ export class SetBranchDishPrice {
     private readonly events: CatalogEventPublisher,
   ) {}
 
-  /** Цена блюда в филиале (и, при необходимости, код POS филиала). Без изменений — без записи в журнал. */
-  async execute(actor: Actor, branchId: string, dishId: string, input: { price: Money; sku?: string | null }): Promise<void> {
+  /**
+   * Цена блюда в филиале и/или код POS филиала (price не передана — меняется только код).
+   * Без изменений — без записи в журнал.
+   */
+  async execute(actor: Actor, branchId: string, dishId: string, input: { price?: Money | null; sku?: string | null }): Promise<void> {
     actor.assertCan(Permission.MenuPrices, branchId);
-    const price = assertMenuPrice(input.price);
+    const price = input.price ? assertMenuPrice(input.price) : null;
     await this.database.transaction(async () => {
       const item = await this.branchMenu.findForUpdate(branchId, dishId);
       if (!item) throw new NotFoundError('branch_menu_item', dishId, { branchId });
       let changed = false;
-      if (!item.price.equals(price)) {
+      if (price && !item.price.equals(price)) {
         await this.branchMenu.updatePrice(item.id, price, actor.userId);
         await this.audit.record({
           action: 'menu.price_changed',
@@ -207,6 +210,64 @@ export class BulkSetBranchPrices {
       if (updated > 0) await this.events.menuChanged({ branchId });
       return { updated, unchanged: prices.length - updated };
     });
+  }
+}
+
+/**
+ * Добавить несколько блюд в меню филиала одним запросом (запуск точки, новая категория): всё или ничего.
+ * Любое блюдо, которого нет, уже есть в меню или чей код POS занят, — ошибка для всего запроса.
+ */
+@Injectable()
+export class BulkAddDishesToBranchMenu {
+  constructor(
+    private readonly branchMenu: BranchMenuRepository,
+    private readonly dishes: DishRepository,
+    private readonly branches: BranchDirectory,
+    private readonly database: Database,
+    private readonly audit: AuditLog,
+    private readonly events: CatalogEventPublisher,
+  ) {}
+
+  async execute(actor: Actor, branchId: string, items: Array<{ dishId: string; price: Money; sku?: string | null }>): Promise<{ added: number; dishIds: string[] }> {
+    actor.assertCan(Permission.MenuPrices, branchId);
+    await assertBranchExists(this.branches, branchId);
+    if (items.length === 0 || items.length > MAX_BULK_PRICES) {
+      throw new ValidationError('catalog.bulk_size', `From 1 to ${MAX_BULK_PRICES} dishes per request`, { max: MAX_BULK_PRICES });
+    }
+    const dishIds = items.map((i) => i.dishId);
+    if (new Set(dishIds).size !== dishIds.length) throw new ValidationError('catalog.duplicate_ids', 'Dish listed twice');
+    const prepared = items.map((i) => ({ dishId: i.dishId, price: assertMenuPrice(i.price), sku: normalizeSku(i.sku) }));
+    const skus = prepared.map((i) => i.sku).filter((sku): sku is string => !!sku);
+    if (new Set(skus).size !== skus.length) throw new ConflictError('catalog.sku_taken', 'The same POS code is used twice in the request');
+    return guardUnique(
+      () =>
+        this.database.transaction(async () => {
+          await this.database.advisoryLock('catalog.branch_menu', branchId);
+          const found = new Map((await this.dishes.findManyByIds(dishIds)).map((d) => [d.id, d]));
+          const missing = dishIds.filter((id) => !found.has(id));
+          if (missing.length > 0) throw new NotFoundError('dish', missing[0], { dishIds: missing });
+          const existing = (await this.branchMenu.findMany(branchId, dishIds)).map((i) => i.dishId);
+          if (existing.length > 0) {
+            throw new ConflictError('catalog.dish_already_in_menu', 'Some dishes are already in the branch menu', { dishIds: existing });
+          }
+          for (const item of prepared) {
+            const sku = await validateBranchSku(item.sku, branchId, item.dishId, this.branchMenu, this.dishes);
+            await this.branchMenu.insert({ id: newId(), branchId, dishId: item.dishId, price: item.price, sku, updatedBy: actor.userId });
+            await this.audit.record({
+              action: 'menu.item_added',
+              entityType: ENTITY,
+              entityId: item.dishId,
+              branchId,
+              after: { price: item.price.toJSON(), sku },
+              meta: { bulk: true },
+            });
+          }
+          await this.events.menuChanged({ branchId });
+          return { added: prepared.length, dishIds };
+        }),
+      'catalog.dish_already_in_menu',
+      'Dish is already in the branch menu',
+    );
   }
 }
 

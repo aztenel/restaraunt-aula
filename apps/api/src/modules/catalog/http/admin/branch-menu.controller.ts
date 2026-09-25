@@ -7,6 +7,7 @@ import { pageRequest } from '../../../../shared/kernel/pagination';
 import { Permission } from '../../../../shared/kernel/permissions';
 import {
   AddDishToBranchMenu,
+  BulkAddDishesToBranchMenu,
   BulkSetBranchPrices,
   CopyBranchMenu,
   RemoveDishFromBranchMenu,
@@ -18,6 +19,8 @@ import {
   AddMenuItemDto,
   AvailabilityResultDto,
   BranchMenuItemDto,
+  BulkAddMenuItemsDto,
+  BulkAddMenuItemsResultDto,
   BranchMenuPageDto,
   BranchMenuQueryDto,
   BulkPricesDto,
@@ -26,6 +29,7 @@ import {
   CopyMenuResultDto,
   SetAvailabilityDto,
   SetPriceDto,
+  SetSkuDto,
 } from '../dto/menu-admin.dto';
 
 /**
@@ -44,6 +48,7 @@ export class AdminBranchMenuController {
     private readonly bulkSetPrices: BulkSetBranchPrices,
     private readonly copyMenu: CopyBranchMenu,
     private readonly setAvailability: SetDishAvailability,
+    private readonly bulkAdd: BulkAddDishesToBranchMenu,
   ) {}
 
   @RequirePermissions(Permission.MenuPrices, Permission.MenuStopList, Permission.MenuContent)
@@ -68,6 +73,23 @@ export class AdminBranchMenuController {
   async add(@CurrentActor() actor: Actor, @Param('branchId', ParseUUIDPipe) branchId: string, @Body() dto: AddMenuItemDto): Promise<BranchMenuItemDto> {
     await this.addDish.execute(actor, branchId, { dishId: dto.dishId, price: MoneyInputDto.toMoney(dto.price), sku: dto.sku });
     return this.queries.branchMenuItem(actor, branchId, dto.dishId);
+  }
+
+  /** Добавить несколько блюд в меню филиала (всё или ничего). */
+  @RequirePermissions(Permission.MenuPrices)
+  @Post('menu/bulk-add')
+  @HttpCode(200)
+  @ApiOkResponse({ type: BulkAddMenuItemsResultDto })
+  bulkAddItems(
+    @CurrentActor() actor: Actor,
+    @Param('branchId', ParseUUIDPipe) branchId: string,
+    @Body() dto: BulkAddMenuItemsDto,
+  ): Promise<BulkAddMenuItemsResultDto> {
+    return this.bulkAdd.execute(
+      actor,
+      branchId,
+      dto.items.map((i) => ({ dishId: i.dishId, price: MoneyInputDto.toMoney(i.price), sku: i.sku })),
+    );
   }
 
   /** Массовое изменение цен (всё или ничего). */
@@ -113,6 +135,20 @@ export class AdminBranchMenuController {
     @Body() dto: SetPriceDto,
   ): Promise<BranchMenuItemDto> {
     await this.setPrice.execute(actor, branchId, dishId, { price: MoneyInputDto.toMoney(dto.price), sku: dto.sku });
+    return this.queries.branchMenuItem(actor, branchId, dishId);
+  }
+
+  /** Только код POS филиала (цена не меняется); null — сбросить к общему коду блюда. */
+  @RequirePermissions(Permission.MenuPrices)
+  @Put('menu/:dishId/sku')
+  @ApiOkResponse({ type: BranchMenuItemDto })
+  async sku(
+    @CurrentActor() actor: Actor,
+    @Param('branchId', ParseUUIDPipe) branchId: string,
+    @Param('dishId', ParseUUIDPipe) dishId: string,
+    @Body() dto: SetSkuDto,
+  ): Promise<BranchMenuItemDto> {
+    await this.setPrice.execute(actor, branchId, dishId, { sku: dto.sku ?? null });
     return this.queries.branchMenuItem(actor, branchId, dishId);
   }
 

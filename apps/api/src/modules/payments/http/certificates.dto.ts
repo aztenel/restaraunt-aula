@@ -150,6 +150,7 @@ export class CertificateOrderStatusDto {
   @ApiProperty({ type: [MaskedCertificateDto], description: 'Выпущенные сертификаты (коды — только в PDF и сообщении)' })
   certificates: MaskedCertificateDto[];
   @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) issuedAt: Date | null;
+  @ApiProperty({ description: 'Можно повторить оплату (POST /public/certificates/orders/:token/pay)' }) canPay: boolean;
 
   static from(v: CertificateOrderStatusView, locale: Locale): CertificateOrderStatusDto {
     return {
@@ -166,6 +167,7 @@ export class CertificateOrderStatusDto {
         return { maskedCode: maskCertificateCode(s.last4), status: s.status, expiresAt: s.expiresAt };
       }),
       issuedAt: v.order.issuedAt,
+      canPay: v.canPay,
     };
   }
 }

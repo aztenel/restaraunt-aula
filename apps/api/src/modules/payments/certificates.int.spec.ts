@@ -16,6 +16,8 @@ import {
   publishedEvents,
   resetPayments,
   sandboxDecision,
+  sandboxExternalId,
+  sandboxWebhook,
 } from './testing/payments-test-kit';
 
 describe('Gift certificates (integration)', () => {
@@ -205,6 +207,77 @@ describe('Gift certificates (integration)', () => {
       const input = ctx.guestInputs.find((g) => g.template === 'certificate.issued');
       expect(input).toMatchObject({ channels: ['whatsapp', 'sms'] });
       expect(input.attachments).toBeUndefined();
+    });
+
+    it('retry payment after a failure: new attempt, idempotent while pending, 409 once issued', async () => {
+      const product = await createCertificateProduct(ctx, { price: Money.tenge(5_000), nominal: Money.tenge(5_000) });
+      const res = await http().post('/api/v1/public/certificates/purchase').send(purchaseBody(product.id, { quantity: 1 }));
+      const token = res.body.orderToken;
+      const pay = () => http().post(`/api/v1/public/certificates/orders/${token}/pay?locale=ru`);
+      await ctx.t.drain();
+      let status = (await http().get(`/api/v1/public/certificates/orders/${token}`)).body;
+      expect(status.canPay).toBe(false);
+      // Пока платёж ждёт оплату — повтор возвращает его же.
+      expect((await pay()).body.payment.id).toBe(res.body.payment.id);
+
+      await sandboxDecision(ctx, status.payment.paymentUrl, 'failed');
+      await ctx.t.drain();
+      status = (await http().get(`/api/v1/public/certificates/orders/${token}`)).body;
+      expect(status).toMatchObject({ status: 'payment_failed', canPay: true, payment: { status: 'failed' } });
+
+      const retried = await pay();
+      expect(retried.status).toBe(200);
+      expect(retried.body).toMatchObject({ status: 'awaiting_payment', canPay: false, payment: { status: 'created', amount: { amount: 500_000 } } });
+      const secondId = retried.body.payment.id;
+      expect(secondId).not.toBe(res.body.payment.id);
+      expect((await pay()).body.payment.id).toBe(secondId);
+      expect(await auditActions(ctx.t)).toContain('certificate_order.payment_retried');
+
+      await ctx.t.drain();
+      status = (await http().get(`/api/v1/public/certificates/orders/${token}`)).body;
+      await sandboxDecision(ctx, status.payment.paymentUrl, 'succeeded');
+      await ctx.t.drain();
+      status = (await http().get(`/api/v1/public/certificates/orders/${token}`)).body;
+      expect(status).toMatchObject({ status: 'issued', canPay: false, payment: { id: secondId, status: 'succeeded' } });
+      expect(status.certificates).toHaveLength(1);
+      const done = await pay();
+      expect(done.status).toBe(409);
+      expect(done.body.error.code).toBe('certificate_order.already_paid');
+      expect((await http().post('/api/v1/public/certificates/orders/unknown-token/pay')).status).toBe(404);
+    });
+
+    it('late capture of an earlier attempt issues once; a second captured attempt is refunded in full', async () => {
+      const product = await createCertificateProduct(ctx, { price: Money.tenge(5_000), nominal: Money.tenge(5_000) });
+      const res = await http().post('/api/v1/public/certificates/purchase').send(purchaseBody(product.id, { quantity: 1 }));
+      const token = res.body.orderToken;
+      await ctx.t.drain();
+      const first = res.body.payment.id;
+      const firstExternal = await sandboxExternalId(ctx, first);
+      // Попытка отменена по сроку — гость повторяет оплату.
+      await ctx.t.get(PaymentsService).cancelPayment(first, 'expired');
+      await ctx.t.drain();
+      const retried = await http().post(`/api/v1/public/certificates/orders/${token}/pay`);
+      const second = retried.body.payment.id;
+      await ctx.t.drain();
+      const secondExternal = await sandboxExternalId(ctx, second);
+
+      // Провайдер всё же списал первую попытку: сертификат выпускается по ней, вторая отменяется.
+      await sandboxWebhook(ctx, { eventId: 'late-1', externalId: firstExternal, status: 'succeeded', amount: { amount: 500_000, currency: 'KZT' } });
+      await ctx.t.drain();
+      let status = (await http().get(`/api/v1/public/certificates/orders/${token}`)).body;
+      expect(status).toMatchObject({ status: 'issued', payment: { id: first, status: 'succeeded' } });
+      expect(status.certificates).toHaveLength(1);
+      expect((await ctx.t.get(PaymentsService).getPayment(second)).status).toBe('cancelled');
+
+      // И вторая попытка всё же оплачена — полный возврат, сертификаты не выпускаются повторно.
+      await sandboxWebhook(ctx, { eventId: 'late-2', externalId: secondExternal, status: 'succeeded', amount: { amount: 500_000, currency: 'KZT' } });
+      await ctx.t.drain();
+      status = (await http().get(`/api/v1/public/certificates/orders/${token}`)).body;
+      expect(status.certificates).toHaveLength(1);
+      const refunds = await ctx.t.get(PaymentsService).listRefunds([second]);
+      expect(refunds).toEqual([expect.objectContaining({ paymentId: second, amount: Money.tenge(5_000) })]);
+      expect(await auditActions(ctx.t)).toContain('certificate_order.duplicate_payment_refunded');
+      expect((await sql<{ n: number }>`select count(*)::int as n from payments.gift_certificates`.execute(ctx.t.database.rootConnection())).rows[0]!.n).toBe(1);
     });
 
     it('full refund of the purchase blocks unused certificates', async () => {

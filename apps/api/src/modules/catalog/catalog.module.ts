@@ -1,6 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import {
   AddDishToBranchMenu,
+  BulkAddDishesToBranchMenu,
   BulkSetBranchPrices,
   CopyBranchMenu,
   RemoveDishFromBranchMenu,
@@ -112,6 +113,7 @@ import { MenuPricing, MenuQuery, StopListControl } from './public';
     UpdateModifierGroup,
     DeleteModifierGroup,
     AddDishToBranchMenu,
+    BulkAddDishesToBranchMenu,
     RemoveDishFromBranchMenu,
     SetBranchDishPrice,
     BulkSetBranchPrices,

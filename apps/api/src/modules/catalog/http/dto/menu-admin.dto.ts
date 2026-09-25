@@ -329,6 +329,29 @@ export class SetPriceDto {
   sku?: string | null;
 }
 
+export class SetSkuDto {
+  @ApiProperty({ type: String, nullable: true, description: 'Код POS филиала; null — сбросить (уходит общий код блюда)' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  sku: string | null;
+}
+
+export class BulkAddMenuItemsDto {
+  @ApiProperty({ type: [AddMenuItemDto], description: 'Блюда с ценами филиала (всё или ничего), до 500' })
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(500)
+  @ValidateNested({ each: true })
+  @Type(() => AddMenuItemDto)
+  items: AddMenuItemDto[];
+}
+
+export class BulkAddMenuItemsResultDto {
+  @ApiProperty() added: number;
+  @ApiProperty({ type: [String], description: 'Добавленные блюда (в порядке запроса)' }) dishIds: string[];
+}
+
 export class BulkPriceItemDto {
   @ApiProperty() @IsUUID() dishId: string;
 
@@ -398,6 +421,7 @@ export class BranchMenuItemDto {
   @ApiPropertyOptional({ type: String, nullable: true, description: 'Код POS филиала' }) sku: string | null;
   @ApiPropertyOptional({ type: String, nullable: true, description: 'Код, который уходит в POS' }) effectiveSku: string | null;
   @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) updatedBy: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Имя сотрудника, последним менявшего позицию' }) updatedByName: string | null;
   @ApiProperty() updatedAt: Date;
 }
 

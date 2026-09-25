@@ -27,6 +27,8 @@ export interface CertificateOrderStatusView {
   order: CertificateOrder;
   payment: PaymentView | null;
   certificates: CertificateRecord[];
+  /** Можно повторить оплату (онлайн-заказ не выпущен, прошлая попытка отклонена или отменена). */
+  canPay: boolean;
 }
 
 export interface CertificateReport {
@@ -59,10 +61,12 @@ export class CertificateQueries {
   async orderStatus(token: string): Promise<CertificateOrderStatusView> {
     const order = await this.orders.findByToken(token);
     if (!order) throw new NotFoundError('certificate_order');
+    const payment = order.paymentId ? await this.paymentQueries.get(order.paymentId) : null;
     return {
       order,
-      payment: order.paymentId ? await this.paymentQueries.get(order.paymentId) : null,
+      payment,
       certificates: order.status === 'issued' ? await this.certificates.listByOrder(order.id) : [],
+      canPay: order.source === 'online' && order.status !== 'issued' && (payment === null || payment.status === 'failed' || payment.status === 'cancelled'),
     };
   }
 

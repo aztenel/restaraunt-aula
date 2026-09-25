@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '../../../shared/infrastructure/events/decorators';
 import { EventEnvelope } from '../../../shared/infrastructure/events/types';
-import { BlockCertificatesOfRefundedOrder, MarkCertificateOrderPaymentFailed } from '../application/certificates/certificate-order.actions';
-import { IssueCertificatesForOrder } from '../application/certificates/issue-certificates.action';
+import {
+  ApplyCertificateOrderPayment,
+  BlockCertificatesOfRefundedOrder,
+  MarkCertificateOrderPaymentFailed,
+} from '../application/certificates/certificate-order.actions';
 import { PaymentEventPayload, PaymentsEvents, RefundEventPayload } from '../public';
 
 /**
@@ -12,7 +15,7 @@ import { PaymentEventPayload, PaymentsEvents, RefundEventPayload } from '../publ
 @Injectable()
 export class CertificatePaymentHandlers {
   constructor(
-    private readonly issue: IssueCertificatesForOrder,
+    private readonly applyPayment: ApplyCertificateOrderPayment,
     private readonly markFailed: MarkCertificateOrderPaymentFailed,
     private readonly blockRefunded: BlockCertificatesOfRefundedOrder,
   ) {}
@@ -20,7 +23,7 @@ export class CertificatePaymentHandlers {
   @OnEvent(PaymentsEvents.PaymentSucceeded)
   async onPaymentSucceeded(event: EventEnvelope<PaymentEventPayload>): Promise<void> {
     if (event.payload.purpose !== 'gift_certificate') return;
-    await this.issue.execute(event.payload.referenceId, event.payload.paymentId);
+    await this.applyPayment.execute(event.payload.referenceId, event.payload.paymentId);
   }
 
   @OnEvent(PaymentsEvents.PaymentFailed, PaymentsEvents.PaymentCancelled)
