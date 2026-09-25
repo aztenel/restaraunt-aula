@@ -147,3 +147,60 @@ export const TrashIcon = (p: IconProps) => (
     <path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13" />
   </Svg>
 );
+
+export const SearchIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="11" cy="11" r="6.5" />
+    <path d="m16 16 4.5 4.5" />
+  </Svg>
+);
+
+export const CheckIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m5 12.5 4.5 4.5L19 7.5" />
+  </Svg>
+);
+
+export const FlameIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 21c-3.9 0-6.5-2.6-6.5-6.2 0-3.9 3.2-6 4-10.3 2.4 1.6 3.5 3.8 3.4 6.1 1-.5 1.8-1.5 2-2.9 1.7 1.6 3.6 4.2 3.6 7.1 0 3.6-2.6 6.2-6.5 6.2Z" />
+  </Svg>
+);
+
+export const FilterIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 6h16M7 12h10M10 18h4" />
+  </Svg>
+);
+
+export const InfoIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M12 11v5.5M12 7.8v.2" />
+  </Svg>
+);
+
+export const CloseIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m6.5 6.5 11 11M17.5 6.5l-11 11" />
+  </Svg>
+);
+
+export const TagIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1.5 1.5 0 0 1 0 2.1l-6.1 6.1a1.5 1.5 0 0 1-2.1 0l-8.8-7.8Z" />
+    <circle cx="8" cy="8" r="1.5" />
+  </Svg>
+);
+
+export const ChevronLeftIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m15 6-6 6 6 6" />
+  </Svg>
+);
+
+export const ChevronRightIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m9 6 6 6-6 6" />
+  </Svg>
+);

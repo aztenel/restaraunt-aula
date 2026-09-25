@@ -13,7 +13,7 @@ import { OrderingModule } from '../../src/modules/ordering/ordering.module';
 import { PaymentsModule } from '../../src/modules/payments/payments.module';
 import { PosModule } from '../../src/modules/pos/pos.module';
 import { ReportingModule } from '../../src/modules/reporting/reporting.module';
-import { VenueAvailability } from '../../src/modules/reservation/public';
+import { ReservationModule } from '../../src/modules/reservation/reservation.module';
 import { Config } from '../../src/shared/infrastructure/config/config';
 import { buildOpenApiDocument } from '../../src/shared/infrastructure/http/swagger';
 import { PlatformModule } from '../../src/shared/infrastructure/platform.module';
@@ -30,13 +30,9 @@ async function main(): Promise<void> {
   const fakes = createFakes();
 
   @Global()
-  @Module({
-    providers: [
-      { provide: VenueAvailability, useValue: fakes.venues },
-    ],
-    exports: [VenueAvailability],
-  })
+  @Module({})
   class MissingContractsModule {}
+  void fakes;
 
   @Module({
     imports: [
@@ -48,6 +44,7 @@ async function main(): Promise<void> {
       CatalogModule,
       PaymentsModule,
       OrderingModule,
+      ReservationModule,
       ReportingModule,
       PosModule,
     ],

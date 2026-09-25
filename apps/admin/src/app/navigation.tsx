@@ -11,11 +11,13 @@ import {
   CrownOutlined,
   DashboardOutlined,
   EnvironmentOutlined,
+  FileImageOutlined,
   GiftOutlined,
   HomeOutlined,
   ReadOutlined,
   ShopOutlined,
   ShoppingCartOutlined,
+  StopOutlined,
   TagsOutlined,
   TeamOutlined,
   ToolOutlined,
@@ -32,6 +34,8 @@ export type SectionKey =
   | 'reservations'
   | 'banquets'
   | 'menu'
+  | 'stopList'
+  | 'content'
   | 'deliveryZones'
   | 'promocodes'
   | 'venues'
@@ -74,6 +78,9 @@ export const SECTIONS: SectionDef[] = [
   },
   { key: 'banquets', path: '/banquets', icon: <CrownOutlined />, anyOf: [P.BanquetsView], group: 'operations', stream: 'banquets' },
   { key: 'menu', path: '/menu', icon: <ReadOutlined />, anyOf: [P.MenuContent, P.MenuPrices, P.MenuStopList], group: 'catalog' },
+  // Стоп-лист точки — отдельным пунктом для быстрого доступа с планшета (управляющий, собственник).
+  { key: 'stopList', path: '/stop-list', icon: <StopOutlined />, anyOf: [P.MenuStopList], group: 'catalog' },
+  { key: 'content', path: '/content', icon: <FileImageOutlined />, anyOf: [P.ContentManage, P.MenuContent], group: 'catalog' },
   { key: 'deliveryZones', path: '/delivery-zones', icon: <EnvironmentOutlined />, anyOf: [P.DeliveryZonesManage], group: 'catalog' },
   { key: 'promocodes', path: '/promocodes', icon: <TagsOutlined />, anyOf: [P.PromoCodesManage], group: 'catalog' },
   { key: 'venues', path: '/venues', icon: <HomeOutlined />, anyOf: [P.VenuesManage], group: 'catalog' },

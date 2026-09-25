@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ZodType } from 'zod';
 import { ExternalHttp, ExternalServiceError } from '../../../../../shared/infrastructure/integrations/external-http';
 import { IntegrationSettings } from '../../../../../shared/infrastructure/settings/integration-settings';
 import { ValidationError } from '../../../../../shared/kernel/errors';
@@ -44,7 +45,8 @@ export class IsEsfGateway extends EsfGateway {
   }
 
   private async config(): Promise<IsEsfSettings> {
-    const config = await this.settings.get(ISESF_SETTINGS_KEY, IsEsfSettingsSchema);
+    // Схема со значениями по умолчанию: вход и выход различаются, get() типизирован по выходу.
+    const config = await this.settings.get(ISESF_SETTINGS_KEY, IsEsfSettingsSchema as unknown as ZodType<IsEsfSettings>);
     if (!config) throw new ValidationError('banquet_esf.not_configured', 'ESF API integration is not configured');
     return config;
   }
@@ -63,7 +65,7 @@ export class IsEsfGateway extends EsfGateway {
     }
   }
 
-  async checkStatus(esfId: string, ctx: { correlationId: string }): Promise<EsfStatusResult> {
+  override async checkStatus(esfId: string, ctx: { correlationId: string }): Promise<EsfStatusResult> {
     const config = await this.config();
     const sessionId = await this.createSession(config, ctx.correlationId);
     try {

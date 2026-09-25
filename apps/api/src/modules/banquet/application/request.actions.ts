@@ -4,7 +4,7 @@ import { Database } from '../../../shared/infrastructure/database/database';
 import { EventBus } from '../../../shared/infrastructure/events/event-bus';
 import { Actor } from '../../../shared/kernel/actor';
 import { Clock } from '../../../shared/kernel/clock';
-import { ConflictError, NotFoundError, ValidationError } from '../../../shared/kernel/errors';
+import { ConflictError, ValidationError } from '../../../shared/kernel/errors';
 import { Money } from '../../../shared/kernel/money';
 import { Permission } from '../../../shared/kernel/permissions';
 import { addDays, toLocalDate, toLocalTime, zonedTimeToUtc } from '../../../shared/kernel/time';
@@ -158,6 +158,67 @@ export class UpdateBanquetRequest {
 }
 
 /**
+ * Отмена заявки: освобождение зала в модуле Reservation, отмена неоплаченных счетов и онлайн-платежей.
+ * Возврат полученной предоплаты — отдельное действие с правом payments.refund (финансы, собственник).
+ */
+@Injectable()
+export class CancelBanquetRequest {
+  constructor(
+    private readonly requests: RequestRepository,
+    private readonly invoices: InvoiceRepository,
+    private readonly activities: ActivityRepository,
+    private readonly support: BanquetSupport,
+    private readonly recorder: BanquetStatusRecorder,
+    private readonly venues: VenueAvailability,
+    private readonly payments: PaymentsService,
+    private readonly database: Database,
+    private readonly audit: AuditLog,
+    private readonly clock: Clock,
+  ) {}
+
+  async execute(actor: Actor, id: string, reason: string): Promise<BanquetRequest> {
+    const text = reason.trim();
+    if (!text) throw new ValidationError('banquet.cancel_reason_required', 'Cancellation reason is required');
+    if (text.length > 1000) throw new ValidationError('banquet.cancel_reason_too_long', 'Reason is too long');
+    return this.database.transaction(async () => {
+      const request = await this.support.load(id, { forUpdate: true });
+      assertCanManage(actor, request);
+      const before = request.auditView();
+      const now = this.clock.now();
+      request.transition('cancelled', now, text);
+      request.markResponded(now);
+      const venue = request.snapshot().venue;
+      if (venue) {
+        await this.venues.releaseBanquetHold(venue.reservationId, `Банкетная заявка ${request.number} отменена: ${text}`);
+        request.setVenue(null);
+        await this.activities.add({ requestId: id, kind: 'venue_released', data: { venueId: venue.venueId }, actor, at: now });
+      }
+      for (const record of await this.invoices.listForRequest(id)) {
+        if (record.status !== 'issued' || record.paid.isPositive()) continue;
+        const invoice = invoiceEntity((await this.invoices.findById(record.id, { forUpdate: true }))!);
+        invoice.cancel(now);
+        await this.invoices.saveState(invoice, { cancelReason: `Заявка отменена: ${text}` });
+        if (record.paymentId) await this.payments.cancelPayment(record.paymentId, `Банкетная заявка ${request.number} отменена`);
+        await this.activities.add({ requestId: id, kind: 'invoice_cancelled', data: { invoiceId: record.id, number: record.number }, actor, at: now });
+        await this.audit.record({
+          action: 'banquet.invoice_cancelled',
+          entityType: 'banquet_invoice',
+          entityId: record.id,
+          branchId: request.branchId,
+          before: { status: record.status },
+          after: { status: 'cancelled' },
+          meta: { number: record.number, requestNumber: request.number, reason: text },
+          actor,
+        });
+      }
+      await this.requests.save(request);
+      await this.recorder.record(request, { actor, before });
+      return request;
+    });
+  }
+}
+
+/**
  * Смена статуса из админки по автомату воронки. quote_sent — отправка последней версии сметы,
  * cancelled — отмена со всеми последствиями; agreed — клиент согласовал отправленную смету по телефону;
  * prepaid — только если предоплата получена; held — не раньше даты мероприятия.
@@ -222,67 +283,6 @@ export class TransitionBanquetRequest {
           request.transition(input.to, now, reason);
       }
       request.markResponded(now);
-      await this.requests.save(request);
-      await this.recorder.record(request, { actor, before });
-      return request;
-    });
-  }
-}
-
-/**
- * Отмена заявки: освобождение зала в модуле Reservation, отмена неоплаченных счетов и онлайн-платежей.
- * Возврат полученной предоплаты — отдельное действие с правом payments.refund (финансы, собственник).
- */
-@Injectable()
-export class CancelBanquetRequest {
-  constructor(
-    private readonly requests: RequestRepository,
-    private readonly invoices: InvoiceRepository,
-    private readonly activities: ActivityRepository,
-    private readonly support: BanquetSupport,
-    private readonly recorder: BanquetStatusRecorder,
-    private readonly venues: VenueAvailability,
-    private readonly payments: PaymentsService,
-    private readonly database: Database,
-    private readonly audit: AuditLog,
-    private readonly clock: Clock,
-  ) {}
-
-  async execute(actor: Actor, id: string, reason: string): Promise<BanquetRequest> {
-    const text = reason.trim();
-    if (!text) throw new ValidationError('banquet.cancel_reason_required', 'Cancellation reason is required');
-    if (text.length > 1000) throw new ValidationError('banquet.cancel_reason_too_long', 'Reason is too long');
-    return this.database.transaction(async () => {
-      const request = await this.support.load(id, { forUpdate: true });
-      assertCanManage(actor, request);
-      const before = request.auditView();
-      const now = this.clock.now();
-      request.transition('cancelled', now, text);
-      request.markResponded(now);
-      const venue = request.snapshot().venue;
-      if (venue) {
-        await this.venues.releaseBanquetHold(venue.reservationId, `Банкетная заявка ${request.number} отменена: ${text}`);
-        request.setVenue(null);
-        await this.activities.add({ requestId: id, kind: 'venue_released', data: { venueId: venue.venueId }, actor, at: now });
-      }
-      for (const record of await this.invoices.listForRequest(id)) {
-        if (record.status !== 'issued' || record.paid.isPositive()) continue;
-        const invoice = invoiceEntity((await this.invoices.findById(record.id, { forUpdate: true }))!);
-        invoice.cancel(now);
-        await this.invoices.saveState(invoice, { cancelReason: `Заявка отменена: ${text}` });
-        if (record.paymentId) await this.payments.cancelPayment(record.paymentId, `Банкетная заявка ${request.number} отменена`);
-        await this.activities.add({ requestId: id, kind: 'invoice_cancelled', data: { invoiceId: record.id, number: record.number }, actor, at: now });
-        await this.audit.record({
-          action: 'banquet.invoice_cancelled',
-          entityType: 'banquet_invoice',
-          entityId: record.id,
-          branchId: request.branchId,
-          before: { status: record.status },
-          after: { status: 'cancelled' },
-          meta: { number: record.number, requestNumber: request.number, reason: text },
-          actor,
-        });
-      }
       await this.requests.save(request);
       await this.recorder.record(request, { actor, before });
       return request;
@@ -438,11 +438,4 @@ export class SetPrepaymentAmount {
       return request;
     });
   }
-}
-
-/** Помощник для запросов: заявка по id с проверкой существования (для действий над дочерними объектами). */
-export async function requireRequest(requests: RequestRepository, id: string): Promise<BanquetRequest> {
-  const request = await requests.findById(id);
-  if (!request) throw new NotFoundError('banquet_request', id);
-  return request;
 }

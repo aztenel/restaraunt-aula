@@ -9,7 +9,6 @@ import { CreateBanquetRequest } from '../../application/create-request.action';
 import { RenewInvoicePayment } from '../../application/invoice.actions';
 import { EventTypeView, PublicBanquetQueries, PublicInvoiceView, PublicQuoteView } from '../../application/public.queries';
 import { AcceptQuote } from '../../application/quote.actions';
-import { InvoiceRepository } from '../../infrastructure/invoice.repository';
 import { AcceptQuoteDto, moneyOrNull, PublicCreateRequestDto } from '../dto';
 import { EventTypeDto, PublicAcceptResultDto, PublicInvoiceDto, PublicQuoteDto, PublicRequestCreatedDto } from '../responses.dto';
 
@@ -27,7 +26,6 @@ export class PublicBanquetsController {
     private readonly renewPayment: RenewInvoicePayment,
     private readonly queries: PublicBanquetQueries,
     private readonly support: BanquetSupport,
-    private readonly invoices: InvoiceRepository,
   ) {}
 
   @Get('event-types')

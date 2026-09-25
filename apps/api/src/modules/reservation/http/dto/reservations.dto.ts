@@ -190,7 +190,7 @@ export class AdminReservationsQueryDto extends PageQueryDto {
   @Matches(DATE_RE)
   dateFrom?: string;
   @ApiPropertyOptional({ example: '2026-10-31', description: 'Начало брони по дату (включительно)' }) @IsOptional() @Matches(DATE_RE) dateTo?: string;
-  @ApiPropertyOptional({ description: 'Статусы через запятую', example: 'pending,awaiting_deposit' })
+  @ApiPropertyOptional({ type: String, description: `Статусы через запятую: ${ALL_RESERVATION_STATUSES.join(', ')}`, example: 'pending,awaiting_deposit' })
   @IsOptional()
   @Transform(toList)
   @IsIn(ALL_RESERVATION_STATUSES, { each: true })

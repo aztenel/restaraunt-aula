@@ -2216,6 +2216,390 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/venue-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminVenueTypes_list"];
+        put?: never;
+        post: operations["AdminVenueTypes_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/venue-types/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminVenueTypes_get"];
+        put?: never;
+        post?: never;
+        delete: operations["AdminVenueTypes_remove"];
+        options?: never;
+        head?: never;
+        patch: operations["AdminVenueTypes_update"];
+        trace?: never;
+    };
+    "/api/v1/admin/halls": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminHalls_list"];
+        put?: never;
+        post: operations["AdminHalls_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/halls/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminHalls_get"];
+        put?: never;
+        post?: never;
+        delete: operations["AdminHalls_remove"];
+        options?: never;
+        head?: never;
+        patch: operations["AdminHalls_update"];
+        trace?: never;
+    };
+    "/api/v1/admin/halls/{id}/background": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["AdminHalls_background"];
+        post?: never;
+        delete: operations["AdminHalls_removeBackground"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/venues": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminVenues_list"];
+        put?: never;
+        post: operations["AdminVenues_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/venues/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminVenues_get"];
+        put?: never;
+        post?: never;
+        delete: operations["AdminVenues_remove"];
+        options?: never;
+        head?: never;
+        patch: operations["AdminVenues_update"];
+        trace?: never;
+    };
+    "/api/v1/admin/venues/{id}/photos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminVenues_photo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/venues/{id}/photos/{photoId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["AdminVenues_removePhoto"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reservation-settings/{branchId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminReservationSettings_get"];
+        put: operations["AdminReservationSettings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reservations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminReservations_list"];
+        put?: never;
+        post: operations["AdminReservations_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reservations/timeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminReservations_timeline"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reservations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminReservations_detail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reservations/{id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminReservations_confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reservations/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminReservations_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reservations/{id}/arrived": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminReservations_arrived"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reservations/{id}/no-show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminReservations_noShow"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reservations/{id}/reschedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminReservations_move"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/branches/{branchSlug}/reservation-availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicAvailability_check"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/branches/{branchSlug}/halls": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicAvailability_halls"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/reservations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublicReservations_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/reservations/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicReservations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/reservations/{token}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublicReservations_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/reservations/{token}/pay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublicReservations_pay"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/reports/revenue": {
         parameters: {
             query?: never;
@@ -5889,6 +6273,787 @@ export interface components {
             branchId?: Record<string, never> | null;
             /** @default true */
             isActive: boolean;
+        };
+        VenueRulesDto: {
+            /**
+             * @description Длительность брони по умолчанию, минут
+             * @example 120
+             */
+            durationMinutes: number;
+            /**
+             * @description Сколько держится неподтверждённая / неоплаченная бронь, минут
+             * @example 30
+             */
+            holdMinutes: number;
+            /**
+             * @description За сколько часов до начала можно отменить с возвратом депозита
+             * @example 24
+             */
+            cancellationDeadlineHours: number;
+            /** @description Бронь с витрины ждёт подтверждения персоналом (pending) */
+            requiresManualConfirmation: boolean;
+            /**
+             * @description Буфер на уборку после брони, минут
+             * @example 15
+             */
+            cleanupMinutes: number;
+            /**
+             * @description Шаг сетки времени (альтернативы), минут
+             * @example 30
+             */
+            slotStepMinutes: number;
+            /** @description Можно бронировать на витрине (иначе — только через оператора) */
+            bookableOnline: boolean;
+        };
+        VenueTypeDto: {
+            id: string;
+            /** @example vip_hall */
+            code: string;
+            name: components["schemas"]["TranslatableDto"];
+            description: components["schemas"]["TranslatableDto"];
+            /** @description Правила брони по умолчанию для мест этого типа */
+            rules: components["schemas"]["VenueRulesDto"];
+            sortOrder: number;
+            isActive: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        CreateVenueTypeDto: {
+            /**
+             * @description Латиница в нижнем регистре, цифры, «_»
+             * @example vip_hall
+             */
+            code: string;
+            name: components["schemas"]["TranslatableDto"];
+            description?: components["schemas"]["TranslatableDto"] | null;
+            rules: components["schemas"]["VenueRulesDto"];
+            /** @default 0 */
+            sortOrder: number;
+            /** @default true */
+            isActive: boolean;
+        };
+        VenueRulesPatchDto: {
+            durationMinutes?: number;
+            holdMinutes?: number;
+            cancellationDeadlineHours?: number;
+            requiresManualConfirmation?: boolean;
+            cleanupMinutes?: number;
+            slotStepMinutes?: number;
+            bookableOnline?: boolean;
+        };
+        UpdateVenueTypeDto: {
+            code?: string;
+            name?: components["schemas"]["TranslatableDto"];
+            description?: components["schemas"]["TranslatableDto"] | null;
+            rules?: components["schemas"]["VenueRulesPatchDto"];
+            sortOrder?: number;
+            isActive?: boolean;
+        };
+        HallDto: {
+            id: string;
+            branchId: string;
+            /** @example main */
+            code: string;
+            name: components["schemas"]["TranslatableDto"];
+            description: components["schemas"]["TranslatableDto"];
+            /** @description Ширина плана зала, условные единицы */
+            planWidth: number;
+            /** @description Высота плана зала, условные единицы */
+            planHeight: number;
+            /** @description Фон плана зала */
+            background?: components["schemas"]["ImageDto"] | null;
+            sortOrder: number;
+            isActive: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        CreateHallDto: {
+            branchId: string;
+            /** @example main */
+            code: string;
+            name: components["schemas"]["TranslatableDto"];
+            description?: components["schemas"]["TranslatableDto"] | null;
+            /** @default 1000 */
+            planWidth: number;
+            /** @default 600 */
+            planHeight: number;
+            /** @default 0 */
+            sortOrder: number;
+            /** @default true */
+            isActive: boolean;
+        };
+        UpdateHallDto: {
+            code?: string;
+            name?: components["schemas"]["TranslatableDto"];
+            description?: components["schemas"]["TranslatableDto"] | null;
+            planWidth?: number;
+            planHeight?: number;
+            sortOrder?: number;
+            isActive?: boolean;
+        };
+        VenueRuleOverridesDto: {
+            durationMinutes?: Record<string, never> | null;
+            holdMinutes?: Record<string, never> | null;
+            cancellationDeadlineHours?: Record<string, never> | null;
+            requiresManualConfirmation?: Record<string, never> | null;
+            cleanupMinutes?: Record<string, never> | null;
+            slotStepMinutes?: Record<string, never> | null;
+            bookableOnline?: Record<string, never> | null;
+        };
+        VenuePositionDto: {
+            x: number;
+            y: number;
+            /** @description Ширина */
+            w: number;
+            /** @description Высота */
+            h: number;
+            /** @enum {string} */
+            shape: "rect" | "circle";
+            /** @description Поворот, градусы */
+            rotation: number;
+        };
+        VenueDto: {
+            id: string;
+            branchId: string;
+            hallId: string;
+            hallName: components["schemas"]["TranslatableDto"];
+            typeId: string;
+            /** @example table */
+            typeCode: string;
+            typeName: components["schemas"]["TranslatableDto"];
+            /** @example T4 */
+            code: string;
+            name: components["schemas"]["TranslatableDto"];
+            description: components["schemas"]["TranslatableDto"];
+            capacityMin: number;
+            capacityMax: number;
+            /** @description Минимальный депозит (онлайн-предоплата); null — без депозита */
+            deposit?: components["schemas"]["MoneyDto"] | null;
+            /** @description Переопределения правил типа */
+            ruleOverrides: components["schemas"]["VenueRuleOverridesDto"];
+            /** @description Действующие правила (тип + переопределения) */
+            rules: components["schemas"]["VenueRulesDto"];
+            position: components["schemas"]["VenuePositionDto"];
+            photos: components["schemas"]["ImageDto"][];
+            sortOrder: number;
+            isActive: boolean;
+            /** @description Доступно для брони: активны место, зал и тип */
+            isBookable: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        VenuePositionInputDto: {
+            x?: number;
+            y?: number;
+            w?: number;
+            h?: number;
+            /** @enum {string} */
+            shape?: "rect" | "circle";
+            rotation?: number;
+        };
+        CreateVenueDto: {
+            hallId: string;
+            typeId: string;
+            /**
+             * @description Код места в филиале (латиница, цифры, «-», «_»)
+             * @example T4
+             */
+            code: string;
+            name: components["schemas"]["TranslatableDto"];
+            description?: components["schemas"]["TranslatableDto"] | null;
+            capacityMin: number;
+            capacityMax: number;
+            /** @description Депозит; null — без депозита */
+            deposit?: components["schemas"]["MoneyInputDto"] | null;
+            rules?: components["schemas"]["VenueRuleOverridesDto"] | null;
+            position?: components["schemas"]["VenuePositionInputDto"];
+            /** @default 0 */
+            sortOrder: number;
+            /** @default true */
+            isActive: boolean;
+        };
+        UpdateVenueDto: {
+            /** @description Пересадить в другой зал того же филиала */
+            hallId?: string;
+            typeId?: string;
+            code?: string;
+            name?: components["schemas"]["TranslatableDto"];
+            description?: components["schemas"]["TranslatableDto"] | null;
+            capacityMin?: number;
+            capacityMax?: number;
+            /** @description null — убрать депозит */
+            deposit?: components["schemas"]["MoneyInputDto"] | null;
+            /** @description Полная замена переопределений; null — как у типа */
+            rules?: components["schemas"]["VenueRuleOverridesDto"] | null;
+            position?: components["schemas"]["VenuePositionInputDto"];
+            sortOrder?: number;
+            isActive?: boolean;
+        };
+        ReservationSettingsDto: {
+            branchId: string;
+            /**
+             * @description Напоминание гостю за N часов до начала (0 — не напоминать)
+             * @example 3
+             */
+            reminderHoursBefore: number;
+            /**
+             * @description Бронь на витрине — не раньше чем через N минут
+             * @example 60
+             */
+            minLeadMinutes: number;
+            /**
+             * @description На сколько дней вперёд можно бронировать на витрине
+             * @example 60
+             */
+            maxDaysAhead: number;
+            /** @description Текст правил брони и отмены для гостя */
+            policyText: components["schemas"]["TranslatableDto"];
+            updatedAt?: Record<string, never> | null;
+        };
+        UpdateReservationSettingsDto: {
+            reminderHoursBefore?: number;
+            minLeadMinutes?: number;
+            maxDaysAhead?: number;
+            policyText?: components["schemas"]["TranslatableDto"];
+        };
+        ReservationVenueRefDto: {
+            id: string;
+            code: string;
+            name: components["schemas"]["TranslatableDto"];
+            hallId: string;
+            hallName: components["schemas"]["TranslatableDto"];
+            typeCode: string;
+            typeName: components["schemas"]["TranslatableDto"];
+        };
+        ReservationCustomerDto: {
+            /** @description Гость в базе гостей */
+            id?: Record<string, never> | null;
+            name?: Record<string, never> | null;
+            /** @example +77011234567 */
+            phone?: Record<string, never> | null;
+            email?: Record<string, never> | null;
+        };
+        ReservationSummaryDto: {
+            id: string;
+            /** @example GL-R-2026-000123 */
+            number: string;
+            branchId: string;
+            /**
+             * @description regular — бронь гостя, banquet — зал занят под банкет
+             * @enum {string}
+             */
+            kind: "regular" | "banquet";
+            /** @enum {string} */
+            status: "pending" | "awaiting_deposit" | "confirmed" | "arrived" | "no_show" | "cancelled" | "expired";
+            /** @enum {string} */
+            source: "web" | "admin" | "banquet";
+            venue: components["schemas"]["ReservationVenueRefDto"];
+            /** Format: date-time */
+            start: string;
+            /** Format: date-time */
+            end: string;
+            /**
+             * Format: date-time
+             * @description Конец занятости места: конец брони + буфер уборки
+             */
+            blockedUntil: string;
+            /**
+             * @description Локальная дата начала (часовой пояс филиала)
+             * @example 2026-10-25
+             */
+            date: string;
+            /** @example 19:30 */
+            time: string;
+            durationMinutes: number;
+            guests: number;
+            customer: components["schemas"]["ReservationCustomerDto"];
+            comment?: Record<string, never> | null;
+            occasion?: Record<string, never> | null;
+            /** @description Служебная заметка персонала */
+            note?: Record<string, never> | null;
+            deposit?: components["schemas"]["MoneyDto"] | null;
+            /** @enum {string} */
+            depositState: "none" | "waived" | "pending" | "unpaid" | "paid" | "refund_pending" | "refunded" | "refund_failed" | "retained" | "applied";
+            /** @enum {string} */
+            depositOutcome: "none" | "refunded" | "retained";
+            /** @description Бронь будет снята, если не подтвердят / не оплатят до этого момента */
+            holdExpiresAt?: Record<string, never> | null;
+            banquetRequestId?: Record<string, never> | null;
+            /** @description Требует отметки «пришли / не пришли» */
+            needsMark: boolean;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        ReservationsPageDto: {
+            items: components["schemas"]["ReservationSummaryDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+        };
+        TimeRangeDto: {
+            /** Format: date-time */
+            start: string;
+            /** Format: date-time */
+            end: string;
+        };
+        TimelineItemDto: {
+            reservationId: string;
+            number: string;
+            /** @enum {string} */
+            kind: "regular" | "banquet";
+            /** @enum {string} */
+            status: "pending" | "awaiting_deposit" | "confirmed" | "arrived" | "no_show" | "cancelled" | "expired";
+            /** @description Занимает место */
+            blocking: boolean;
+            /** Format: date-time */
+            start: string;
+            /** Format: date-time */
+            end: string;
+            /** Format: date-time */
+            blockedUntil: string;
+            guests: number;
+            customerName?: Record<string, never> | null;
+            customerPhone?: Record<string, never> | null;
+            banquetRequestId?: Record<string, never> | null;
+            /** @enum {string} */
+            depositState: "none" | "waived" | "pending" | "unpaid" | "paid" | "refund_pending" | "refunded" | "refund_failed" | "retained" | "applied";
+            needsMark: boolean;
+        };
+        TimelineVenueDto: {
+            id: string;
+            code: string;
+            name: components["schemas"]["TranslatableDto"];
+            typeCode: string;
+            typeName: components["schemas"]["TranslatableDto"];
+            capacityMin: number;
+            capacityMax: number;
+            deposit?: components["schemas"]["MoneyDto"] | null;
+            position: components["schemas"]["VenuePositionDto"];
+            isActive: boolean;
+            bookableOnline: boolean;
+            items: components["schemas"]["TimelineItemDto"][];
+        };
+        TimelineHallDto: {
+            id: string;
+            code: string;
+            name: components["schemas"]["TranslatableDto"];
+            planWidth: number;
+            planHeight: number;
+            isActive: boolean;
+            venues: components["schemas"]["TimelineVenueDto"][];
+        };
+        TimelineDto: {
+            branchId: string;
+            /** @example 2026-10-25 */
+            date: string;
+            /** @example Asia/Almaty */
+            timezone: string;
+            /**
+             * Format: date-time
+             * @description Начало локальных суток (UTC)
+             */
+            from: string;
+            /**
+             * Format: date-time
+             * @description Конец локальных суток (UTC)
+             */
+            to: string;
+            /** @description Часы работы филиала в этот день */
+            openingRanges: components["schemas"]["TimeRangeDto"][];
+            halls: components["schemas"]["TimelineHallDto"][];
+        };
+        DepositPaymentDto: {
+            id: string;
+            /** @example pending */
+            status: string;
+            amount: components["schemas"]["MoneyDto"];
+            refundedAmount: components["schemas"]["MoneyDto"];
+            paymentUrl?: Record<string, never> | null;
+            paidAt?: Record<string, never> | null;
+        };
+        StatusHistoryDto: {
+            /** @enum {string|null} */
+            from?: "pending" | "awaiting_deposit" | "confirmed" | "arrived" | "no_show" | "cancelled" | "expired" | null;
+            /** @enum {string} */
+            to: "pending" | "awaiting_deposit" | "confirmed" | "arrived" | "no_show" | "cancelled" | "expired";
+            reason?: Record<string, never> | null;
+            /** @enum {string} */
+            depositOutcome: "none" | "refunded" | "retained";
+            /** @example staff */
+            actorKind: string;
+            actorName: string;
+            /** Format: date-time */
+            occurredAt: string;
+        };
+        ReservationDetailDto: {
+            id: string;
+            /** @example GL-R-2026-000123 */
+            number: string;
+            branchId: string;
+            /**
+             * @description regular — бронь гостя, banquet — зал занят под банкет
+             * @enum {string}
+             */
+            kind: "regular" | "banquet";
+            /** @enum {string} */
+            status: "pending" | "awaiting_deposit" | "confirmed" | "arrived" | "no_show" | "cancelled" | "expired";
+            /** @enum {string} */
+            source: "web" | "admin" | "banquet";
+            venue: components["schemas"]["ReservationVenueRefDto"];
+            /** Format: date-time */
+            start: string;
+            /** Format: date-time */
+            end: string;
+            /**
+             * Format: date-time
+             * @description Конец занятости места: конец брони + буфер уборки
+             */
+            blockedUntil: string;
+            /**
+             * @description Локальная дата начала (часовой пояс филиала)
+             * @example 2026-10-25
+             */
+            date: string;
+            /** @example 19:30 */
+            time: string;
+            durationMinutes: number;
+            guests: number;
+            customer: components["schemas"]["ReservationCustomerDto"];
+            comment?: Record<string, never> | null;
+            occasion?: Record<string, never> | null;
+            /** @description Служебная заметка персонала */
+            note?: Record<string, never> | null;
+            deposit?: components["schemas"]["MoneyDto"] | null;
+            /** @enum {string} */
+            depositState: "none" | "waived" | "pending" | "unpaid" | "paid" | "refund_pending" | "refunded" | "refund_failed" | "retained" | "applied";
+            /** @enum {string} */
+            depositOutcome: "none" | "refunded" | "retained";
+            /** @description Бронь будет снята, если не подтвердят / не оплатят до этого момента */
+            holdExpiresAt?: Record<string, never> | null;
+            banquetRequestId?: Record<string, never> | null;
+            /** @description Требует отметки «пришли / не пришли» */
+            needsMark: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** @description Переходы, доступные сотруднику сейчас */
+            allowedTransitions: ("pending" | "awaiting_deposit" | "confirmed" | "arrived" | "no_show" | "cancelled" | "expired")[];
+            canReschedule: boolean;
+            /** @description Правила брони (снимок на момент брони / переноса) */
+            rules: components["schemas"]["VenueRulesDto"];
+            /**
+             * Format: date-time
+             * @description Дедлайн бесплатной отмены
+             */
+            cancellationDeadline: string;
+            /**
+             * @description Исход депозита при отмене сейчас по правилу
+             * @enum {string}
+             */
+            depositOutcomeIfCancelled: "none" | "refunded" | "retained";
+            depositPayment?: components["schemas"]["DepositPaymentDto"] | null;
+            depositWaiveReason?: Record<string, never> | null;
+            depositPaidAt?: Record<string, never> | null;
+            cancelReason?: Record<string, never> | null;
+            /** @enum {string|null} */
+            cancelledBy?: "guest" | "staff" | "system" | "banquet" | null;
+            confirmedAt?: Record<string, never> | null;
+            arrivedAt?: Record<string, never> | null;
+            noShowAt?: Record<string, never> | null;
+            cancelledAt?: Record<string, never> | null;
+            expiredAt?: Record<string, never> | null;
+            reminderSentAt?: Record<string, never> | null;
+            /** @description Ссылка на страницу брони гостя */
+            manageUrl?: Record<string, never> | null;
+            history: components["schemas"]["StatusHistoryDto"][];
+        };
+        StaffCustomerDto: {
+            /** @example Айгерим */
+            name?: string;
+            /** @example +7 701 123 45 67 */
+            phone: string;
+            email?: string;
+        };
+        StaffDepositDto: {
+            /**
+             * @description payment_link — отправить гостю ссылку на оплату; waive — без депозита (причина обязательна)
+             * @enum {string}
+             */
+            mode: "payment_link" | "waive";
+            /** @description Причина отказа от депозита (журнал действий) */
+            waiveReason?: string;
+        };
+        StaffConsentDto: {
+            /** @description Гость дал согласие на обработку ПД по телефону */
+            personalData?: boolean;
+            marketing?: boolean;
+        };
+        CreateStaffReservationDto: {
+            branchId: string;
+            venueId: string;
+            /** @example 2026-10-25 */
+            date: string;
+            /** @example 19:30 */
+            time: string;
+            guests: number;
+            /** @description По умолчанию — правило места */
+            durationMinutes?: number;
+            customer: components["schemas"]["StaffCustomerDto"];
+            comment?: string;
+            /** @example День рождения */
+            occasion?: string;
+            /** @description Служебная заметка (гость не видит) */
+            note?: string;
+            /**
+             * @description Язык уведомлений гостю
+             * @default ru
+             * @enum {string}
+             */
+            locale: "kk" | "ru" | "en";
+            /** @description Обязательно, если у места есть депозит */
+            deposit?: components["schemas"]["StaffDepositDto"];
+            consent?: components["schemas"]["StaffConsentDto"];
+            /** @description Ключ идемпотентности (повтор не создаёт вторую бронь) */
+            idempotencyKey?: string;
+        };
+        ConfirmReservationDto: {
+            /** @description Подтвердить без оплаченного депозита — отказ от депозита с причиной */
+            waiveDepositReason?: string;
+        };
+        CancelReservationDto: {
+            /** @example Гость попросил отменить по телефону */
+            reason: string;
+            /**
+             * @description Решение по оплаченному депозиту; по умолчанию — правило отмены места
+             * @enum {string}
+             */
+            depositDecision?: "refund" | "retain";
+        };
+        RescheduleReservationDto: {
+            /** @description Новое место (того же филиала) */
+            venueId?: string;
+            /** @example 2026-10-26 */
+            date?: string;
+            /** @example 20:00 */
+            time?: string;
+            durationMinutes?: number;
+            guests?: number;
+            reason?: string;
+        };
+        PublicVenueRulesDto: {
+            /** @description Сколько держится бронь без подтверждения / оплаты, минут */
+            holdMinutes: number;
+            /** @description За сколько часов до начала можно отменить с возвратом депозита */
+            cancellationDeadlineHours: number;
+            /** @description Бронь подтверждает персонал */
+            requiresManualConfirmation: boolean;
+        };
+        PublicVenueSlotDto: {
+            venueId: string;
+            hallId: string;
+            hallName: string;
+            name: string;
+            description: string;
+            /** @example table */
+            typeCode: string;
+            typeName: string;
+            capacityMin: number;
+            capacityMax: number;
+            /** @description Депозит (оплачивается онлайн при брони) */
+            deposit?: components["schemas"]["MoneyDto"] | null;
+            /** Format: date-time */
+            start: string;
+            /** Format: date-time */
+            end: string;
+            durationMinutes: number;
+            rules: components["schemas"]["PublicVenueRulesDto"];
+            position: components["schemas"]["VenuePositionDto"];
+            photos: components["schemas"]["ImageDto"][];
+        };
+        AlternativeTimeDto: {
+            /** @example 2026-10-25 */
+            date: string;
+            /** @example 18:30 */
+            time: string;
+            /** Format: date-time */
+            start: string;
+            /** @description Свободные места на это время */
+            venueIds: string[];
+        };
+        AvailabilityDto: {
+            branchId: string;
+            branchSlug: string;
+            date: string;
+            time: string;
+            guests: number;
+            durationMinutes?: Record<string, never> | null;
+            /** @description Есть хотя бы одно свободное место */
+            available: boolean;
+            /**
+             * @description Почему мест нет
+             * @enum {string|null}
+             */
+            reason?: "no_capacity" | "occupied" | "past" | "too_soon" | "too_far" | "closed" | "not_accepting" | null;
+            /** @description Только реально свободные места */
+            venues: components["schemas"]["PublicVenueSlotDto"][];
+            /** @description Ближайшее свободное время в тот же день, если мест нет */
+            alternatives: components["schemas"]["AlternativeTimeDto"][];
+        };
+        PublicMapVenueDto: {
+            id: string;
+            name: string;
+            description: string;
+            typeCode: string;
+            typeName: string;
+            capacityMin: number;
+            capacityMax: number;
+            deposit?: components["schemas"]["MoneyDto"] | null;
+            position: components["schemas"]["VenuePositionDto"];
+            /** @description Можно забронировать на сайте (иначе — по телефону) */
+            bookableOnline: boolean;
+            photos: components["schemas"]["ImageDto"][];
+            /** @description Свободно на запрошенное время; null — время не запрошено */
+            available?: Record<string, never> | null;
+        };
+        PublicHallDto: {
+            id: string;
+            name: string;
+            description: string;
+            planWidth: number;
+            planHeight: number;
+            background?: components["schemas"]["ImageDto"] | null;
+            venues: components["schemas"]["PublicMapVenueDto"][];
+        };
+        PublicHallMapDto: {
+            branchId: string;
+            branchSlug: string;
+            acceptsReservations: boolean;
+            halls: components["schemas"]["PublicHallDto"][];
+        };
+        GuestCustomerDto: {
+            /** @example Айгерим */
+            name: string;
+            /** @example +7 701 123 45 67 */
+            phone: string;
+            /** @example aigerim@mail.kz */
+            email?: string;
+        };
+        ReservationConsentDto: {
+            /** @description Согласие на обработку персональных данных (обязательно true) */
+            personalData: boolean;
+            /** @description Согласие на рекламные рассылки (необязательно) */
+            marketing?: boolean;
+        };
+        BookReservationDto: {
+            branchId: string;
+            venueId: string;
+            /** @example 2026-10-25 */
+            date: string;
+            /** @example 19:30 */
+            time: string;
+            guests: number;
+            /** @description По умолчанию — правило места */
+            durationMinutes?: number;
+            customer: components["schemas"]["GuestCustomerDto"];
+            /** @description Пожелания гостя */
+            comment?: string;
+            /** @example День рождения */
+            occasion?: string;
+            /** @description Токен подтверждения телефона (если филиал требует SMS-код для броней без депозита) */
+            phoneVerificationToken?: string;
+            consent: components["schemas"]["ReservationConsentDto"];
+            /**
+             * @description Язык уведомлений
+             * @enum {string}
+             */
+            locale: "kk" | "ru" | "en";
+            /** @description Ключ идемпотентности (генерирует витрина на одну попытку оформления) */
+            idempotencyKey: string;
+        };
+        PublicReservationBranchDto: {
+            id: string;
+            slug: string;
+            name: string;
+            address: string;
+            phone: string;
+        };
+        PublicReservationVenueDto: {
+            id: string;
+            name: string;
+            typeCode: string;
+            typeName: string;
+            hallName: string;
+        };
+        PublicDepositDto: {
+            amount: components["schemas"]["MoneyDto"];
+            /** @enum {string} */
+            state: "none" | "waived" | "pending" | "unpaid" | "paid" | "refund_pending" | "refunded" | "refund_failed" | "retained" | "applied";
+            /**
+             * @description Депозит возвращён или удержан (после отмены / неявки)
+             * @enum {string}
+             */
+            outcome: "none" | "refunded" | "retained";
+            /** @example pending */
+            paymentStatus?: Record<string, never> | null;
+            /** @description Страница оплаты (появляется асинхронно после создания платежа) */
+            paymentUrl?: Record<string, never> | null;
+        };
+        PublicPolicyDto: {
+            cancellationDeadlineHours: number;
+            holdMinutes: number;
+            requiresManualConfirmation: boolean;
+            /** @description Текст правил брони и отмены (настройка филиала) */
+            text: string;
+        };
+        PublicReservationDto: {
+            token: string;
+            number: string;
+            /** @enum {string} */
+            status: "pending" | "awaiting_deposit" | "confirmed" | "arrived" | "no_show" | "cancelled" | "expired";
+            branch: components["schemas"]["PublicReservationBranchDto"];
+            venue: components["schemas"]["PublicReservationVenueDto"];
+            /** @example 2026-10-25 */
+            date: string;
+            /** @example 19:30 */
+            time: string;
+            /** Format: date-time */
+            start: string;
+            /** Format: date-time */
+            end: string;
+            durationMinutes: number;
+            guests: number;
+            customerName?: Record<string, never> | null;
+            comment?: Record<string, never> | null;
+            occasion?: Record<string, never> | null;
+            /** @description Бронь будет снята, если не подтвердят / не оплатят до этого момента */
+            holdExpiresAt?: Record<string, never> | null;
+            deposit?: components["schemas"]["PublicDepositDto"] | null;
+            /** @description Гость может отменить бронь */
+            canCancel: boolean;
+            /** @description Гость может (повторно) оплатить депозит */
+            canPay: boolean;
+            /**
+             * Format: date-time
+             * @description Дедлайн бесплатной отмены (возврат депозита)
+             */
+            cancellationDeadline: string;
+            /**
+             * @description Что будет с депозитом при отмене сейчас
+             * @enum {string}
+             */
+            depositOutcomeIfCancelled: "none" | "refunded" | "retained";
+            policy: components["schemas"]["PublicPolicyDto"];
+            cancelledAt?: Record<string, never> | null;
+            cancelReason?: Record<string, never> | null;
+        };
+        GuestCancelReservationDto: {
+            /** @description Причина (необязательно) */
+            reason?: string;
         };
         RevenueDayDto: {
             /** @description Доставка (нетто с возвратами) */
@@ -10903,6 +12068,855 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    AdminVenueTypes_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VenueTypeDto"][];
+                };
+            };
+        };
+    };
+    AdminVenueTypes_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateVenueTypeDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VenueTypeDto"];
+                };
+            };
+        };
+    };
+    AdminVenueTypes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VenueTypeDto"];
+                };
+            };
+        };
+    };
+    AdminVenueTypes_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminVenueTypes_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateVenueTypeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VenueTypeDto"];
+                };
+            };
+        };
+    };
+    AdminHalls_list: {
+        parameters: {
+            query?: {
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HallDto"][];
+                };
+            };
+        };
+    };
+    AdminHalls_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateHallDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HallDto"];
+                };
+            };
+        };
+    };
+    AdminHalls_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HallDto"];
+                };
+            };
+        };
+    };
+    AdminHalls_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminHalls_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateHallDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HallDto"];
+                };
+            };
+        };
+    };
+    AdminHalls_background: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HallDto"];
+                };
+            };
+        };
+    };
+    AdminHalls_removeBackground: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HallDto"];
+                };
+            };
+        };
+    };
+    AdminVenues_list: {
+        parameters: {
+            query?: {
+                branchId?: string;
+                hallId?: string;
+                typeId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VenueDto"][];
+                };
+            };
+        };
+    };
+    AdminVenues_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateVenueDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VenueDto"];
+                };
+            };
+        };
+    };
+    AdminVenues_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VenueDto"];
+                };
+            };
+        };
+    };
+    AdminVenues_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminVenues_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateVenueDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VenueDto"];
+                };
+            };
+        };
+    };
+    AdminVenues_photo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VenueDto"];
+                };
+            };
+        };
+    };
+    AdminVenues_removePhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                photoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VenueDto"];
+                };
+            };
+        };
+    };
+    AdminReservationSettings_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                branchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReservationSettingsDto"];
+                };
+            };
+        };
+    };
+    AdminReservationSettings_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                branchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateReservationSettingsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReservationSettingsDto"];
+                };
+            };
+        };
+    };
+    AdminReservations_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                perPage?: number;
+                branchId?: string;
+                /** @description Начало брони с даты (локальной, включительно) */
+                dateFrom?: string;
+                /** @description Начало брони по дату (включительно) */
+                dateTo?: string;
+                /** @description Статусы через запятую: pending, awaiting_deposit, confirmed, arrived, no_show, cancelled, expired */
+                status?: string;
+                kind?: "regular" | "banquet";
+                source?: "web" | "admin" | "banquet";
+                venueId?: string;
+                hallId?: string;
+                /** @description Номер брони, телефон или имя гостя */
+                q?: string;
+                /** @description Только очередь «требует отметки»: подтверждённые брони, которые уже начались */
+                needsMark?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReservationsPageDto"];
+                };
+            };
+        };
+    };
+    AdminReservations_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateStaffReservationDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReservationDetailDto"];
+                };
+            };
+        };
+    };
+    AdminReservations_timeline: {
+        parameters: {
+            query: {
+                branchId: string;
+                /** @description Локальная дата филиала */
+                date: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TimelineDto"];
+                };
+            };
+        };
+    };
+    AdminReservations_detail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReservationDetailDto"];
+                };
+            };
+        };
+    };
+    AdminReservations_confirm: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmReservationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReservationDetailDto"];
+                };
+            };
+        };
+    };
+    AdminReservations_cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelReservationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReservationDetailDto"];
+                };
+            };
+        };
+    };
+    AdminReservations_arrived: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReservationDetailDto"];
+                };
+            };
+        };
+    };
+    AdminReservations_noShow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReservationDetailDto"];
+                };
+            };
+        };
+    };
+    AdminReservations_move: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RescheduleReservationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReservationDetailDto"];
+                };
+            };
+        };
+    };
+    PublicAvailability_check: {
+        parameters: {
+            query: {
+                locale?: "kk" | "ru" | "en";
+                /** @description Локальная дата филиала */
+                date: string;
+                /** @description Локальное время начала */
+                time: string;
+                guests: number;
+                /** @description Тип места (справочник типов) */
+                typeCode?: string;
+                /** @description Длительность, минут (по умолчанию — правило места) */
+                durationMinutes?: number;
+            };
+            header?: never;
+            path: {
+                branchSlug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailabilityDto"];
+                };
+            };
+        };
+    };
+    PublicAvailability_halls: {
+        parameters: {
+            query?: {
+                locale?: "kk" | "ru" | "en";
+                /** @description С датой, временем и гостями — у мест флаг available */
+                date?: string;
+                time?: string;
+                guests?: number;
+                durationMinutes?: number;
+            };
+            header?: never;
+            path: {
+                branchSlug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicHallMapDto"];
+                };
+            };
+        };
+    };
+    PublicReservations_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BookReservationDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicReservationDto"];
+                };
+            };
+        };
+    };
+    PublicReservations_get: {
+        parameters: {
+            query?: {
+                locale?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicReservationDto"];
+                };
+            };
+        };
+    };
+    PublicReservations_cancel: {
+        parameters: {
+            query?: {
+                locale?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GuestCancelReservationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicReservationDto"];
+                };
+            };
+        };
+    };
+    PublicReservations_pay: {
+        parameters: {
+            query?: {
+                locale?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicReservationDto"];
+                };
             };
         };
     };

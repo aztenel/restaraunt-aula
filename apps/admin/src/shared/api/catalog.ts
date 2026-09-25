@@ -167,6 +167,16 @@ export const branchMenuApi = {
     (await call(
       api.GET('/api/v1/admin/catalog/branches/{branchId}/menu', { params: { path: { branchId }, query: query({ ...params }) } }),
     )) as unknown as Page<BranchMenuItem>,
+  /** Всё меню филиала (страницами по 200 — максимум API). */
+  all: async (branchId: string): Promise<BranchMenuItem[]> => {
+    const items: BranchMenuItem[] = [];
+    for (let page = 1; page <= 50; page++) {
+      const result = await branchMenuApi.list(branchId, { page, perPage: 200 });
+      items.push(...result.items);
+      if (items.length >= result.total || result.items.length === 0) break;
+    }
+    return items;
+  },
   add: async (branchId: string, input: AddMenuItemInput) =>
     (await call(
       api.POST('/api/v1/admin/catalog/branches/{branchId}/menu', {

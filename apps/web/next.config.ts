@@ -60,6 +60,11 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns,
     formats: ['image/avif', 'image/webp'],
+    // Фото меню и контента — готовые webp-варианты API (свой loader в components/ui/ApiImage.tsx):
+    // ширины srcset совпадают с вариантами, описатель ширины соответствует файлу.
+    // Держать в синхроне с IMAGE_DEVICE_SIZES / IMAGE_SIZES в lib/images.ts.
+    deviceSizes: [300, 600, 1200, 1920],
+    imageSizes: [150],
   },
   // Линт запускается отдельно (pnpm --filter @aula/web lint) и в CI, сборку не блокирует.
   eslint: { ignoreDuringBuilds: true },

@@ -14,7 +14,6 @@ import { CustomerDirectory, CustomerTag } from '../../customers/public';
 import { Notifier } from '../../notifications/public';
 import { PaymentPurpose, PaymentsService, RefundView } from '../../payments/public';
 import { INVOICEABLE_STATUSES } from '../domain/banquet-status';
-import { BanquetRequest } from '../domain/banquet-request';
 import { formatDateRu } from '../domain/dates';
 import { assertWithinQuote, defaultDueDate, defaultInvoiceAmount, InvoicePurpose, PayerType } from '../domain/invoice';
 import { formatTenge } from '../domain/money-format';

@@ -39,3 +39,45 @@ export function yandexRouteHref(lat: number, lng: number): string {
 export function googleMapsHref(lat: number, lng: number): string {
   return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 }
+
+/** Часовой пояс отображения (ТЗ: хранение в UTC, показ в Asia/Almaty). */
+export const DISPLAY_TIME_ZONE = 'Asia/Almaty';
+
+const INTL_LOCALE: Record<string, string> = { kk: 'kk-KZ', ru: 'ru-RU', en: 'en-GB' };
+
+function intlLocale(locale: string): string {
+  return INTL_LOCALE[locale] ?? locale;
+}
+
+/** Дата (ISO от сервера) на языке интерфейса в Asia/Almaty: «25 сентября 2026 г.». */
+export function formatDate(
+  value: string | Date | null | undefined,
+  locale: string,
+  options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' },
+): string {
+  if (!value) return '';
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  try {
+    return new Intl.DateTimeFormat(intlLocale(locale), { timeZone: DISPLAY_TIME_ZONE, ...options }).format(date);
+  } catch {
+    return date.toISOString().slice(0, 10);
+  }
+}
+
+/** Дата и время в Asia/Almaty: «25 сентября, 18:30». */
+export function formatDateTime(value: string | Date | null | undefined, locale: string): string {
+  return formatDate(value, locale, { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+}
+
+/** Календарная дата 'YYYY-MM-DD' (уже локальная, например validUntil) — без сдвига часового пояса. */
+export function formatLocalDate(ymd: string | null | undefined, locale: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd ?? '');
+  if (!match) return ymd ?? '';
+  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12));
+  try {
+    return new Intl.DateTimeFormat(intlLocale(locale), { timeZone: 'UTC', day: 'numeric', month: 'long', year: 'numeric' }).format(date);
+  } catch {
+    return ymd ?? '';
+  }
+}

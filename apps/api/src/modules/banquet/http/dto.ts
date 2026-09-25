@@ -23,7 +23,7 @@ import { MoneyInputDto, PageQueryDto, TranslatableDto } from '../../../shared/in
 import { Money } from '../../../shared/kernel/money';
 import { Locale, LOCALES } from '../../../shared/kernel/translatable';
 import { ALL_BANQUET_STATUSES } from '../domain/banquet-status';
-import { INVOICE_PURPOSES, InvoiceStatus, PAYER_TYPES, PayerType } from '../domain/invoice';
+import { InvoiceStatus, PAYER_TYPES, PayerType } from '../domain/invoice';
 import { QuoteDiscount } from '../domain/quote';
 import { BANQUET_EVENT_TYPES, QUOTE_LINE_KINDS, QuoteLineKind } from '../domain/texts';
 import { MANUAL_ACTIVITY_KINDS, ManualActivityKind } from '../infrastructure/activity.repository';
@@ -261,8 +261,6 @@ export function parseInvoiceStatuses(value: string | undefined): InvoiceStatus[]
     .map((s) => s.trim())
     .filter((s): s is InvoiceStatus => (INVOICE_STATUSES as string[]).includes(s));
 }
-
-export const INVOICE_PURPOSE_VALUES = INVOICE_PURPOSES;
 
 // ---------------------------------------------------------------- списки, календарь, SLA
 

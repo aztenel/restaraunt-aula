@@ -381,6 +381,7 @@
     "ruleRequiredExactly": "Обязательно, выберите {min}",
     "ruleRequiredRange": "Обязательно, от {min} до {max}",
     "chooseRequired": "Выберите вариант: «{group}»",
+    "noneOption": "Не нужно",
     "surcharge": "+{price}",
     "price": "Цена",
     "priceNote": "Цена без добавок. Итог с выбранными добавками рассчитаем в корзине.",

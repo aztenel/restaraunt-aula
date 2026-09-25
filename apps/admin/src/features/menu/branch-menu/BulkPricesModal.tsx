@@ -11,17 +11,6 @@ import { MoneyText } from '@/shared/ui/MoneyText';
 import { changedPrices, MAX_BULK_PRICES } from './bulk-prices';
 import { MAX_MENU_PRICE_TIYN } from './PriceCell';
 
-/** Всё меню филиала (страницами по 200 — максимум API). */
-export async function fetchWholeBranchMenu(branchId: string): Promise<BranchMenuItem[]> {
-  const items: BranchMenuItem[] = [];
-  for (let page = 1; page < 100; page++) {
-    const result = await branchMenuApi.list(branchId, { page, perPage: 200 });
-    items.push(...result.items);
-    if (items.length >= result.total || result.items.length === 0) break;
-  }
-  return items;
-}
-
 /**
  * Массовое изменение цен меню филиала: новая цена вводится по каждому блюду (фронт цены не считает),
  * отправляются только изменённые. Сервер применяет всё или ничего; ошибка — ни одна цена не меняется.
@@ -36,8 +25,8 @@ export function BulkPricesModal({ branchId, branchName, open, onClose }: { branc
   const [error, setError] = useState<ApiError | null>(null);
 
   const menu = useQuery({
-    queryKey: [...queryKeys.branchMenu(branchId), 'all'],
-    queryFn: () => fetchWholeBranchMenu(branchId),
+    queryKey: queryKeys.branchMenuAll(branchId),
+    queryFn: () => branchMenuApi.all(branchId),
     enabled: open,
     staleTime: 0,
   });

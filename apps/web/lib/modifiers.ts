@@ -111,3 +111,10 @@ export function unmetGroups(groups: readonly GroupRules[], selection: ModifierSe
 export function selectedOptionIds(groups: readonly GroupRules[], selection: ModifierSelection): string[] {
   return groups.flatMap((group) => inGroupOrder(group, selection[group.id] ?? []));
 }
+
+/** «Не нужно» в необязательной группе с выбором одного варианта: снять выбор (в обязательной — без изменений). */
+export function clearGroup(groups: readonly GroupRules[], selection: ModifierSelection, groupId: string): ModifierSelection {
+  const group = groups.find((g) => g.id === groupId);
+  if (!group || isGroupRequired(group) || (selection[groupId] ?? []).length === 0) return selection;
+  return { ...selection, [groupId]: [] };
+}

@@ -381,6 +381,7 @@
     "ruleRequiredExactly": "Required, pick {min}",
     "ruleRequiredRange": "Required, pick {min} to {max}",
     "chooseRequired": "Please choose: “{group}”",
+    "noneOption": "No, thanks",
     "surcharge": "+{price}",
     "price": "Price",
     "priceNote": "Price without extras. The total with selected extras is calculated in the cart.",

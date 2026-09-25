@@ -22,6 +22,8 @@ const SECTION_PAGES: Record<Exclude<SectionKey, 'dashboard'>, Loader> = {
   reservations: () => import('@/features/reservations/ReservationsPage').then((m) => m.ReservationsPage),
   banquets: () => import('@/features/banquets/BanquetsPage').then((m) => m.BanquetsPage),
   menu: () => import('@/features/menu/MenuPage').then((m) => m.MenuPage),
+  stopList: () => import('@/features/stop-list/StopListPage').then((m) => m.StopListPage),
+  content: () => import('@/features/content/ContentPage').then((m) => m.ContentPage),
   deliveryZones: () => import('@/features/delivery-zones/DeliveryZonesPage').then((m) => m.DeliveryZonesPage),
   promocodes: () => import('@/features/promocodes/PromoCodesPage').then((m) => m.PromoCodesPage),
   venues: () => import('@/features/venues/VenuesPage').then((m) => m.VenuesPage),

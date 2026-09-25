@@ -17,3 +17,36 @@ body {
     display: none;
   }
 }
+
+/* Строка таблицы с ошибкой сервера (массовое изменение цен). */
+.aula-row-error > td {
+  background: #fff1f0 !important;
+}
+
+/* Предпросмотр HTML страницы витрины. */
+.aula-page-preview {
+  width: 100%;
+  min-height: 360px;
+  border: 1px solid #ede0d0;
+  border-radius: 8px;
+  background: #fff;
+}
+
+/* Стоп-лист на планшете: крупные зоны нажатия. */
+.aula-stop-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-bottom: 1px solid #f0e6da;
+  min-height: 72px;
+}
+
+.aula-stop-row:last-child {
+  border-bottom: none;
+}
+
+.aula-stop-row .aula-stop-main {
+  flex: 1;
+  min-width: 0;
+}

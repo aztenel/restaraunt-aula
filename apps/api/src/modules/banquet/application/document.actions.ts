@@ -21,7 +21,6 @@ import { ActRecord, DocumentRecord, DocumentRepository } from '../infrastructure
 import { RequestRepository } from '../infrastructure/request.repository';
 import { TemplateRepository } from '../infrastructure/template.repository';
 import { BanquetActIssuedPayload, BanquetEvents } from '../public';
-import { assertCanManage } from './access';
 import { BanquetSupport } from './banquet-support';
 import { BanquetDocumentFiles } from './document-files';
 import { actPdf, contractPdf } from './documents/pdf-documents';
@@ -270,9 +269,4 @@ export class IssueBanquetAct {
       return act;
     });
   }
-}
-
-/** Проверка права на заявку для запросов документов (используется контроллерами через запросы). */
-export function assertCanManageRequest(actor: Actor, request: BanquetRequest): void {
-  assertCanManage(actor, request);
 }

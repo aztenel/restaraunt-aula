@@ -381,6 +381,7 @@
     "ruleRequiredExactly": "Міндетті, {min} нұсқа таңдаңыз",
     "ruleRequiredRange": "Міндетті, {min}–{max} нұсқа",
     "chooseRequired": "Нұсқаны таңдаңыз: «{group}»",
+    "noneOption": "Керек емес",
     "surcharge": "+{price}",
     "price": "Бағасы",
     "priceNote": "Қоспаларсыз баға. Таңдалған қоспалармен қорытындысын себетте есептейміз.",

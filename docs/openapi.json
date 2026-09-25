@@ -7865,6 +7865,1615 @@
         ]
       }
     },
+    "/api/v1/admin/venue-types": {
+      "get": {
+        "operationId": "AdminVenueTypes_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VenueTypeDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminVenueTypes_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVenueTypeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VenueTypeDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/venue-types/{id}": {
+      "get": {
+        "operationId": "AdminVenueTypes_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VenueTypeDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminVenueTypes_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVenueTypeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VenueTypeDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminVenueTypes_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/halls": {
+      "get": {
+        "operationId": "AdminHalls_list",
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HallDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminHalls_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHallDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HallDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/halls/{id}": {
+      "get": {
+        "operationId": "AdminHalls_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HallDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminHalls_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHallDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HallDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminHalls_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/halls/{id}/background": {
+      "put": {
+        "operationId": "AdminHalls_background",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HallDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminHalls_removeBackground",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HallDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/venues": {
+      "get": {
+        "operationId": "AdminVenues_list",
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hallId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "typeId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VenueDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminVenues_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVenueDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VenueDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/venues/{id}": {
+      "get": {
+        "operationId": "AdminVenues_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VenueDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminVenues_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVenueDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VenueDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminVenues_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/venues/{id}/photos": {
+      "post": {
+        "operationId": "AdminVenues_photo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VenueDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/venues/{id}/photos/{photoId}": {
+      "delete": {
+        "operationId": "AdminVenues_removePhoto",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "photoId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VenueDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/reservation-settings/{branchId}": {
+      "get": {
+        "operationId": "AdminReservationSettings_get",
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationSettingsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      },
+      "put": {
+        "operationId": "AdminReservationSettings_put",
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReservationSettingsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationSettingsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/reservations": {
+      "get": {
+        "operationId": "AdminReservations_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "perPage",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "branchId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dateFrom",
+            "required": false,
+            "in": "query",
+            "description": "Начало брони с даты (локальной, включительно)",
+            "schema": {
+              "example": "2026-10-25",
+              "type": "string"
+            }
+          },
+          {
+            "name": "dateTo",
+            "required": false,
+            "in": "query",
+            "description": "Начало брони по дату (включительно)",
+            "schema": {
+              "example": "2026-10-31",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Статусы через запятую: pending, awaiting_deposit, confirmed, arrived, no_show, cancelled, expired",
+            "schema": {
+              "example": "pending,awaiting_deposit",
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "regular",
+                "banquet"
+              ]
+            }
+          },
+          {
+            "name": "source",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "web",
+                "admin",
+                "banquet"
+              ]
+            }
+          },
+          {
+            "name": "venueId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hallId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Номер брони, телефон или имя гостя",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "needsMark",
+            "required": false,
+            "in": "query",
+            "description": "Только очередь «требует отметки»: подтверждённые брони, которые уже начались",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationsPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminReservations_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStaffReservationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/reservations/timeline": {
+      "get": {
+        "operationId": "AdminReservations_timeline",
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": true,
+            "in": "query",
+            "description": "Локальная дата филиала",
+            "schema": {
+              "example": "2026-10-25",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimelineDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/reservations/{id}": {
+      "get": {
+        "operationId": "AdminReservations_detail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/reservations/{id}/confirm": {
+      "post": {
+        "operationId": "AdminReservations_confirm",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmReservationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/reservations/{id}/cancel": {
+      "post": {
+        "operationId": "AdminReservations_cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelReservationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/reservations/{id}/arrived": {
+      "post": {
+        "operationId": "AdminReservations_arrived",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/reservations/{id}/no-show": {
+      "post": {
+        "operationId": "AdminReservations_noShow",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/reservations/{id}/reschedule": {
+      "post": {
+        "operationId": "AdminReservations_move",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RescheduleReservationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/public/branches/{branchSlug}/reservation-availability": {
+      "get": {
+        "operationId": "PublicAvailability_check",
+        "parameters": [
+          {
+            "name": "branchSlug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "ru",
+              "type": "string",
+              "enum": [
+                "kk",
+                "ru",
+                "en"
+              ]
+            }
+          },
+          {
+            "name": "date",
+            "required": true,
+            "in": "query",
+            "description": "Локальная дата филиала",
+            "schema": {
+              "example": "2026-10-25",
+              "type": "string"
+            }
+          },
+          {
+            "name": "time",
+            "required": true,
+            "in": "query",
+            "description": "Локальное время начала",
+            "schema": {
+              "example": "19:30",
+              "type": "string"
+            }
+          },
+          {
+            "name": "guests",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 1000,
+              "type": "number"
+            }
+          },
+          {
+            "name": "typeCode",
+            "required": false,
+            "in": "query",
+            "description": "Тип места (справочник типов)",
+            "schema": {
+              "example": "vip_hall",
+              "type": "string"
+            }
+          },
+          {
+            "name": "durationMinutes",
+            "required": false,
+            "in": "query",
+            "description": "Длительность, минут (по умолчанию — правило места)",
+            "schema": {
+              "minimum": 15,
+              "maximum": 1440,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvailabilityDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "public"
+        ]
+      }
+    },
+    "/api/v1/public/branches/{branchSlug}/halls": {
+      "get": {
+        "operationId": "PublicAvailability_halls",
+        "parameters": [
+          {
+            "name": "branchSlug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "ru",
+              "type": "string",
+              "enum": [
+                "kk",
+                "ru",
+                "en"
+              ]
+            }
+          },
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "description": "С датой, временем и гостями — у мест флаг available",
+            "schema": {
+              "example": "2026-10-25",
+              "type": "string"
+            }
+          },
+          {
+            "name": "time",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "19:30",
+              "type": "string"
+            }
+          },
+          {
+            "name": "guests",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 1000,
+              "type": "number"
+            }
+          },
+          {
+            "name": "durationMinutes",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 15,
+              "maximum": 1440,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicHallMapDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "public"
+        ]
+      }
+    },
+    "/api/v1/public/reservations": {
+      "post": {
+        "operationId": "PublicReservations_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookReservationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicReservationDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "public"
+        ]
+      }
+    },
+    "/api/v1/public/reservations/{token}": {
+      "get": {
+        "operationId": "PublicReservations_get",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "kk",
+                "ru",
+                "en"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicReservationDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "public"
+        ]
+      }
+    },
+    "/api/v1/public/reservations/{token}/cancel": {
+      "post": {
+        "operationId": "PublicReservations_cancel",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "kk",
+                "ru",
+                "en"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuestCancelReservationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicReservationDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "public"
+        ]
+      }
+    },
+    "/api/v1/public/reservations/{token}/pay": {
+      "post": {
+        "operationId": "PublicReservations_pay",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "kk",
+                "ru",
+                "en"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicReservationDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "public"
+        ]
+      }
+    },
     "/api/v1/admin/reports/revenue": {
       "get": {
         "operationId": "Reports_revenueReport",
@@ -21006,6 +22615,2574 @@
           "code",
           "kind"
         ]
+      },
+      "VenueRulesDto": {
+        "type": "object",
+        "properties": {
+          "durationMinutes": {
+            "type": "number",
+            "minimum": 15,
+            "maximum": 1440,
+            "example": 120,
+            "description": "Длительность брони по умолчанию, минут"
+          },
+          "holdMinutes": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 10080,
+            "example": 30,
+            "description": "Сколько держится неподтверждённая / неоплаченная бронь, минут"
+          },
+          "cancellationDeadlineHours": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 720,
+            "example": 24,
+            "description": "За сколько часов до начала можно отменить с возвратом депозита"
+          },
+          "requiresManualConfirmation": {
+            "type": "boolean",
+            "description": "Бронь с витрины ждёт подтверждения персоналом (pending)"
+          },
+          "cleanupMinutes": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 720,
+            "example": 15,
+            "description": "Буфер на уборку после брони, минут"
+          },
+          "slotStepMinutes": {
+            "type": "number",
+            "minimum": 5,
+            "maximum": 240,
+            "example": 30,
+            "description": "Шаг сетки времени (альтернативы), минут"
+          },
+          "bookableOnline": {
+            "type": "boolean",
+            "description": "Можно бронировать на витрине (иначе — только через оператора)"
+          }
+        },
+        "required": [
+          "durationMinutes",
+          "holdMinutes",
+          "cancellationDeadlineHours",
+          "requiresManualConfirmation",
+          "cleanupMinutes",
+          "slotStepMinutes",
+          "bookableOnline"
+        ]
+      },
+      "VenueTypeDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "example": "vip_hall"
+          },
+          "name": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "rules": {
+            "description": "Правила брони по умолчанию для мест этого типа",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VenueRulesDto"
+              }
+            ]
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "description",
+          "rules",
+          "sortOrder",
+          "isActive",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateVenueTypeDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "vip_hall",
+            "description": "Латиница в нижнем регистре, цифры, «_»"
+          },
+          "name": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "description": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TranslatableDto"
+              }
+            ]
+          },
+          "rules": {
+            "$ref": "#/components/schemas/VenueRulesDto"
+          },
+          "sortOrder": {
+            "type": "number",
+            "default": 0
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "rules"
+        ]
+      },
+      "VenueRulesPatchDto": {
+        "type": "object",
+        "properties": {
+          "durationMinutes": {
+            "type": "number",
+            "minimum": 15,
+            "maximum": 1440
+          },
+          "holdMinutes": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 10080
+          },
+          "cancellationDeadlineHours": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 720
+          },
+          "requiresManualConfirmation": {
+            "type": "boolean"
+          },
+          "cleanupMinutes": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 720
+          },
+          "slotStepMinutes": {
+            "type": "number",
+            "minimum": 5,
+            "maximum": 240
+          },
+          "bookableOnline": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UpdateVenueTypeDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "description": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TranslatableDto"
+              }
+            ]
+          },
+          "rules": {
+            "$ref": "#/components/schemas/VenueRulesPatchDto"
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "HallDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "branchId": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "example": "main"
+          },
+          "name": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "planWidth": {
+            "type": "number",
+            "description": "Ширина плана зала, условные единицы"
+          },
+          "planHeight": {
+            "type": "number",
+            "description": "Высота плана зала, условные единицы"
+          },
+          "background": {
+            "nullable": true,
+            "description": "Фон плана зала",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ImageDto"
+              }
+            ]
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "branchId",
+          "code",
+          "name",
+          "description",
+          "planWidth",
+          "planHeight",
+          "sortOrder",
+          "isActive",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateHallDto": {
+        "type": "object",
+        "properties": {
+          "branchId": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "example": "main"
+          },
+          "name": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "description": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TranslatableDto"
+              }
+            ]
+          },
+          "planWidth": {
+            "type": "number",
+            "default": 1000,
+            "minimum": 100,
+            "maximum": 10000
+          },
+          "planHeight": {
+            "type": "number",
+            "default": 600,
+            "minimum": 100,
+            "maximum": 10000
+          },
+          "sortOrder": {
+            "type": "number",
+            "default": 0
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "branchId",
+          "code",
+          "name"
+        ]
+      },
+      "UpdateHallDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "description": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TranslatableDto"
+              }
+            ]
+          },
+          "planWidth": {
+            "type": "number",
+            "minimum": 100,
+            "maximum": 10000
+          },
+          "planHeight": {
+            "type": "number",
+            "minimum": 100,
+            "maximum": 10000
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "VenueRuleOverridesDto": {
+        "type": "object",
+        "properties": {
+          "durationMinutes": {
+            "type": "object",
+            "nullable": true,
+            "minimum": 15,
+            "maximum": 1440
+          },
+          "holdMinutes": {
+            "type": "object",
+            "nullable": true,
+            "minimum": 1,
+            "maximum": 10080
+          },
+          "cancellationDeadlineHours": {
+            "type": "object",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 720
+          },
+          "requiresManualConfirmation": {
+            "type": "object",
+            "nullable": true
+          },
+          "cleanupMinutes": {
+            "type": "object",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 720
+          },
+          "slotStepMinutes": {
+            "type": "object",
+            "nullable": true,
+            "minimum": 5,
+            "maximum": 240
+          },
+          "bookableOnline": {
+            "type": "object",
+            "nullable": true
+          }
+        }
+      },
+      "VenuePositionDto": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "number",
+            "minimum": 0
+          },
+          "y": {
+            "type": "number",
+            "minimum": 0
+          },
+          "w": {
+            "type": "number",
+            "minimum": 1,
+            "description": "Ширина"
+          },
+          "h": {
+            "type": "number",
+            "minimum": 1,
+            "description": "Высота"
+          },
+          "shape": {
+            "type": "string",
+            "enum": [
+              "rect",
+              "circle"
+            ]
+          },
+          "rotation": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 359,
+            "description": "Поворот, градусы"
+          }
+        },
+        "required": [
+          "x",
+          "y",
+          "w",
+          "h",
+          "shape",
+          "rotation"
+        ]
+      },
+      "VenueDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "branchId": {
+            "type": "string"
+          },
+          "hallId": {
+            "type": "string"
+          },
+          "hallName": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "typeId": {
+            "type": "string"
+          },
+          "typeCode": {
+            "type": "string",
+            "example": "table"
+          },
+          "typeName": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "code": {
+            "type": "string",
+            "example": "T4"
+          },
+          "name": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "capacityMin": {
+            "type": "number"
+          },
+          "capacityMax": {
+            "type": "number"
+          },
+          "deposit": {
+            "nullable": true,
+            "description": "Минимальный депозит (онлайн-предоплата); null — без депозита",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          },
+          "ruleOverrides": {
+            "description": "Переопределения правил типа",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VenueRuleOverridesDto"
+              }
+            ]
+          },
+          "rules": {
+            "description": "Действующие правила (тип + переопределения)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VenueRulesDto"
+              }
+            ]
+          },
+          "position": {
+            "$ref": "#/components/schemas/VenuePositionDto"
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImageDto"
+            }
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isBookable": {
+            "type": "boolean",
+            "description": "Доступно для брони: активны место, зал и тип"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "branchId",
+          "hallId",
+          "hallName",
+          "typeId",
+          "typeCode",
+          "typeName",
+          "code",
+          "name",
+          "description",
+          "capacityMin",
+          "capacityMax",
+          "ruleOverrides",
+          "rules",
+          "position",
+          "photos",
+          "sortOrder",
+          "isActive",
+          "isBookable",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "VenuePositionInputDto": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "number",
+            "minimum": 0
+          },
+          "y": {
+            "type": "number",
+            "minimum": 0
+          },
+          "w": {
+            "type": "number",
+            "minimum": 1
+          },
+          "h": {
+            "type": "number",
+            "minimum": 1
+          },
+          "shape": {
+            "type": "string",
+            "enum": [
+              "rect",
+              "circle"
+            ]
+          },
+          "rotation": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 359
+          }
+        }
+      },
+      "CreateVenueDto": {
+        "type": "object",
+        "properties": {
+          "hallId": {
+            "type": "string"
+          },
+          "typeId": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "example": "T4",
+            "description": "Код места в филиале (латиница, цифры, «-», «_»)"
+          },
+          "name": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "description": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TranslatableDto"
+              }
+            ]
+          },
+          "capacityMin": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "capacityMax": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "deposit": {
+            "nullable": true,
+            "description": "Депозит; null — без депозита",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyInputDto"
+              }
+            ]
+          },
+          "rules": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VenueRuleOverridesDto"
+              }
+            ]
+          },
+          "position": {
+            "$ref": "#/components/schemas/VenuePositionInputDto"
+          },
+          "sortOrder": {
+            "type": "number",
+            "default": 0
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "hallId",
+          "typeId",
+          "code",
+          "name",
+          "capacityMin",
+          "capacityMax"
+        ]
+      },
+      "UpdateVenueDto": {
+        "type": "object",
+        "properties": {
+          "hallId": {
+            "type": "string",
+            "description": "Пересадить в другой зал того же филиала"
+          },
+          "typeId": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "description": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TranslatableDto"
+              }
+            ]
+          },
+          "capacityMin": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "capacityMax": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "deposit": {
+            "nullable": true,
+            "description": "null — убрать депозит",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyInputDto"
+              }
+            ]
+          },
+          "rules": {
+            "nullable": true,
+            "description": "Полная замена переопределений; null — как у типа",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VenueRuleOverridesDto"
+              }
+            ]
+          },
+          "position": {
+            "$ref": "#/components/schemas/VenuePositionInputDto"
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ReservationSettingsDto": {
+        "type": "object",
+        "properties": {
+          "branchId": {
+            "type": "string"
+          },
+          "reminderHoursBefore": {
+            "type": "number",
+            "example": 3,
+            "description": "Напоминание гостю за N часов до начала (0 — не напоминать)"
+          },
+          "minLeadMinutes": {
+            "type": "number",
+            "example": 60,
+            "description": "Бронь на витрине — не раньше чем через N минут"
+          },
+          "maxDaysAhead": {
+            "type": "number",
+            "example": 60,
+            "description": "На сколько дней вперёд можно бронировать на витрине"
+          },
+          "policyText": {
+            "description": "Текст правил брони и отмены для гостя",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TranslatableDto"
+              }
+            ]
+          },
+          "updatedAt": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "branchId",
+          "reminderHoursBefore",
+          "minLeadMinutes",
+          "maxDaysAhead",
+          "policyText"
+        ]
+      },
+      "UpdateReservationSettingsDto": {
+        "type": "object",
+        "properties": {
+          "reminderHoursBefore": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 72
+          },
+          "minLeadMinutes": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10080
+          },
+          "maxDaysAhead": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 365
+          },
+          "policyText": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          }
+        }
+      },
+      "ReservationVenueRefDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "hallId": {
+            "type": "string"
+          },
+          "hallName": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "typeCode": {
+            "type": "string"
+          },
+          "typeName": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "hallId",
+          "hallName",
+          "typeCode",
+          "typeName"
+        ]
+      },
+      "ReservationCustomerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "object",
+            "nullable": true,
+            "description": "Гость в базе гостей"
+          },
+          "name": {
+            "type": "object",
+            "nullable": true
+          },
+          "phone": {
+            "type": "object",
+            "nullable": true,
+            "example": "+77011234567"
+          },
+          "email": {
+            "type": "object",
+            "nullable": true
+          }
+        }
+      },
+      "ReservationSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string",
+            "example": "GL-R-2026-000123"
+          },
+          "branchId": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "regular",
+              "banquet"
+            ],
+            "description": "regular — бронь гостя, banquet — зал занят под банкет"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "awaiting_deposit",
+              "confirmed",
+              "arrived",
+              "no_show",
+              "cancelled",
+              "expired"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "web",
+              "admin",
+              "banquet"
+            ]
+          },
+          "venue": {
+            "$ref": "#/components/schemas/ReservationVenueRefDto"
+          },
+          "start": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "end": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "blockedUntil": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Конец занятости места: конец брони + буфер уборки"
+          },
+          "date": {
+            "type": "string",
+            "example": "2026-10-25",
+            "description": "Локальная дата начала (часовой пояс филиала)"
+          },
+          "time": {
+            "type": "string",
+            "example": "19:30"
+          },
+          "durationMinutes": {
+            "type": "number"
+          },
+          "guests": {
+            "type": "number"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/ReservationCustomerDto"
+          },
+          "comment": {
+            "type": "object",
+            "nullable": true
+          },
+          "occasion": {
+            "type": "object",
+            "nullable": true
+          },
+          "note": {
+            "type": "object",
+            "nullable": true,
+            "description": "Служебная заметка персонала"
+          },
+          "deposit": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          },
+          "depositState": {
+            "type": "string",
+            "enum": [
+              "none",
+              "waived",
+              "pending",
+              "unpaid",
+              "paid",
+              "refund_pending",
+              "refunded",
+              "refund_failed",
+              "retained",
+              "applied"
+            ]
+          },
+          "depositOutcome": {
+            "type": "string",
+            "enum": [
+              "none",
+              "refunded",
+              "retained"
+            ]
+          },
+          "holdExpiresAt": {
+            "type": "object",
+            "nullable": true,
+            "description": "Бронь будет снята, если не подтвердят / не оплатят до этого момента"
+          },
+          "banquetRequestId": {
+            "type": "object",
+            "nullable": true
+          },
+          "needsMark": {
+            "type": "boolean",
+            "description": "Требует отметки «пришли / не пришли»"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "branchId",
+          "kind",
+          "status",
+          "source",
+          "venue",
+          "start",
+          "end",
+          "blockedUntil",
+          "date",
+          "time",
+          "durationMinutes",
+          "guests",
+          "customer",
+          "depositState",
+          "depositOutcome",
+          "needsMark",
+          "createdAt"
+        ]
+      },
+      "ReservationsPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReservationSummaryDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "perPage": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "perPage"
+        ]
+      },
+      "TimeRangeDto": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "end": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start",
+          "end"
+        ]
+      },
+      "TimelineItemDto": {
+        "type": "object",
+        "properties": {
+          "reservationId": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "regular",
+              "banquet"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "awaiting_deposit",
+              "confirmed",
+              "arrived",
+              "no_show",
+              "cancelled",
+              "expired"
+            ]
+          },
+          "blocking": {
+            "type": "boolean",
+            "description": "Занимает место"
+          },
+          "start": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "end": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "blockedUntil": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "guests": {
+            "type": "number"
+          },
+          "customerName": {
+            "type": "object",
+            "nullable": true
+          },
+          "customerPhone": {
+            "type": "object",
+            "nullable": true
+          },
+          "banquetRequestId": {
+            "type": "object",
+            "nullable": true
+          },
+          "depositState": {
+            "type": "string",
+            "enum": [
+              "none",
+              "waived",
+              "pending",
+              "unpaid",
+              "paid",
+              "refund_pending",
+              "refunded",
+              "refund_failed",
+              "retained",
+              "applied"
+            ]
+          },
+          "needsMark": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "reservationId",
+          "number",
+          "kind",
+          "status",
+          "blocking",
+          "start",
+          "end",
+          "blockedUntil",
+          "guests",
+          "depositState",
+          "needsMark"
+        ]
+      },
+      "TimelineVenueDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "typeCode": {
+            "type": "string"
+          },
+          "typeName": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "capacityMin": {
+            "type": "number"
+          },
+          "capacityMax": {
+            "type": "number"
+          },
+          "deposit": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          },
+          "position": {
+            "$ref": "#/components/schemas/VenuePositionDto"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "bookableOnline": {
+            "type": "boolean"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimelineItemDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "typeCode",
+          "typeName",
+          "capacityMin",
+          "capacityMax",
+          "position",
+          "isActive",
+          "bookableOnline",
+          "items"
+        ]
+      },
+      "TimelineHallDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "planWidth": {
+            "type": "number"
+          },
+          "planHeight": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "venues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimelineVenueDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "planWidth",
+          "planHeight",
+          "isActive",
+          "venues"
+        ]
+      },
+      "TimelineDto": {
+        "type": "object",
+        "properties": {
+          "branchId": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "example": "2026-10-25"
+          },
+          "timezone": {
+            "type": "string",
+            "example": "Asia/Almaty"
+          },
+          "from": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Начало локальных суток (UTC)"
+          },
+          "to": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Конец локальных суток (UTC)"
+          },
+          "openingRanges": {
+            "description": "Часы работы филиала в этот день",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimeRangeDto"
+            }
+          },
+          "halls": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimelineHallDto"
+            }
+          }
+        },
+        "required": [
+          "branchId",
+          "date",
+          "timezone",
+          "from",
+          "to",
+          "openingRanges",
+          "halls"
+        ]
+      },
+      "DepositPaymentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "example": "pending"
+          },
+          "amount": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "refundedAmount": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "paymentUrl": {
+            "type": "object",
+            "nullable": true
+          },
+          "paidAt": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "amount",
+          "refundedAmount"
+        ]
+      },
+      "StatusHistoryDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "awaiting_deposit",
+              "confirmed",
+              "arrived",
+              "no_show",
+              "cancelled",
+              "expired"
+            ],
+            "nullable": true
+          },
+          "to": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "awaiting_deposit",
+              "confirmed",
+              "arrived",
+              "no_show",
+              "cancelled",
+              "expired"
+            ]
+          },
+          "reason": {
+            "type": "object",
+            "nullable": true
+          },
+          "depositOutcome": {
+            "type": "string",
+            "enum": [
+              "none",
+              "refunded",
+              "retained"
+            ]
+          },
+          "actorKind": {
+            "type": "string",
+            "example": "staff"
+          },
+          "actorName": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "to",
+          "depositOutcome",
+          "actorKind",
+          "actorName",
+          "occurredAt"
+        ]
+      },
+      "ReservationDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string",
+            "example": "GL-R-2026-000123"
+          },
+          "branchId": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "regular",
+              "banquet"
+            ],
+            "description": "regular — бронь гостя, banquet — зал занят под банкет"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "awaiting_deposit",
+              "confirmed",
+              "arrived",
+              "no_show",
+              "cancelled",
+              "expired"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "web",
+              "admin",
+              "banquet"
+            ]
+          },
+          "venue": {
+            "$ref": "#/components/schemas/ReservationVenueRefDto"
+          },
+          "start": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "end": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "blockedUntil": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Конец занятости места: конец брони + буфер уборки"
+          },
+          "date": {
+            "type": "string",
+            "example": "2026-10-25",
+            "description": "Локальная дата начала (часовой пояс филиала)"
+          },
+          "time": {
+            "type": "string",
+            "example": "19:30"
+          },
+          "durationMinutes": {
+            "type": "number"
+          },
+          "guests": {
+            "type": "number"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/ReservationCustomerDto"
+          },
+          "comment": {
+            "type": "object",
+            "nullable": true
+          },
+          "occasion": {
+            "type": "object",
+            "nullable": true
+          },
+          "note": {
+            "type": "object",
+            "nullable": true,
+            "description": "Служебная заметка персонала"
+          },
+          "deposit": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          },
+          "depositState": {
+            "type": "string",
+            "enum": [
+              "none",
+              "waived",
+              "pending",
+              "unpaid",
+              "paid",
+              "refund_pending",
+              "refunded",
+              "refund_failed",
+              "retained",
+              "applied"
+            ]
+          },
+          "depositOutcome": {
+            "type": "string",
+            "enum": [
+              "none",
+              "refunded",
+              "retained"
+            ]
+          },
+          "holdExpiresAt": {
+            "type": "object",
+            "nullable": true,
+            "description": "Бронь будет снята, если не подтвердят / не оплатят до этого момента"
+          },
+          "banquetRequestId": {
+            "type": "object",
+            "nullable": true
+          },
+          "needsMark": {
+            "type": "boolean",
+            "description": "Требует отметки «пришли / не пришли»"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "allowedTransitions": {
+            "type": "array",
+            "description": "Переходы, доступные сотруднику сейчас",
+            "items": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "awaiting_deposit",
+                "confirmed",
+                "arrived",
+                "no_show",
+                "cancelled",
+                "expired"
+              ]
+            }
+          },
+          "canReschedule": {
+            "type": "boolean"
+          },
+          "rules": {
+            "description": "Правила брони (снимок на момент брони / переноса)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VenueRulesDto"
+              }
+            ]
+          },
+          "cancellationDeadline": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Дедлайн бесплатной отмены"
+          },
+          "depositOutcomeIfCancelled": {
+            "type": "string",
+            "enum": [
+              "none",
+              "refunded",
+              "retained"
+            ],
+            "description": "Исход депозита при отмене сейчас по правилу"
+          },
+          "depositPayment": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DepositPaymentDto"
+              }
+            ]
+          },
+          "depositWaiveReason": {
+            "type": "object",
+            "nullable": true
+          },
+          "depositPaidAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "cancelReason": {
+            "type": "object",
+            "nullable": true
+          },
+          "cancelledBy": {
+            "type": "string",
+            "enum": [
+              "guest",
+              "staff",
+              "system",
+              "banquet"
+            ],
+            "nullable": true
+          },
+          "confirmedAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "arrivedAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "noShowAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "cancelledAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "expiredAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "reminderSentAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "manageUrl": {
+            "type": "object",
+            "nullable": true,
+            "description": "Ссылка на страницу брони гостя"
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatusHistoryDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "branchId",
+          "kind",
+          "status",
+          "source",
+          "venue",
+          "start",
+          "end",
+          "blockedUntil",
+          "date",
+          "time",
+          "durationMinutes",
+          "guests",
+          "customer",
+          "depositState",
+          "depositOutcome",
+          "needsMark",
+          "createdAt",
+          "allowedTransitions",
+          "canReschedule",
+          "rules",
+          "cancellationDeadline",
+          "depositOutcomeIfCancelled",
+          "history"
+        ]
+      },
+      "StaffCustomerDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Айгерим"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+7 701 123 45 67"
+          },
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone"
+        ]
+      },
+      "StaffDepositDto": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "payment_link",
+              "waive"
+            ],
+            "description": "payment_link — отправить гостю ссылку на оплату; waive — без депозита (причина обязательна)"
+          },
+          "waiveReason": {
+            "type": "string",
+            "description": "Причина отказа от депозита (журнал действий)"
+          }
+        },
+        "required": [
+          "mode"
+        ]
+      },
+      "StaffConsentDto": {
+        "type": "object",
+        "properties": {
+          "personalData": {
+            "type": "boolean",
+            "description": "Гость дал согласие на обработку ПД по телефону"
+          },
+          "marketing": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreateStaffReservationDto": {
+        "type": "object",
+        "properties": {
+          "branchId": {
+            "type": "string"
+          },
+          "venueId": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "example": "2026-10-25"
+          },
+          "time": {
+            "type": "string",
+            "example": "19:30"
+          },
+          "guests": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "durationMinutes": {
+            "type": "number",
+            "minimum": 15,
+            "maximum": 1440,
+            "description": "По умолчанию — правило места"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/StaffCustomerDto"
+          },
+          "comment": {
+            "type": "string"
+          },
+          "occasion": {
+            "type": "string",
+            "example": "День рождения"
+          },
+          "note": {
+            "type": "string",
+            "description": "Служебная заметка (гость не видит)"
+          },
+          "locale": {
+            "type": "string",
+            "enum": [
+              "kk",
+              "ru",
+              "en"
+            ],
+            "default": "ru",
+            "description": "Язык уведомлений гостю"
+          },
+          "deposit": {
+            "description": "Обязательно, если у места есть депозит",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StaffDepositDto"
+              }
+            ]
+          },
+          "consent": {
+            "$ref": "#/components/schemas/StaffConsentDto"
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "description": "Ключ идемпотентности (повтор не создаёт вторую бронь)"
+          }
+        },
+        "required": [
+          "branchId",
+          "venueId",
+          "date",
+          "time",
+          "guests",
+          "customer"
+        ]
+      },
+      "ConfirmReservationDto": {
+        "type": "object",
+        "properties": {
+          "waiveDepositReason": {
+            "type": "string",
+            "description": "Подтвердить без оплаченного депозита — отказ от депозита с причиной"
+          }
+        }
+      },
+      "CancelReservationDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "example": "Гость попросил отменить по телефону"
+          },
+          "depositDecision": {
+            "type": "string",
+            "enum": [
+              "refund",
+              "retain"
+            ],
+            "description": "Решение по оплаченному депозиту; по умолчанию — правило отмены места"
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "RescheduleReservationDto": {
+        "type": "object",
+        "properties": {
+          "venueId": {
+            "type": "string",
+            "description": "Новое место (того же филиала)"
+          },
+          "date": {
+            "type": "string",
+            "example": "2026-10-26"
+          },
+          "time": {
+            "type": "string",
+            "example": "20:00"
+          },
+          "durationMinutes": {
+            "type": "number",
+            "minimum": 15,
+            "maximum": 1440
+          },
+          "guests": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "PublicVenueRulesDto": {
+        "type": "object",
+        "properties": {
+          "holdMinutes": {
+            "type": "number",
+            "description": "Сколько держится бронь без подтверждения / оплаты, минут"
+          },
+          "cancellationDeadlineHours": {
+            "type": "number",
+            "description": "За сколько часов до начала можно отменить с возвратом депозита"
+          },
+          "requiresManualConfirmation": {
+            "type": "boolean",
+            "description": "Бронь подтверждает персонал"
+          }
+        },
+        "required": [
+          "holdMinutes",
+          "cancellationDeadlineHours",
+          "requiresManualConfirmation"
+        ]
+      },
+      "PublicVenueSlotDto": {
+        "type": "object",
+        "properties": {
+          "venueId": {
+            "type": "string"
+          },
+          "hallId": {
+            "type": "string"
+          },
+          "hallName": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "typeCode": {
+            "type": "string",
+            "example": "table"
+          },
+          "typeName": {
+            "type": "string"
+          },
+          "capacityMin": {
+            "type": "number"
+          },
+          "capacityMax": {
+            "type": "number"
+          },
+          "deposit": {
+            "nullable": true,
+            "description": "Депозит (оплачивается онлайн при брони)",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          },
+          "start": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "end": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "durationMinutes": {
+            "type": "number"
+          },
+          "rules": {
+            "$ref": "#/components/schemas/PublicVenueRulesDto"
+          },
+          "position": {
+            "$ref": "#/components/schemas/VenuePositionDto"
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImageDto"
+            }
+          }
+        },
+        "required": [
+          "venueId",
+          "hallId",
+          "hallName",
+          "name",
+          "description",
+          "typeCode",
+          "typeName",
+          "capacityMin",
+          "capacityMax",
+          "start",
+          "end",
+          "durationMinutes",
+          "rules",
+          "position",
+          "photos"
+        ]
+      },
+      "AlternativeTimeDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "2026-10-25"
+          },
+          "time": {
+            "type": "string",
+            "example": "18:30"
+          },
+          "start": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "venueIds": {
+            "description": "Свободные места на это время",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "date",
+          "time",
+          "start",
+          "venueIds"
+        ]
+      },
+      "AvailabilityDto": {
+        "type": "object",
+        "properties": {
+          "branchId": {
+            "type": "string"
+          },
+          "branchSlug": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "time": {
+            "type": "string"
+          },
+          "guests": {
+            "type": "number"
+          },
+          "durationMinutes": {
+            "type": "object",
+            "nullable": true
+          },
+          "available": {
+            "type": "boolean",
+            "description": "Есть хотя бы одно свободное место"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "no_capacity",
+              "occupied",
+              "past",
+              "too_soon",
+              "too_far",
+              "closed",
+              "not_accepting"
+            ],
+            "nullable": true,
+            "description": "Почему мест нет"
+          },
+          "venues": {
+            "description": "Только реально свободные места",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicVenueSlotDto"
+            }
+          },
+          "alternatives": {
+            "description": "Ближайшее свободное время в тот же день, если мест нет",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlternativeTimeDto"
+            }
+          }
+        },
+        "required": [
+          "branchId",
+          "branchSlug",
+          "date",
+          "time",
+          "guests",
+          "available",
+          "venues",
+          "alternatives"
+        ]
+      },
+      "PublicMapVenueDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "typeCode": {
+            "type": "string"
+          },
+          "typeName": {
+            "type": "string"
+          },
+          "capacityMin": {
+            "type": "number"
+          },
+          "capacityMax": {
+            "type": "number"
+          },
+          "deposit": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          },
+          "position": {
+            "$ref": "#/components/schemas/VenuePositionDto"
+          },
+          "bookableOnline": {
+            "type": "boolean",
+            "description": "Можно забронировать на сайте (иначе — по телефону)"
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImageDto"
+            }
+          },
+          "available": {
+            "type": "object",
+            "nullable": true,
+            "description": "Свободно на запрошенное время; null — время не запрошено"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "typeCode",
+          "typeName",
+          "capacityMin",
+          "capacityMax",
+          "position",
+          "bookableOnline",
+          "photos"
+        ]
+      },
+      "PublicHallDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "planWidth": {
+            "type": "number"
+          },
+          "planHeight": {
+            "type": "number"
+          },
+          "background": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ImageDto"
+              }
+            ]
+          },
+          "venues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicMapVenueDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "planWidth",
+          "planHeight",
+          "venues"
+        ]
+      },
+      "PublicHallMapDto": {
+        "type": "object",
+        "properties": {
+          "branchId": {
+            "type": "string"
+          },
+          "branchSlug": {
+            "type": "string"
+          },
+          "acceptsReservations": {
+            "type": "boolean"
+          },
+          "halls": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicHallDto"
+            }
+          }
+        },
+        "required": [
+          "branchId",
+          "branchSlug",
+          "acceptsReservations",
+          "halls"
+        ]
+      },
+      "GuestCustomerDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Айгерим"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+7 701 123 45 67"
+          },
+          "email": {
+            "type": "string",
+            "example": "aigerim@mail.kz"
+          }
+        },
+        "required": [
+          "name",
+          "phone"
+        ]
+      },
+      "ReservationConsentDto": {
+        "type": "object",
+        "properties": {
+          "personalData": {
+            "type": "boolean",
+            "description": "Согласие на обработку персональных данных (обязательно true)"
+          },
+          "marketing": {
+            "type": "boolean",
+            "description": "Согласие на рекламные рассылки (необязательно)"
+          }
+        },
+        "required": [
+          "personalData"
+        ]
+      },
+      "BookReservationDto": {
+        "type": "object",
+        "properties": {
+          "branchId": {
+            "type": "string"
+          },
+          "venueId": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "example": "2026-10-25"
+          },
+          "time": {
+            "type": "string",
+            "example": "19:30"
+          },
+          "guests": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "durationMinutes": {
+            "type": "number",
+            "minimum": 15,
+            "maximum": 1440,
+            "description": "По умолчанию — правило места"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/GuestCustomerDto"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Пожелания гостя"
+          },
+          "occasion": {
+            "type": "string",
+            "example": "День рождения"
+          },
+          "phoneVerificationToken": {
+            "type": "string",
+            "description": "Токен подтверждения телефона (если филиал требует SMS-код для броней без депозита)"
+          },
+          "consent": {
+            "$ref": "#/components/schemas/ReservationConsentDto"
+          },
+          "locale": {
+            "type": "string",
+            "enum": [
+              "kk",
+              "ru",
+              "en"
+            ],
+            "description": "Язык уведомлений"
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "description": "Ключ идемпотентности (генерирует витрина на одну попытку оформления)"
+          }
+        },
+        "required": [
+          "branchId",
+          "venueId",
+          "date",
+          "time",
+          "guests",
+          "customer",
+          "consent",
+          "locale",
+          "idempotencyKey"
+        ]
+      },
+      "PublicReservationBranchDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "address",
+          "phone"
+        ]
+      },
+      "PublicReservationVenueDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "typeCode": {
+            "type": "string"
+          },
+          "typeName": {
+            "type": "string"
+          },
+          "hallName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "typeCode",
+          "typeName",
+          "hallName"
+        ]
+      },
+      "PublicDepositDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "none",
+              "waived",
+              "pending",
+              "unpaid",
+              "paid",
+              "refund_pending",
+              "refunded",
+              "refund_failed",
+              "retained",
+              "applied"
+            ]
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "none",
+              "refunded",
+              "retained"
+            ],
+            "description": "Депозит возвращён или удержан (после отмены / неявки)"
+          },
+          "paymentStatus": {
+            "type": "object",
+            "nullable": true,
+            "example": "pending"
+          },
+          "paymentUrl": {
+            "type": "object",
+            "nullable": true,
+            "description": "Страница оплаты (появляется асинхронно после создания платежа)"
+          }
+        },
+        "required": [
+          "amount",
+          "state",
+          "outcome"
+        ]
+      },
+      "PublicPolicyDto": {
+        "type": "object",
+        "properties": {
+          "cancellationDeadlineHours": {
+            "type": "number"
+          },
+          "holdMinutes": {
+            "type": "number"
+          },
+          "requiresManualConfirmation": {
+            "type": "boolean"
+          },
+          "text": {
+            "type": "string",
+            "description": "Текст правил брони и отмены (настройка филиала)"
+          }
+        },
+        "required": [
+          "cancellationDeadlineHours",
+          "holdMinutes",
+          "requiresManualConfirmation",
+          "text"
+        ]
+      },
+      "PublicReservationDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "awaiting_deposit",
+              "confirmed",
+              "arrived",
+              "no_show",
+              "cancelled",
+              "expired"
+            ]
+          },
+          "branch": {
+            "$ref": "#/components/schemas/PublicReservationBranchDto"
+          },
+          "venue": {
+            "$ref": "#/components/schemas/PublicReservationVenueDto"
+          },
+          "date": {
+            "type": "string",
+            "example": "2026-10-25"
+          },
+          "time": {
+            "type": "string",
+            "example": "19:30"
+          },
+          "start": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "end": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "durationMinutes": {
+            "type": "number"
+          },
+          "guests": {
+            "type": "number"
+          },
+          "customerName": {
+            "type": "object",
+            "nullable": true
+          },
+          "comment": {
+            "type": "object",
+            "nullable": true
+          },
+          "occasion": {
+            "type": "object",
+            "nullable": true
+          },
+          "holdExpiresAt": {
+            "type": "object",
+            "nullable": true,
+            "description": "Бронь будет снята, если не подтвердят / не оплатят до этого момента"
+          },
+          "deposit": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicDepositDto"
+              }
+            ]
+          },
+          "canCancel": {
+            "type": "boolean",
+            "description": "Гость может отменить бронь"
+          },
+          "canPay": {
+            "type": "boolean",
+            "description": "Гость может (повторно) оплатить депозит"
+          },
+          "cancellationDeadline": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Дедлайн бесплатной отмены (возврат депозита)"
+          },
+          "depositOutcomeIfCancelled": {
+            "type": "string",
+            "enum": [
+              "none",
+              "refunded",
+              "retained"
+            ],
+            "description": "Что будет с депозитом при отмене сейчас"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/PublicPolicyDto"
+          },
+          "cancelledAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "cancelReason": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "token",
+          "number",
+          "status",
+          "branch",
+          "venue",
+          "date",
+          "time",
+          "start",
+          "end",
+          "durationMinutes",
+          "guests",
+          "canCancel",
+          "canPay",
+          "cancellationDeadline",
+          "depositOutcomeIfCancelled",
+          "policy"
+        ]
+      },
+      "GuestCancelReservationDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "description": "Причина (необязательно)"
+          }
+        }
       },
       "RevenueDayDto": {
         "type": "object",

@@ -6,6 +6,7 @@ import { seedOrdering } from './ordering/infrastructure/seed';
 import { seedPayments } from './payments/infrastructure/seed';
 import { seedPos } from './pos/infrastructure/seed';
 import { seedReporting } from './reporting/infrastructure/seed';
+import { seedReservation } from './reservation/infrastructure/seed';
 
 /**
  * Сиды доменных модулей (после Identity). Каждый модуль экспортирует свой ModuleSeeder
@@ -17,6 +18,7 @@ export const MODULE_SEEDERS: Array<{ module: string; seed: ModuleSeeder }> = [
   { module: 'catalog', seed: seedCatalog },
   { module: 'payments', seed: seedPayments },
   { module: 'ordering', seed: seedOrdering },
+  { module: 'reservation', seed: seedReservation },
   { module: 'reporting', seed: seedReporting },
   { module: 'pos', seed: seedPos },
 ];

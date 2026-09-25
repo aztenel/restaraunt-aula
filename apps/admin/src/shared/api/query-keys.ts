@@ -28,6 +28,8 @@ export const queryKeys = {
   /** Меню филиала: ['catalog', 'branch-menu', branchId, params]; инвалидировать — по префиксу с branchId. */
   branchMenu: (branchId: string) => ['catalog', 'branch-menu', branchId] as const,
   branchMenuList: (branchId: string, params: object) => ['catalog', 'branch-menu', branchId, 'list', params] as const,
+  /** Всё меню филиала (все страницы) — стоп-лист на планшете и массовое изменение цен. */
+  branchMenuAll: (branchId: string) => ['catalog', 'branch-menu', branchId, 'all'] as const,
   stopList: (branchId: string) => ['catalog', 'branch-menu', branchId, 'stop-list'] as const,
   content: ['content'] as const,
   banners: ['content', 'banners'] as const,
