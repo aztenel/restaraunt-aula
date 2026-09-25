@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiPropertyOptions } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -24,6 +24,16 @@ import { Permission } from '../../../shared/kernel/permissions';
 import { OpeningHours } from '../../../shared/kernel/time';
 import { STAFF_ROLES } from '../domain/roles';
 import { BranchInfo, BranchSettings } from '../public/branch-directory';
+
+const OPENING_HOURS_SCHEMA: ApiPropertyOptions = {
+    type: 'object',
+    description: 'Часы работы по дням недели (mon..sun), интервалы в локальном времени; close может быть после полуночи',
+    additionalProperties: {
+      type: 'array',
+      items: { type: 'object', properties: { open: { type: 'string', example: '10:00' }, close: { type: 'string', example: '00:00' } }, required: ['open', 'close'] },
+    },
+    example: { mon: [{ open: '10:00', close: '23:00' }] },
+  };
 
 export class LoginDto {
   @ApiProperty({ example: 'owner@aula.kz' })
@@ -66,7 +76,7 @@ export class RoleAssignmentDto {
   @IsIn(STAFF_ROLES)
   role: string;
 
-  @ApiPropertyOptional({ nullable: true, description: 'Филиал для филиальных ролей; null для глобальных' })
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true, description: 'Филиал для филиальных ролей; null для глобальных' })
   @IsOptional()
   @IsUUID()
   branchId?: string | null;
@@ -102,11 +112,11 @@ export class StaffUserDto {
   @ApiProperty() id: string;
   @ApiProperty() email: string;
   @ApiProperty() name: string;
-  @ApiPropertyOptional({ nullable: true }) phone: string | null;
-  @ApiPropertyOptional({ nullable: true }) telegramChatId: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) phone: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) telegramChatId: string | null;
   @ApiProperty() isActive: boolean;
   @ApiProperty() mustChangePassword: boolean;
-  @ApiPropertyOptional({ nullable: true }) lastLoginAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) lastLoginAt: Date | null;
   @ApiProperty() createdAt: Date;
   @ApiProperty({ type: [RoleAssignmentDto] }) roles: RoleAssignmentDto[];
 }
@@ -121,8 +131,8 @@ export class StaffUsersPageDto {
 export class CreateUserDto {
   @ApiProperty() @IsEmail() email: string;
   @ApiProperty() @IsString() @Length(2, 120) name: string;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(32) phone?: string | null;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(64) telegramChatId?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsString() @MaxLength(32) phone?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsString() @MaxLength(64) telegramChatId?: string | null;
   @ApiPropertyOptional({ description: 'Если не задан — будет сгенерирован временный пароль' })
   @IsOptional()
   @IsString()
@@ -146,8 +156,8 @@ export class CreatedUserDto {
 export class UpdateUserDto {
   @ApiPropertyOptional() @IsOptional() @IsEmail() email?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() @Length(2, 120) name?: string;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(32) phone?: string | null;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(64) telegramChatId?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsString() @MaxLength(32) phone?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsString() @MaxLength(64) telegramChatId?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() isActive?: boolean;
 }
 
@@ -167,7 +177,7 @@ export class TemporaryPasswordDto {
 export class RoleDefinitionDto {
   @ApiProperty() role: string;
   @ApiProperty({ enum: ['branch', 'global'] }) scope: string;
-  @ApiProperty() title: { ru: string; kk: string };
+  @ApiProperty({ type: 'object', properties: { ru: { type: 'string' }, kk: { type: 'string' } } }) title: { ru: string; kk: string };
   @ApiProperty({ type: [String] }) permissions: string[];
 }
 
@@ -188,8 +198,8 @@ export class BranchSettingsDto implements Partial<BranchSettings> {
   @ApiPropertyOptional() @IsOptional() @IsInt() @Min(5) @Max(1440) awaitingPaymentTimeoutMinutes?: number;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() requirePhoneVerificationForOnReceipt?: boolean;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() requirePhoneVerificationForReservations?: boolean;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() staffNotifyPhone?: string | null;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() staffTelegramChatId?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsString() staffNotifyPhone?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsString() staffTelegramChatId?: string | null;
 }
 
 export class BranchInputDto {
@@ -199,17 +209,14 @@ export class BranchInputDto {
   @ApiProperty({ type: TranslatableDto }) @ValidateNested() @Type(() => TranslatableDto) address: TranslatableDto;
   @ApiProperty({ type: GeoPointDto }) @ValidateNested() @Type(() => GeoPointDto) location: GeoPointDto;
   @ApiProperty() @IsString() @MaxLength(32) phone: string;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(32) whatsapp?: string | null;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsEmail() email?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsString() @MaxLength(32) whatsapp?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsEmail() email?: string | null;
   @ApiPropertyOptional({ default: 'Asia/Almaty' }) @IsOptional() @IsString() timezone?: string;
-  @ApiProperty({
-    description: 'Часы работы по дням: { mon: [{ open: "10:00", close: "23:00" }], ... }',
-    example: { mon: [{ open: '10:00', close: '23:00' }] },
-  })
+  @ApiProperty(OPENING_HOURS_SCHEMA)
   @IsObject()
   openingHours: OpeningHours;
   @ApiPropertyOptional({ type: BranchSettingsDto }) @IsOptional() @ValidateNested() @Type(() => BranchSettingsDto) settings?: BranchSettingsDto;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsUUID() legalEntityId?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsUUID() legalEntityId?: string | null;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() isActive?: boolean;
   @ApiPropertyOptional() @IsOptional() @IsInt() sortOrder?: number;
 }
@@ -222,12 +229,12 @@ export class BranchDto {
   @ApiProperty({ type: TranslatableDto }) address: TranslatableDto;
   @ApiProperty({ type: GeoPointDto }) location: GeoPointDto;
   @ApiProperty() phone: string;
-  @ApiPropertyOptional({ nullable: true }) whatsapp: string | null;
-  @ApiPropertyOptional({ nullable: true }) email: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) whatsapp: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) email: string | null;
   @ApiProperty() timezone: string;
-  @ApiProperty() openingHours: OpeningHours;
+  @ApiProperty(OPENING_HOURS_SCHEMA) openingHours: OpeningHours;
   @ApiProperty({ type: BranchSettingsDto }) settings: BranchSettings;
-  @ApiPropertyOptional({ nullable: true }) legalEntityId: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) legalEntityId: string | null;
   @ApiProperty() isActive: boolean;
   @ApiProperty() sortOrder: number;
 
@@ -244,9 +251,9 @@ export class PublicBranchDto {
   @ApiProperty({ type: TranslatableDto }) address: TranslatableDto;
   @ApiProperty({ type: GeoPointDto }) location: GeoPointDto;
   @ApiProperty() phone: string;
-  @ApiPropertyOptional({ nullable: true }) whatsapp: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) whatsapp: string | null;
   @ApiProperty() timezone: string;
-  @ApiProperty() openingHours: OpeningHours;
+  @ApiProperty(OPENING_HOURS_SCHEMA) openingHours: OpeningHours;
   @ApiProperty() isOpenNow: boolean;
   @ApiProperty() acceptsDelivery: boolean;
   @ApiProperty() acceptsPickup: boolean;
@@ -260,7 +267,7 @@ export class LegalEntityInputDto {
   @ApiProperty({ example: 'Express kitchen' }) @IsString() @Length(1, 120) shortName: string;
   @ApiProperty({ example: '000000000000' }) @IsString() @Matches(/^\d{12}$/) bin: string;
   @ApiProperty() @IsString() @Length(3, 500) legalAddress: string;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(500) actualAddress: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsString() @MaxLength(500) actualAddress: string | null;
   @ApiProperty() @IsString() @Length(2, 200) directorName: string;
   @ApiProperty({ example: 'Директор' }) @IsString() @Length(2, 120) directorPosition: string;
   @ApiProperty({ example: 'Устава' }) @IsString() @Length(2, 200) actingBasis: string;
@@ -270,9 +277,9 @@ export class LegalEntityInputDto {
   @ApiProperty({ example: '17' }) @IsString() @MaxLength(4) kbe: string;
   @ApiProperty() @IsBoolean() vatPayer: boolean;
   @ApiProperty({ description: 'Ставка НДС, базисные пункты (1600 = 16%)' }) @IsInt() @Min(0) @Max(10000) vatRateBp: number;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() vatCertificate: string | null;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() phone: string | null;
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsEmail() email: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsString() vatCertificate: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsString() phone: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) @IsOptional() @IsEmail() email: string | null;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() isDefault?: boolean;
 }
 
@@ -286,7 +293,7 @@ export class IntegrationSettingDto {
   @ApiProperty({ type: 'object', additionalProperties: true }) config: Record<string, unknown>;
   @ApiProperty({ type: 'object', additionalProperties: { type: 'string' }, description: 'Маскированные секреты' })
   secrets: Record<string, string>;
-  @ApiPropertyOptional({ nullable: true }) updatedAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) updatedAt: Date | null;
 }
 
 export class SaveIntegrationSettingDto {
@@ -300,4 +307,90 @@ export class SaveIntegrationSettingDto {
   @IsOptional()
   @IsObject()
   secrets?: Record<string, string | null>;
+}
+
+
+export class AuditRecordDto {
+  @ApiProperty() id: string;
+  @ApiProperty({ type: String, format: 'date-time' }) occurredAt: Date;
+  @ApiProperty({ enum: ['staff', 'system', 'guest'] }) actorKind: string;
+  @ApiPropertyOptional({ type: String, nullable: true }) actorUserId: string | null;
+  @ApiProperty() actorName: string;
+  @ApiProperty() action: string;
+  @ApiProperty() entityType: string;
+  @ApiProperty() entityId: string;
+  @ApiPropertyOptional({ type: String, nullable: true }) branchId: string | null;
+  @ApiPropertyOptional({ nullable: true, description: 'Прежнее значение (JSON)' }) before: unknown;
+  @ApiPropertyOptional({ nullable: true, description: 'Новое значение (JSON)' }) after: unknown;
+  @ApiProperty({ type: 'object', additionalProperties: true }) meta: Record<string, unknown>;
+  @ApiPropertyOptional({ type: String, nullable: true }) ip: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) requestId: string | null;
+}
+
+export class AuditPageDto {
+  @ApiProperty({ type: [AuditRecordDto] }) items: AuditRecordDto[];
+  @ApiProperty() total: number;
+  @ApiProperty() page: number;
+  @ApiProperty() perPage: number;
+}
+
+export class FailedJobDto {
+  @ApiProperty() id: string;
+  @ApiProperty() kind: string;
+  @ApiProperty() topic: string;
+  @ApiPropertyOptional({ type: String, nullable: true }) handler: string | null;
+  @ApiPropertyOptional({ nullable: true }) payload: unknown;
+  @ApiProperty() error: string;
+  @ApiProperty() attempts: number;
+  @ApiProperty({ type: String, format: 'date-time' }) failedAt: Date;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) retriedAt: Date | null;
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) resolvedAt: Date | null;
+}
+
+export class FailedJobsPageDto {
+  @ApiProperty({ type: [FailedJobDto] }) items: FailedJobDto[];
+  @ApiProperty() total: number;
+  @ApiProperty() page: number;
+  @ApiProperty() perPage: number;
+}
+
+export class IntegrationLogDto {
+  @ApiProperty() id: string;
+  @ApiProperty({ type: String, format: 'date-time' }) occurred_at: Date;
+  @ApiProperty() integration: string;
+  @ApiProperty({ enum: ['outbound', 'inbound'] }) direction: string;
+  @ApiProperty() operation: string;
+  @ApiPropertyOptional({ type: String, nullable: true }) correlation_id: string | null;
+  @ApiPropertyOptional({ nullable: true, description: 'Запрос (маскирован)' }) request: unknown;
+  @ApiPropertyOptional({ nullable: true, description: 'Ответ (маскирован)' }) response: unknown;
+  @ApiPropertyOptional({ type: Number, nullable: true }) status_code: number | null;
+  @ApiProperty() success: boolean;
+  @ApiPropertyOptional({ type: Number, nullable: true }) duration_ms: number | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) error: string | null;
+}
+
+export class IntegrationLogsPageDto {
+  @ApiProperty({ type: [IntegrationLogDto] }) items: IntegrationLogDto[];
+  @ApiProperty() total: number;
+  @ApiProperty() page: number;
+  @ApiProperty() perPage: number;
+}
+
+export class IntegrationFieldDto {
+  @ApiProperty() name: string;
+  @ApiProperty() label: string;
+  @ApiProperty({ enum: ['string', 'url', 'number', 'boolean', 'select', 'json'] }) type: string;
+  @ApiPropertyOptional() secret?: boolean;
+  @ApiPropertyOptional() required?: boolean;
+  @ApiPropertyOptional({ type: [String] }) options?: string[];
+  @ApiPropertyOptional() help?: string;
+}
+
+export class IntegrationDescriptorDto {
+  @ApiProperty() key: string;
+  @ApiProperty() title: string;
+  @ApiProperty({ enum: ['payments', 'notifications', 'pos', 'delivery', 'accounting', 'esf', 'geocoding', 'analytics', 'other'] }) category: string;
+  @ApiProperty({ enum: [1, 2, 3] }) stage: number;
+  @ApiProperty() description: string;
+  @ApiProperty({ type: [IntegrationFieldDto] }) fields: IntegrationFieldDto[];
 }

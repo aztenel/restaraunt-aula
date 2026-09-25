@@ -11,7 +11,14 @@ import { ValidationError } from '../../../../shared/kernel/errors';
 import { pageRequest } from '../../../../shared/kernel/pagination';
 import { Permission } from '../../../../shared/kernel/permissions';
 import { Database } from '../../../../shared/infrastructure/database/database';
-import { IntegrationSettingDto, SaveIntegrationSettingDto } from '../dto';
+import {
+  AuditPageDto,
+  FailedJobsPageDto,
+  IntegrationDescriptorDto,
+  IntegrationLogsPageDto,
+  IntegrationSettingDto,
+  SaveIntegrationSettingDto,
+} from '../dto';
 
 function parseDate(value: string | undefined, field: string): Date | undefined {
   if (!value) return undefined;
@@ -36,6 +43,7 @@ export class SystemController {
   /** Журнал действий пользователей с фильтрами. */
   @RequirePermissions(Permission.AuditView)
   @Get('audit-log')
+  @ApiOkResponse({ type: AuditPageDto })
   @ApiQuery({ name: 'actorUserId', required: false })
   @ApiQuery({ name: 'action', required: false })
   @ApiQuery({ name: 'entityType', required: false })
@@ -55,7 +63,7 @@ export class SystemController {
     @Query('to') to?: string,
     @Query('page') page?: string,
     @Query('perPage') perPage?: string,
-  ) {
+  ): Promise<AuditPageDto> {
     return this.audit.search(
       { actorUserId, action, entityType, entityId, branchId, from: parseDate(from, 'from'), to: parseDate(to, 'to') },
       pageRequest(Number(page) || 1, Number(perPage) || 50),
@@ -64,6 +72,7 @@ export class SystemController {
 
   @RequirePermissions(Permission.IntegrationsManage)
   @Get('integrations/catalog')
+  @ApiOkResponse({ type: [IntegrationDescriptorDto] })
   integrationCatalog(): IntegrationDescriptor[] {
     return this.catalog.list();
   }
@@ -95,6 +104,7 @@ export class SystemController {
 
   @RequirePermissions(Permission.IntegrationsManage)
   @Get('integration-logs')
+  @ApiOkResponse({ type: IntegrationLogsPageDto })
   @ApiQuery({ name: 'integration', required: false })
   @ApiQuery({ name: 'correlationId', required: false })
   @ApiQuery({ name: 'success', required: false })
@@ -114,6 +124,7 @@ export class SystemController {
   /** Очередь неудач: задачи, исчерпавшие лимит повторов. */
   @RequirePermissions(Permission.SystemJobs)
   @Get('failed-jobs')
+  @ApiOkResponse({ type: FailedJobsPageDto })
   @ApiQuery({ name: 'open', required: false })
   @ApiQuery({ name: 'page', required: false })
   failed(@Query('open') open?: string, @Query('page') page?: string) {
