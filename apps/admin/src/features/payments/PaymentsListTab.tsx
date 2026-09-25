@@ -91,7 +91,7 @@ export function PaymentsListTab({ onOpen }: { onOpen: (paymentId: string) => voi
             // Очистка крестиком — сразу, ввод вручную — по выбору, Enter или уходу с поля.
             if (!value) update({ provider: undefined });
           }}
-          onSelect={(value: string) => update({ provider: value })}
+          onSelect={(value) => update({ provider: value || undefined })}
           onBlur={() => update({ provider: provider.trim() || undefined })}
           onKeyDown={(e) => {
             if (e.key === 'Enter') update({ provider: provider.trim() || undefined });

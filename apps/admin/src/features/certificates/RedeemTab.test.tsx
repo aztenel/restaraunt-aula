@@ -5,6 +5,7 @@ import { App } from 'antd';
 import { I18nextProvider } from 'react-i18next';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { i18n } from '@/shared/i18n';
+import type * as Abilities from './abilities';
 import { RedeemTab } from './RedeemTab';
 import type { CertificateBalance } from './types';
 
@@ -13,7 +14,7 @@ const api = vi.hoisted(() => ({ check: vi.fn(), redeem: vi.fn() }));
 
 vi.mock('./api', () => ({ certificateKeys: { all: ['certificates'] }, certificatesApi: api }));
 vi.mock('./abilities', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('./abilities')>()),
+  ...(await importOriginal<typeof Abilities>()),
   useCertificateAbilities: () => ({
     view: true,
     manage: false,

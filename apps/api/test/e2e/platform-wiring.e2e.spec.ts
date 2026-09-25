@@ -71,7 +71,7 @@ const DOCUMENTED_CONSUMERS: Record<string, string[]> = {
   [BanquetEvents.InvoicePaymentRecorded]: ['ReportingModule'],
   [BanquetEvents.ActIssued]: ['ReportingModule'],
   // Обезличивание гостя: модули, хранящие снимки контактов.
-  [CustomersEvents.CustomerAnonymized]: ['OrderingModule', 'ReservationModule', 'BanquetModule'],
+  [CustomersEvents.CustomerAnonymized]: ['OrderingModule', 'ReservationModule', 'BanquetModule', 'PaymentsModule', 'NotificationsModule'],
   [IdentityEvents.BranchChanged]: ['IdentityModule'],
   // Очередь неудач → оповещение администраторов и системная лента.
   [PLATFORM_JOB_FAILED_EVENT]: ['NotificationsModule'],

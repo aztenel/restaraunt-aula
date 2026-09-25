@@ -10,6 +10,8 @@ import { allDefaultTemplateTexts, defaultTemplateText } from './domain/default-t
 import { seedNotifications } from './infrastructure/seed';
 import { NotificationsModule } from './notifications.module';
 import { AdminFeed, Notifier } from './public';
+import { EventBus } from '../../shared/infrastructure/events/event-bus';
+import { CustomerAnonymizedPayload, CustomersEvents } from '../customers/public';
 
 type Row = Record<string, any>;
 
@@ -163,6 +165,48 @@ describe('Notifications admin API (integration)', () => {
       await t.get(Notifier).notifyGuest({ recipient: { email: 'only@mail.kz' }, template: 'order.completed', params: { number: 'GL-2' }, locale: 'ru' });
       await t.drain();
     }
+
+    it('erases guest contacts from the log when the guest is anonymized (CustomersEvents.CustomerAnonymized)', async () => {
+      await notifyAndDeliver();
+      // Ещё не доставленное сообщение этому же гостю закрывается: адресата больше нет.
+      await t.get(Notifier).notifyGuest({
+        recipient: { phone: '+77011234567', name: 'Айгерим' },
+        template: 'order.completed',
+        params: { number: 'GL-3' },
+        locale: 'ru',
+        related: { type: 'order', id: 'o3' },
+      });
+      // Доставка ещё не выполнена (задача отложена) к моменту обезличивания.
+      await sql`update platform.outbox set available_at = available_at + interval '1 hour' where topic = 'notifications.deliver' and dispatched_at is null`.execute(
+        t.database.rootConnection(),
+      );
+      await t.get(EventBus).publish(CustomersEvents.CustomerAnonymized, {
+        customerId: 'cust-1',
+        phone: '+77011234567',
+        email: 'guest@mail.kz',
+        occurredAt: t.clock.now().toISOString(),
+      } satisfies CustomerAnonymizedPayload);
+      await t.drain();
+      const { auth } = await tokenFor(t, [{ role: 'sysadmin' }]);
+      const log = (query: Record<string, string | number> = {}) => t.http().get(api('/deliveries')).query(query).set('authorization', auth);
+      expect((await log({ recipient: '+77011234567' })).body.total).toBe(0);
+      const created = (await log({ relatedId: 'o1' })).body.items[0];
+      expect(created).toMatchObject({ template: 'order.created', status: 'sent', recipient: '—', recipientName: null });
+      const detail = await t.http().get(api(`/deliveries/${created.id}`)).set('authorization', auth);
+      expect(detail.body).toMatchObject({ params: {}, renderedText: null, chain: [] });
+      expect(detail.body.attemptLog.every((a: Row) => a.recipient === '***')).toBe(true);
+      const [pendingMessage] = await rows(sql`select status, last_error from notifications.messages where related_id = 'o3'`);
+      expect(pendingMessage).toMatchObject({ status: 'failed', last_error: 'recipient_anonymized' });
+      const start = t.clock.now();
+      t.clock.advance(2 * 3_600_000);
+      await t.drain();
+      t.clock.set(start);
+      expect((await log({ relatedId: 'o3' })).body.total).toBe(0); // так и не отправлено
+      // Другие гости не затронуты.
+      expect((await log({ template: 'otp.code' })).body.items[0].recipient).toBe('+7 701 *** ** 99');
+      const messages = await rows(sql`select recipient from notifications.messages where related_id in ('o1', 'o3')`);
+      expect(messages.every((m) => m.recipient.phone === null && m.recipient.name === null)).toBe(true);
+    });
 
     it('requires integrations.manage', async () => {
       expect((await t.http().get(api('/deliveries'))).status).toBe(401);
