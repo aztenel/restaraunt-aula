@@ -1,5 +1,4 @@
 import { Alert, Checkbox, Form, Input, Modal, Radio, Space, Spin, Typography } from 'antd';
-import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatMoney, Permission } from '@aula/api-client';
 import { useApiQuery } from '@/shared/api/hooks';
@@ -54,10 +53,6 @@ export function CancelOrderDialog({
         }
       : null;
 
-  useEffect(() => {
-    if (open) form.resetFields();
-  }, [open, form]);
-
   const fieldRule = (field: keyof CancelFormErrors) => ({
     validator: async () => {
       if (!ctx) return;
@@ -98,7 +93,7 @@ export function CancelOrderDialog({
       {detail.error ? <ErrorAlert error={detail.error} onRetry={() => void detail.refetch()} /> : null}
       {order && !mode ? <Alert type="warning" showIcon message={t('orders.cancelDialog.notAllowed')} /> : null}
       {order && ctx ? (
-        <Form<CancelFormValues> form={form} layout="vertical" requiredMark={false} initialValues={{ partialRefund: false }}>
+        <Form<CancelFormValues> form={form} layout="vertical" requiredMark={false} initialValues={{ partialRefund: false }} preserve={false}>
           <Alert
             type={mode === 'reject' ? 'warning' : 'info'}
             showIcon

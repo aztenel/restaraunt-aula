@@ -1,5 +1,4 @@
 import { Alert, Form, Input, Modal, Typography } from 'antd';
-import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatMoney } from '@aula/api-client';
 import { MoneyInput } from '@/shared/ui/MoneyInput';
@@ -13,10 +12,6 @@ export function RefundDialog({ order, open, onClose }: { order: AdminOrderDetail
   const [form] = Form.useForm<RefundFormValues>();
   const refund = useRefundOrder();
   const refundable = order.refundable.amount;
-
-  useEffect(() => {
-    if (open) form.resetFields();
-  }, [open, form]);
 
   const fieldRule = (field: keyof RefundFormErrors) => ({
     validator: async () => {
@@ -43,7 +38,7 @@ export function RefundDialog({ order, open, onClose }: { order: AdminOrderDetail
       destroyOnHidden
     >
       <Alert type="info" showIcon style={{ marginBottom: 16 }} message={t('orders.refundDialog.hint')} />
-      <Form<RefundFormValues> form={form} layout="vertical" requiredMark={false}>
+      <Form<RefundFormValues> form={form} layout="vertical" requiredMark={false} preserve={false}>
         <Form.Item
           name="amount"
           label={t('orders.refundDialog.amount')}

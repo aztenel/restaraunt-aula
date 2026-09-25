@@ -152,7 +152,7 @@ describe('E2E 5: promo code + gift certificate at checkout', () => {
     expect(await pendingOutbox(ctx)).toEqual([]);
     const details = await adminOrder(ctx, orderId, manager.auth);
     expect(details.status).toBe('refunded');
-    expect(details.refunds.map((r: any) => [r.status, r.amount.amount]).sort()).toEqual([
+    expect(details.refunds.map((r: any) => [r.status, r.amount.amount]).sort((a: any, b: any) => a[1] - b[1])).toEqual([
       ['succeeded', 322_000],
       ['succeeded', 2_000_000],
     ]);

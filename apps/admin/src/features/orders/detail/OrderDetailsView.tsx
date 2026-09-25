@@ -463,8 +463,13 @@ export function OrderDetailsView({ order, extra }: { order: AdminOrderDetails; e
           { key: 'audit', label: t('orders.detail.tabs.audit'), children: <AuditTab orderId={order.id} /> },
         ]}
       />
-      <CancelOrderDialog orderId={cancelMode ? order.id : null} preferred={cancelMode ?? undefined} onClose={() => setCancelMode(null)} />
-      <RefundDialog order={order} open={refundOpen} onClose={() => setRefundOpen(false)} />
+      <CancelOrderDialog
+        key={`cancel:${order.id}:${cancelMode ?? 'closed'}`}
+        orderId={cancelMode ? order.id : null}
+        preferred={cancelMode ?? undefined}
+        onClose={() => setCancelMode(null)}
+      />
+      <RefundDialog key={`refund:${order.id}:${refundOpen}`} order={order} open={refundOpen} onClose={() => setRefundOpen(false)} />
     </>
   );
 }

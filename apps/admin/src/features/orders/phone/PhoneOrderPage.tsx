@@ -147,7 +147,7 @@ function PhoneOrderForm({ branchId, onCreated }: { branchId: string; onCreated: 
   const canSubmit = checks.length === 0 && !quoteStale && Boolean(quoteData?.canCheckout);
 
   const submit = async () => {
-    const values = await form.validateFields();
+    const values: FormValues = { ...INITIAL_VALUES, ...(await form.validateFields()) };
     const details: PhoneOrderDetails = { ...values, paymentMethod, scheduledFor: scheduled ? slot : null, locale };
     create.mutate(buildCreateInput(draft, details, idempotencyKey));
   };

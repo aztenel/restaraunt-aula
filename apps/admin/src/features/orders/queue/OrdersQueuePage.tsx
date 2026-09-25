@@ -143,7 +143,12 @@ export function OrdersQueuePage() {
       )}
 
       <OrderDrawer orderId={openOrderId} onClose={closeOrder} />
-      <CancelOrderDialog orderId={cancelTarget?.id ?? null} preferred={cancelTarget?.mode} onClose={() => setCancelTarget(null)} />
+      <CancelOrderDialog
+        key={cancelTarget ? `${cancelTarget.id}:${cancelTarget.mode}` : 'closed'}
+        orderId={cancelTarget?.id ?? null}
+        preferred={cancelTarget?.mode}
+        onClose={() => setCancelTarget(null)}
+      />
     </>
   );
 }
