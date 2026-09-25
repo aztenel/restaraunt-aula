@@ -55,6 +55,24 @@ describe('переводы витрины', () => {
       'Dish.calories',
       'Dish.halal',
       'Filters.halal',
+      // «Телефон», «Промокод», «Домофон», «Депозит», «Бюджет», «Банк», «Кбе», «Корпоратив» — так же по-казахски;
+      // «Құдалық» — казахское слово и в русском тексте.
+      'Checkout.phone',
+      'Checkout.promo',
+      'Checkout.address.intercom',
+      'Booking.branch',
+      'Booking.deposit',
+      'Booking.depositLabel',
+      'Booking.phone',
+      'BookingStatus.depositTitle',
+      'Banquets.formats.corporate.title',
+      'Banquets.formats.kudalyk.title',
+      'Banquets.types.corporate',
+      'Banquets.types.kudalyk',
+      'Banquets.form.budget',
+      'Banquets.form.phone',
+      'BanquetInvoice.requisites.bank',
+      'BanquetInvoice.requisites.kbe',
     ];
     expect(same.filter((key) => !allowed.includes(key))).toEqual([]);
   });
