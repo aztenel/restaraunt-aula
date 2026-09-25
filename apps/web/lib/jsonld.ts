@@ -12,7 +12,10 @@ import {
   type Weekday,
 } from '@aula/api-client';
 import type { AppLocale } from '@/i18n/routing';
-import { SITE_NAME } from './seo';
+import type { BranchMenu, Category, DishCard, DishDetail } from './api-types';
+import { largestVariantUrl } from './images';
+import { routes } from './routes';
+import { localizedUrl, SITE_NAME } from './seo';
 
 type JsonLd = Record<string, unknown>;
 
@@ -121,6 +124,8 @@ export interface JsonLdMenuItem {
   /** schema.org RestrictedDiet: 'https://schema.org/HalalDiet', 'https://schema.org/VegetarianDiet'. */
   suitableForDiet?: string[];
   weightGrams?: number | null;
+  /** ккал на порцию. */
+  calories?: number | null;
 }
 
 export interface JsonLdMenuSection {
@@ -146,6 +151,7 @@ export function menuItemJsonLd(item: JsonLdMenuItem): JsonLd {
     ...(item.image ? { image: item.image } : {}),
     ...(item.suitableForDiet?.length ? { suitableForDiet: item.suitableForDiet } : {}),
     ...(item.weightGrams ? { weight: { '@type': 'QuantitativeValue', value: item.weightGrams, unitCode: 'GRM' } } : {}),
+    ...(item.calories ? { nutrition: { '@type': 'NutritionInformation', calories: `${item.calories} calories` } } : {}),
     ...(item.price
       ? {
           offers: {
@@ -175,6 +181,87 @@ export function menuJsonLd({ name, url, locale, sections }: MenuJsonLdInput): Js
       ...(section.url ? { url: section.url } : {}),
       hasMenuItem: section.items.map(menuItemJsonLd),
     })),
+  };
+}
+
+// ---------------------------------------------------------------- Меню филиала из ответа API
+
+const DIET = {
+  vegetarian: 'https://schema.org/VegetarianDiet',
+  halal: 'https://schema.org/HalalDiet',
+} as const;
+
+/** Диеты schema.org по признакам блюда. */
+export function dishDiets(dish: Pick<DishCard, 'isVegetarian' | 'isHalal'>): string[] {
+  return [...(dish.isVegetarian ? [DIET.vegetarian] : []), ...(dish.isHalal ? [DIET.halal] : [])];
+}
+
+/** Блюдо (карточка API) → MenuItem: цена и доступность филиала, фото, вес, диеты, ссылка на страницу блюда. */
+export function dishToMenuItem(dish: DishCard, url: string): JsonLdMenuItem {
+  return {
+    name: dish.name,
+    description: dish.description || null,
+    url,
+    image: dish.photo ? largestVariantUrl(dish.photo) : null,
+    price: dish.price,
+    available: dish.available,
+    suitableForDiet: dishDiets(dish),
+    weightGrams: dish.weightGrams,
+    calories: dish.calories,
+  };
+}
+
+export interface MenuUrls {
+  locale: AppLocale;
+  branchSlug: string;
+  siteUrl: string;
+}
+
+function dishUrl(dish: Pick<DishCard, 'slug' | 'categorySlug'>, urls: MenuUrls): string {
+  return localizedUrl(urls.locale, routes.dish(urls.branchSlug, dish.categorySlug, dish.slug), urls.siteUrl);
+}
+
+function sectionOf(category: Pick<Category, 'name' | 'description' | 'slug'>, dishes: DishCard[], urls: MenuUrls): JsonLdMenuSection {
+  return {
+    name: category.name,
+    description: category.description || null,
+    url: localizedUrl(urls.locale, routes.category(urls.branchSlug, category.slug), urls.siteUrl),
+    items: dishes.map((dish) => dishToMenuItem(dish, dishUrl(dish, urls))),
+  };
+}
+
+/** Menu филиала: разделы (категории) со ссылками на страницы категорий и блюд. */
+export function branchMenuJsonLd(menu: Pick<BranchMenu, 'categories'>, input: MenuUrls & { name: string }): JsonLd {
+  return menuJsonLd({
+    name: input.name,
+    url: localizedUrl(input.locale, routes.branchMenu(input.branchSlug), input.siteUrl),
+    locale: input.locale,
+    sections: menu.categories.map((category) => sectionOf(category, category.dishes, input)),
+  });
+}
+
+/** Menu с одним разделом — страница категории. */
+export function categoryMenuJsonLd(
+  category: Pick<Category, 'name' | 'description' | 'slug'>,
+  dishes: DishCard[],
+  input: MenuUrls & { name: string },
+): JsonLd {
+  const url = localizedUrl(input.locale, routes.category(input.branchSlug, category.slug), input.siteUrl);
+  return menuJsonLd({ name: input.name, url, locale: input.locale, sections: [sectionOf(category, dishes, input)] });
+}
+
+/** MenuItem страницы блюда (все фото, состав). */
+export function dishJsonLd(dish: DishDetail, input: MenuUrls): JsonLd {
+  const url = dishUrl(dish, input);
+  const images = dish.photos.map(largestVariantUrl);
+  const item = menuItemJsonLd(dishToMenuItem(dish, url));
+  return {
+    '@context': 'https://schema.org',
+    ...item,
+    '@id': `${url}#dish`,
+    ...(images.length > 0 ? { image: images } : {}),
+    ...(dish.composition ? { description: [dish.description, dish.composition].filter(Boolean).join('. ') } : {}),
+    inLanguage: input.locale,
   };
 }
 

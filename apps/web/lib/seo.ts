@@ -52,6 +52,8 @@ export interface BuildMetadataInput {
   images?: MetadataImage[];
   /** Служебные страницы (статус заказа, оплата, токены) — не индексировать. */
   noindex?: boolean;
+  /** Вместе с noindex: переходить по ссылкам страницы (результаты поиска/фильтров меню). */
+  follow?: boolean;
   type?: 'website' | 'article';
   /** Заголовок без шаблона «%s — AULA». По умолчанию — если название бренда уже есть в заголовке. */
   absoluteTitle?: boolean;
@@ -85,7 +87,7 @@ export function buildMetadata(input: BuildMetadataInput): Metadata {
       title: input.title,
       description,
     },
-    robots: input.noindex ? { index: false, follow: false } : undefined,
+    robots: input.noindex ? { index: false, follow: input.follow ?? false } : undefined,
   };
 }
 

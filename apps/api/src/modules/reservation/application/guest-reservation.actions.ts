@@ -42,8 +42,11 @@ export class CancelReservationByGuest {
   }
 }
 
-/** Платёж ещё можно оплатить — новую попытку не создаём. */
-const PAYABLE: readonly PaymentStatus[] = ['created', 'pending'];
+/**
+ * Новая попытка — только если текущая окончательно не прошла. Ожидающий платёж возвращается как есть;
+ * успешный (событие об оплате ещё в пути) — тоже: бронь подтвердится обработчиком PaymentSucceeded.
+ */
+const RETRYABLE: readonly PaymentStatus[] = ['failed', 'cancelled'];
 
 /**
  * Повторная оплата депозита (предыдущая попытка отклонена или отменена). Пока текущий платёж ждёт оплаты,
@@ -70,7 +73,7 @@ export class RetryDepositPayment {
       }
       if (r.depositPaymentId) {
         const current = await this.payments.getPayment(r.depositPaymentId);
-        if (PAYABLE.includes(current.status)) return r;
+        if (!RETRYABLE.includes(current.status)) return r;
       }
       const previousPaymentId = r.depositPaymentId;
       const payment = await this.deposits.createFor(r);

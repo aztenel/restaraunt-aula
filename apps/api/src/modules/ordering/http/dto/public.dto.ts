@@ -36,10 +36,10 @@ import { OrderStatus, OrderType } from '../../public';
 import { toLocalTime } from '../../../../shared/kernel/time';
 import { BranchInfo } from '../../../identity/public';
 import {
-  BranchBriefDto,
+  OrderBranchDto,
   CHECKOUT_PAYMENT_METHODS,
   DATE_RE,
-  LocaleQueryDto,
+  OrderingLocaleQueryDto,
   money,
   moneyOrNull,
   ORDER_STATUSES,
@@ -100,7 +100,7 @@ export class QuoteOrderDto {
   phone?: string | null;
 }
 
-export class CheckoutDeliveryDto {
+export class OrderCheckoutDeliveryDto {
   @ApiProperty({ type: GeoPointDto }) @ValidateNested() @Type(() => GeoPointDto) point: GeoPointDto;
   @ApiProperty({ example: 'Астана, пр. Кабанбай батыра, 56' }) @IsString() @MinLength(3) @MaxLength(500) addressText: string;
   @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(50) apartment?: string | null;
@@ -110,13 +110,13 @@ export class CheckoutDeliveryDto {
   @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(500) courierComment?: string | null;
 }
 
-export class CheckoutCustomerDto {
+export class OrderCheckoutCustomerDto {
   @ApiProperty({ example: 'Айгерим' }) @IsString() @MinLength(1) @MaxLength(100) name: string;
   @ApiProperty({ example: '+77771234567' }) @IsString() @MaxLength(32) phone: string;
   @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsEmail() @MaxLength(200) email?: string | null;
 }
 
-export class CheckoutConsentDto {
+export class OrderCheckoutConsentDto {
   @ApiProperty({ description: 'Согласие на обработку персональных данных (обязательно true)' })
   @IsBoolean()
   personalData: boolean;
@@ -127,7 +127,7 @@ export class CheckoutConsentDto {
   marketing?: boolean | null;
 }
 
-export class CheckoutDto {
+export class OrderCheckoutDto {
   @ApiProperty() @IsUUID() branchId: string;
   @ApiProperty({ enum: ORDER_TYPES }) @IsIn(ORDER_TYPES) type: OrderType;
 
@@ -139,11 +139,11 @@ export class CheckoutDto {
   @Type(() => OrderLineInputDto)
   items: OrderLineInputDto[];
 
-  @ApiPropertyOptional({ type: CheckoutDeliveryDto, nullable: true, description: 'Обязательно для доставки' })
+  @ApiPropertyOptional({ type: OrderCheckoutDeliveryDto, nullable: true, description: 'Обязательно для доставки' })
   @IsOptional()
   @ValidateNested()
-  @Type(() => CheckoutDeliveryDto)
-  delivery?: CheckoutDeliveryDto | null;
+  @Type(() => OrderCheckoutDeliveryDto)
+  delivery?: OrderCheckoutDeliveryDto | null;
 
   @ApiPropertyOptional({ default: false, description: 'Бесконтактная доставка' }) @IsOptional() @IsBoolean() contactless?: boolean;
 
@@ -152,7 +152,7 @@ export class CheckoutDto {
   @IsISO8601({ strict: true })
   scheduledFor?: string | null;
 
-  @ApiProperty({ type: CheckoutCustomerDto }) @ValidateNested() @Type(() => CheckoutCustomerDto) customer: CheckoutCustomerDto;
+  @ApiProperty({ type: OrderCheckoutCustomerDto }) @ValidateNested() @Type(() => OrderCheckoutCustomerDto) customer: OrderCheckoutCustomerDto;
   @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(1000) comment?: string | null;
   @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(32) promoCode?: string | null;
   @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(32) certificateCode?: string | null;
@@ -164,7 +164,7 @@ export class CheckoutDto {
   @MaxLength(200)
   phoneVerificationToken?: string | null;
 
-  @ApiProperty({ type: CheckoutConsentDto }) @ValidateNested() @Type(() => CheckoutConsentDto) consent: CheckoutConsentDto;
+  @ApiProperty({ type: OrderCheckoutConsentDto }) @ValidateNested() @Type(() => OrderCheckoutConsentDto) consent: OrderCheckoutConsentDto;
   @ApiProperty({ enum: LOCALES, description: 'Язык уведомлений гостю' }) @IsIn(LOCALES as unknown as string[]) locale: Locale;
   @ApiPropertyOptional({ nullable: true }) @IsOptional() @IsString() @MaxLength(100) analyticsSessionId?: string | null;
 
@@ -188,7 +188,7 @@ export class ResolveDeliveryDto {
   address?: string | null;
 }
 
-export class OrderSlotsQueryDto extends LocaleQueryDto {
+export class OrderSlotsQueryDto extends OrderingLocaleQueryDto {
   @ApiProperty({ enum: ORDER_TYPES }) @IsIn(ORDER_TYPES) type: OrderType;
 
   @ApiPropertyOptional({ description: 'Локальная дата филиала YYYY-MM-DD, по умолчанию — сегодня' })
@@ -199,7 +199,7 @@ export class OrderSlotsQueryDto extends LocaleQueryDto {
 
 // ---------------------------------------------------------------- Ответы: расчёт
 
-export class QuoteLineDto {
+export class OrderQuoteLineDto {
   @ApiProperty({ description: 'Номер позиции в запросе' }) index: number;
   @ApiProperty() dishId: string;
   @ApiPropertyOptional({ nullable: true, description: 'Название на языке запроса (null — блюдо не найдено)' }) name: string | null;
@@ -213,7 +213,7 @@ export class QuoteLineDto {
   problem: string | null;
 }
 
-export class QuotePromoDto {
+export class OrderQuotePromoDto {
   @ApiProperty() code: string;
   @ApiProperty() applied: boolean;
   @ApiPropertyOptional({ nullable: true, example: 'promo.min_subtotal' }) reason: string | null;
@@ -222,7 +222,7 @@ export class QuotePromoDto {
   @ApiProperty() freeDelivery: boolean;
 }
 
-export class QuoteDeliveryDto {
+export class OrderQuoteDeliveryDto {
   @ApiProperty() pointProvided: boolean;
   @ApiProperty() deliverable: boolean;
   @ApiPropertyOptional({ nullable: true }) zoneId: string | null;
@@ -238,7 +238,7 @@ export class QuoteDeliveryDto {
   @ApiPropertyOptional({ enum: ['threshold', 'promo'], nullable: true }) freeDeliveryReason: 'threshold' | 'promo' | null;
 }
 
-export class QuoteCertificateDto {
+export class OrderQuoteCertificateDto {
   @ApiProperty() applied: boolean;
   @ApiPropertyOptional({ nullable: true, example: 'order.certificate_not_found' }) reason: string | null;
   @ApiPropertyOptional({ nullable: true, example: '****-****-AB12' }) maskedCode: string | null;
@@ -247,22 +247,22 @@ export class QuoteCertificateDto {
   @ApiProperty({ type: MoneyDto, description: 'Будет списано с сертификата' }) amount: MoneyDto;
 }
 
-export class QuoteDto {
+export class OrderQuoteDto {
   @ApiProperty() branchId: string;
   @ApiProperty({ enum: ORDER_TYPES }) type: OrderType;
-  @ApiProperty({ type: [QuoteLineDto] }) lines: QuoteLineDto[];
+  @ApiProperty({ type: [OrderQuoteLineDto] }) lines: OrderQuoteLineDto[];
   @ApiProperty({ type: MoneyDto }) subtotal: MoneyDto;
   @ApiProperty({ type: MoneyDto }) discount: MoneyDto;
   @ApiProperty({ type: MoneyDto }) deliveryFee: MoneyDto;
   @ApiProperty({ type: MoneyDto }) total: MoneyDto;
   @ApiProperty({ type: MoneyDto, description: 'К оплате (итог минус сертификат)' }) amountDue: MoneyDto;
-  @ApiPropertyOptional({ type: QuoteDeliveryDto, nullable: true }) delivery: QuoteDeliveryDto | null;
-  @ApiPropertyOptional({ type: QuotePromoDto, nullable: true }) promo: QuotePromoDto | null;
-  @ApiPropertyOptional({ type: QuoteCertificateDto, nullable: true }) certificate: QuoteCertificateDto | null;
+  @ApiPropertyOptional({ type: OrderQuoteDeliveryDto, nullable: true }) delivery: OrderQuoteDeliveryDto | null;
+  @ApiPropertyOptional({ type: OrderQuotePromoDto, nullable: true }) promo: OrderQuotePromoDto | null;
+  @ApiPropertyOptional({ type: OrderQuoteCertificateDto, nullable: true }) certificate: OrderQuoteCertificateDto | null;
   @ApiProperty({ type: [String], description: 'Что мешает оформить (машинные коды)' }) problems: string[];
   @ApiProperty() canCheckout: boolean;
 
-  static from(q: QuoteResult, locale: Locale): QuoteDto {
+  static from(q: QuoteResult, locale: Locale): OrderQuoteDto {
     const b = q.breakdown;
     return {
       branchId: q.branch.id,
@@ -347,7 +347,7 @@ export class OrderPaymentStateDto {
   }
 }
 
-export class CheckoutResultDto {
+export class OrderCheckoutResultDto {
   @ApiProperty() orderId: string;
   @ApiProperty({ example: 'GL-2026-000123' }) number: string;
   @ApiProperty({ description: 'Токен страницы статуса заказа' }) publicToken: string;
@@ -357,7 +357,7 @@ export class CheckoutResultDto {
   payment: OrderPaymentStateDto | null;
   @ApiProperty({ description: 'Повтор запроса с тем же ключом идемпотентности' }) replayed: boolean;
 
-  static from(r: PlacedOrder): CheckoutResultDto {
+  static from(r: PlacedOrder): OrderCheckoutResultDto {
     const s = r.order.snapshot();
     return {
       orderId: s.id,
@@ -371,7 +371,7 @@ export class CheckoutResultDto {
   }
 }
 
-export class TimelineEntryDto {
+export class OrderTimelineEntryDto {
   @ApiProperty({ enum: ORDER_STATUSES }) status: OrderStatus;
   @ApiProperty() at: Date;
 }
@@ -404,7 +404,7 @@ export class OrderItemViewDto {
   }
 }
 
-export class TrackingDeliveryDto {
+export class OrderTrackingDeliveryDto {
   @ApiProperty() addressText: string;
   @ApiPropertyOptional({ nullable: true }) apartment: string | null;
   @ApiPropertyOptional({ nullable: true }) entrance: string | null;
@@ -415,7 +415,7 @@ export class TrackingDeliveryDto {
   @ApiProperty() contactless: boolean;
 }
 
-export class TrackingPaymentDto {
+export class OrderTrackingPaymentDto {
   @ApiProperty({ enum: CHECKOUT_PAYMENT_METHODS }) method: 'online' | 'on_receipt';
   @ApiProperty({ description: 'Заказ оплачен (или оплата обеспечена — при получении)' }) isPaid: boolean;
   @ApiProperty({ type: MoneyDto, description: 'Списано с подарочного сертификата' }) certificateAmount: MoneyDto;
@@ -425,13 +425,13 @@ export class TrackingPaymentDto {
   @ApiPropertyOptional({ nullable: true, description: 'Срок оплаты онлайн-заказа' }) payUntil: Date | null;
 }
 
-export class TrackingCourierDto {
+export class OrderTrackingCourierDto {
   @ApiProperty({ enum: COURIER_DISPATCH_STATUSES }) status: CourierDispatchStatus;
   @ApiPropertyOptional({ nullable: true }) trackingUrl: string | null;
   @ApiPropertyOptional({ nullable: true }) courierName: string | null;
 }
 
-export class TrackingCancellationDto {
+export class OrderTrackingCancellationDto {
   @ApiProperty({ enum: CANCEL_REASON_CODES }) reasonCode: string;
   @ApiProperty({ description: 'Причина на языке запроса' }) reason: string;
 }
@@ -451,12 +451,12 @@ export class OrderTrackingDto {
   @ApiProperty({ type: MoneyDto }) total: MoneyDto;
   @ApiPropertyOptional({ nullable: true }) promoCode: string | null;
   @ApiPropertyOptional({ nullable: true }) comment: string | null;
-  @ApiProperty({ type: BranchBriefDto }) branch: BranchBriefDto;
-  @ApiPropertyOptional({ type: TrackingDeliveryDto, nullable: true }) delivery: TrackingDeliveryDto | null;
-  @ApiProperty({ type: TrackingPaymentDto }) payment: TrackingPaymentDto;
-  @ApiPropertyOptional({ type: TrackingCourierDto, nullable: true }) courier: TrackingCourierDto | null;
-  @ApiPropertyOptional({ type: TrackingCancellationDto, nullable: true }) cancellation: TrackingCancellationDto | null;
-  @ApiProperty({ type: [TimelineEntryDto] }) timeline: TimelineEntryDto[];
+  @ApiProperty({ type: OrderBranchDto }) branch: OrderBranchDto;
+  @ApiPropertyOptional({ type: OrderTrackingDeliveryDto, nullable: true }) delivery: OrderTrackingDeliveryDto | null;
+  @ApiProperty({ type: OrderTrackingPaymentDto }) payment: OrderTrackingPaymentDto;
+  @ApiPropertyOptional({ type: OrderTrackingCourierDto, nullable: true }) courier: OrderTrackingCourierDto | null;
+  @ApiPropertyOptional({ type: OrderTrackingCancellationDto, nullable: true }) cancellation: OrderTrackingCancellationDto | null;
+  @ApiProperty({ type: [OrderTimelineEntryDto] }) timeline: OrderTimelineEntryDto[];
 
   static from(v: OrderTrackingView, locale: Locale): OrderTrackingDto {
     const s = v.order;
@@ -504,7 +504,7 @@ export class OrderTrackingDto {
   }
 }
 
-export function branchBrief(b: BranchInfo, locale: Locale): BranchBriefDto {
+export function branchBrief(b: BranchInfo, locale: Locale): OrderBranchDto {
   return { id: b.id, slug: b.slug, name: text(b.name, locale), address: text(b.address, locale), phone: b.phone, location: point(b.location) };
 }
 
@@ -535,7 +535,7 @@ export class PublicDeliveryZoneDto {
 }
 
 export class DeliveryOptionDto {
-  @ApiProperty({ type: BranchBriefDto }) branch: BranchBriefDto;
+  @ApiProperty({ type: OrderBranchDto }) branch: OrderBranchDto;
   @ApiProperty({ type: PublicDeliveryZoneDto }) zone: PublicDeliveryZoneDto;
   @ApiProperty({ description: 'Расстояние от филиала до точки, м' }) distanceMeters: number;
 
@@ -561,7 +561,7 @@ export class DeliveryResolutionDto {
   }
 }
 
-export class AsapAvailabilityDto {
+export class OrderAsapAvailabilityDto {
   @ApiProperty() available: boolean;
   @ApiPropertyOptional({ enum: ['closed', 'closing_soon'], nullable: true }) reason: 'closed' | 'closing_soon' | null;
   @ApiPropertyOptional({ nullable: true, description: 'Когда заказ будет готов при оформлении сейчас' }) readyAt: Date | null;
@@ -578,7 +578,7 @@ export class OrderSlotsDto {
   @ApiProperty({ example: '2026-10-01' }) date: string;
   @ApiProperty({ example: 'Asia/Almaty' }) timezone: string;
   @ApiProperty() leadMinutes: number;
-  @ApiProperty({ type: AsapAvailabilityDto }) asap: AsapAvailabilityDto;
+  @ApiProperty({ type: OrderAsapAvailabilityDto }) asap: OrderAsapAvailabilityDto;
   @ApiProperty({ type: [OrderSlotDto], description: 'Слоты с шагом 15 минут в часы работы' }) slots: OrderSlotDto[];
   @ApiProperty({ type: [String], description: 'Даты, доступные для заказа ко времени' }) dates: string[];
 
@@ -598,8 +598,8 @@ export class OrderSlotsDto {
 
 // ---------------------------------------------------------------- Преобразование запросов
 
-export function checkoutInput(dto: CheckoutDto | Omit<CheckoutDto, 'phoneVerificationToken' | 'analyticsSessionId'>): PlaceOrderInput {
-  const full = dto as Partial<CheckoutDto>;
+export function checkoutInput(dto: OrderCheckoutDto | Omit<OrderCheckoutDto, 'phoneVerificationToken' | 'analyticsSessionId'>): PlaceOrderInput {
+  const full = dto as Partial<OrderCheckoutDto>;
   return {
     branchId: dto.branchId,
     type: dto.type,

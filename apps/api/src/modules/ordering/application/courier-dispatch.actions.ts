@@ -6,7 +6,6 @@ import { ExternalServiceError } from '../../../shared/infrastructure/integration
 import { Actor } from '../../../shared/kernel/actor';
 import { Clock } from '../../../shared/kernel/clock';
 import { ConflictError, DomainError, NotFoundError } from '../../../shared/kernel/errors';
-import { newId } from '../../../shared/kernel/ids';
 import { Money } from '../../../shared/kernel/money';
 import { Permission } from '../../../shared/kernel/permissions';
 import { translate } from '../../../shared/kernel/translatable';

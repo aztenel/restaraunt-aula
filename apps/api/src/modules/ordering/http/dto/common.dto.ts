@@ -48,7 +48,7 @@ export function queryBoolean({ value }: { value: unknown }): unknown {
 }
 
 /** Параметр языка витрины (читается декоратором @RequestLocale). */
-export class LocaleQueryDto {
+export class OrderingLocaleQueryDto {
   @ApiPropertyOptional({ enum: LOCALES, default: 'ru' })
   @IsOptional()
   @IsIn(LOCALES as unknown as string[])
@@ -63,7 +63,7 @@ export class OrderModifierViewDto {
   @ApiProperty({ type: MoneyDto }) price: MoneyDto;
 }
 
-export class BranchBriefDto {
+export class OrderBranchDto {
   @ApiProperty() id: string;
   @ApiProperty() slug: string;
   @ApiProperty({ description: 'Название на языке запроса' }) name: string;

@@ -4,7 +4,7 @@ import { Public, RequestLocale } from '../../../../shared/infrastructure/http/de
 import { RateLimit } from '../../../../shared/infrastructure/rate-limit/rate-limit.guard';
 import { Locale, LOCALES } from '../../../../shared/kernel/translatable';
 import { DeliveryQueries } from '../../application/delivery.queries';
-import { LocaleQueryDto } from '../dto/common.dto';
+import { OrderingLocaleQueryDto } from '../dto/common.dto';
 import { DeliveryResolutionDto, OrderSlotsDto, OrderSlotsQueryDto, PublicDeliveryZoneDto, ResolveDeliveryDto } from '../dto/public.dto';
 
 /**
@@ -31,7 +31,7 @@ export class PublicDeliveryController {
   @ApiOkResponse({ type: [PublicDeliveryZoneDto] })
   async zones(
     @Param('branchId', ParseUUIDPipe) branchId: string,
-    @Query() _query: LocaleQueryDto,
+    @Query() _query: OrderingLocaleQueryDto,
     @RequestLocale() locale: Locale,
   ): Promise<PublicDeliveryZoneDto[]> {
     const { zones } = await this.delivery.publicZones(branchId);

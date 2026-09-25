@@ -173,7 +173,7 @@ export interface ReservationDetailView extends ReservationSummaryView {
 
 @Injectable()
 export class ReservationViewMapper {
-  constructor(private readonly images: ReservationImageStorage) {}
+  constructor(private readonly storage: ReservationImageStorage) {}
 
   image(image: StoredImage | null): ImageView | null {
     if (!image) return null;
@@ -182,17 +182,17 @@ export class ReservationViewMapper {
     if (!main || !thumb) return null;
     return {
       id: image.id,
-      url: this.images.publicUrl(main.key),
-      thumbnailUrl: this.images.publicUrl(thumb.key),
+      url: this.storage.publicUrl(main.key),
+      thumbnailUrl: this.storage.publicUrl(thumb.key),
       width: main.width,
       height: main.height,
       variants: [...image.variants]
         .sort((a, b) => a.width - b.width)
-        .map((v) => ({ width: v.width, height: v.height, url: this.images.publicUrl(v.key) })),
+        .map((v) => ({ width: v.width, height: v.height, url: this.storage.publicUrl(v.key) })),
     };
   }
 
-  images(list: readonly StoredImage[]): ImageView[] {
+  imageList(list: readonly StoredImage[]): ImageView[] {
     return list.map((i) => this.image(i)).filter((i): i is ImageView => i !== null);
   }
 
@@ -235,7 +235,7 @@ export class ReservationViewMapper {
       ruleOverrides: { ...v.ruleOverrides },
       rules: { ...v.rules },
       position: { ...v.position },
-      photos: this.images(v.photos),
+      photos: this.imageList(v.photos),
       sortOrder: v.sortOrder,
       isActive: v.isActive,
       isBookable: v.isActive && v.hall.isActive && v.type.isActive,

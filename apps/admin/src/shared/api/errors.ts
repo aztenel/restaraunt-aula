@@ -24,15 +24,29 @@ export function resolveErrorLanguage(language: string | undefined): ErrorLanguag
   return language?.startsWith('kk') ? 'kk' : 'ru';
 }
 
+/** Простые значения из error.details для подстановки в текст ({{max}}, {{dishCount}}, {{field}}). */
+function primitiveDetails(details: Record<string, unknown>): Record<string, string> {
+  const values: Record<string, string> = {};
+  for (const [key, value] of Object.entries(details)) {
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') values[key] = String(value);
+  }
+  return values;
+}
+
 /** Текст ошибки для пользователя. */
 export function errorMessage(error: unknown, language?: string): string {
   const lang = resolveErrorLanguage(language);
   const table = ERROR_MESSAGES[lang];
   const apiError: ApiError = toApiError(error);
   const values = {
+    ...primitiveDetails(apiError.details),
     until: formatUntil(apiError.details.lockedUntil, lang),
     seconds: String(apiError.retryAfterSeconds ?? apiError.details.retryAfterSeconds ?? ''),
   };
+  // Уточнение по причине: details.reason ('catalog.modifier_group_invalid' + 'min_greater_than_max').
+  const reason = apiError.details.reason;
+  const byReason = typeof reason === 'string' ? table[`${apiError.code}.${reason}`] : undefined;
+  if (byReason) return interpolate(byReason, values);
   const known = table[apiError.code];
   if (known) return interpolate(known, values);
   if (apiError.code.endsWith('.not_found')) return table['suffix.not_found']!;

@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { Actor } from '../../../shared/kernel/actor';
 import { Clock } from '../../../shared/kernel/clock';
-import { NotFoundError } from '../../../shared/kernel/errors';
+import { NotFoundError, ValidationError } from '../../../shared/kernel/errors';
 import { MoneyJson } from '../../../shared/kernel/money';
 import { Page, pageOf, PageRequest } from '../../../shared/kernel/pagination';
 import { Permission } from '../../../shared/kernel/permissions';
-import { addDays, isIsoDate, openingRangesForDate, startOfLocalDay } from '../../../shared/kernel/time';
+import { addDays, DEFAULT_TIMEZONE, isIsoDate, openingRangesForDate, startOfLocalDay } from '../../../shared/kernel/time';
 import { Locale, Translatable, translate } from '../../../shared/kernel/translatable';
-import { ValidationError } from '../../../shared/kernel/errors';
 import { BranchDirectory, BranchInfo } from '../../identity/public';
 import { PaymentsService } from '../../payments/public';
 import { localDateTime } from '../domain/availability';
@@ -141,8 +140,8 @@ export class ReservationQueries {
 
   async list(actor: Actor, query: AdminReservationQuery, page: PageRequest): Promise<Page<ReservationSummaryView>> {
     const branchIds = actor.scopeBranches(Permission.ReservationsView, query.branchId);
-    // Даты — в часовом поясе филиала (все филиалы сети — Asia/Almaty; для фильтра по филиалу — его пояс).
-    const timezone = query.branchId ? (await this.branch(query.branchId)).timezone : 'Asia/Almaty';
+    // Даты — в часовом поясе филиала (для списка по всем филиалам — пояс сети по умолчанию).
+    const timezone = query.branchId ? (await this.branch(query.branchId)).timezone : DEFAULT_TIMEZONE;
     const now = this.clock.now();
     const filter: ReservationFilter = {
       branchIds,

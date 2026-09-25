@@ -278,7 +278,7 @@ export class ReservationRepository {
     return !!row;
   }
 
-  async appendHistory(reservationId: string, change: Omit<StatusChange, 'to'> & { from: ReservationStatus | null; to: ReservationStatus }, actor: Actor): Promise<void> {
+  async appendHistory(reservationId: string, change: Omit<StatusChange, 'from'> & { from: ReservationStatus | null }, actor: Actor): Promise<void> {
     await this.db()
       .insertInto('reservation.status_history')
       .values({

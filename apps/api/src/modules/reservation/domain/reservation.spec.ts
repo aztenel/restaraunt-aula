@@ -149,6 +149,14 @@ describe('Reservation cancel', () => {
     expect(r.snapshot().depositOutcome).toBe('retained');
   });
 
+  it('shows what happens to the deposit if cancelled now (deadline from the rules snapshot)', () => {
+    const r = paid();
+    expect(r.cancellationDeadline().toISOString()).toBe('2026-10-25T11:00:00.000Z');
+    expect(r.depositOutcomeIfCancelled(new Date('2026-10-25T10:59:59Z'))).toBe('refunded');
+    expect(r.depositOutcomeIfCancelled(new Date('2026-10-25T11:00:00Z'))).toBe('retained');
+    expect(Reservation.create(input(), now).depositOutcomeIfCancelled(now)).toBe('none');
+  });
+
   it('guest cannot cancel after the start; staff can', () => {
     const r = paid();
     const afterStart = new Date(start.getTime() + minutes(1));

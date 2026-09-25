@@ -61,6 +61,7 @@ export class OrderPaymentsRepository {
       .where('order_id', '=', orderId)
       .orderBy('created_at')
       .orderBy('attempt')
+      .orderBy('payment_id')
       .execute();
     return rows.map((r) => ({
       paymentId: r.payment_id,
@@ -119,6 +120,7 @@ export class OrderPaymentsRepository {
       .selectAll()
       .where('order_id', '=', orderId)
       .orderBy('created_at')
+      .orderBy('refund_id')
       .execute();
     return rows.map((r) => this.mapRefund(r));
   }

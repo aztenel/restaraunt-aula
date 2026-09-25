@@ -102,6 +102,7 @@ export class CourierDispatchRepository {
       .selectAll()
       .where('order_id', '=', orderId)
       .orderBy('requested_at', 'desc')
+      .orderBy('id', 'desc')
       .limit(1)
       .executeTakeFirst();
     return row ? mapDispatch(row) : null;

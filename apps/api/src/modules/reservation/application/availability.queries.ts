@@ -191,7 +191,7 @@ export class AvailabilityQueries {
             requiresManualConfirmation: v.rules.requiresManualConfirmation,
           },
           position: { ...v.position },
-          photos: this.views.images(v.photos),
+          photos: this.views.imageList(v.photos),
         };
       }),
       alternatives: alternatives.map((a) => ({ date: a.date, time: a.time, start: a.start, venueIds: a.venueIds })),
@@ -242,7 +242,7 @@ export class AvailabilityQueries {
             deposit: v.deposit?.toJSON() ?? null,
             position: { ...v.position },
             bookableOnline: v.rules.bookableOnline,
-            photos: this.views.images(v.photos),
+            photos: this.views.imageList(v.photos),
             available: free ? free.has(v.id) : null,
           })),
       })),

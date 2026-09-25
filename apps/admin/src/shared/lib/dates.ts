@@ -38,4 +38,19 @@ export function endOfLocalDayExclusiveIso(day: Dayjs): string {
   return dayjs.tz(day.format('YYYY-MM-DD'), DISPLAY_TIMEZONE).add(1, 'day').startOf('day').toISOString();
 }
 
+/**
+ * ISO UTC → значение для DatePicker/TimePicker: «стенные часы» Asia/Almaty как локальный Dayjs
+ * (чтобы выбор времени не зависел от часового пояса компьютера сотрудника).
+ */
+export function isoToPickerValue(value: string | null | undefined): Dayjs | null {
+  const local = toDisplay(value);
+  return local ? dayjs(local.format('YYYY-MM-DDTHH:mm:ss')) : null;
+}
+
+/** Значение DatePicker (стенные часы) → ISO UTC, считая время временем Asia/Almaty. */
+export function pickerValueToIso(value: Dayjs | null | undefined): string | null {
+  if (!value || !value.isValid()) return null;
+  return dayjs.tz(value.format('YYYY-MM-DDTHH:mm:ss'), DISPLAY_TIMEZONE).toISOString();
+}
+
 export { dayjs };

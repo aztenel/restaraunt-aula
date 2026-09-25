@@ -13,7 +13,7 @@ import { OrderRefundRecord } from '../../infrastructure/order-payments.repositor
 import { StatusHistoryEntry } from '../../infrastructure/order.repository';
 import { OrderChannel, OrderStatus, OrderType } from '../../public';
 import { CHECKOUT_PAYMENT_METHODS, DATE_RE, money, moneyOrNull, ORDER_CHANNELS, ORDER_STATUSES, ORDER_TYPES, point, queryArray, translatable } from './common.dto';
-import { CheckoutDto } from './public.dto';
+import { OrderCheckoutDto } from './public.dto';
 
 export const REFUND_KINDS = ['cancellation', 'partial', 'late_payment', 'duplicate_payment', 'external'] as const;
 
@@ -78,7 +78,7 @@ export class RefundOrderDto {
 }
 
 /** Телефонный заказ оператора: как оформление на витрине, без SMS-кода (оператор говорит с гостем). */
-export class AdminCreateOrderDto extends OmitType(CheckoutDto, ['phoneVerificationToken', 'analyticsSessionId'] as const) {}
+export class AdminCreateOrderDto extends OmitType(OrderCheckoutDto, ['phoneVerificationToken', 'analyticsSessionId'] as const) {}
 
 // ---------------------------------------------------------------- Ответы
 
@@ -308,7 +308,7 @@ export class AdminCourierDispatchDto {
   }
 }
 
-export class StatusHistoryDto {
+export class OrderStatusHistoryDto {
   @ApiPropertyOptional({ enum: ORDER_STATUSES, nullable: true }) from: OrderStatus | null;
   @ApiProperty({ enum: ORDER_STATUSES }) to: OrderStatus;
   @ApiProperty() at: Date;
@@ -318,7 +318,7 @@ export class StatusHistoryDto {
   @ApiPropertyOptional({ nullable: true }) reasonCode: string | null;
   @ApiPropertyOptional({ nullable: true }) reason: string | null;
 
-  static from(h: StatusHistoryEntry): StatusHistoryDto {
+  static from(h: StatusHistoryEntry): OrderStatusHistoryDto {
     return { ...h };
   }
 }
@@ -362,7 +362,7 @@ export class AdminOrderDetailsDto extends AdminOrderListItemDto {
   @ApiProperty({ type: [AdminOrderPaymentDto] }) payments: AdminOrderPaymentDto[];
   @ApiProperty({ type: [AdminOrderRefundDto] }) refunds: AdminOrderRefundDto[];
   @ApiPropertyOptional({ type: AdminCourierDispatchDto, nullable: true }) courierDispatch: AdminCourierDispatchDto | null;
-  @ApiProperty({ type: [StatusHistoryDto] }) history: StatusHistoryDto[];
+  @ApiProperty({ type: [OrderStatusHistoryDto] }) history: OrderStatusHistoryDto[];
   @ApiProperty({ enum: ORDER_STATUSES, isArray: true, description: 'Переходы, доступные сотруднику' }) allowedTransitions: OrderStatus[];
   @ApiProperty() canCancel: boolean;
   @ApiProperty({ description: 'Отказ от оплаченного заказа (paid → accepted → cancelled)' }) canReject: boolean;
@@ -420,7 +420,7 @@ export class AdminOrderDetailsDto extends AdminOrderListItemDto {
       })),
       refunds: v.refunds.map(AdminOrderRefundDto.from),
       courierDispatch: v.dispatch ? AdminCourierDispatchDto.from(v.dispatch) : null,
-      history: v.history.map(StatusHistoryDto.from),
+      history: v.history.map(OrderStatusHistoryDto.from),
       allowedTransitions: v.allowedTransitions,
       canCancel: v.canCancel,
       canReject: v.canReject,

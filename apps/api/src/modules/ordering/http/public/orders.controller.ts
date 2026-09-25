@@ -10,11 +10,11 @@ import { QuoteOrder } from '../../application/quote-order.action';
 import { RetryOrderPayment } from '../../application/retry-order-payment.action';
 import {
   checkoutInput,
-  CheckoutDto,
-  CheckoutResultDto,
+  OrderCheckoutDto,
+  OrderCheckoutResultDto,
   OrderPaymentStateDto,
   OrderTrackingDto,
-  QuoteDto,
+  OrderQuoteDto,
   quoteInput,
   QuoteOrderDto,
 } from '../dto/public.dto';
@@ -39,17 +39,17 @@ export class PublicOrdersController {
   @HttpCode(200)
   @RateLimit('pricing')
   @ApiQuery({ name: 'locale', required: false, enum: LOCALES })
-  @ApiOkResponse({ type: QuoteDto })
-  async quoteOrder(@Body() dto: QuoteOrderDto, @RequestLocale() locale: Locale): Promise<QuoteDto> {
-    return QuoteDto.from(await this.quote.execute(quoteInput(dto)), locale);
+  @ApiOkResponse({ type: OrderQuoteDto })
+  async quoteOrder(@Body() dto: QuoteOrderDto, @RequestLocale() locale: Locale): Promise<OrderQuoteDto> {
+    return OrderQuoteDto.from(await this.quote.execute(quoteInput(dto)), locale);
   }
 
   /** Оформление. Идемпотентно по idempotencyKey: повтор возвращает тот же заказ. */
   @Post()
   @RateLimit('forms')
-  @ApiCreatedResponse({ type: CheckoutResultDto })
-  async checkout(@Body() dto: CheckoutDto, @CurrentActor() actor: Actor, @ClientIp() ip: string | null): Promise<CheckoutResultDto> {
-    return CheckoutResultDto.from(await this.placeOrder.execute(checkoutInput(dto), { channel: 'web', actor, ip }));
+  @ApiCreatedResponse({ type: OrderCheckoutResultDto })
+  async checkout(@Body() dto: OrderCheckoutDto, @CurrentActor() actor: Actor, @ClientIp() ip: string | null): Promise<OrderCheckoutResultDto> {
+    return OrderCheckoutResultDto.from(await this.placeOrder.execute(checkoutInput(dto), { channel: 'web', actor, ip }));
   }
 
   /** Статус заказа для гостя: витрина опрашивает его, пока не появится ссылка на оплату. */

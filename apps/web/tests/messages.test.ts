@@ -49,6 +49,13 @@ describe('переводы витрины', () => {
       'Menu.branchLabel',
       'Branches.mapAria',
       'BanquetQuote.placeholderTitle',
+      // «Филиал», «Промокод», «Халал», единицы «г» и «ккал» пишутся по-казахски так же.
+      'Cart.branchLabel',
+      'Cart.promoLabel',
+      'Dish.weight',
+      'Dish.calories',
+      'Dish.halal',
+      'Filters.halal',
     ];
     expect(same.filter((key) => !allowed.includes(key))).toEqual([]);
   });

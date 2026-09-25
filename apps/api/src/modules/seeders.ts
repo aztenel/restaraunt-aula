@@ -2,6 +2,7 @@ import { ModuleSeeder } from '../shared/infrastructure/seed/seed.types';
 import { seedCatalog } from './catalog/infrastructure/seed';
 import { seedCustomers } from './customers/infrastructure/seed';
 import { seedNotifications } from './notifications/infrastructure/seed';
+import { seedOrdering } from './ordering/infrastructure/seed';
 import { seedPayments } from './payments/infrastructure/seed';
 import { seedPos } from './pos/infrastructure/seed';
 import { seedReporting } from './reporting/infrastructure/seed';
@@ -15,6 +16,7 @@ export const MODULE_SEEDERS: Array<{ module: string; seed: ModuleSeeder }> = [
   { module: 'customers', seed: seedCustomers },
   { module: 'catalog', seed: seedCatalog },
   { module: 'payments', seed: seedPayments },
+  { module: 'ordering', seed: seedOrdering },
   { module: 'reporting', seed: seedReporting },
   { module: 'pos', seed: seedPos },
 ];

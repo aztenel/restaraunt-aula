@@ -16,6 +16,26 @@ export const queryKeys = {
   integrationLogs: (params: object) => ['system', 'integration-logs', params] as const,
   feedRecent: ['feed', 'recent'] as const,
 
+  // Каталог (меню) и контент витрины.
+  catalog: ['catalog'] as const,
+  categories: ['catalog', 'categories'] as const,
+  dishes: ['catalog', 'dishes'] as const,
+  dishList: (params: object) => ['catalog', 'dishes', 'list', params] as const,
+  dish: (id: string) => ['catalog', 'dishes', 'detail', id] as const,
+  modifierGroups: ['catalog', 'modifier-groups'] as const,
+  allergens: ['catalog', 'allergens'] as const,
+  translations: (params: object) => ['catalog', 'translations', params] as const,
+  /** Меню филиала: ['catalog', 'branch-menu', branchId, params]; инвалидировать — по префиксу с branchId. */
+  branchMenu: (branchId: string) => ['catalog', 'branch-menu', branchId] as const,
+  branchMenuList: (branchId: string, params: object) => ['catalog', 'branch-menu', branchId, 'list', params] as const,
+  stopList: (branchId: string) => ['catalog', 'branch-menu', branchId, 'stop-list'] as const,
+  content: ['content'] as const,
+  banners: ['content', 'banners'] as const,
+  bannerList: (params: object) => ['content', 'banners', params] as const,
+  promotions: ['content', 'promotions'] as const,
+  pages: ['content', 'pages'] as const,
+  page: (id: string) => ['content', 'pages', id] as const,
+
   // Корни разделов, которые обновляются лентой событий.
   orders: ['orders'] as const,
   reservations: ['reservations'] as const,

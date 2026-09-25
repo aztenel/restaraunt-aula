@@ -22,8 +22,9 @@ import { Order, OrderItemSnapshot, PaymentMethodChoice } from '../domain/order';
 import { assertBranchAcceptsOrder, cleanText, orderEtaMinutes } from '../domain/order-rules';
 import { formatMoney } from '../domain/order-texts';
 import { planCheckoutPayments } from '../domain/payment-plan';
-import { promoEffect, promoRejectionError } from '../domain/promo-code';
+import { PromoKind, PromoRejection, promoRejectionError } from '../domain/promo-code';
 import { assertAsapAvailable, assertSchedulable } from '../domain/scheduling';
+import { PromoEffect } from '../domain/totals';
 import { zoneTerms } from '../domain/delivery-zone';
 import { OrderPaymentsRepository } from '../infrastructure/order-payments.repository';
 import { OrderRepository } from '../infrastructure/order.repository';
@@ -213,13 +214,13 @@ export class PlaceOrder {
     if (input.type === 'delivery' && !pricing.zone) {
       throw new ValidationError('order.address_not_deliverable', 'The address is outside the delivery zones of the branch');
     }
-    let promo: { id: string; code: string; kind: 'percent' | 'fixed' | 'free_delivery'; effect: ReturnType<typeof promoEffect> } | null = null;
+    // Один промокод на заказ: неприменимый промокод — ошибка оформления с кодом причины (promo.<reason>).
+    let promo: { id: string; code: string; kind: PromoKind; effect: PromoEffect } | null = null;
     if (pricing.promo) {
-      const { evaluation } = pricing.promo;
-      if (!evaluation.ok || !pricing.promo.promo) {
-        throw promoRejectionError(pricing.promo.code, evaluation.ok ? { ok: false, reason: 'not_found' } : evaluation);
-      }
-      promo = { id: pricing.promo.promo.id, code: pricing.promo.promo.code, kind: pricing.promo.promo.kind, effect: evaluation.effect };
+      const { evaluation, promo: state } = pricing.promo;
+      if (!evaluation.ok) throw promoRejectionError(pricing.promo.code, evaluation);
+      if (!state) throw promoRejectionError(pricing.promo.code, { ok: false, reason: PromoRejection.NotFound });
+      promo = { id: state.id, code: state.code, kind: state.kind, effect: evaluation.effect };
     }
     const certificateCode = input.certificateCode?.trim() || null;
     const certificate = certificateCode ? await this.certificates.require(certificateCode) : null;

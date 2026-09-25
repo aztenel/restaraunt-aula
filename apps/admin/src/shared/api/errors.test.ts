@@ -66,3 +66,29 @@ describe('errorMessage: текст по коду ошибки', () => {
     expect(messageForCode('password.too_short', 'ru')).toBe('Пароль должен быть не короче 10 символов');
   });
 });
+
+describe('errorMessage: коды каталога и контента', () => {
+  const err = (status: number, code: string, details?: Record<string, unknown>) =>
+    ApiError.fromResponse(status, { error: { code, message: 'server text', details }, requestId: null });
+
+  it('подставляет значения из details', () => {
+    expect(errorMessage(err(409, 'catalog.category_not_empty', { dishCount: 4 }), 'ru')).toBe(
+      'В категории есть блюда (4): сначала перенесите или удалите их',
+    );
+    expect(errorMessage(err(422, 'catalog.too_many_photos', { max: 10, existing: 9 }), 'kk')).toBe('Тағамда 10 фотодан аспауы керек');
+    expect(errorMessage(err(409, 'catalog.sku_taken', { sku: 'BSH-01' }), 'ru')).toContain('BSH-01');
+  });
+
+  it('уточнение по details.reason, иначе общий текст кода', () => {
+    expect(errorMessage(err(422, 'catalog.modifier_group_invalid', { reason: 'min_greater_than_max' }), 'ru')).toBe(
+      'Минимум выбора не может быть больше максимума',
+    );
+    expect(errorMessage(err(422, 'catalog.modifier_group_invalid', { reason: 'something_new' }), 'ru')).toBe('Настройки группы модификаторов неверны');
+  });
+
+  it('защищённые страницы и стоп «до»', () => {
+    expect(errorMessage(err(409, 'content.page_protected', { slug: 'offer' }), 'ru')).toContain('Юридическую страницу нельзя удалить');
+    expect(errorMessage(err(422, 'catalog.stop_until_invalid'), 'kk')).toContain('30 күннен');
+    expect(errorMessage(err(413, 'http.413'), 'ru')).toBe('Файл слишком большой');
+  });
+});

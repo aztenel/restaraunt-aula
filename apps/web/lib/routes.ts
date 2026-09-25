@@ -24,12 +24,24 @@ export const routes = {
   certificates: () => '/certificates',
   certificateOrder: (token: string) => `/certificates/order/${encodeURIComponent(token)}`,
   page: (slug: string) => `/pages/${encodeURIComponent(slug)}`,
+  promotions: () => '/promotions',
+  promotion: (slug: string) => `/promotions/${encodeURIComponent(slug)}`,
+  /** Действующий текст согласия (GET /api/v1/public/consents/{kind}). */
+  consent: (kind: ConsentSlug) => `/consents/${kind}`,
   paymentReturn: () => '/payment/return',
 } as const;
 
-/** Юридические страницы (контент — GET /api/v1/public/pages/{slug}, модуль Catalog/контент). */
-export const LEGAL_PAGES = ['offer', 'privacy', 'personal-data', 'delivery'] as const;
-export type LegalPageSlug = (typeof LEGAL_PAGES)[number];
+/**
+ * Текстовые страницы из контента (GET /api/v1/public/content/pages/{slug}): ссылки в подвале.
+ * Страница с другим slug тоже откроется, если она опубликована в админке.
+ */
+export const INFO_PAGES = ['about', 'delivery', 'payment', 'contacts'] as const;
+export const LEGAL_PAGES = ['offer', 'privacy'] as const;
+export type InfoPageSlug = (typeof INFO_PAGES)[number] | (typeof LEGAL_PAGES)[number];
+
+/** Тексты согласий: slug в адресе ↔ вид согласия в API. */
+export const CONSENT_SLUGS = { 'personal-data': 'personal_data', marketing: 'marketing' } as const;
+export type ConsentSlug = keyof typeof CONSENT_SLUGS;
 
 /**
  * Первый сегмент пути, который НЕ является slug филиала (статические разделы витрины).
@@ -46,6 +58,11 @@ export const RESERVED_FIRST_SEGMENTS = new Set([
   'certificates',
   'pages',
   'payment',
+  'promotions',
+  'consents',
+  // Адреса из уведомлений API (синонимы, перенаправляются на страницы витрины).
+  'reservations',
+  'banquet',
 ]);
 
 /** Путь страницы меню с другим филиалом, если текущая страница — меню филиала; иначе null. */
