@@ -1,6 +1,6 @@
 /**
  * Подключение к ленте событий по SSE: билет → EventSource → догрузка пропущенного после
- * переподключения. Переподключение с экспоненциальной задержкой; сторожевой таймер по ping.
+ * переподключения (GET /admin/feed/recent?since=<id последнего события> — сервер принимает id или ISO). Переподключение с экспоненциальной задержкой; сторожевой таймер по ping.
  * Если эндпоинты ещё не развёрнуты (404) — тихо ждём и пробуем раз в 5 минут.
  */
 import { ApiError } from '@aula/api-client';
@@ -28,6 +28,7 @@ export class FeedConnection {
   private attempt = 0;
   private lastActivity = 0;
   private lastEventAt: string | null = null;
+  private lastEventId: string | null = null;
   private stopped = true;
 
   constructor(private readonly deps: FeedConnectionDeps) {}
@@ -56,6 +57,13 @@ export class FeedConnection {
   /** Для догрузки: время последнего полученного события. */
   setLastEventAt(iso: string | null): void {
     if (iso && (!this.lastEventAt || iso > this.lastEventAt)) this.lastEventAt = iso;
+  }
+
+  private trackCursor(data: unknown, sseId: string | undefined): void {
+    const record = (data ?? {}) as { id?: unknown; occurredAt?: unknown };
+    const id = typeof record.id === 'string' && record.id ? record.id : sseId || null;
+    if (id) this.lastEventId = id;
+    this.setLastEventAt(typeof record.occurredAt === 'string' ? record.occurredAt : new Date(this.now()).toISOString());
   }
 
   private closeSource(): void {
@@ -87,8 +95,9 @@ export class FeedConnection {
       ticket = await this.deps.getTicket();
     } catch (error) {
       if (this.stopped) return;
-      if (error instanceof ApiError && (error.status === 404 || error.status === 501)) {
-        // Модуль уведомлений ещё не развёрнут: лента отключена, без шума в интерфейсе.
+      if (error instanceof ApiError && (error.status === 404 || error.status === 501 || error.status === 403)) {
+        // 404 — модуль уведомлений ещё не развёрнут; 403 — у роли нет очередей (лента не нужна).
+        // Лента отключается без шума в интерфейсе, повтор — редко.
         this.deps.onStatus('unavailable');
         this.schedule(UNAVAILABLE_RETRY_MS);
         return;
@@ -105,7 +114,8 @@ export class FeedConnection {
 
     source.onopen = () => {
       this.lastActivity = this.now();
-      const since = this.lastEventAt;
+      // Курсор догрузки: id последнего события (точнее), иначе время.
+      const since = this.lastEventId ?? this.lastEventAt;
       this.attempt = 0;
       this.deps.onStatus('open');
       if (since) void this.backfill(since);
@@ -114,10 +124,10 @@ export class FeedConnection {
     source.addEventListener('feed', (message) => {
       this.lastActivity = this.now();
       try {
-        const data = JSON.parse((message as MessageEvent<string>).data) as unknown;
+        const event = message as MessageEvent<string>;
+        const data = JSON.parse(event.data) as unknown;
         this.deps.onEvents([data], 'live');
-        const at = (data as { occurredAt?: unknown })?.occurredAt;
-        this.setLastEventAt(typeof at === 'string' ? at : new Date(this.now()).toISOString());
+        this.trackCursor(data, event.lastEventId);
       } catch {
         // Некорректное событие пропускаем.
       }
@@ -142,7 +152,10 @@ export class FeedConnection {
         : Array.isArray((response as { items?: unknown[] })?.items)
           ? (response as { items: unknown[] }).items
           : [];
-      if (events.length > 0) this.deps.onEvents(events, 'backfill');
+      if (events.length > 0) {
+        this.deps.onEvents(events, 'backfill');
+        this.trackCursor(events[events.length - 1], undefined);
+      }
     } catch {
       // Догрузка необязательна: очереди всё равно обновятся инвалидацией запросов.
     }

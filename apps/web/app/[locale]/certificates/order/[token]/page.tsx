@@ -9,8 +9,8 @@ type Params = Promise<{ locale: string; token: string }>;
 
 /*
  * TODO(payments): статус покупки сертификата.
- *   GET /api/v1/public/certificate-orders/{token}?locale= → { status: 'awaiting_payment' | 'paid' | 'issued' | ...,
- *     product, price: Money, paymentUrl?, deliveredTo? } | 404
+ *   GET /api/v1/public/certificates/orders/{token}?locale= → статус оплаты/выпуска, продукт, цена (Money),
+ *     ссылка на оплату при необходимости | 404
  *   Полный код сертификата витрина НЕ показывает: он приходит один раз в PDF/сообщении получателю.
  */
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {

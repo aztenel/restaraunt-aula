@@ -12,8 +12,9 @@ type Params = Promise<{ locale: string; branchSlug: string; categorySlug: string
 
 /*
  * TODO(catalog): категория меню филиала.
- *   Ожидаемый эндпоинт: GET /api/v1/public/branches/{branchSlug}/menu/categories/{categorySlug}?locale=
- *     → { category: { id, slug, name, description, seoTitle?, seoDescription? }, dishes: [...] } | 404
+ *   GET /api/v1/public/catalog/branches/{branchSlug}/categories/{categorySlug}?locale= → категория
+ *     (название, описание, SEO-поля) и её блюда с ценами филиала | 404
+ *   Проверку существования делать в layout.tsx этого сегмента (выше loading.tsx) — настоящий HTTP 404.
  *   Пока категория не проверяется API, страница закрыта от индексации (noindex) — без «мягких 404».
  *   SEO: title/description категории, menuJsonLd() с одной MenuSection, breadcrumbJsonLd().
  */

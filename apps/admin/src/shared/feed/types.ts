@@ -4,8 +4,8 @@
  *   GET  /api/v1/admin/feed/stream?ticket=...          → text/event-stream:
  *        event: feed  data: { branchId, stream, kind, entityId, title, sound? }
  *        event: ping
- *   GET  /api/v1/admin/feed/recent?since=<ISO>         → события после since (догрузка после переподключения)
- * Необязательные поля id/occurredAt используются для дедупликации, если сервер их передаёт.
+ *   GET  /api/v1/admin/feed/recent?since=<id|ISO>      → события после since (догрузка после переподключения)
+ * Сервер (модуль Notifications, FeedItemDto) передаёт также id и occurredAt: id — дедупликация и курсор догрузки.
  */
 export const FEED_STREAMS = ['orders', 'reservations', 'banquets', 'system'] as const;
 export type FeedStream = (typeof FEED_STREAMS)[number];

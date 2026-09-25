@@ -16,7 +16,7 @@ class FakeEventSource {
     this.listeners.set(type, [...(this.listeners.get(type) ?? []), listener]);
   }
   emit(type: string, data: unknown) {
-    for (const l of this.listeners.get(type) ?? []) l({ data: JSON.stringify(data) } as MessageEvent<string>);
+    for (const l of this.listeners.get(type) ?? []) l({ data: JSON.stringify(data), lastEventId: '' } as MessageEvent<string>);
   }
   close() {
     this.closed = true;
@@ -76,7 +76,8 @@ describe('FeedConnection (SSE ленты событий)', () => {
     expect(second.url).toBe('/stream?ticket=t2');
     second.onopen?.();
     await vi.advanceTimersByTimeAsync(0);
-    expect(getRecent).toHaveBeenCalledWith('2026-09-25T10:05:00.000Z');
+    // Курсор догрузки — id последнего события.
+    expect(getRecent).toHaveBeenCalledWith('e1');
     expect(onEvents).toHaveBeenLastCalledWith([{ id: 'missed' }], 'backfill');
     expect(statuses).toContain('reconnecting');
     connection.stop();

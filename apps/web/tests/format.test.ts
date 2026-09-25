@@ -47,3 +47,15 @@ describe('часы работы (отображение)', () => {
     expect(weekdayInTimeZone(new Date('2026-09-27T20:00:00Z'), 'UTC')).toBe('sun');
   });
 });
+
+describe('события витрины для отчёта конверсии', () => {
+  it('тип просмотра по пути', async () => {
+    const { viewEventForPath } = await import('@/lib/analytics-session');
+    const { RESERVED_FIRST_SEGMENTS } = await import('@/lib/routes');
+    expect(viewEventForPath('/greenline/menu', RESERVED_FIRST_SEGMENTS)).toBe('menu_view');
+    expect(viewEventForPath('/greenline/menu/hot', RESERVED_FIRST_SEGMENTS)).toBe('menu_view');
+    expect(viewEventForPath('/greenline/menu/hot/beshbarmak', RESERVED_FIRST_SEGMENTS)).toBe('dish_view');
+    expect(viewEventForPath('/branches/greenline', RESERVED_FIRST_SEGMENTS)).toBe('page_view');
+    expect(viewEventForPath('/', RESERVED_FIRST_SEGMENTS)).toBe('page_view');
+  });
+});

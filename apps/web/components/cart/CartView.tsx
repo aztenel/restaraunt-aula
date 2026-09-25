@@ -7,6 +7,7 @@ import { buttonClasses } from '@/components/ui/button';
 import { CartIcon, MinusIcon, PlusIcon, TrashIcon } from '@/components/ui/icons';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useCart } from '@/lib/cart';
+import { trackStorefrontEvent } from '@/lib/analytics-session';
 import { Goals, reachGoal } from '@/lib/goals';
 import { routes } from '@/lib/routes';
 
@@ -95,7 +96,10 @@ export function CartView() {
         <p className="mt-2 text-sm text-muted">{t('totalsNote')}</p>
         <Link
           href={routes.checkout()}
-          onClick={() => reachGoal(Goals.BeginCheckout, { items: cart.count })}
+          onClick={() => {
+            reachGoal(Goals.BeginCheckout, { items: cart.count });
+            trackStorefrontEvent('checkout_start', { path: routes.checkout(), branchId: cart.branchId });
+          }}
           className={buttonClasses('primary', 'md', 'mt-5 w-full')}
         >
           {t('checkout')}

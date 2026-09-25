@@ -7,6 +7,7 @@ import { buildMetadata } from '@/lib/seo';
 
 /*
  * TODO(payments): возврат гостя со страницы платёжного провайдера (returnUrl платежа).
+ *   Переход на оплату: GET /api/v1/public/payments/{paymentId}/checkout (реализовано; sandbox — /sandbox/{paymentId}).
  *   Подтверждение оплаты — ТОЛЬКО по колбэку/опросу на сервере, не по параметрам URL.
  *   GET /api/v1/public/payments/{paymentId}/status (или по ?ref=) → { status, purpose: 'order' |
  *     'reservation_deposit' | 'banquet_invoice' | 'gift_certificate', publicToken }

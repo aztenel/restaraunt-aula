@@ -12,10 +12,8 @@ type Params = Promise<{ locale: string; branchSlug: string; categorySlug: string
 
 /*
  * TODO(catalog): карточка блюда (фото, состав, вес, цена филиала, модификаторы и добавки).
- *   Ожидаемый эндпоинт: GET /api/v1/public/branches/{branchSlug}/dishes/{dishSlug}?locale=
- *     → { id, slug, categorySlug, name, description, composition, photoUrls, weightGrams, price: Money,
- *        availability, tags, modifierGroups: [{ id, name, minSelected, maxSelected, required,
- *        options: [{ id, name, price: Money }] }] } | 404
+ *   GET /api/v1/public/catalog/branches/{branchSlug}/dishes/{dishSlug}?locale= → блюдо с ценой филиала,
+ *     доступностью, фото, составом, весом, группами модификаторов (опции с ценой Money) | 404
  *   Если categorySlug не совпадает с категорией блюда — редирект 308 на канонический адрес.
  *   Итог с модификаторами НЕ считать на клиенте: показывать цены опций от сервера, итог — из
  *   POST /api/v1/public/orders/quote. SEO: menuItemJsonLd() (Offer в KZT), og:image — фото блюда.

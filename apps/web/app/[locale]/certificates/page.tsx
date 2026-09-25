@@ -7,11 +7,10 @@ import { routes } from '@/lib/routes';
 import { buildMetadata } from '@/lib/seo';
 
 /*
- * TODO(payments): продажа подарочных сертификатов.
- *   Продукты: GET /api/v1/public/certificate-products?locale= → [{ id, kind: 'amount' | 'set', name, description,
- *     nominal: Money, price: Money, image, validityMonths }]
- *   Покупка: POST /api/v1/public/certificate-orders { productId, buyer: { name, phone, email }, recipient: { name,
- *     phone?, email? }, message?, delivery: 'email' | 'whatsapp', consent } → { publicToken, paymentUrl }
+ * TODO(payments): продажа подарочных сертификатов (эндпоинты реализованы в модуле Payments).
+ *   Продукты: GET /api/v1/public/certificates/products?locale= (на сумму / на набор, номинал и цена — Money)
+ *   Покупка: POST /api/v1/public/certificates/purchase (покупатель, получатель, пожелание, способ отправки,
+ *     согласие на обработку ПД) → токен заказа и ссылка на оплату
  *   → оплата → /certificates/order/{publicToken}; reachGoal(Goals.CertificatePurchase, analyticsValue(price)).
  */
 export async function generateMetadata({ params }: { params: LocaleParams }): Promise<Metadata> {

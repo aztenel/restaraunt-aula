@@ -9,6 +9,7 @@ import { Analytics } from '@/components/analytics';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { Footer } from '@/components/layout/Footer';
 import { Header } from '@/components/layout/Header';
+import { StorefrontTracker } from '@/components/storefront-tracker';
 import { CartProvider } from '@/lib/cart';
 import { getSiteUrl } from '@/lib/config';
 import { getPublicBranches, getSelectedBranchSlug, resolveSelectedBranch } from '@/lib/data';
@@ -69,6 +70,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
             </main>
             <Footer locale={locale} branches={branches} />
             <BottomNav />
+            <StorefrontTracker />
           </CartProvider>
         </NextIntlClientProvider>
         <Analytics />

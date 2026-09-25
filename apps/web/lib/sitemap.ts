@@ -1,6 +1,6 @@
 /**
- * Карта сайта: статические разделы × языки, страницы и меню филиалов, а также (когда появится)
- * каталог: категории, блюда и текстовые страницы из GET /api/v1/public/sitemap-data.
+ * Карта сайта: статические разделы × языки, страницы и меню филиалов, а также каталог:
+ * категории, блюда и текстовые страницы из GET /api/v1/public/catalog/sitemap (модуль Catalog).
  */
 import type { MetadataRoute } from 'next';
 import { ApiError, type PublicBranch } from '@aula/api-client';
@@ -13,14 +13,20 @@ type SitemapEntry = MetadataRoute.Sitemap[number];
 type ChangeFrequency = NonNullable<SitemapEntry['changeFrequency']>;
 
 /**
- * ТОЧКА РАСШИРЕНИЯ (модуль Catalog): ожидаемый ответ GET /api/v1/public/sitemap-data.
- * Все поля необязательны — витрина берёт то, что есть. updatedAt — ISO 8601.
+ * ТОЧКА РАСШИРЕНИЯ: ответ GET /api/v1/public/catalog/sitemap (SitemapDto модуля Catalog).
+ * Все поля необязательны — витрина берёт то, что есть (эндпоинт может быть ещё не развёрнут).
+ * updatedAt — ISO 8601. promotions пока не выводятся: на витрине нет страницы акции
+ * (TODO(catalog): /[locale]/promotions/[slug] → GET /api/v1/public/content/promotions/{slug}).
  */
 export interface SitemapData {
+  branches?: Array<{ slug: string; updatedAt?: string | null }>;
   categories?: Array<{ branchSlug: string; slug: string; updatedAt?: string | null }>;
   dishes?: Array<{ branchSlug: string; categorySlug: string; slug: string; updatedAt?: string | null }>;
   pages?: Array<{ slug: string; updatedAt?: string | null }>;
+  promotions?: Array<{ slug: string; updatedAt?: string | null }>;
 }
+
+export const SITEMAP_DATA_PATH = '/api/v1/public/catalog/sitemap';
 
 const STATIC_PAGES: Array<{ path: string; changeFrequency: ChangeFrequency; priority: number }> = [
   { path: routes.home(), changeFrequency: 'daily', priority: 1 },
@@ -62,9 +68,11 @@ export function buildSitemapEntries(input: {
   for (const page of STATIC_PAGES) {
     entries.push(...entriesFor(siteUrl, page.path, page));
   }
+  const branchUpdatedAt = new Map((catalog?.branches ?? []).map((b) => [b.slug, toDate(b.updatedAt)]));
   for (const branch of branches) {
+    const lastModified = branchUpdatedAt.get(branch.slug);
     entries.push(...entriesFor(siteUrl, routes.branch(branch.slug), { changeFrequency: 'weekly', priority: 0.8 }));
-    entries.push(...entriesFor(siteUrl, routes.branchMenu(branch.slug), { changeFrequency: 'daily', priority: 0.9 }));
+    entries.push(...entriesFor(siteUrl, routes.branchMenu(branch.slug), { changeFrequency: 'daily', priority: 0.9, lastModified }));
   }
   const activeSlugs = new Set(branches.map((b) => b.slug));
   for (const category of catalog?.categories ?? []) {
@@ -100,13 +108,14 @@ export function buildSitemapEntries(input: {
 }
 
 /**
- * Данные каталога для карты сайта. Эндпоинт делает модуль Catalog; пока его нет (404)
- * или API недоступен — возвращаем null, и карта сайта строится без каталога.
+ * Данные каталога для карты сайта. Если эндпоинт не развёрнут (404) или API недоступен —
+ * null, и карта сайта строится без каталога (статические разделы + филиалы).
+ * TODO(api-client): после попадания эндпоинта в docs/openapi.json — перейти на типизированный api.GET.
  */
 export async function fetchSitemapData(): Promise<SitemapData | null> {
   try {
     const api = createServerApi({ revalidate: 3600, tags: ['sitemap'] });
-    return await api.raw<SitemapData>('GET', '/api/v1/public/sitemap-data');
+    return await api.raw<SitemapData>('GET', SITEMAP_DATA_PATH);
   } catch (error) {
     if (!(error instanceof ApiError) || !error.isNotFound) {
       console.warn('[sitemap] sitemap-data unavailable:', error instanceof Error ? error.message : error);

@@ -11,7 +11,7 @@ import { buildMetadata } from '@/lib/seo';
  * TODO(ordering): оформление заказа — не больше 4 экранов: корзина → данные → оплата → статус.
  *   Экран «данные»: тип (доставка/самовывоз), адрес + точка на карте (филиал по адресу выбирает сервер),
  *     время «как можно скорее» или к времени, контакты, комментарий, бесконтактная доставка,
- *     согласие на обработку ПД (текст/версия — GET /api/v1/public/consents/personal_data).
+ *     согласие на обработку ПД (текст/версия — GET /api/v1/public/consents/personal_data, реализовано).
  *   Экран «оплата»: способ (branch.paymentMethods), промокод, сертификат, SMS-код при необходимости:
  *     POST /api/v1/public/phone-verifications { phone } → { verificationId, resendAfterSeconds }
  *     POST /api/v1/public/phone-verifications/{id}/verify { code } → { token }

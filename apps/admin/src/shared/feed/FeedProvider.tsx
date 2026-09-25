@@ -9,13 +9,18 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { feedApi } from '../api/endpoints';
+import { Permission } from '@aula/api-client';
 import { useAuth } from '../auth/AuthProvider';
+import { canAnySomewhere } from '../auth/permissions';
 import { useBranch } from '../branch/BranchProvider';
 import { useStoredState } from '../lib/storage';
 import { FeedConnection } from './connection';
 import { INITIAL_FEED_STATE, reduceFeed, reduceFeedBatch, type FeedItem, type FeedState } from './feed-reducer';
 import { playNotificationSound, unlockAudio } from './sound';
 import type { FeedStatus, FeedStream } from './types';
+
+/** Права, с которыми сервер выдаёт билет ленты (notifications/http/admin/feed.controller.ts). */
+export const FEED_PERMISSIONS = [Permission.OrdersView, Permission.ReservationsView, Permission.BanquetsView, Permission.SystemJobs];
 
 export const STREAM_PATHS: Record<FeedStream, string> = {
   orders: '/orders',
@@ -37,7 +42,8 @@ export interface AdminFeedValue {
 const FeedContext = createContext<AdminFeedValue | null>(null);
 
 export function FeedProvider({ children }: { children: ReactNode }) {
-  const { status: authStatus } = useAuth();
+  const { status: authStatus, me } = useAuth();
+  const feedAllowed = authStatus === 'authenticated' && canAnySomewhere(me, FEED_PERMISSIONS);
   const { selectedBranchId } = useBranch();
   const queryClient = useQueryClient();
   const { notification } = App.useApp();
@@ -95,7 +101,7 @@ export function FeedProvider({ children }: { children: ReactNode }) {
   handlerRef.current = handleEvents;
 
   useEffect(() => {
-    if (authStatus !== 'authenticated') return;
+    if (!feedAllowed) return;
     const connection = new FeedConnection({
       getTicket: feedApi.ticket,
       getRecent: feedApi.recent,
@@ -105,7 +111,7 @@ export function FeedProvider({ children }: { children: ReactNode }) {
     });
     connection.start();
     return () => connection.stop();
-  }, [authStatus]);
+  }, [feedAllowed]);
 
   // Смена филиала: история и счётчики — заново (события фильтруются по филиалу при получении).
   useEffect(() => {

@@ -1,7 +1,8 @@
 /**
  * Цели аналитики (ТЗ: Google Analytics, Яндекс.Метрика, цели). Отправляются в оба счётчика,
  * если они подключены. Вызывать из клиентских компонентов после успешного действия
- * (ответ сервера), а не по клику.
+ * (ответ сервера). Для отчёта конверсии в API дополнительно — trackStorefrontEvent
+ * (lib/analytics-session.ts): add_to_cart при добавлении в корзину.
  */
 import { formatFixed2ForInput, type Money } from '@aula/api-client';
 

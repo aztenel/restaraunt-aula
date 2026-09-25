@@ -11,13 +11,13 @@ import { buildMetadata } from '@/lib/seo';
 type Params = Promise<{ locale: string; branchSlug: string }>;
 
 /*
- * TODO(catalog): каталог филиала — модуль Catalog.
- *   Ожидаемый эндпоинт: GET /api/v1/public/branches/{branchSlug}/menu?locale=kk|ru|en
- *     → { branch: { id, slug, name }, categories: [{ id, slug, name, description, dishes: [{ id, slug, name,
- *        description, photoUrl, weightGrams, price: Money, availability: 'available' | 'stopped_shown',
- *        tags: ['vegetarian' | 'spicy' | 'halal' ...] }] }] }
- *   Поиск и фильтры (вегетарианское, острое, халал, до N тенге) — параметры запроса, фильтрует сервер:
- *     ?q=&tags=vegetarian,spicy&maxPrice=<тиыны>
+ * TODO(catalog): каталог филиала — модуль Catalog (эндпоинты реализованы в API, ждут docs/openapi.json).
+ *   GET /api/v1/public/catalog/branches/{branchSlug}/menu?locale=kk|ru|en — категории с блюдами,
+ *     цены филиала (Money), доступность (стоп-лист по режиму филиала), фото, вес, метки.
+ *   Поиск и фильтры (вегетарианское, острое, халал, до N тенге) фильтрует сервер:
+ *     GET /api/v1/public/catalog/branches/{branchSlug}/search?q=&vegetarian=&spicy=&maxSpicyLevel=&halal=
+ *       &maxPrice=<тиыны>&category=&page=&perPage=
+ *   Аналитика: событие menu_view уже отправляет StorefrontTracker (components/storefront-tracker.tsx).
  *   Кэш: createServerApi({ locale, tags: ['menu', `menu:${branchSlug}`] }) (revalidate 60 с).
  *   SEO: menuJsonLd() из lib/jsonld.ts + restaurantJsonLd(); цены — только formatPrice(money, locale).
  *   Добавление в корзину: useCart().add({ dishId, modifierOptionIds, branchId }) + reachGoal(Goals.AddToCart).
