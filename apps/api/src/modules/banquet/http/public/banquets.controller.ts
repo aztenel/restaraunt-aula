@@ -9,8 +9,8 @@ import { CreateBanquetRequest } from '../../application/create-request.action';
 import { RenewInvoicePayment } from '../../application/invoice.actions';
 import { EventTypeView, PublicBanquetQueries, PublicInvoiceView, PublicQuoteView } from '../../application/public.queries';
 import { AcceptQuote } from '../../application/quote.actions';
-import { AcceptQuoteDto, moneyOrNull, PublicCreateRequestDto } from '../dto';
-import { EventTypeDto, PublicAcceptResultDto, PublicInvoiceDto, PublicQuoteDto, PublicRequestCreatedDto } from '../responses.dto';
+import { BanquetAcceptQuoteDto, moneyOrNull, BanquetPublicCreateRequestDto } from '../dto';
+import { BanquetEventTypeDto, BanquetPublicAcceptResultDto, BanquetPublicInvoiceDto, BanquetPublicQuoteDto, BanquetPublicRequestCreatedDto } from '../responses.dto';
 
 /**
  * Банкеты на витрине: заявка (форма с согласием на обработку ПД), страница сметы по ссылке
@@ -30,7 +30,7 @@ export class PublicBanquetsController {
 
   @Get('event-types')
   @ApiQuery({ name: 'locale', required: false, enum: LOCALES })
-  @ApiOkResponse({ type: [EventTypeDto] })
+  @ApiOkResponse({ type: [BanquetEventTypeDto] })
   eventTypes(@RequestLocale() locale: Locale): EventTypeView[] {
     return this.queries.eventTypes(locale);
   }
@@ -38,8 +38,8 @@ export class PublicBanquetsController {
   /** Заявка на банкет или выездное обслуживание. Назначается менеджеру автоматически. */
   @Post('requests')
   @RateLimit('forms')
-  @ApiCreatedResponse({ type: PublicRequestCreatedDto })
-  async request(@CurrentActor() actor: Actor, @Body() dto: PublicCreateRequestDto, @ClientIp() ip: string | null): Promise<PublicRequestCreatedDto> {
+  @ApiCreatedResponse({ type: BanquetPublicRequestCreatedDto })
+  async request(@CurrentActor() actor: Actor, @Body() dto: BanquetPublicCreateRequestDto, @ClientIp() ip: string | null): Promise<BanquetPublicRequestCreatedDto> {
     const request = await this.create.execute(
       actor,
       {
@@ -66,7 +66,7 @@ export class PublicBanquetsController {
   @Get('quotes/:token')
   @RateLimit('tracking')
   @ApiQuery({ name: 'locale', required: false, enum: LOCALES })
-  @ApiOkResponse({ type: PublicQuoteDto })
+  @ApiOkResponse({ type: BanquetPublicQuoteDto })
   quote(@Param('token') token: string, @RequestLocale() locale: Locale): Promise<PublicQuoteView> {
     return this.queries.quote(token, locale);
   }
@@ -75,8 +75,8 @@ export class PublicBanquetsController {
   @Post('quotes/:token/accept')
   @HttpCode(200)
   @RateLimit('forms')
-  @ApiOkResponse({ type: PublicAcceptResultDto })
-  async acceptQuote(@Param('token') token: string, @Body() dto: AcceptQuoteDto): Promise<PublicAcceptResultDto> {
+  @ApiOkResponse({ type: BanquetPublicAcceptResultDto })
+  async acceptQuote(@Param('token') token: string, @Body() dto: BanquetAcceptQuoteDto): Promise<BanquetPublicAcceptResultDto> {
     const { request, quote } = await this.accept.execute(token, { version: dto.version });
     const required = request.requiredPrepayment(quote.totals.total);
     return { status: request.status, version: quote.version, prepayment: required?.toJSON() ?? null };
@@ -85,7 +85,7 @@ export class PublicBanquetsController {
   /** Страница счёта: сумма, статус, ссылка на оплату (физлицо) или PDF с реквизитами (юрлицо). */
   @Get('invoices/:token')
   @RateLimit('tracking')
-  @ApiOkResponse({ type: PublicInvoiceDto })
+  @ApiOkResponse({ type: BanquetPublicInvoiceDto })
   invoice(@Param('token') token: string): Promise<PublicInvoiceView> {
     return this.queries.invoice(token);
   }
@@ -94,7 +94,7 @@ export class PublicBanquetsController {
   @Post('invoices/:token/pay')
   @HttpCode(200)
   @RateLimit('forms')
-  @ApiOkResponse({ type: PublicInvoiceDto })
+  @ApiOkResponse({ type: BanquetPublicInvoiceDto })
   async pay(@Param('token') token: string): Promise<PublicInvoiceView> {
     await this.renewPayment.execute(token);
     return this.queries.invoice(token);

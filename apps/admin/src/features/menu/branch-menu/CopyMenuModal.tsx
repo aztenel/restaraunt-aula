@@ -36,7 +36,7 @@ export function CopyMenuModal({ branchId, open, onClose }: { branchId: string; o
       const result = await branchMenuApi.copy(branchId, { fromBranchId, overwritePrices });
       await queryClient.invalidateQueries({ queryKey: queryKeys.branchMenu(branchId) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.dishes });
-      void message.success(t('catalog.branchMenu.copyDone', result));
+      void message.success(t('catalog.branchMenu.copyDone', { added: result.added, updated: result.updated, unchanged: result.unchanged }));
       close();
     } catch (error) {
       notifyError(error);

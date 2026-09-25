@@ -6,8 +6,8 @@ import { Permission } from '../../../../shared/kernel/permissions';
 import { TemplateQueries } from '../../application/admin.queries';
 import { DeleteContractTemplate, SaveContractTemplate } from '../../application/template.actions';
 import { ContractTemplateRecord } from '../../infrastructure/template.repository';
-import { TemplateInputDto } from '../dto';
-import { ContractTemplateDto, PlaceholderDto } from '../responses.dto';
+import { BanquetTemplateInputDto } from '../dto';
+import { BanquetContractTemplateDto, BanquetPlaceholderDto } from '../responses.dto';
 
 /** Шаблоны договоров (общие для сети): правят собственник и банкетные менеджеры. */
 @ApiTags('admin')
@@ -22,7 +22,7 @@ export class AdminBanquetTemplatesController {
 
   @Get()
   @RequirePermissions(Permission.BanquetsView)
-  @ApiOkResponse({ type: [ContractTemplateDto] })
+  @ApiOkResponse({ type: [BanquetContractTemplateDto] })
   list(@CurrentActor() actor: Actor): Promise<ContractTemplateRecord[]> {
     return this.queries.list(actor);
   }
@@ -30,29 +30,29 @@ export class AdminBanquetTemplatesController {
   /** Допустимые подстановки для редактора шаблона. */
   @Get('placeholders')
   @RequirePermissions(Permission.BanquetsView)
-  @ApiOkResponse({ type: [PlaceholderDto] })
-  placeholders(): PlaceholderDto[] {
+  @ApiOkResponse({ type: [BanquetPlaceholderDto] })
+  placeholders(): BanquetPlaceholderDto[] {
     return this.queries.placeholders();
   }
 
   @Get(':id')
   @RequirePermissions(Permission.BanquetsView)
-  @ApiOkResponse({ type: ContractTemplateDto })
+  @ApiOkResponse({ type: BanquetContractTemplateDto })
   get(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string): Promise<ContractTemplateRecord> {
     return this.queries.get(actor, id);
   }
 
   @Post()
   @RequirePermissions(Permission.BanquetsManage)
-  @ApiCreatedResponse({ type: ContractTemplateDto })
-  create(@CurrentActor() actor: Actor, @Body() dto: TemplateInputDto): Promise<ContractTemplateRecord> {
+  @ApiCreatedResponse({ type: BanquetContractTemplateDto })
+  create(@CurrentActor() actor: Actor, @Body() dto: BanquetTemplateInputDto): Promise<ContractTemplateRecord> {
     return this.saveTemplate.execute(actor, null, dto);
   }
 
   @Put(':id')
   @RequirePermissions(Permission.BanquetsManage)
-  @ApiOkResponse({ type: ContractTemplateDto })
-  update(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: TemplateInputDto): Promise<ContractTemplateRecord> {
+  @ApiOkResponse({ type: BanquetContractTemplateDto })
+  update(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: BanquetTemplateInputDto): Promise<ContractTemplateRecord> {
     return this.saveTemplate.execute(actor, id, dto);
   }
 

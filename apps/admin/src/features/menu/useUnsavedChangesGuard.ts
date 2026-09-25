@@ -12,18 +12,27 @@ export function useUnsavedChangesGuard(enabled: boolean) {
   const { t } = useTranslation();
   const { modal } = App.useApp();
   const dirty = useRef(false);
+  const asking = useRef(false);
   const blocker = useBlocker(({ currentLocation, nextLocation }) => enabled && dirty.current && currentLocation.pathname !== nextLocation.pathname);
 
   useEffect(() => {
-    if (blocker.state !== 'blocked') return;
+    if (blocker.state !== 'blocked' || asking.current) return;
+    asking.current = true;
     modal.confirm({
       title: t('catalog.unsaved.title'),
       content: t('catalog.unsaved.text'),
       okText: t('catalog.unsaved.leave'),
       cancelText: t('catalog.unsaved.stay'),
       okButtonProps: { danger: true },
-      onOk: () => blocker.proceed(),
-      onCancel: () => blocker.reset(),
+      onOk: () => {
+        asking.current = false;
+        dirty.current = false;
+        blocker.proceed();
+      },
+      onCancel: () => {
+        asking.current = false;
+        blocker.reset();
+      },
     });
   }, [blocker, modal, t]);
 

@@ -1,4 +1,4 @@
-import { DatePicker, Flex, Input, Modal, Radio, Tag, Typography } from 'antd';
+import { Button, DatePicker, Flex, Input, Modal, Tag, Typography } from 'antd';
 import type { Dayjs } from 'dayjs';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -73,17 +73,23 @@ export function StopDialog({
       width={560}
     >
       <Typography.Text strong>{t('stopList.dialog.until')}</Typography.Text>
-      <Radio.Group
-        size="large"
-        optionType="button"
-        value={preset}
-        onChange={(e) => {
-          setPreset(e.target.value as StopPreset);
-          setError(null);
-        }}
-        style={{ display: 'flex', flexWrap: 'wrap', gap: 8, margin: '8px 0 12px' }}
-        options={STOP_PRESETS.map((p) => ({ value: p, label: t(`stopList.presets.${p}`) }))}
-      />
+      <Flex wrap gap={8} style={{ margin: '8px 0 12px' }} role="radiogroup" aria-label={t('stopList.dialog.until')}>
+        {STOP_PRESETS.map((p) => (
+          <Button
+            key={p}
+            size="large"
+            role="radio"
+            aria-checked={preset === p}
+            type={preset === p ? 'primary' : 'default'}
+            onClick={() => {
+              setPreset(p);
+              setError(null);
+            }}
+          >
+            {t(`stopList.presets.${p}`)}
+          </Button>
+        ))}
+      </Flex>
       {preset === 'custom' ? (
         <DatePicker
           size="large"

@@ -23,7 +23,7 @@ describe('переводы админки', () => {
       .filter(([key, value]) => kkMap.get(key) === value && /[а-яё]{4,}/i.test(value))
       .map(([key]) => key);
     // Совпадают только названия языков, общие термины и значения для документов на русском.
-    const allowed = ['languages.ru', 'languages.kk', 'translatable.kk', 'translatable.ru', 'layout.branch', 'layout.userMenu', 'roles.content_manager', 'legalEntities.defaults.directorPosition', 'legalEntities.defaults.actingBasis', 'integrations.categories.analytics', 'integrations.categories.delivery', 'legalEntities.bank', 'legalEntities.bankName', 'users.phone', 'branches.editTitle', 'branches.phone', 'system.logs.integration', 'system.logs.operation', 'branches.settings.paymentOnline', 'dashboard.subtitle', 'users.scope.branch', 'legalEntities.binHint'];
+    const allowed = ['languages.ru', 'languages.kk', 'translatable.kk', 'translatable.ru', 'layout.branch', 'layout.userMenu', 'roles.content_manager', 'legalEntities.defaults.directorPosition', 'legalEntities.defaults.actingBasis', 'integrations.categories.analytics', 'integrations.categories.delivery', 'legalEntities.bank', 'legalEntities.bankName', 'users.phone', 'branches.editTitle', 'branches.phone', 'system.logs.integration', 'system.logs.operation', 'branches.settings.paymentOnline', 'dashboard.subtitle', 'users.scope.branch', 'legalEntities.binHint', 'catalog.fields.isHalal', 'catalog.dishes.kcalUnit'];
     expect(same.filter((key) => !allowed.includes(key))).toEqual([]);
   });
 

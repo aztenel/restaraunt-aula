@@ -6,7 +6,6 @@ import type { Permission } from '@aula/api-client';
 import { useAuth } from '@/shared/auth/AuthProvider';
 import { useBranch } from '@/shared/branch/BranchProvider';
 import { BranchSelect } from '@/shared/ui/BranchSelect';
-import { Forbidden } from '@/shared/ui/Forbidden';
 import { branchesWithMenuAccess, MENU_READ_PERMISSIONS } from './abilities';
 
 /**
@@ -30,15 +29,14 @@ export function BranchRequired({
     permissions,
   );
 
-  if (selectedBranchId) {
-    return allowed.includes(selectedBranchId) || loading ? <>{children(selectedBranchId)}</> : <Forbidden />;
-  }
+  if (selectedBranchId && (loading || allowed.includes(selectedBranchId))) return <>{children(selectedBranchId)}</>;
+  // «Все филиалы» или филиал без доступа к меню — выбрать филиал, где есть права.
   return (
     <Card>
       <Result
         icon={<ShopOutlined style={{ color: '#a5774f' }} />}
         title={t('catalog.branchRequired.title')}
-        subTitle={t('catalog.branchRequired.text')}
+        subTitle={selectedBranchId ? t('catalog.branchRequired.noAccess') : t('catalog.branchRequired.text')}
         extra={
           allowed.length > 0 ? (
             <BranchSelect size="large" style={{ minWidth: 280 }} onlyIds={allowed} onChange={(id) => id && setSelection(id)} />

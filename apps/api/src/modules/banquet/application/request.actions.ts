@@ -264,11 +264,12 @@ export class TransitionBanquetRequest {
           break;
         }
         case 'prepaid': {
-          request.assertOpen();
-          if (request.status === 'agreed' && !(await this.funnel.settlePrepayment(request, now))) {
+          // Не из agreed — недопустимый переход (409); из agreed — только если предоплата действительно получена.
+          if (request.status !== 'agreed') {
+            request.transition('prepaid', now, reason);
+          } else if (!(await this.funnel.settlePrepayment(request, now))) {
             throw new ValidationError('banquet.prepayment_not_received', 'Prepayment has not been received yet');
           }
-          if (request.status !== 'prepaid') request.transition('prepaid', now, reason);
           break;
         }
         case 'held': {

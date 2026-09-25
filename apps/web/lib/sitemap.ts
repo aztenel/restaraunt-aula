@@ -13,10 +13,9 @@ type SitemapEntry = MetadataRoute.Sitemap[number];
 type ChangeFrequency = NonNullable<SitemapEntry['changeFrequency']>;
 
 /**
- * ТОЧКА РАСШИРЕНИЯ: ответ GET /api/v1/public/catalog/sitemap (SitemapDto модуля Catalog).
- * Все поля необязательны — витрина берёт то, что есть (эндпоинт может быть ещё не развёрнут).
- * updatedAt — ISO 8601. promotions пока не выводятся: на витрине нет страницы акции
- * (TODO(catalog): /[locale]/promotions/[slug] → GET /api/v1/public/content/promotions/{slug}).
+ * Ответ GET /api/v1/public/catalog/sitemap (SitemapDto модуля Catalog): активные филиалы, категории
+ * и блюда меню филиалов (с учётом стоп-листа «скрыть»), опубликованные страницы, действующие акции.
+ * Все поля необязательны — витрина берёт то, что есть. updatedAt — ISO 8601.
  */
 export interface SitemapData {
   branches?: Array<{ slug: string; updatedAt?: string | null }>;
@@ -34,6 +33,8 @@ const STATIC_PAGES: Array<{ path: string; changeFrequency: ChangeFrequency; prio
   { path: routes.booking(), changeFrequency: 'monthly', priority: 0.7 },
   { path: routes.banquets(), changeFrequency: 'monthly', priority: 0.8 },
   { path: routes.certificates(), changeFrequency: 'monthly', priority: 0.6 },
+  { path: routes.promotions(), changeFrequency: 'weekly', priority: 0.6 },
+  { path: routes.consent('personal-data'), changeFrequency: 'yearly', priority: 0.2 },
 ];
 
 function toDate(value: string | null | undefined): Date | undefined {
@@ -92,6 +93,15 @@ export function buildSitemapEntries(input: {
         changeFrequency: 'weekly',
         priority: 0.6,
         lastModified: toDate(dish.updatedAt),
+      }),
+    );
+  }
+  for (const promotion of catalog?.promotions ?? []) {
+    entries.push(
+      ...entriesFor(siteUrl, routes.promotion(promotion.slug), {
+        changeFrequency: 'weekly',
+        priority: 0.5,
+        lastModified: toDate(promotion.updatedAt),
       }),
     );
   }

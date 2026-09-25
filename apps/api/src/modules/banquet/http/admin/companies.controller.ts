@@ -7,8 +7,8 @@ import { Permission } from '../../../../shared/kernel/permissions';
 import { CompanyQueries } from '../../application/admin.queries';
 import { CreateClientCompany, DeleteClientCompany, UpdateClientCompany } from '../../application/company.actions';
 import { ClientCompanyRecord } from '../../infrastructure/company.repository';
-import { CompaniesQueryDto, CompanyInputDto } from '../dto';
-import { CompaniesPageDto, CompanyDto } from '../responses.dto';
+import { BanquetCompaniesQueryDto, BanquetCompanyInputDto } from '../dto';
+import { BanquetCompaniesPageDto, BanquetCompanyDto } from '../responses.dto';
 
 /** Реквизиты компаний-заказчиков: хранятся и переиспользуются (договор, счёт, акт, ЭСФ). */
 @ApiTags('admin')
@@ -24,29 +24,29 @@ export class AdminBanquetCompaniesController {
 
   @Get()
   @RequirePermissions(Permission.BanquetsView, Permission.BanquetsInvoice)
-  @ApiOkResponse({ type: CompaniesPageDto })
-  search(@CurrentActor() actor: Actor, @Query() q: CompaniesQueryDto): Promise<Page<ClientCompanyRecord>> {
+  @ApiOkResponse({ type: BanquetCompaniesPageDto })
+  search(@CurrentActor() actor: Actor, @Query() q: BanquetCompaniesQueryDto): Promise<Page<ClientCompanyRecord>> {
     return this.queries.search(actor, q.q, pageRequest(q.page, q.perPage));
   }
 
   @Get(':id')
   @RequirePermissions(Permission.BanquetsView, Permission.BanquetsInvoice)
-  @ApiOkResponse({ type: CompanyDto })
+  @ApiOkResponse({ type: BanquetCompanyDto })
   get(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string): Promise<ClientCompanyRecord> {
     return this.queries.get(actor, id);
   }
 
   @Post()
   @RequirePermissions(Permission.BanquetsManage, Permission.BanquetsInvoice)
-  @ApiCreatedResponse({ type: CompanyDto })
-  create(@CurrentActor() actor: Actor, @Body() dto: CompanyInputDto): Promise<ClientCompanyRecord> {
+  @ApiCreatedResponse({ type: BanquetCompanyDto })
+  create(@CurrentActor() actor: Actor, @Body() dto: BanquetCompanyInputDto): Promise<ClientCompanyRecord> {
     return this.createCompany.execute(actor, dto);
   }
 
   @Put(':id')
   @RequirePermissions(Permission.BanquetsManage, Permission.BanquetsInvoice)
-  @ApiOkResponse({ type: CompanyDto })
-  update(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: CompanyInputDto): Promise<ClientCompanyRecord> {
+  @ApiOkResponse({ type: BanquetCompanyDto })
+  update(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: BanquetCompanyInputDto): Promise<ClientCompanyRecord> {
     return this.updateCompany.execute(actor, id, dto);
   }
 

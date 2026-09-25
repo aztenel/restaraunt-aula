@@ -9,8 +9,8 @@ import { BanquetQueries, RequestDetailView } from '../../application/banquet.que
 import { SignedLink } from '../../application/document-files';
 import { SaveQuoteVersion, SendQuote } from '../../application/quote.actions';
 import { QuoteSummaryView, QuoteView, quoteView } from '../../application/views';
-import { MenuSearchQueryDto, SaveQuoteDto, toDiscount } from '../dto';
-import { DishOptionDto, QuoteDto, QuoteSummaryDto, RequestDetailDto, SignedLinkDto } from '../responses.dto';
+import { BanquetMenuSearchQueryDto, BanquetSaveQuoteDto, toDiscount } from '../dto';
+import { BanquetDishOptionDto, BanquetQuoteDto, BanquetQuoteSummaryDto, BanquetRequestDetailDto, BanquetSignedLinkDto } from '../responses.dto';
 
 /** Конструктор сметы: версии (каждое сохранение — новая версия), PDF, отправка клиенту, поиск блюд меню. */
 @ApiTags('admin')
@@ -26,7 +26,7 @@ export class AdminBanquetQuotesController {
 
   @Get('requests/:id/quotes')
   @RequirePermissions(Permission.BanquetsView)
-  @ApiOkResponse({ type: [QuoteSummaryDto] })
+  @ApiOkResponse({ type: [BanquetQuoteSummaryDto] })
   versions(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string): Promise<QuoteSummaryView[]> {
     return this.quotes.versions(actor, id);
   }
@@ -34,8 +34,8 @@ export class AdminBanquetQuotesController {
   /** Сохранить смету — новая версия (прошлые не меняются). */
   @Post('requests/:id/quotes')
   @RequirePermissions(Permission.BanquetsManage)
-  @ApiCreatedResponse({ type: QuoteDto })
-  async save(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: SaveQuoteDto): Promise<QuoteView> {
+  @ApiCreatedResponse({ type: BanquetQuoteDto })
+  async save(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: BanquetSaveQuoteDto): Promise<QuoteView> {
     const quote = await this.saveQuote.execute(actor, id, {
       lines: dto.lines.map((l) => ({
         kind: l.kind,
@@ -58,7 +58,7 @@ export class AdminBanquetQuotesController {
 
   @Get('quotes/:quoteId')
   @RequirePermissions(Permission.BanquetsView)
-  @ApiOkResponse({ type: QuoteDto })
+  @ApiOkResponse({ type: BanquetQuoteDto })
   get(@CurrentActor() actor: Actor, @Param('quoteId', ParseUUIDPipe) quoteId: string): Promise<QuoteView> {
     return this.quotes.get(actor, quoteId);
   }
@@ -66,7 +66,7 @@ export class AdminBanquetQuotesController {
   /** PDF версии сметы под брендом (приватный файл, подписанная ссылка). */
   @Get('quotes/:quoteId/pdf')
   @RequirePermissions(Permission.BanquetsView)
-  @ApiOkResponse({ type: SignedLinkDto })
+  @ApiOkResponse({ type: BanquetSignedLinkDto })
   pdf(@CurrentActor() actor: Actor, @Param('quoteId', ParseUUIDPipe) quoteId: string): Promise<SignedLink> {
     return this.quotes.pdfLink(actor, quoteId);
   }
@@ -75,7 +75,7 @@ export class AdminBanquetQuotesController {
   @Post('quotes/:quoteId/send')
   @HttpCode(200)
   @RequirePermissions(Permission.BanquetsManage)
-  @ApiOkResponse({ type: RequestDetailDto })
+  @ApiOkResponse({ type: BanquetRequestDetailDto })
   async send(@CurrentActor() actor: Actor, @Param('quoteId', ParseUUIDPipe) quoteId: string): Promise<RequestDetailView> {
     const request = await this.sendQuote.execute(actor, quoteId);
     return this.requests.detail(actor, request.id);
@@ -84,8 +84,8 @@ export class AdminBanquetQuotesController {
   /** Поиск блюд меню филиала для сметы (цена филиала сейчас; в смету попадает снимок). */
   @Get('menu/dishes')
   @RequirePermissions(Permission.BanquetsManage)
-  @ApiOkResponse({ type: [DishOptionDto] })
-  dishes(@CurrentActor() actor: Actor, @Query() q: MenuSearchQueryDto): Promise<DishOptionView[]> {
+  @ApiOkResponse({ type: [BanquetDishOptionDto] })
+  dishes(@CurrentActor() actor: Actor, @Query() q: BanquetMenuSearchQueryDto): Promise<DishOptionView[]> {
     return this.quotes.searchDishes(actor, q.branchId, q.q, q.limit ?? 20);
   }
 }

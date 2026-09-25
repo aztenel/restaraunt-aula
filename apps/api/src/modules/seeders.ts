@@ -1,4 +1,5 @@
 import { ModuleSeeder } from '../shared/infrastructure/seed/seed.types';
+import { seedBanquet } from './banquet/infrastructure/seed';
 import { seedCatalog } from './catalog/infrastructure/seed';
 import { seedCustomers } from './customers/infrastructure/seed';
 import { seedNotifications } from './notifications/infrastructure/seed';
@@ -19,6 +20,7 @@ export const MODULE_SEEDERS: Array<{ module: string; seed: ModuleSeeder }> = [
   { module: 'payments', seed: seedPayments },
   { module: 'ordering', seed: seedOrdering },
   { module: 'reservation', seed: seedReservation },
+  { module: 'banquet', seed: seedBanquet },
   { module: 'reporting', seed: seedReporting },
   { module: 'pos', seed: seedPos },
 ];

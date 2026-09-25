@@ -13,14 +13,14 @@ import { BanquetStatus } from '../public';
 const DATE_TIME = { type: String, format: 'date-time' } as const;
 const INVOICE_STATUSES: InvoiceStatus[] = ['issued', 'partially_paid', 'paid', 'cancelled'];
 
-export class ContactDto {
+export class BanquetContactDto {
   @ApiProperty({ nullable: true, type: String, description: 'Гость в базе гостей' }) customerId: string | null;
   @ApiProperty() name: string;
   @ApiProperty({ example: '+77011234567' }) phone: string;
   @ApiProperty({ nullable: true, type: String }) email: string | null;
 }
 
-export class RequestSummaryDto {
+export class BanquetRequestSummaryDto {
   @ApiProperty() id: string;
   @ApiProperty({ example: 'GL-B-2026-000001' }) number: string;
   @ApiProperty({ enum: ALL_BANQUET_STATUSES }) status: BanquetStatus;
@@ -34,7 +34,7 @@ export class RequestSummaryDto {
   @ApiProperty({ enum: BANQUET_EVENT_TYPES }) eventType: string;
   @ApiProperty() guests: number;
   @ApiProperty({ nullable: true, type: MoneyDto }) budget: MoneyDto | null;
-  @ApiProperty({ type: ContactDto }) contact: ContactDto;
+  @ApiProperty({ type: BanquetContactDto }) contact: BanquetContactDto;
   @ApiProperty() managerId: string;
   @ApiProperty() managerName: string;
   @ApiProperty({ nullable: true, type: Number }) quoteVersion: number | null;
@@ -46,21 +46,21 @@ export class RequestSummaryDto {
   @ApiProperty(DATE_TIME) updatedAt: Date;
 }
 
-export class RequestsPageDto extends PageDtoOf(RequestSummaryDto) {}
+export class BanquetRequestsPageDto extends PageDtoOf(BanquetRequestSummaryDto) {}
 
-export class PipelineColumnDto {
+export class BanquetPipelineColumnDto {
   @ApiProperty({ enum: ALL_BANQUET_STATUSES }) status: BanquetStatus;
   @ApiProperty() count: number;
-  @ApiProperty({ type: [RequestSummaryDto] }) items: RequestSummaryDto[];
+  @ApiProperty({ type: [BanquetRequestSummaryDto] }) items: BanquetRequestSummaryDto[];
 }
 
-export class DiscountDto {
+export class BanquetDiscountDto {
   @ApiProperty({ enum: ['percent', 'amount'] }) type: 'percent' | 'amount';
   @ApiProperty({ nullable: true, type: Number, description: 'Процент, базисные пункты' }) bp: number | null;
   @ApiProperty({ nullable: true, type: MoneyDto }) amount: MoneyDto | null;
 }
 
-export class QuoteLineDto {
+export class BanquetQuoteLineDto {
   @ApiProperty() position: number;
   @ApiProperty({ enum: QUOTE_LINE_KINDS }) kind: QuoteLineKind;
   @ApiProperty({ nullable: true, type: String }) dishId: string | null;
@@ -68,13 +68,13 @@ export class QuoteLineDto {
   @ApiProperty() unit: string;
   @ApiProperty() quantity: number;
   @ApiProperty({ type: MoneyDto }) unitPrice: MoneyDto;
-  @ApiProperty({ nullable: true, type: DiscountDto }) discount: DiscountDto | null;
+  @ApiProperty({ nullable: true, type: BanquetDiscountDto }) discount: BanquetDiscountDto | null;
   @ApiProperty({ type: MoneyDto, description: 'Цена × количество' }) gross: MoneyDto;
   @ApiProperty({ type: MoneyDto }) discountAmount: MoneyDto;
   @ApiProperty({ type: MoneyDto }) total: MoneyDto;
 }
 
-export class QuoteTotalsDto {
+export class BanquetQuoteTotalsDto {
   @ApiProperty({ type: MoneyDto }) subtotal: MoneyDto;
   @ApiProperty({ type: MoneyDto }) linesDiscount: MoneyDto;
   @ApiProperty({ type: MoneyDto }) overallDiscount: MoneyDto;
@@ -85,12 +85,12 @@ export class QuoteTotalsDto {
   @ApiProperty({ type: MoneyDto }) perGuest: MoneyDto;
 }
 
-export class PartyShortDto {
+export class BanquetPartyShortDto {
   @ApiProperty() name: string;
   @ApiProperty({ nullable: true, type: String }) bin: string | null;
 }
 
-export class QuoteSummaryDto {
+export class BanquetQuoteSummaryDto {
   @ApiProperty() id: string;
   @ApiProperty() requestId: string;
   @ApiProperty() version: number;
@@ -106,21 +106,21 @@ export class QuoteSummaryDto {
   @ApiProperty() isLatest: boolean;
 }
 
-export class QuoteDto {
+export class BanquetQuoteDto {
   @ApiProperty() id: string;
   @ApiProperty() requestId: string;
   @ApiProperty() version: number;
   @ApiProperty({ nullable: true, type: String }) branchId: string | null;
   @ApiProperty() guests: number;
-  @ApiProperty({ nullable: true, type: DiscountDto }) discount: DiscountDto | null;
+  @ApiProperty({ nullable: true, type: BanquetDiscountDto }) discount: BanquetDiscountDto | null;
   @ApiProperty() serviceChargeBp: number;
   @ApiProperty() vatPayer: boolean;
   @ApiProperty() vatRateBp: number;
-  @ApiProperty({ type: [QuoteLineDto] }) lines: QuoteLineDto[];
-  @ApiProperty({ type: QuoteTotalsDto }) totals: QuoteTotalsDto;
+  @ApiProperty({ type: [BanquetQuoteLineDto] }) lines: BanquetQuoteLineDto[];
+  @ApiProperty({ type: BanquetQuoteTotalsDto }) totals: BanquetQuoteTotalsDto;
   @ApiProperty({ nullable: true, type: String }) validUntil: string | null;
   @ApiProperty({ nullable: true, type: String }) notes: string | null;
-  @ApiProperty({ type: PartyShortDto }) seller: { name: string; bin: string };
+  @ApiProperty({ type: BanquetPartyShortDto }) seller: { name: string; bin: string };
   @ApiProperty() pdfReady: boolean;
   @ApiProperty() createdByName: string;
   @ApiProperty(DATE_TIME) createdAt: Date;
@@ -129,7 +129,7 @@ export class QuoteDto {
   @ApiProperty() isLatest: boolean;
 }
 
-export class InvoicePaymentDto {
+export class BanquetInvoicePaymentDto {
   @ApiProperty() paymentId: string;
   @ApiProperty({ example: 'bank_transfer' }) method: string;
   @ApiProperty({ type: MoneyDto }) amount: MoneyDto;
@@ -139,14 +139,14 @@ export class InvoicePaymentDto {
   @ApiProperty() recordedByName: string;
 }
 
-export class InvoiceDto {
+export class BanquetInvoiceDto {
   @ApiProperty() id: string;
   @ApiProperty() requestId: string;
   @ApiProperty({ example: 'GL-S-2026-000001' }) number: string;
   @ApiProperty({ nullable: true, type: String }) branchId: string | null;
   @ApiProperty({ enum: PAYER_TYPES }) payerType: PayerType;
   @ApiProperty({ nullable: true, type: String }) companyId: string | null;
-  @ApiProperty({ type: PartyShortDto }) buyer: PartyShortDto;
+  @ApiProperty({ type: BanquetPartyShortDto }) buyer: BanquetPartyShortDto;
   @ApiProperty({ enum: INVOICE_PURPOSES }) purpose: InvoicePurpose;
   @ApiProperty() description: string;
   @ApiProperty({ type: MoneyDto }) amount: MoneyDto;
@@ -165,22 +165,22 @@ export class InvoiceDto {
   @ApiProperty({ ...DATE_TIME, nullable: true }) paidAt: Date | null;
   @ApiProperty({ ...DATE_TIME, nullable: true }) cancelledAt: Date | null;
   @ApiProperty({ nullable: true, type: String }) cancelReason: string | null;
-  @ApiProperty({ type: [InvoicePaymentDto] }) payments: InvoicePaymentDto[];
+  @ApiProperty({ type: [BanquetInvoicePaymentDto] }) payments: BanquetInvoicePaymentDto[];
 }
 
-export class InvoiceListItemDto extends InvoiceDto {
+export class BanquetInvoiceListItemDto extends BanquetInvoiceDto {
   @ApiProperty() requestNumber: string;
 }
 
-export class InvoicesPageDto extends PageDtoOf(InvoiceListItemDto) {}
+export class BanquetInvoicesPageDto extends PageDtoOf(BanquetInvoiceListItemDto) {}
 
-export class BankTransferResultDto {
-  @ApiProperty({ type: InvoiceDto }) invoice: InvoiceDto;
+export class BanquetBankTransferResultDto {
+  @ApiProperty({ type: BanquetInvoiceDto }) invoice: BanquetInvoiceDto;
   @ApiProperty() paymentId: string;
   @ApiProperty({ description: 'Этот документ уже был зарегистрирован (повтор)' }) duplicate: boolean;
 }
 
-export class EsfDto {
+export class BanquetEsfDto {
   @ApiProperty({ enum: ESF_STATUSES }) status: EsfStatus;
   @ApiProperty({ nullable: true, type: String }) provider: string | null;
   @ApiProperty({ nullable: true, type: String }) esfId: string | null;
@@ -189,19 +189,19 @@ export class EsfDto {
   @ApiProperty({ ...DATE_TIME, nullable: true }) updatedAt: Date | null;
 }
 
-export class ActDto {
+export class BanquetActDto {
   @ApiProperty() id: string;
   @ApiProperty({ example: 'GL-A-2026-000001' }) number: string;
   @ApiProperty() actDate: string;
   @ApiProperty({ enum: PAYER_TYPES }) payerType: PayerType;
-  @ApiProperty({ type: PartyShortDto }) buyer: PartyShortDto;
+  @ApiProperty({ type: BanquetPartyShortDto }) buyer: BanquetPartyShortDto;
   @ApiProperty({ type: MoneyDto }) amount: MoneyDto;
   @ApiProperty({ type: MoneyDto }) vat: MoneyDto;
-  @ApiProperty({ type: EsfDto }) esf: EsfDto;
+  @ApiProperty({ type: BanquetEsfDto }) esf: BanquetEsfDto;
   @ApiProperty(DATE_TIME) createdAt: Date;
 }
 
-export class DocumentDto {
+export class BanquetDocumentDto {
   @ApiProperty() id: string;
   @ApiProperty({ enum: DOCUMENT_KINDS }) kind: DocumentKind;
   @ApiProperty({ nullable: true, type: String }) number: string | null;
@@ -212,7 +212,7 @@ export class DocumentDto {
   @ApiProperty(DATE_TIME) createdAt: Date;
 }
 
-export class ActivityDto {
+export class BanquetActivityDto {
   @ApiProperty() id: string;
   @ApiProperty({ enum: ACTIVITY_KINDS }) kind: ActivityKind;
   @ApiProperty({ nullable: true, type: String }) text: string | null;
@@ -222,7 +222,7 @@ export class ActivityDto {
   @ApiProperty(DATE_TIME) occurredAt: Date;
 }
 
-export class CompanyDto {
+export class BanquetCompanyDto {
   @ApiProperty() id: string;
   @ApiProperty() name: string;
   @ApiProperty() bin: string;
@@ -241,9 +241,9 @@ export class CompanyDto {
   @ApiProperty(DATE_TIME) updatedAt: Date;
 }
 
-export class CompaniesPageDto extends PageDtoOf(CompanyDto) {}
+export class BanquetCompaniesPageDto extends PageDtoOf(BanquetCompanyDto) {}
 
-export class VenueHoldDto {
+export class BanquetVenueHoldDto {
   @ApiProperty() venueId: string;
   @ApiProperty({ nullable: true, type: TranslatableDto }) venueName: Translatable | null;
   @ApiProperty({ description: 'Занятость в модуле бронирования' }) reservationId: string;
@@ -251,7 +251,7 @@ export class VenueHoldDto {
   @ApiProperty(DATE_TIME) end: Date;
 }
 
-export class PrepaymentStateDto {
+export class BanquetPrepaymentStateDto {
   @ApiProperty({ nullable: true, type: MoneyDto, description: 'Требуемая предоплата (по умолчанию 50% сметы)' }) required: MoneyDto | null;
   @ApiProperty({ type: MoneyDto }) paid: MoneyDto;
   @ApiProperty({ nullable: true, type: MoneyDto }) remaining: MoneyDto | null;
@@ -259,45 +259,45 @@ export class PrepaymentStateDto {
   @ApiProperty({ description: 'Сумму задал менеджер' }) isCustom: boolean;
 }
 
-export class BalanceDto {
+export class BanquetBalanceDto {
   @ApiProperty({ nullable: true, type: MoneyDto }) quoteTotal: MoneyDto | null;
   @ApiProperty({ type: MoneyDto }) invoiced: MoneyDto;
   @ApiProperty({ type: MoneyDto }) paid: MoneyDto;
   @ApiProperty({ nullable: true, type: MoneyDto }) remaining: MoneyDto | null;
 }
 
-export class RequestDetailDto extends RequestSummaryDto {
+export class BanquetRequestDetailDto extends BanquetRequestSummaryDto {
   @ApiProperty({ nullable: true, type: String }) wishes: string | null;
   @ApiProperty() locale: string;
-  @ApiProperty({ nullable: true, type: CompanyDto }) company: CompanyDto | null;
+  @ApiProperty({ nullable: true, type: BanquetCompanyDto }) company: BanquetCompanyDto | null;
   @ApiProperty({ enum: ALL_BANQUET_STATUSES, isArray: true, description: 'Переходы, доступные сейчас' }) allowedTransitions: BanquetStatus[];
-  @ApiProperty({ nullable: true, type: VenueHoldDto }) venue: VenueHoldDto | null;
-  @ApiProperty({ type: PrepaymentStateDto }) prepayment: PrepaymentStateDto;
-  @ApiProperty({ type: BalanceDto }) balance: BalanceDto;
+  @ApiProperty({ nullable: true, type: BanquetVenueHoldDto }) venue: BanquetVenueHoldDto | null;
+  @ApiProperty({ type: BanquetPrepaymentStateDto }) prepayment: BanquetPrepaymentStateDto;
+  @ApiProperty({ type: BanquetBalanceDto }) balance: BanquetBalanceDto;
   @ApiProperty({ nullable: true, type: String }) contractNumber: string | null;
   @ApiProperty({ nullable: true, type: String }) contractDate: string | null;
   @ApiProperty({ nullable: true, type: String }) cancelReason: string | null;
   @ApiProperty({ ...DATE_TIME, nullable: true }) heldAt: Date | null;
   @ApiProperty({ ...DATE_TIME, nullable: true }) cancelledAt: Date | null;
   @ApiProperty({ description: 'Ссылка на страницу сметы для клиента' }) publicQuoteUrl: string;
-  @ApiProperty({ type: [QuoteSummaryDto] }) quotes: QuoteSummaryDto[];
-  @ApiProperty({ type: [InvoiceDto] }) invoices: InvoiceDto[];
-  @ApiProperty({ nullable: true, type: ActDto }) act: ActDto | null;
-  @ApiProperty({ type: [DocumentDto] }) documents: DocumentDto[];
-  @ApiProperty({ type: [ActivityDto] }) timeline: ActivityDto[];
+  @ApiProperty({ type: [BanquetQuoteSummaryDto] }) quotes: BanquetQuoteSummaryDto[];
+  @ApiProperty({ type: [BanquetInvoiceDto] }) invoices: BanquetInvoiceDto[];
+  @ApiProperty({ nullable: true, type: BanquetActDto }) act: BanquetActDto | null;
+  @ApiProperty({ type: [BanquetDocumentDto] }) documents: BanquetDocumentDto[];
+  @ApiProperty({ type: [BanquetActivityDto] }) timeline: BanquetActivityDto[];
 }
 
-export class SignedLinkDto {
+export class BanquetSignedLinkDto {
   @ApiProperty() url: string;
   @ApiProperty(DATE_TIME) expiresAt: Date;
   @ApiProperty() filename: string;
 }
 
-export class IdDto {
+export class BanquetIdDto {
   @ApiProperty() id: string;
 }
 
-export class RefundResultDto {
+export class BanquetRefundResultDto {
   @ApiProperty() id: string;
   @ApiProperty() paymentId: string;
   @ApiProperty({ type: MoneyDto }) amount: MoneyDto;
@@ -306,7 +306,7 @@ export class RefundResultDto {
   @ApiProperty(DATE_TIME) createdAt: Date;
 }
 
-export class ManagerDto {
+export class BanquetManagerDto {
   @ApiProperty() id: string;
   @ApiProperty() name: string;
   @ApiProperty({ nullable: true, type: String }) phone: string | null;
@@ -314,7 +314,7 @@ export class ManagerDto {
   @ApiProperty({ description: 'Открытых заявок' }) openRequests: number;
 }
 
-export class SlaFiguresDto {
+export class BanquetSlaFiguresDto {
   @ApiProperty() total: number;
   @ApiProperty() answered: number;
   @ApiProperty() answeredWithinSla: number;
@@ -325,19 +325,19 @@ export class SlaFiguresDto {
   @ApiProperty({ nullable: true, type: Number }) averageFirstResponseMinutes: number | null;
 }
 
-export class ManagerSlaDto extends SlaFiguresDto {
+export class BanquetManagerSlaDto extends BanquetSlaFiguresDto {
   @ApiProperty() managerId: string;
   @ApiProperty() managerName: string;
 }
 
-export class SlaStatsDto extends SlaFiguresDto {
+export class BanquetSlaStatsDto extends BanquetSlaFiguresDto {
   @ApiProperty() from: string;
   @ApiProperty() to: string;
   @ApiProperty({ description: 'Целевая доля (ТЗ: 95%)' }) targetShareBp: number;
-  @ApiProperty({ type: [ManagerSlaDto] }) byManager: ManagerSlaDto[];
+  @ApiProperty({ type: [BanquetManagerSlaDto] }) byManager: BanquetManagerSlaDto[];
 }
 
-export class CalendarVenueDto {
+export class BanquetCalendarVenueDto {
   @ApiProperty() id: string;
   @ApiProperty() branchId: string;
   @ApiProperty() hallId: string;
@@ -352,7 +352,7 @@ export class CalendarVenueDto {
   @ApiProperty() isActive: boolean;
 }
 
-export class OccupancyDto {
+export class BanquetOccupancyDto {
   @ApiProperty() reservationId: string;
   @ApiProperty() venueId: string;
   @ApiProperty({ enum: ['regular', 'banquet'] }) kind: string;
@@ -363,16 +363,16 @@ export class OccupancyDto {
   @ApiProperty({ nullable: true, type: String }) banquetRequestId: string | null;
 }
 
-export class CalendarDto {
+export class BanquetCalendarDto {
   @ApiProperty() branchId: string;
   @ApiProperty() from: string;
   @ApiProperty() to: string;
-  @ApiProperty({ type: [CalendarVenueDto] }) venues: CalendarVenueDto[];
-  @ApiProperty({ type: [OccupancyDto], description: 'Занятость залов: брони и банкеты' }) occupancy: OccupancyDto[];
-  @ApiProperty({ type: [RequestSummaryDto] }) banquets: RequestSummaryDto[];
+  @ApiProperty({ type: [BanquetCalendarVenueDto] }) venues: BanquetCalendarVenueDto[];
+  @ApiProperty({ type: [BanquetOccupancyDto], description: 'Занятость залов: брони и банкеты' }) occupancy: BanquetOccupancyDto[];
+  @ApiProperty({ type: [BanquetRequestSummaryDto] }) banquets: BanquetRequestSummaryDto[];
 }
 
-export class DishOptionDto {
+export class BanquetDishOptionDto {
   @ApiProperty() dishId: string;
   @ApiProperty({ type: TranslatableDto }) name: Translatable;
   @ApiProperty({ type: MoneyDto, description: 'Цена в филиале сейчас' }) price: MoneyDto;
@@ -381,7 +381,7 @@ export class DishOptionDto {
   @ApiProperty({ nullable: true, type: Number }) weightGrams: number | null;
 }
 
-export class ContractTemplateDto {
+export class BanquetContractTemplateDto {
   @ApiProperty() id: string;
   @ApiProperty() code: string;
   @ApiProperty() name: string;
@@ -391,40 +391,40 @@ export class ContractTemplateDto {
   @ApiProperty(DATE_TIME) updatedAt: Date;
 }
 
-export class PlaceholderDto {
+export class BanquetPlaceholderDto {
   @ApiProperty({ example: 'seller.name' }) key: string;
   @ApiProperty() description: string;
 }
 
 // ---------------------------------------------------------------- витрина
 
-export class PublicRequestCreatedDto {
+export class BanquetPublicRequestCreatedDto {
   @ApiProperty({ example: 'GL-B-2026-000001' }) number: string;
   @ApiProperty({ enum: ALL_BANQUET_STATUSES }) status: BanquetStatus;
   @ApiProperty({ description: 'Ваш менеджер' }) managerName: string;
   @ApiProperty({ nullable: true, type: String }) managerPhone: string | null;
 }
 
-export class EventTypeDto {
+export class BanquetEventTypeDto {
   @ApiProperty({ enum: BANQUET_EVENT_TYPES }) code: string;
   @ApiProperty() label: string;
 }
 
-export class PublicQuoteLineDto {
+export class BanquetPublicQuoteLineDto {
   @ApiProperty() title: string;
   @ApiProperty() unit: string;
   @ApiProperty() quantity: number;
   @ApiProperty({ type: MoneyDto }) unitPrice: MoneyDto;
-  @ApiProperty({ nullable: true, type: DiscountDto }) discount: DiscountDto | null;
+  @ApiProperty({ nullable: true, type: BanquetDiscountDto }) discount: BanquetDiscountDto | null;
   @ApiProperty({ type: MoneyDto }) total: MoneyDto;
 }
 
-export class PublicManagerDto {
+export class BanquetPublicManagerDto {
   @ApiProperty() name: string;
   @ApiProperty({ nullable: true, type: String }) phone: string | null;
 }
 
-export class PublicQuoteDto {
+export class BanquetPublicQuoteDto {
   @ApiProperty() requestNumber: string;
   @ApiProperty({ enum: ALL_BANQUET_STATUSES }) status: BanquetStatus;
   @ApiProperty() statusLabel: string;
@@ -435,7 +435,7 @@ export class PublicQuoteDto {
   @ApiProperty() guests: number;
   @ApiProperty() place: string;
   @ApiProperty() version: number;
-  @ApiProperty({ type: [PublicQuoteLineDto] }) lines: PublicQuoteLineDto[];
+  @ApiProperty({ type: [BanquetPublicQuoteLineDto] }) lines: BanquetPublicQuoteLineDto[];
   @ApiProperty({ type: MoneyDto }) subtotal: MoneyDto;
   @ApiProperty({ type: MoneyDto }) discount: MoneyDto;
   @ApiProperty() serviceChargeBp: number;
@@ -450,16 +450,16 @@ export class PublicQuoteDto {
   @ApiProperty({ description: 'Можно согласовать сейчас' }) canAccept: boolean;
   @ApiProperty() accepted: boolean;
   @ApiProperty({ description: 'PDF сметы (подписанная ссылка)' }) pdfUrl: string;
-  @ApiProperty({ type: PublicManagerDto }) manager: PublicManagerDto;
+  @ApiProperty({ type: BanquetPublicManagerDto }) manager: BanquetPublicManagerDto;
 }
 
-export class PublicAcceptResultDto {
+export class BanquetPublicAcceptResultDto {
   @ApiProperty({ enum: ALL_BANQUET_STATUSES }) status: BanquetStatus;
   @ApiProperty() version: number;
   @ApiProperty({ nullable: true, type: MoneyDto, description: 'Требуемая предоплата' }) prepayment: MoneyDto | null;
 }
 
-export class PublicSellerDto {
+export class BanquetPublicSellerDto {
   @ApiProperty() name: string;
   @ApiProperty() bin: string;
   @ApiProperty() iban: string;
@@ -468,7 +468,7 @@ export class PublicSellerDto {
   @ApiProperty() kbe: string;
 }
 
-export class PublicInvoiceDto {
+export class BanquetPublicInvoiceDto {
   @ApiProperty() number: string;
   @ApiProperty() requestNumber: string;
   @ApiProperty({ enum: INVOICE_STATUSES }) status: InvoiceStatus;
@@ -484,5 +484,5 @@ export class PublicInvoiceDto {
   @ApiProperty({ nullable: true, type: String, description: 'Ссылка на оплату (появляется асинхронно)' }) paymentUrl: string | null;
   @ApiProperty({ nullable: true, type: String }) paymentStatus: string | null;
   @ApiProperty({ nullable: true, type: String, description: 'PDF счёта на оплату (юрлицо)' }) pdfUrl: string | null;
-  @ApiPropertyOptional({ nullable: true, type: PublicSellerDto }) seller: PublicSellerDto | null;
+  @ApiPropertyOptional({ nullable: true, type: BanquetPublicSellerDto }) seller: BanquetPublicSellerDto | null;
 }

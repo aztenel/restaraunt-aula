@@ -6,14 +6,9 @@ import { Logo } from '@/components/brand/Logo';
 import { RamHorn } from '@/components/brand/Ornament';
 import { PhoneIcon, WhatsAppIcon } from '@/components/ui/icons';
 import { formatPhone, telHref, whatsappHref } from '@/lib/format';
-import { LEGAL_PAGES, routes } from '@/lib/routes';
+import { INFO_PAGES, LEGAL_PAGES, routes } from '@/lib/routes';
 
-const LEGAL_KEYS = {
-  offer: 'offer',
-  privacy: 'privacy',
-  'personal-data': 'personalData',
-  delivery: 'delivery',
-} as const;
+const linkClass = 'inline-flex min-h-10 items-center hover:text-gold-300';
 
 export async function Footer({ locale, branches }: { locale: AppLocale; branches: PublicBranch[] }) {
   const t = await getTranslations('Footer');
@@ -22,7 +17,7 @@ export async function Footer({ locale, branches }: { locale: AppLocale; branches
   return (
     <footer className="relative mt-16 overflow-hidden bg-earth-900 text-cream-200">
       <RamHorn className="pointer-events-none absolute -right-10 -top-6 h-48 w-80 text-earth-800" strokeWidth={1.2} />
-      <div className="relative mx-auto grid w-full max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.2fr_2fr_1fr]">
+      <div className="relative mx-auto grid w-full max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-2 lg:grid-cols-[1.1fr_1.8fr_1fr_1fr]">
         <div>
           <Logo inverted />
           <p className="mt-4 max-w-xs text-sm text-cream-300">{t('tagline')}</p>
@@ -67,23 +62,48 @@ export async function Footer({ locale, branches }: { locale: AppLocale; branches
             {t('info')}
           </h2>
           <ul className="mt-4 space-y-1 text-sm">
-            <li>
-              <Link href={routes.branches()} className="inline-flex min-h-10 items-center hover:text-gold-300">
-                {nav('branches')}
-              </Link>
-            </li>
-            <li>
-              <Link href={routes.certificates()} className="inline-flex min-h-10 items-center hover:text-gold-300">
-                {nav('certificates')}
-              </Link>
-            </li>
-            {LEGAL_PAGES.map((slug) => (
+            {INFO_PAGES.map((slug) => (
               <li key={slug}>
-                <Link href={routes.page(slug)} className="inline-flex min-h-10 items-center hover:text-gold-300">
-                  {t(LEGAL_KEYS[slug])}
+                <Link href={routes.page(slug)} className={linkClass}>
+                  {t(slug)}
                 </Link>
               </li>
             ))}
+            <li>
+              <Link href={routes.promotions()} className={linkClass}>
+                {t('promotions')}
+              </Link>
+            </li>
+            <li>
+              <Link href={routes.certificates()} className={linkClass}>
+                {nav('certificates')}
+              </Link>
+            </li>
+            <li>
+              <Link href={routes.branches()} className={linkClass}>
+                {nav('branches')}
+              </Link>
+            </li>
+          </ul>
+        </nav>
+
+        <nav aria-labelledby="footer-legal">
+          <h2 id="footer-legal" className="font-display text-lg font-semibold text-cream-50">
+            {t('legal')}
+          </h2>
+          <ul className="mt-4 space-y-1 text-sm">
+            {LEGAL_PAGES.map((slug) => (
+              <li key={slug}>
+                <Link href={routes.page(slug)} className={linkClass}>
+                  {t(slug)}
+                </Link>
+              </li>
+            ))}
+            <li>
+              <Link href={routes.consent('personal-data')} className={linkClass}>
+                {t('personalData')}
+              </Link>
+            </li>
           </ul>
         </nav>
       </div>

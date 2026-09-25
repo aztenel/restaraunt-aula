@@ -177,6 +177,10 @@ export const branchMenuApi = {
     }
     return items;
   },
+  item: async (branchId: string, dishId: string) =>
+    (await call(
+      api.GET('/api/v1/admin/catalog/branches/{branchId}/menu/{dishId}', { params: { path: { branchId, dishId } } }),
+    )) as unknown as BranchMenuItem,
   add: async (branchId: string, input: AddMenuItemInput) =>
     (await call(
       api.POST('/api/v1/admin/catalog/branches/{branchId}/menu', {

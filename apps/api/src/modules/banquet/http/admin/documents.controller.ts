@@ -8,8 +8,8 @@ import { GenerateContract, IssueBanquetAct } from '../../application/document.ac
 import { SignedLink } from '../../application/document-files';
 import { RetryEsf } from '../../application/esf.actions';
 import { ActView, actView, DocumentView, documentView } from '../../application/views';
-import { GenerateContractDto } from '../dto';
-import { ActDto, DocumentDto, SignedLinkDto } from '../responses.dto';
+import { BanquetGenerateContractDto } from '../dto';
+import { BanquetActDto, BanquetDocumentDto, BanquetSignedLinkDto } from '../responses.dto';
 
 /**
  * Документы для юрлиц: договор по шаблону, акт выполненных работ (после проведения), ЭСФ по акту;
@@ -28,14 +28,14 @@ export class AdminBanquetDocumentsController {
 
   @Get('requests/:id/documents')
   @RequirePermissions(Permission.BanquetsView)
-  @ApiOkResponse({ type: [DocumentDto] })
+  @ApiOkResponse({ type: [BanquetDocumentDto] })
   list(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string): Promise<DocumentView[]> {
     return this.queries.list(actor, id);
   }
 
   @Get('documents/:documentId/link')
   @RequirePermissions(Permission.BanquetsView)
-  @ApiOkResponse({ type: SignedLinkDto })
+  @ApiOkResponse({ type: BanquetSignedLinkDto })
   link(@CurrentActor() actor: Actor, @Param('documentId', ParseUUIDPipe) documentId: string): Promise<SignedLink> {
     return this.queries.link(actor, documentId);
   }
@@ -43,15 +43,15 @@ export class AdminBanquetDocumentsController {
   /** Договор по шаблону с подстановкой реквизитов (номер — один на заявку, повтор — новая редакция). */
   @Post('requests/:id/contract')
   @RequirePermissions(Permission.BanquetsManage, Permission.BanquetsInvoice)
-  @ApiCreatedResponse({ type: DocumentDto })
-  async contract(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: GenerateContractDto): Promise<DocumentView> {
+  @ApiCreatedResponse({ type: BanquetDocumentDto })
+  async contract(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: BanquetGenerateContractDto): Promise<DocumentView> {
     return documentView(await this.generateContract.execute(actor, id, { templateId: dto.templateId ?? null }));
   }
 
   /** Акт выполненных работ (после held); для юрлица при продавце — плательщике НДС ставится ЭСФ. */
   @Post('requests/:id/act')
   @RequirePermissions(Permission.BanquetsManage, Permission.BanquetsInvoice)
-  @ApiCreatedResponse({ type: ActDto })
+  @ApiCreatedResponse({ type: BanquetActDto })
   async act(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string): Promise<ActView> {
     return actView(await this.issueAct.execute(actor, id));
   }
@@ -59,7 +59,7 @@ export class AdminBanquetDocumentsController {
   /** Повторить формирование / отправку ЭСФ по акту. */
   @Post('acts/:actId/esf/retry')
   @RequirePermissions(Permission.BanquetsManage, Permission.BanquetsInvoice)
-  @ApiCreatedResponse({ type: ActDto })
+  @ApiCreatedResponse({ type: BanquetActDto })
   async esfRetry(@CurrentActor() actor: Actor, @Param('actId', ParseUUIDPipe) actId: string): Promise<ActView> {
     return actView(await this.retryEsf.execute(actor, actId));
   }

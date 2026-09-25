@@ -3,11 +3,19 @@
  * Ответы внешних систем логируются целиком, но через эту функцию.
  */
 const SENSITIVE_KEY_RE =
-  /(pan|card_?number|cardnumber|cvv|cvc|cvv2|expiry|exp_?date|password|passwd|secret|token|authorization|api[_-]?key|signature|private[_-]?key|client_secret|access_token|refresh_token|api[_-]?login|login_?password|psw)/i;
+  /(pan|card_?number|cardnumber|cvv|cvc|cvv2|expiry|exp_?date|password|passwd|secret|token|authorization|api[_-]?key|signature|private[_-]?key|client_secret|access_token|refresh_token|api[_-]?login|login_?password|psw|sign_?key|key_?store|pkcs12|p12)/i;
 const PAN_RE = /\b(\d{6})\d{3,9}(\d{4})\b/g;
 
+/** Секреты внутри XML/SOAP-тел: <wsse:Password>…</wsse:Password>, <password>…</password> и т.п. */
+const XML_SECRET_RE = /<([\w.-]*:)?((?:password|passwd|secret|token|apikey|api_key|privatekey|private_key)[\w-]*)(\s[^>]*)?>([^<]*)<\/\1?\2>/gi;
+
 export function maskString(value: string): string {
-  return value.replace(PAN_RE, (_m, first: string, last: string) => `${first}******${last}`);
+  return value
+    .replace(XML_SECRET_RE, (_m, ns: string | undefined, tag: string, attrs: string | undefined) => {
+      const name = `${ns ?? ''}${tag}`;
+      return `<${name}${attrs ?? ''}>***</${name}>`;
+    })
+    .replace(PAN_RE, (_m, first: string, last: string) => `${first}******${last}`);
 }
 
 export function maskSensitive<T>(value: T, depth = 0): T {

@@ -185,3 +185,52 @@ export function fieldErrorForApiError(error: ApiError): FieldErrorCode {
       return 'product';
   }
 }
+
+// ---------------------------------------------------------------- Статус заказа сертификата
+
+export type CertificateOrderPhase = 'preparing' | 'awaiting' | 'issued' | 'failed' | 'cancelled';
+
+/**
+ * Что показать на странице заказа по ответу GET /public/certificates/orders/{token}.
+ * Статусы считает сервер; здесь — только выбор экрана.
+ */
+export function certificateOrderPhase(order: {
+  status: string;
+  payment: { status: string; paymentUrl: string | null } | null;
+}): CertificateOrderPhase {
+  if (order.status === 'issued') return 'issued';
+  if (order.status === 'payment_failed' || order.payment?.status === 'failed') return 'failed';
+  if (order.payment?.status === 'cancelled') return 'cancelled';
+  return order.payment?.paymentUrl ? 'awaiting' : 'preparing';
+}
+
+/** Экран, на котором опрос статуса продолжается. */
+export function isPendingPhase(phase: CertificateOrderPhase): boolean {
+  return phase === 'preparing' || phase === 'awaiting';
+}
+
+/** Переход на оплату только по http(s)-ссылке от API. */
+export function isSafePaymentUrl(url: string | null | undefined): url is string {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url, 'https://placeholder.invalid');
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
+
+// ---------------------------------------------------------------- Код сертификата
+
+/** Длина кода без дефисов (XXXX-XXXX-XXXX). */
+export const CERTIFICATE_CODE_LENGTH = 12;
+
+/** Ввод кода → «XXXX-XXXX-XXXX»: верхний регистр, только буквы и цифры, дефисы через 4 символа. */
+export function formatCertificateCode(input: string): string {
+  const raw = input.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, CERTIFICATE_CODE_LENGTH);
+  return raw.replace(/(.{4})(?=.)/g, '$1-');
+}
+
+export function isCompleteCertificateCode(code: string): boolean {
+  return code.replace(/[^A-Z0-9]/gi, '').length === CERTIFICATE_CODE_LENGTH;
+}

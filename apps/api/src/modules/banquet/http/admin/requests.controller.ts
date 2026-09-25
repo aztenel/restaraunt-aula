@@ -19,30 +19,30 @@ import { ReleaseBanquetVenue, SetBanquetVenue } from '../../application/venue.ac
 import { RequestSummaryView } from '../../application/views';
 import { Page } from '../../../../shared/kernel/pagination';
 import {
-  ActivityInputDto,
-  AdminCreateRequestDto,
-  AssignDto,
-  CalendarQueryDto,
+  BanquetActivityInputDto,
+  BanquetAdminCreateRequestDto,
+  BanquetAssignDto,
+  BanquetCalendarQueryDto,
   moneyOrNull,
   parseStatuses,
-  PipelineQueryDto,
-  PrepaymentInputDto,
-  RefundInputDto,
-  RequestsQueryDto,
-  SetVenueDto,
-  SlaQueryDto,
-  TransitionDto,
-  UpdateRequestDto,
+  BanquetPipelineQueryDto,
+  BanquetPrepaymentInputDto,
+  BanquetRefundInputDto,
+  BanquetRequestsQueryDto,
+  BanquetSetVenueDto,
+  BanquetSlaQueryDto,
+  BanquetTransitionDto,
+  BanquetUpdateRequestDto,
 } from '../dto';
 import {
-  CalendarDto,
-  IdDto,
-  ManagerDto,
-  PipelineColumnDto,
-  RefundResultDto,
-  RequestDetailDto,
-  RequestsPageDto,
-  SlaStatsDto,
+  BanquetCalendarDto,
+  BanquetIdDto,
+  BanquetManagerDto,
+  BanquetPipelineColumnDto,
+  BanquetRefundResultDto,
+  BanquetRequestDetailDto,
+  BanquetRequestsPageDto,
+  BanquetSlaStatsDto,
 } from '../responses.dto';
 
 /**
@@ -68,8 +68,8 @@ export class AdminBanquetRequestsController {
 
   @Get('requests')
   @RequirePermissions(Permission.BanquetsView)
-  @ApiOkResponse({ type: RequestsPageDto })
-  list(@CurrentActor() actor: Actor, @Query() q: RequestsQueryDto): Promise<Page<RequestSummaryView>> {
+  @ApiOkResponse({ type: BanquetRequestsPageDto })
+  list(@CurrentActor() actor: Actor, @Query() q: BanquetRequestsQueryDto): Promise<Page<RequestSummaryView>> {
     return this.queries.list(
       actor,
       {
@@ -89,39 +89,39 @@ export class AdminBanquetRequestsController {
   /** Воронка: колонки по статусам. */
   @Get('pipeline')
   @RequirePermissions(Permission.BanquetsView)
-  @ApiOkResponse({ type: [PipelineColumnDto] })
-  pipeline(@CurrentActor() actor: Actor, @Query() q: PipelineQueryDto): Promise<PipelineColumn[]> {
+  @ApiOkResponse({ type: [BanquetPipelineColumnDto] })
+  pipeline(@CurrentActor() actor: Actor, @Query() q: BanquetPipelineQueryDto): Promise<PipelineColumn[]> {
     return this.queries.pipeline(actor, { branchId: q.branchId, managerId: q.managerId, dateFrom: q.dateFrom, dateTo: q.dateTo });
   }
 
   /** Менеджеры для назначения (с нагрузкой). */
   @Get('managers')
   @RequirePermissions(Permission.BanquetsView)
-  @ApiOkResponse({ type: [ManagerDto] })
+  @ApiOkResponse({ type: [BanquetManagerDto] })
   managers(@CurrentActor() actor: Actor): Promise<ManagerView[]> {
     return this.queries.managers(actor);
   }
 
   @Get('calendar')
   @RequirePermissions(Permission.BanquetsView)
-  @ApiOkResponse({ type: CalendarDto })
-  calendar(@CurrentActor() actor: Actor, @Query() q: CalendarQueryDto): Promise<CalendarView> {
+  @ApiOkResponse({ type: BanquetCalendarDto })
+  calendar(@CurrentActor() actor: Actor, @Query() q: BanquetCalendarQueryDto): Promise<CalendarView> {
     return this.queries.calendar(actor, q);
   }
 
   /** SLA первого ответа (цель — 95% за 30 минут) за период, всего и по менеджерам. */
   @Get('sla-stats')
   @RequirePermissions(Permission.BanquetsView)
-  @ApiOkResponse({ type: SlaStatsDto })
-  sla(@CurrentActor() actor: Actor, @Query() q: SlaQueryDto): Promise<SlaStatsView> {
+  @ApiOkResponse({ type: BanquetSlaStatsDto })
+  sla(@CurrentActor() actor: Actor, @Query() q: BanquetSlaQueryDto): Promise<SlaStatsView> {
     return this.queries.slaStats(actor, q);
   }
 
   /** Заявка из админки (звонок, визит): source=admin. */
   @Post('requests')
   @RequirePermissions(Permission.BanquetsManage)
-  @ApiCreatedResponse({ type: RequestDetailDto })
-  async create(@CurrentActor() actor: Actor, @Body() dto: AdminCreateRequestDto, @ClientIp() ip: string | null): Promise<RequestDetailView> {
+  @ApiCreatedResponse({ type: BanquetRequestDetailDto })
+  async create(@CurrentActor() actor: Actor, @Body() dto: BanquetAdminCreateRequestDto, @ClientIp() ip: string | null): Promise<RequestDetailView> {
     const request = await this.createRequest.execute(
       actor,
       {
@@ -147,15 +147,15 @@ export class AdminBanquetRequestsController {
 
   @Get('requests/:id')
   @RequirePermissions(Permission.BanquetsView)
-  @ApiOkResponse({ type: RequestDetailDto })
+  @ApiOkResponse({ type: BanquetRequestDetailDto })
   detail(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string): Promise<RequestDetailView> {
     return this.queries.detail(actor, id);
   }
 
   @Patch('requests/:id')
   @RequirePermissions(Permission.BanquetsManage)
-  @ApiOkResponse({ type: RequestDetailDto })
-  async update(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateRequestDto): Promise<RequestDetailView> {
+  @ApiOkResponse({ type: BanquetRequestDetailDto })
+  async update(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: BanquetUpdateRequestDto): Promise<RequestDetailView> {
     await this.updateRequest.execute(actor, id, {
       eventDate: dto.eventDate,
       eventTime: dto.eventTime,
@@ -176,8 +176,8 @@ export class AdminBanquetRequestsController {
   @Post('requests/:id/transition')
   @HttpCode(200)
   @RequirePermissions(Permission.BanquetsManage)
-  @ApiOkResponse({ type: RequestDetailDto })
-  async changeStatus(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: TransitionDto): Promise<RequestDetailView> {
+  @ApiOkResponse({ type: BanquetRequestDetailDto })
+  async changeStatus(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: BanquetTransitionDto): Promise<RequestDetailView> {
     await this.transition.execute(actor, id, { to: dto.to, reason: dto.reason ?? null });
     return this.queries.detail(actor, id);
   }
@@ -185,8 +185,8 @@ export class AdminBanquetRequestsController {
   @Post('requests/:id/assign')
   @HttpCode(200)
   @RequirePermissions(Permission.BanquetsManage)
-  @ApiOkResponse({ type: RequestDetailDto })
-  async reassign(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: AssignDto): Promise<RequestDetailView> {
+  @ApiOkResponse({ type: BanquetRequestDetailDto })
+  async reassign(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: BanquetAssignDto): Promise<RequestDetailView> {
     await this.assign.execute(actor, id, dto.managerId);
     return this.queries.detail(actor, id);
   }
@@ -194,23 +194,23 @@ export class AdminBanquetRequestsController {
   /** Заметка, звонок, контакт, встреча (звонок/контакт/встреча — первый ответ по SLA). */
   @Post('requests/:id/activities')
   @RequirePermissions(Permission.BanquetsManage)
-  @ApiCreatedResponse({ type: IdDto })
-  async activity(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: ActivityInputDto): Promise<IdDto> {
+  @ApiCreatedResponse({ type: BanquetIdDto })
+  async activity(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: BanquetActivityInputDto): Promise<BanquetIdDto> {
     return { id: await this.addActivity.execute(actor, id, { kind: dto.kind, text: dto.text ?? null }) };
   }
 
   /** Зал и время: занятость ставится сразу в модуле бронирования (конфликт — 409). */
   @Put('requests/:id/venue')
   @RequirePermissions(Permission.BanquetsManage)
-  @ApiOkResponse({ type: RequestDetailDto })
-  async venue(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: SetVenueDto): Promise<RequestDetailView> {
+  @ApiOkResponse({ type: BanquetRequestDetailDto })
+  async venue(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: BanquetSetVenueDto): Promise<RequestDetailView> {
     await this.setVenue.execute(actor, id, { venueId: dto.venueId, date: dto.date ?? null, startTime: dto.startTime, endTime: dto.endTime });
     return this.queries.detail(actor, id);
   }
 
   @Delete('requests/:id/venue')
   @RequirePermissions(Permission.BanquetsManage)
-  @ApiOkResponse({ type: RequestDetailDto })
+  @ApiOkResponse({ type: BanquetRequestDetailDto })
   async release(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string): Promise<RequestDetailView> {
     await this.releaseVenue.execute(actor, id);
     return this.queries.detail(actor, id);
@@ -218,8 +218,8 @@ export class AdminBanquetRequestsController {
 
   @Put('requests/:id/prepayment')
   @RequirePermissions(Permission.BanquetsManage)
-  @ApiOkResponse({ type: RequestDetailDto })
-  async prepayment(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: PrepaymentInputDto): Promise<RequestDetailView> {
+  @ApiOkResponse({ type: BanquetRequestDetailDto })
+  async prepayment(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: BanquetPrepaymentInputDto): Promise<RequestDetailView> {
     await this.setPrepayment.execute(actor, id, dto.amount ? MoneyInputDto.toMoney(dto.amount) : null);
     return this.queries.detail(actor, id);
   }
@@ -227,8 +227,8 @@ export class AdminBanquetRequestsController {
   /** Возврат полученной оплаты (финансы, собственник: payments.refund). */
   @Post('requests/:id/refunds')
   @RequirePermissions(Permission.PaymentsRefund)
-  @ApiCreatedResponse({ type: RefundResultDto })
-  async refundPayment(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: RefundInputDto): Promise<RefundResultDto> {
+  @ApiCreatedResponse({ type: BanquetRefundResultDto })
+  async refundPayment(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: BanquetRefundInputDto): Promise<BanquetRefundResultDto> {
     const refund = await this.refund.execute(actor, id, {
       paymentId: dto.paymentId,
       amount: dto.amount ? MoneyInputDto.toMoney(dto.amount) : null,

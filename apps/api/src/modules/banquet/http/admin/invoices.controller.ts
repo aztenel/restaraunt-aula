@@ -8,8 +8,8 @@ import { Permission } from '../../../../shared/kernel/permissions';
 import { InvoiceListItemView, InvoiceQueries } from '../../application/admin.queries';
 import { SignedLink } from '../../application/document-files';
 import { CancelBanquetInvoice, IssueBanquetInvoice, RegisterInvoiceBankTransfer } from '../../application/invoice.actions';
-import { BankTransferDto, CancelInvoiceDto, InvoicesQueryDto, IssueInvoiceDto, parseInvoiceStatuses } from '../dto';
-import { BankTransferResultDto, InvoiceListItemDto, InvoicesPageDto, SignedLinkDto } from '../responses.dto';
+import { BanquetBankTransferDto, BanquetCancelInvoiceDto, BanquetInvoicesQueryDto, BanquetIssueInvoiceDto, parseInvoiceStatuses } from '../dto';
+import { BanquetBankTransferResultDto, BanquetInvoiceListItemDto, BanquetInvoicesPageDto, BanquetSignedLinkDto } from '../responses.dto';
 
 /**
  * Счета по банкетам: выставление (banquets.invoice: банкетный менеджер, финансы, собственник),
@@ -28,16 +28,16 @@ export class AdminBanquetInvoicesController {
 
   @Get('invoices')
   @RequirePermissions(Permission.BanquetsView)
-  @ApiOkResponse({ type: InvoicesPageDto })
-  list(@CurrentActor() actor: Actor, @Query() q: InvoicesQueryDto): Promise<Page<InvoiceListItemView>> {
+  @ApiOkResponse({ type: BanquetInvoicesPageDto })
+  list(@CurrentActor() actor: Actor, @Query() q: BanquetInvoicesQueryDto): Promise<Page<InvoiceListItemView>> {
     return this.queries.list(actor, { branchId: q.branchId, status: parseInvoiceStatuses(q.status), overdue: q.overdue }, pageRequest(q.page, q.perPage));
   }
 
   /** Счёт: физлицу — онлайн-оплата по ссылке, юрлицу — счёт на оплату с реквизитами (PDF). */
   @Post('requests/:id/invoices')
   @RequirePermissions(Permission.BanquetsInvoice)
-  @ApiCreatedResponse({ type: InvoiceListItemDto })
-  async create(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: IssueInvoiceDto): Promise<InvoiceListItemView> {
+  @ApiCreatedResponse({ type: BanquetInvoiceListItemDto })
+  async create(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: BanquetIssueInvoiceDto): Promise<InvoiceListItemView> {
     const invoice = await this.issue.execute(actor, id, {
       payerType: dto.payerType,
       companyId: dto.companyId ?? null,
@@ -50,14 +50,14 @@ export class AdminBanquetInvoicesController {
 
   @Get('invoices/:invoiceId')
   @RequirePermissions(Permission.BanquetsView)
-  @ApiOkResponse({ type: InvoiceListItemDto })
+  @ApiOkResponse({ type: BanquetInvoiceListItemDto })
   get(@CurrentActor() actor: Actor, @Param('invoiceId', ParseUUIDPipe) invoiceId: string): Promise<InvoiceListItemView> {
     return this.queries.get(actor, invoiceId);
   }
 
   @Get('invoices/:invoiceId/pdf')
   @RequirePermissions(Permission.BanquetsView)
-  @ApiOkResponse({ type: SignedLinkDto })
+  @ApiOkResponse({ type: BanquetSignedLinkDto })
   pdf(@CurrentActor() actor: Actor, @Param('invoiceId', ParseUUIDPipe) invoiceId: string): Promise<SignedLink> {
     return this.queries.pdfLink(actor, invoiceId);
   }
@@ -65,11 +65,11 @@ export class AdminBanquetInvoicesController {
   /** Поступление по банковскому переводу. Сумма оплат не может превысить сумму счёта (409). Идемпотентно по документу. */
   @Post('invoices/:invoiceId/payments')
   @RequirePermissions(Permission.BanquetsInvoice)
-  @ApiCreatedResponse({ type: BankTransferResultDto })
+  @ApiCreatedResponse({ type: BanquetBankTransferResultDto })
   async payment(
     @CurrentActor() actor: Actor,
     @Param('invoiceId', ParseUUIDPipe) invoiceId: string,
-    @Body() dto: BankTransferDto,
+    @Body() dto: BanquetBankTransferDto,
   ): Promise<{ invoice: InvoiceListItemView; paymentId: string; duplicate: boolean }> {
     const result = await this.bankTransfer.execute(actor, invoiceId, {
       amount: MoneyInputDto.toMoney(dto.amount),
@@ -82,11 +82,11 @@ export class AdminBanquetInvoicesController {
   @Post('invoices/:invoiceId/cancel')
   @HttpCode(200)
   @RequirePermissions(Permission.BanquetsInvoice)
-  @ApiOkResponse({ type: InvoiceListItemDto })
+  @ApiOkResponse({ type: BanquetInvoiceListItemDto })
   async cancelInvoice(
     @CurrentActor() actor: Actor,
     @Param('invoiceId', ParseUUIDPipe) invoiceId: string,
-    @Body() dto: CancelInvoiceDto,
+    @Body() dto: BanquetCancelInvoiceDto,
   ): Promise<InvoiceListItemView> {
     await this.cancel.execute(actor, invoiceId, dto.reason ?? null);
     return this.queries.get(actor, invoiceId);

@@ -100,7 +100,7 @@ export function CategoriesTab() {
             title: '',
             key: 'order',
             width: 110,
-            render: (_, row, index) => (
+            render: (_, _row, index) => (
               <ReorderButtons
                 handle={canReorder}
                 index={index}

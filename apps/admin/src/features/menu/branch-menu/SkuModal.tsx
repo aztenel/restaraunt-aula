@@ -9,7 +9,7 @@ import { useNotifyError } from '@/shared/api/useNotifyError';
 
 /**
  * Код POS филиала — переопределение общего кода блюда (у точки своя номенклатура POS).
- * Пусто — сбросить (в POS уйдёт общий код блюда). Цена передаётся текущая — не меняется.
+ * Пусто — сбросить (в POS уйдёт общий код блюда). Цена передаётся текущая (перечитывается) — не меняется.
  */
 export function SkuModal({ item, onClose }: { item: BranchMenuItem | null; onClose: () => void }) {
   const { t, i18n } = useTranslation();
@@ -27,7 +27,10 @@ export function SkuModal({ item, onClose }: { item: BranchMenuItem | null; onClo
     if (!item) return;
     setSaving(true);
     try {
-      await branchMenuApi.setPrice(item.branchId, item.dishId, { price: { amount: item.price.amount }, sku: sku.trim() || null });
+      // API меняет код POS только вместе с ценой: берём актуальную цену прямо перед сохранением,
+      // чтобы не вернуть старую, если её только что изменили в другом окне.
+      const fresh = await branchMenuApi.item(item.branchId, item.dishId);
+      await branchMenuApi.setPrice(item.branchId, item.dishId, { price: { amount: fresh.price.amount }, sku: sku.trim() || null });
       await queryClient.invalidateQueries({ queryKey: queryKeys.branchMenu(item.branchId) });
       void message.success(t('common.saved'));
       onClose();

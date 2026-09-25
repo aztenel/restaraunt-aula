@@ -23,6 +23,10 @@ type Props = {
  */
 export function ApiImage({ image, alt, sizes, className, priority = false, fill = false }: Props) {
   const loader = useCallback<ImageLoader>(({ width }) => pickVariantUrl(image, width), [image]);
-  const common = { loader, src: image.url, alt, sizes, className, priority, loading: priority ? undefined : ('lazy' as const) };
-  return fill ? <Image {...common} fill /> : <Image {...common} width={image.width} height={image.height} />;
+  const common = { loader, src: image.url, sizes, className, priority, loading: priority ? undefined : ('lazy' as const) };
+  return fill ? (
+    <Image {...common} alt={alt} fill />
+  ) : (
+    <Image {...common} alt={alt} width={image.width} height={image.height} />
+  );
 }

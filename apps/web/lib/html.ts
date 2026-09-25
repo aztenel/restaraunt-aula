@@ -29,8 +29,7 @@ function decodeEntities(value: string): string {
 /** Ссылка безопасна: http(s), mailto, tel, относительный путь или якорь. */
 export function isSafeUrl(value: string): boolean {
   // Пробелы и управляющие символы внутри схемы («java\tscript:») браузер игнорирует — убираем их для проверки.
-  // eslint-disable-next-line no-control-regex
-  const normalized = decodeEntities(value).replace(/[\u0000- \u007f-\u009f]/g, '');
+  const normalized = decodeEntities(value).replace(/[\u0000-\u0020\u007f-\u009f]/g, '');
   return SAFE_URL_RE.test(normalized);
 }
 

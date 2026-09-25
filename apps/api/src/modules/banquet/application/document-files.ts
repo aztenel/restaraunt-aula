@@ -7,6 +7,8 @@ import { Actor } from '../../../shared/kernel/actor';
 import { Clock } from '../../../shared/kernel/clock';
 import { newId } from '../../../shared/kernel/ids';
 import { toLocalDate } from '../../../shared/kernel/time';
+import { translate } from '../../../shared/kernel/translatable';
+import { VenueAvailability } from '../../reservation/public';
 import { eventTypeLabel } from '../domain/texts';
 import { DocumentKind, DocumentRecord, DocumentRepository } from '../infrastructure/document.repository';
 import { InvoiceRecord, InvoiceRepository } from '../infrastructure/invoice.repository';
@@ -42,6 +44,7 @@ export class BanquetDocumentFiles {
     private readonly quotes: QuoteRepository,
     private readonly invoices: InvoiceRepository,
     private readonly companies: CompanyRepository,
+    private readonly venues: VenueAvailability,
     private readonly support: BanquetSupport,
     private readonly database: Database,
     private readonly clock: Clock,
@@ -98,6 +101,14 @@ export class BanquetDocumentFiles {
     if (quote.pdfFileKey) return { fileKey: quote.pdfFileKey, filename };
     const manager = await this.support.manager(s.managerId);
     const company = s.companyId ? await this.companies.findById(s.companyId) : null;
+    let venue: string | null = null;
+    if (s.venue) {
+      try {
+        venue = translate((await this.venues.getVenue(s.venue.venueId)).name, s.locale);
+      } catch {
+        venue = null;
+      }
+    }
     const body = await this.pdf.render(
       quotePdf({
         locale: s.locale,
@@ -110,7 +121,7 @@ export class BanquetDocumentFiles {
           typeLabel: eventTypeLabel(s.eventType, s.locale),
           guests: s.guests,
           place: await this.support.placeLabel(request, s.locale),
-          venue: null,
+          venue,
         },
         manager,
       }),

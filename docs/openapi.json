@@ -9474,6 +9474,2052 @@
         ]
       }
     },
+    "/api/v1/admin/banquets/requests": {
+      "get": {
+        "operationId": "AdminBanquetRequests_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "perPage",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Статусы через запятую: new, in_progress, quote_sent, agreed, prepaid, held, cancelled",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "managerId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "branchId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dateFrom",
+            "required": false,
+            "in": "query",
+            "description": "Дата мероприятия с",
+            "schema": {
+              "example": "2026-10-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "dateTo",
+            "required": false,
+            "in": "query",
+            "description": "Дата мероприятия по",
+            "schema": {
+              "example": "2026-12-31",
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Номер, имя или телефон",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offsite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "slaBreached",
+            "required": false,
+            "in": "query",
+            "description": "Нарушен SLA первого ответа",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetRequestsPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminBanquetRequests_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanquetAdminCreateRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetRequestDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/pipeline": {
+      "get": {
+        "operationId": "AdminBanquetRequests_pipeline",
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "managerId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dateFrom",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-10-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "dateTo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-12-31",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BanquetPipelineColumnDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/managers": {
+      "get": {
+        "operationId": "AdminBanquetRequests_managers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BanquetManagerDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/calendar": {
+      "get": {
+        "operationId": "AdminBanquetRequests_calendar",
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "example": "2026-10-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "example": "2026-10-31",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetCalendarDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/sla-stats": {
+      "get": {
+        "operationId": "AdminBanquetRequests_sla",
+        "parameters": [
+          {
+            "name": "from",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "example": "2026-10-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "example": "2026-10-31",
+              "type": "string"
+            }
+          },
+          {
+            "name": "branchId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetSlaStatsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/requests/{id}": {
+      "get": {
+        "operationId": "AdminBanquetRequests_detail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetRequestDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminBanquetRequests_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanquetUpdateRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetRequestDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/requests/{id}/transition": {
+      "post": {
+        "operationId": "AdminBanquetRequests_changeStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanquetTransitionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetRequestDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/requests/{id}/assign": {
+      "post": {
+        "operationId": "AdminBanquetRequests_reassign",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanquetAssignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetRequestDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/requests/{id}/activities": {
+      "post": {
+        "operationId": "AdminBanquetRequests_activity",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanquetActivityInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetIdDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/requests/{id}/venue": {
+      "put": {
+        "operationId": "AdminBanquetRequests_venue",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanquetSetVenueDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetRequestDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminBanquetRequests_release",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetRequestDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/requests/{id}/prepayment": {
+      "put": {
+        "operationId": "AdminBanquetRequests_prepayment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanquetPrepaymentInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetRequestDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/requests/{id}/refunds": {
+      "post": {
+        "operationId": "AdminBanquetRequests_refundPayment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanquetRefundInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetRefundResultDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/requests/{id}/quotes": {
+      "get": {
+        "operationId": "AdminBanquetQuotes_versions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BanquetQuoteSummaryDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminBanquetQuotes_save",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanquetSaveQuoteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetQuoteDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/quotes/{quoteId}": {
+      "get": {
+        "operationId": "AdminBanquetQuotes_get",
+        "parameters": [
+          {
+            "name": "quoteId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetQuoteDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/quotes/{quoteId}/pdf": {
+      "get": {
+        "operationId": "AdminBanquetQuotes_pdf",
+        "parameters": [
+          {
+            "name": "quoteId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetSignedLinkDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/quotes/{quoteId}/send": {
+      "post": {
+        "operationId": "AdminBanquetQuotes_send",
+        "parameters": [
+          {
+            "name": "quoteId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetRequestDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/menu/dishes": {
+      "get": {
+        "operationId": "AdminBanquetQuotes_dishes",
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "example": "плов",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 50,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BanquetDishOptionDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/invoices": {
+      "get": {
+        "operationId": "AdminBanquetInvoices_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "perPage",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "branchId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Статусы через запятую: issued, partially_paid, paid, cancelled",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "overdue",
+            "required": false,
+            "in": "query",
+            "description": "Только просроченные",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetInvoicesPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/requests/{id}/invoices": {
+      "post": {
+        "operationId": "AdminBanquetInvoices_create",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanquetIssueInvoiceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetInvoiceListItemDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/invoices/{invoiceId}": {
+      "get": {
+        "operationId": "AdminBanquetInvoices_get",
+        "parameters": [
+          {
+            "name": "invoiceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetInvoiceListItemDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/invoices/{invoiceId}/pdf": {
+      "get": {
+        "operationId": "AdminBanquetInvoices_pdf",
+        "parameters": [
+          {
+            "name": "invoiceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetSignedLinkDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/invoices/{invoiceId}/payments": {
+      "post": {
+        "operationId": "AdminBanquetInvoices_payment",
+        "parameters": [
+          {
+            "name": "invoiceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanquetBankTransferDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetBankTransferResultDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/invoices/{invoiceId}/cancel": {
+      "post": {
+        "operationId": "AdminBanquetInvoices_cancelInvoice",
+        "parameters": [
+          {
+            "name": "invoiceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanquetCancelInvoiceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetInvoiceListItemDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/requests/{id}/documents": {
+      "get": {
+        "operationId": "AdminBanquetDocuments_list",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BanquetDocumentDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/documents/{documentId}/link": {
+      "get": {
+        "operationId": "AdminBanquetDocuments_link",
+        "parameters": [
+          {
+            "name": "documentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetSignedLinkDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/requests/{id}/contract": {
+      "post": {
+        "operationId": "AdminBanquetDocuments_contract",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanquetGenerateContractDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetDocumentDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/requests/{id}/act": {
+      "post": {
+        "operationId": "AdminBanquetDocuments_act",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetActDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/acts/{actId}/esf/retry": {
+      "post": {
+        "operationId": "AdminBanquetDocuments_esfRetry",
+        "parameters": [
+          {
+            "name": "actId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetActDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/companies": {
+      "get": {
+        "operationId": "AdminBanquetCompanies_search",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "perPage",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Название или БИН",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetCompaniesPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminBanquetCompanies_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanquetCompanyInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetCompanyDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/companies/{id}": {
+      "get": {
+        "operationId": "AdminBanquetCompanies_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetCompanyDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      },
+      "put": {
+        "operationId": "AdminBanquetCompanies_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanquetCompanyInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetCompanyDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminBanquetCompanies_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/contract-templates": {
+      "get": {
+        "operationId": "AdminBanquetTemplates_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BanquetContractTemplateDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminBanquetTemplates_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanquetTemplateInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetContractTemplateDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/contract-templates/placeholders": {
+      "get": {
+        "operationId": "AdminBanquetTemplates_placeholders",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BanquetPlaceholderDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/contract-templates/{id}": {
+      "get": {
+        "operationId": "AdminBanquetTemplates_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetContractTemplateDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      },
+      "put": {
+        "operationId": "AdminBanquetTemplates_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanquetTemplateInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetContractTemplateDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminBanquetTemplates_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/public/banquets/event-types": {
+      "get": {
+        "operationId": "PublicBanquets_eventTypes",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "kk",
+                "ru",
+                "en"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BanquetEventTypeDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "public"
+        ]
+      }
+    },
+    "/api/v1/public/banquets/requests": {
+      "post": {
+        "operationId": "PublicBanquets_request",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanquetPublicCreateRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetPublicRequestCreatedDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "public"
+        ]
+      }
+    },
+    "/api/v1/public/banquets/quotes/{token}": {
+      "get": {
+        "operationId": "PublicBanquets_quote",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "kk",
+                "ru",
+                "en"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetPublicQuoteDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "public"
+        ]
+      }
+    },
+    "/api/v1/public/banquets/quotes/{token}/accept": {
+      "post": {
+        "operationId": "PublicBanquets_acceptQuote",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanquetAcceptQuoteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetPublicAcceptResultDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "public"
+        ]
+      }
+    },
+    "/api/v1/public/banquets/invoices/{token}": {
+      "get": {
+        "operationId": "PublicBanquets_invoice",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetPublicInvoiceDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "public"
+        ]
+      }
+    },
+    "/api/v1/public/banquets/invoices/{token}/pay": {
+      "post": {
+        "operationId": "PublicBanquets_pay",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetPublicInvoiceDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "public"
+        ]
+      }
+    },
     "/api/v1/admin/reports/revenue": {
       "get": {
         "operationId": "Reports_revenueReport",
@@ -11917,7 +13963,7 @@
   "info": {
     "title": "AULA API",
     "description": "Единый REST API AULA: витрина, заказ, бронь, банкеты, сертификаты, админка. Деньги — целые числа в тиынах с валютой. Время — ISO 8601 в UTC, отображение в Asia/Almaty.",
-    "version": "partial",
+    "version": "1.0.0",
     "contact": {}
   },
   "tags": [
@@ -25183,6 +27229,3198 @@
             "description": "Причина (необязательно)"
           }
         }
+      },
+      "BanquetContactDto": {
+        "type": "object",
+        "properties": {
+          "customerId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Гость в базе гостей"
+          },
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+77011234567"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "customerId",
+          "name",
+          "phone",
+          "email"
+        ]
+      },
+      "BanquetRequestSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string",
+            "example": "GL-B-2026-000001"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "new",
+              "in_progress",
+              "quote_sent",
+              "agreed",
+              "prepaid",
+              "held",
+              "cancelled"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "web",
+              "admin"
+            ]
+          },
+          "branchId": {
+            "type": "string",
+            "nullable": true
+          },
+          "branchName": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TranslatableDto"
+              }
+            ]
+          },
+          "isOffsite": {
+            "type": "boolean"
+          },
+          "offsiteAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "eventDate": {
+            "type": "string",
+            "example": "2026-11-14"
+          },
+          "eventTime": {
+            "type": "string",
+            "nullable": true,
+            "example": "18:00"
+          },
+          "eventType": {
+            "type": "string",
+            "enum": [
+              "wedding",
+              "birthday",
+              "corporate",
+              "anniversary",
+              "kudalyk",
+              "memorial",
+              "graduation",
+              "other"
+            ]
+          },
+          "guests": {
+            "type": "number"
+          },
+          "budget": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          },
+          "contact": {
+            "$ref": "#/components/schemas/BanquetContactDto"
+          },
+          "managerId": {
+            "type": "string"
+          },
+          "managerName": {
+            "type": "string"
+          },
+          "quoteVersion": {
+            "type": "number",
+            "nullable": true
+          },
+          "quoteTotal": {
+            "nullable": true,
+            "description": "Итог последней версии сметы",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          },
+          "slaDeadline": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Срок первого ответа (30 минут)"
+          },
+          "slaBreached": {
+            "type": "boolean"
+          },
+          "firstResponseAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "status",
+          "source",
+          "branchId",
+          "branchName",
+          "isOffsite",
+          "offsiteAddress",
+          "eventDate",
+          "eventTime",
+          "eventType",
+          "guests",
+          "budget",
+          "contact",
+          "managerId",
+          "managerName",
+          "quoteVersion",
+          "quoteTotal",
+          "slaDeadline",
+          "slaBreached",
+          "firstResponseAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "BanquetRequestsPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanquetRequestSummaryDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "perPage": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "perPage"
+        ]
+      },
+      "BanquetPipelineColumnDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "new",
+              "in_progress",
+              "quote_sent",
+              "agreed",
+              "prepaid",
+              "held",
+              "cancelled"
+            ]
+          },
+          "count": {
+            "type": "number"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanquetRequestSummaryDto"
+            }
+          }
+        },
+        "required": [
+          "status",
+          "count",
+          "items"
+        ]
+      },
+      "BanquetManagerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string"
+          },
+          "openRequests": {
+            "type": "number",
+            "description": "Открытых заявок"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "phone",
+          "email",
+          "openRequests"
+        ]
+      },
+      "BanquetCalendarVenueDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "branchId": {
+            "type": "string"
+          },
+          "hallId": {
+            "type": "string"
+          },
+          "hallName": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "name": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "typeId": {
+            "type": "string"
+          },
+          "typeCode": {
+            "type": "string"
+          },
+          "typeName": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "capacityMin": {
+            "type": "number"
+          },
+          "capacityMax": {
+            "type": "number"
+          },
+          "deposit": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "branchId",
+          "hallId",
+          "hallName",
+          "name",
+          "typeId",
+          "typeCode",
+          "typeName",
+          "capacityMin",
+          "capacityMax",
+          "deposit",
+          "isActive"
+        ]
+      },
+      "BanquetOccupancyDto": {
+        "type": "object",
+        "properties": {
+          "reservationId": {
+            "type": "string"
+          },
+          "venueId": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "regular",
+              "banquet"
+            ]
+          },
+          "status": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string"
+          },
+          "end": {
+            "type": "string"
+          },
+          "guests": {
+            "type": "number"
+          },
+          "banquetRequestId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "reservationId",
+          "venueId",
+          "kind",
+          "status",
+          "start",
+          "end",
+          "guests",
+          "banquetRequestId"
+        ]
+      },
+      "BanquetCalendarDto": {
+        "type": "object",
+        "properties": {
+          "branchId": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "venues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanquetCalendarVenueDto"
+            }
+          },
+          "occupancy": {
+            "description": "Занятость залов: брони и банкеты",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanquetOccupancyDto"
+            }
+          },
+          "banquets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanquetRequestSummaryDto"
+            }
+          }
+        },
+        "required": [
+          "branchId",
+          "from",
+          "to",
+          "venues",
+          "occupancy",
+          "banquets"
+        ]
+      },
+      "BanquetManagerSlaDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "answered": {
+            "type": "number"
+          },
+          "answeredWithinSla": {
+            "type": "number"
+          },
+          "withinSlaShareBp": {
+            "type": "number",
+            "nullable": true,
+            "description": "Доля ответов за 30 минут, bp (9500 = 95%)"
+          },
+          "breached": {
+            "type": "number"
+          },
+          "unanswered": {
+            "type": "number"
+          },
+          "lost": {
+            "type": "number",
+            "description": "Отменены без ответа менеджера"
+          },
+          "averageFirstResponseMinutes": {
+            "type": "number",
+            "nullable": true
+          },
+          "managerId": {
+            "type": "string"
+          },
+          "managerName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "total",
+          "answered",
+          "answeredWithinSla",
+          "withinSlaShareBp",
+          "breached",
+          "unanswered",
+          "lost",
+          "averageFirstResponseMinutes",
+          "managerId",
+          "managerName"
+        ]
+      },
+      "BanquetSlaStatsDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "answered": {
+            "type": "number"
+          },
+          "answeredWithinSla": {
+            "type": "number"
+          },
+          "withinSlaShareBp": {
+            "type": "number",
+            "nullable": true,
+            "description": "Доля ответов за 30 минут, bp (9500 = 95%)"
+          },
+          "breached": {
+            "type": "number"
+          },
+          "unanswered": {
+            "type": "number"
+          },
+          "lost": {
+            "type": "number",
+            "description": "Отменены без ответа менеджера"
+          },
+          "averageFirstResponseMinutes": {
+            "type": "number",
+            "nullable": true
+          },
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "targetShareBp": {
+            "type": "number",
+            "description": "Целевая доля (ТЗ: 95%)"
+          },
+          "byManager": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanquetManagerSlaDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "answered",
+          "answeredWithinSla",
+          "withinSlaShareBp",
+          "breached",
+          "unanswered",
+          "lost",
+          "averageFirstResponseMinutes",
+          "from",
+          "to",
+          "targetShareBp",
+          "byManager"
+        ]
+      },
+      "BanquetContactInputDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Айгерим"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+7 701 123 45 67",
+            "description": "Нормализуется в +7XXXXXXXXXX"
+          },
+          "email": {
+            "type": "string",
+            "example": "aigerim@mail.kz"
+          }
+        },
+        "required": [
+          "name",
+          "phone"
+        ]
+      },
+      "BanquetConsentInputDto": {
+        "type": "object",
+        "properties": {
+          "personalData": {
+            "type": "boolean",
+            "description": "Согласие на обработку персональных данных (на витрине обязательно true)"
+          },
+          "marketing": {
+            "type": "boolean",
+            "description": "Согласие на рекламные рассылки"
+          }
+        },
+        "required": [
+          "personalData"
+        ]
+      },
+      "BanquetAdminCreateRequestDto": {
+        "type": "object",
+        "properties": {
+          "eventDate": {
+            "type": "string",
+            "example": "2026-11-14"
+          },
+          "eventTime": {
+            "type": "string",
+            "example": "18:00"
+          },
+          "eventType": {
+            "type": "string",
+            "enum": [
+              "wedding",
+              "birthday",
+              "corporate",
+              "anniversary",
+              "kudalyk",
+              "memorial",
+              "graduation",
+              "other"
+            ]
+          },
+          "guests": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5000
+          },
+          "branchId": {
+            "type": "string",
+            "description": "Филиал проведения или филиал-исполнитель выезда"
+          },
+          "offsite": {
+            "type": "boolean"
+          },
+          "address": {
+            "type": "string"
+          },
+          "budget": {
+            "$ref": "#/components/schemas/MoneyInputDto"
+          },
+          "contact": {
+            "$ref": "#/components/schemas/BanquetContactInputDto"
+          },
+          "wishes": {
+            "type": "string"
+          },
+          "consent": {
+            "description": "Согласие гостя, полученное менеджером (по телефону / лично)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BanquetConsentInputDto"
+              }
+            ]
+          },
+          "locale": {
+            "type": "string",
+            "enum": [
+              "kk",
+              "ru",
+              "en"
+            ],
+            "default": "ru"
+          },
+          "managerId": {
+            "type": "string",
+            "description": "Ответственный менеджер (иначе — автоназначение)"
+          },
+          "companyId": {
+            "type": "string",
+            "description": "Компания-заказчик"
+          }
+        },
+        "required": [
+          "eventDate",
+          "eventType",
+          "guests",
+          "contact"
+        ]
+      },
+      "BanquetCompanyDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "bin": {
+            "type": "string"
+          },
+          "legalAddress": {
+            "type": "string"
+          },
+          "bankName": {
+            "type": "string",
+            "nullable": true
+          },
+          "iban": {
+            "type": "string",
+            "nullable": true
+          },
+          "bik": {
+            "type": "string",
+            "nullable": true
+          },
+          "kbe": {
+            "type": "string",
+            "nullable": true
+          },
+          "directorName": {
+            "type": "string",
+            "nullable": true
+          },
+          "directorPosition": {
+            "type": "string",
+            "nullable": true
+          },
+          "actingBasis": {
+            "type": "string",
+            "nullable": true
+          },
+          "contactName": {
+            "type": "string",
+            "nullable": true
+          },
+          "contactPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "contactEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "bin",
+          "legalAddress",
+          "bankName",
+          "iban",
+          "bik",
+          "kbe",
+          "directorName",
+          "directorPosition",
+          "actingBasis",
+          "contactName",
+          "contactPhone",
+          "contactEmail",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "BanquetVenueHoldDto": {
+        "type": "object",
+        "properties": {
+          "venueId": {
+            "type": "string"
+          },
+          "venueName": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TranslatableDto"
+              }
+            ]
+          },
+          "reservationId": {
+            "type": "string",
+            "description": "Занятость в модуле бронирования"
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "venueId",
+          "venueName",
+          "reservationId",
+          "start",
+          "end"
+        ]
+      },
+      "BanquetPrepaymentStateDto": {
+        "type": "object",
+        "properties": {
+          "required": {
+            "nullable": true,
+            "description": "Требуемая предоплата (по умолчанию 50% сметы)",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          },
+          "paid": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "remaining": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          },
+          "covered": {
+            "type": "boolean"
+          },
+          "isCustom": {
+            "type": "boolean",
+            "description": "Сумму задал менеджер"
+          }
+        },
+        "required": [
+          "required",
+          "paid",
+          "remaining",
+          "covered",
+          "isCustom"
+        ]
+      },
+      "BanquetBalanceDto": {
+        "type": "object",
+        "properties": {
+          "quoteTotal": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          },
+          "invoiced": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "paid": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "remaining": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "quoteTotal",
+          "invoiced",
+          "paid",
+          "remaining"
+        ]
+      },
+      "BanquetQuoteSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "version": {
+            "type": "number"
+          },
+          "guests": {
+            "type": "number"
+          },
+          "total": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "vat": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "linesCount": {
+            "type": "number"
+          },
+          "validUntil": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdByName": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "acceptedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isLatest": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "requestId",
+          "version",
+          "guests",
+          "total",
+          "vat",
+          "linesCount",
+          "validUntil",
+          "createdByName",
+          "createdAt",
+          "sentAt",
+          "acceptedAt",
+          "isLatest"
+        ]
+      },
+      "BanquetPartyShortDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "bin": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "name",
+          "bin"
+        ]
+      },
+      "BanquetInvoicePaymentDto": {
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string",
+            "example": "bank_transfer"
+          },
+          "amount": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "refunded": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "documentNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "paidAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "recordedByName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "paymentId",
+          "method",
+          "amount",
+          "refunded",
+          "documentNumber",
+          "paidAt",
+          "recordedByName"
+        ]
+      },
+      "BanquetInvoiceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string",
+            "example": "GL-S-2026-000001"
+          },
+          "branchId": {
+            "type": "string",
+            "nullable": true
+          },
+          "payerType": {
+            "type": "string",
+            "enum": [
+              "individual",
+              "company"
+            ]
+          },
+          "companyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "buyer": {
+            "$ref": "#/components/schemas/BanquetPartyShortDto"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "prepayment",
+              "payment"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "amount": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "vat": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "vatRateBp": {
+            "type": "number"
+          },
+          "paid": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "refunded": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "remaining": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "dueDate": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "issued",
+              "partially_paid",
+              "paid",
+              "cancelled"
+            ]
+          },
+          "overdue": {
+            "type": "boolean",
+            "description": "Срок оплаты прошёл, счёт оплачен не полностью"
+          },
+          "paymentId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Онлайн-платёж (физлицо)"
+          },
+          "publicUrl": {
+            "type": "string",
+            "description": "Страница счёта для клиента"
+          },
+          "pdfReady": {
+            "type": "boolean"
+          },
+          "issuedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "paidAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "cancelledAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "cancelReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "payments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanquetInvoicePaymentDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "requestId",
+          "number",
+          "branchId",
+          "payerType",
+          "companyId",
+          "buyer",
+          "purpose",
+          "description",
+          "amount",
+          "vat",
+          "vatRateBp",
+          "paid",
+          "refunded",
+          "remaining",
+          "dueDate",
+          "status",
+          "overdue",
+          "paymentId",
+          "publicUrl",
+          "pdfReady",
+          "issuedAt",
+          "paidAt",
+          "cancelledAt",
+          "cancelReason",
+          "payments"
+        ]
+      },
+      "BanquetEsfDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "not_required",
+              "pending",
+              "draft_ready",
+              "sent",
+              "registered",
+              "failed"
+            ]
+          },
+          "provider": {
+            "type": "string",
+            "nullable": true
+          },
+          "esfId": {
+            "type": "string",
+            "nullable": true
+          },
+          "registrationNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "type": "string",
+            "nullable": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "status",
+          "provider",
+          "esfId",
+          "registrationNumber",
+          "error",
+          "updatedAt"
+        ]
+      },
+      "BanquetActDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string",
+            "example": "GL-A-2026-000001"
+          },
+          "actDate": {
+            "type": "string"
+          },
+          "payerType": {
+            "type": "string",
+            "enum": [
+              "individual",
+              "company"
+            ]
+          },
+          "buyer": {
+            "$ref": "#/components/schemas/BanquetPartyShortDto"
+          },
+          "amount": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "vat": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "esf": {
+            "$ref": "#/components/schemas/BanquetEsfDto"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "actDate",
+          "payerType",
+          "buyer",
+          "amount",
+          "vat",
+          "esf",
+          "createdAt"
+        ]
+      },
+      "BanquetDocumentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "quote",
+              "contract",
+              "invoice",
+              "act",
+              "esf_xml"
+            ]
+          },
+          "number": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "createdByName": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "number",
+          "title",
+          "filename",
+          "contentType",
+          "createdByName",
+          "createdAt"
+        ]
+      },
+      "BanquetActivityDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "created",
+              "note",
+              "call",
+              "contact",
+              "meeting",
+              "status_changed",
+              "assigned",
+              "details_updated",
+              "venue_set",
+              "venue_released",
+              "quote_saved",
+              "quote_sent",
+              "quote_accepted",
+              "prepayment_set",
+              "invoice_issued",
+              "invoice_cancelled",
+              "payment_recorded",
+              "refund_requested",
+              "refund_recorded",
+              "document_generated",
+              "act_issued",
+              "esf",
+              "sla_breach"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "authorKind": {
+            "type": "string",
+            "enum": [
+              "staff",
+              "system",
+              "guest"
+            ]
+          },
+          "authorName": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "text",
+          "data",
+          "authorKind",
+          "authorName",
+          "occurredAt"
+        ]
+      },
+      "BanquetRequestDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string",
+            "example": "GL-B-2026-000001"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "new",
+              "in_progress",
+              "quote_sent",
+              "agreed",
+              "prepaid",
+              "held",
+              "cancelled"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "web",
+              "admin"
+            ]
+          },
+          "branchId": {
+            "type": "string",
+            "nullable": true
+          },
+          "branchName": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TranslatableDto"
+              }
+            ]
+          },
+          "isOffsite": {
+            "type": "boolean"
+          },
+          "offsiteAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "eventDate": {
+            "type": "string",
+            "example": "2026-11-14"
+          },
+          "eventTime": {
+            "type": "string",
+            "nullable": true,
+            "example": "18:00"
+          },
+          "eventType": {
+            "type": "string",
+            "enum": [
+              "wedding",
+              "birthday",
+              "corporate",
+              "anniversary",
+              "kudalyk",
+              "memorial",
+              "graduation",
+              "other"
+            ]
+          },
+          "guests": {
+            "type": "number"
+          },
+          "budget": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          },
+          "contact": {
+            "$ref": "#/components/schemas/BanquetContactDto"
+          },
+          "managerId": {
+            "type": "string"
+          },
+          "managerName": {
+            "type": "string"
+          },
+          "quoteVersion": {
+            "type": "number",
+            "nullable": true
+          },
+          "quoteTotal": {
+            "nullable": true,
+            "description": "Итог последней версии сметы",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          },
+          "slaDeadline": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Срок первого ответа (30 минут)"
+          },
+          "slaBreached": {
+            "type": "boolean"
+          },
+          "firstResponseAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "wishes": {
+            "type": "string",
+            "nullable": true
+          },
+          "locale": {
+            "type": "string"
+          },
+          "company": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BanquetCompanyDto"
+              }
+            ]
+          },
+          "allowedTransitions": {
+            "type": "array",
+            "description": "Переходы, доступные сейчас",
+            "items": {
+              "type": "string",
+              "enum": [
+                "new",
+                "in_progress",
+                "quote_sent",
+                "agreed",
+                "prepaid",
+                "held",
+                "cancelled"
+              ]
+            }
+          },
+          "venue": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BanquetVenueHoldDto"
+              }
+            ]
+          },
+          "prepayment": {
+            "$ref": "#/components/schemas/BanquetPrepaymentStateDto"
+          },
+          "balance": {
+            "$ref": "#/components/schemas/BanquetBalanceDto"
+          },
+          "contractNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "contractDate": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancelReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "heldAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "cancelledAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "publicQuoteUrl": {
+            "type": "string",
+            "description": "Ссылка на страницу сметы для клиента"
+          },
+          "quotes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanquetQuoteSummaryDto"
+            }
+          },
+          "invoices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanquetInvoiceDto"
+            }
+          },
+          "act": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BanquetActDto"
+              }
+            ]
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanquetDocumentDto"
+            }
+          },
+          "timeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanquetActivityDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "status",
+          "source",
+          "branchId",
+          "branchName",
+          "isOffsite",
+          "offsiteAddress",
+          "eventDate",
+          "eventTime",
+          "eventType",
+          "guests",
+          "budget",
+          "contact",
+          "managerId",
+          "managerName",
+          "quoteVersion",
+          "quoteTotal",
+          "slaDeadline",
+          "slaBreached",
+          "firstResponseAt",
+          "createdAt",
+          "updatedAt",
+          "wishes",
+          "locale",
+          "company",
+          "allowedTransitions",
+          "venue",
+          "prepayment",
+          "balance",
+          "contractNumber",
+          "contractDate",
+          "cancelReason",
+          "heldAt",
+          "cancelledAt",
+          "publicQuoteUrl",
+          "quotes",
+          "invoices",
+          "act",
+          "documents",
+          "timeline"
+        ]
+      },
+      "BanquetUpdateRequestDto": {
+        "type": "object",
+        "properties": {
+          "eventDate": {
+            "type": "string",
+            "example": "2026-11-14"
+          },
+          "eventTime": {
+            "type": "object",
+            "example": "18:00",
+            "nullable": true
+          },
+          "eventType": {
+            "type": "string",
+            "enum": [
+              "wedding",
+              "birthday",
+              "corporate",
+              "anniversary",
+              "kudalyk",
+              "memorial",
+              "graduation",
+              "other"
+            ]
+          },
+          "guests": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5000
+          },
+          "budget": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyInputDto"
+              }
+            ]
+          },
+          "branchId": {
+            "type": "object",
+            "nullable": true,
+            "description": "Филиал проведения / филиал-исполнитель выезда"
+          },
+          "offsite": {
+            "type": "boolean"
+          },
+          "address": {
+            "type": "object",
+            "nullable": true
+          },
+          "wishes": {
+            "type": "object",
+            "nullable": true
+          },
+          "contact": {
+            "$ref": "#/components/schemas/BanquetContactInputDto"
+          },
+          "companyId": {
+            "type": "object",
+            "nullable": true,
+            "description": "Компания-заказчик (null — физлицо)"
+          }
+        }
+      },
+      "BanquetTransitionDto": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "string",
+            "enum": [
+              "new",
+              "in_progress",
+              "quote_sent",
+              "agreed",
+              "prepaid",
+              "held",
+              "cancelled"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "description": "Причина (для отмены обязательна)"
+          }
+        },
+        "required": [
+          "to"
+        ]
+      },
+      "BanquetAssignDto": {
+        "type": "object",
+        "properties": {
+          "managerId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "managerId"
+        ]
+      },
+      "BanquetActivityInputDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "note",
+              "call",
+              "contact",
+              "meeting"
+            ],
+            "description": "call / contact / meeting — ответ гостю (SLA)"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "BanquetIdDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "BanquetSetVenueDto": {
+        "type": "object",
+        "properties": {
+          "venueId": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "example": "2026-11-14",
+            "description": "Локальная дата начала (по умолчанию — дата мероприятия)"
+          },
+          "startTime": {
+            "type": "string",
+            "example": "17:00"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "23:30",
+            "description": "Раньше начала — следующий день"
+          }
+        },
+        "required": [
+          "venueId",
+          "startTime",
+          "endTime"
+        ]
+      },
+      "BanquetPrepaymentInputDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "nullable": true,
+            "description": "null — 50% итога согласованной сметы",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyInputDto"
+              }
+            ]
+          }
+        }
+      },
+      "BanquetRefundInputDto": {
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string",
+            "description": "Платёж по счёту заявки"
+          },
+          "amount": {
+            "description": "Частичный возврат; без суммы — полный",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyInputDto"
+              }
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "description": "Ключ идемпотентности (генерирует админка на одну попытку)"
+          }
+        },
+        "required": [
+          "paymentId",
+          "reason",
+          "idempotencyKey"
+        ]
+      },
+      "BanquetRefundResultDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "paymentId": {
+            "type": "string"
+          },
+          "amount": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "succeeded",
+              "failed"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "paymentId",
+          "amount",
+          "status",
+          "reason",
+          "createdAt"
+        ]
+      },
+      "BanquetDiscountInputDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "percent",
+              "amount"
+            ]
+          },
+          "bp": {
+            "type": "number",
+            "description": "Процент в базисных пунктах (1000 = 10%)",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "amount": {
+            "$ref": "#/components/schemas/MoneyInputDto"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "BanquetQuoteLineInputDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "menu",
+              "hall_rent",
+              "musicians",
+              "decoration",
+              "service",
+              "other"
+            ]
+          },
+          "dishId": {
+            "type": "string",
+            "description": "Блюдо (для kind=menu): название и цена филиала — снимок на момент добавления"
+          },
+          "title": {
+            "description": "Название произвольной позиции",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TranslatableDto"
+              }
+            ]
+          },
+          "unit": {
+            "type": "string",
+            "example": "порц."
+          },
+          "unitPrice": {
+            "description": "Цена за единицу произвольной позиции",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyInputDto"
+              }
+            ]
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "discount": {
+            "$ref": "#/components/schemas/BanquetDiscountInputDto"
+          }
+        },
+        "required": [
+          "kind",
+          "quantity"
+        ]
+      },
+      "BanquetSaveQuoteDto": {
+        "type": "object",
+        "properties": {
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanquetQuoteLineInputDto"
+            }
+          },
+          "discount": {
+            "description": "Общая скидка",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BanquetDiscountInputDto"
+              }
+            ]
+          },
+          "serviceChargeBp": {
+            "type": "number",
+            "description": "Процент за обслуживание, базисные пункты (1000 = 10%)",
+            "minimum": 0,
+            "maximum": 5000
+          },
+          "guests": {
+            "type": "number",
+            "description": "Гостей для расчёта «на гостя» (по умолчанию — из заявки)"
+          },
+          "validUntil": {
+            "type": "string",
+            "example": "2026-10-15"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "refreshMenuPrices": {
+            "type": "boolean",
+            "description": "Обновить цены позиций меню по текущему меню филиала"
+          }
+        },
+        "required": [
+          "lines"
+        ]
+      },
+      "BanquetDiscountDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "percent",
+              "amount"
+            ]
+          },
+          "bp": {
+            "type": "number",
+            "nullable": true,
+            "description": "Процент, базисные пункты"
+          },
+          "amount": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "type",
+          "bp",
+          "amount"
+        ]
+      },
+      "BanquetQuoteLineDto": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "number"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "menu",
+              "hall_rent",
+              "musicians",
+              "decoration",
+              "service",
+              "other"
+            ]
+          },
+          "dishId": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unitPrice": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "discount": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BanquetDiscountDto"
+              }
+            ]
+          },
+          "gross": {
+            "description": "Цена × количество",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          },
+          "discountAmount": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "total": {
+            "$ref": "#/components/schemas/MoneyDto"
+          }
+        },
+        "required": [
+          "position",
+          "kind",
+          "dishId",
+          "title",
+          "unit",
+          "quantity",
+          "unitPrice",
+          "discount",
+          "gross",
+          "discountAmount",
+          "total"
+        ]
+      },
+      "BanquetQuoteTotalsDto": {
+        "type": "object",
+        "properties": {
+          "subtotal": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "linesDiscount": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "overallDiscount": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "discount": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "service": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "total": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "vat": {
+            "description": "НДС, включённый в итог",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          },
+          "perGuest": {
+            "$ref": "#/components/schemas/MoneyDto"
+          }
+        },
+        "required": [
+          "subtotal",
+          "linesDiscount",
+          "overallDiscount",
+          "discount",
+          "service",
+          "total",
+          "vat",
+          "perGuest"
+        ]
+      },
+      "BanquetQuoteDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "version": {
+            "type": "number"
+          },
+          "branchId": {
+            "type": "string",
+            "nullable": true
+          },
+          "guests": {
+            "type": "number"
+          },
+          "discount": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BanquetDiscountDto"
+              }
+            ]
+          },
+          "serviceChargeBp": {
+            "type": "number"
+          },
+          "vatPayer": {
+            "type": "boolean"
+          },
+          "vatRateBp": {
+            "type": "number"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanquetQuoteLineDto"
+            }
+          },
+          "totals": {
+            "$ref": "#/components/schemas/BanquetQuoteTotalsDto"
+          },
+          "validUntil": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "seller": {
+            "$ref": "#/components/schemas/BanquetPartyShortDto"
+          },
+          "pdfReady": {
+            "type": "boolean"
+          },
+          "createdByName": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "acceptedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isLatest": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "requestId",
+          "version",
+          "branchId",
+          "guests",
+          "discount",
+          "serviceChargeBp",
+          "vatPayer",
+          "vatRateBp",
+          "lines",
+          "totals",
+          "validUntil",
+          "notes",
+          "seller",
+          "pdfReady",
+          "createdByName",
+          "createdAt",
+          "sentAt",
+          "acceptedAt",
+          "isLatest"
+        ]
+      },
+      "BanquetSignedLinkDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "filename": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "expiresAt",
+          "filename"
+        ]
+      },
+      "BanquetDishOptionDto": {
+        "type": "object",
+        "properties": {
+          "dishId": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "price": {
+            "description": "Цена в филиале сейчас",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          },
+          "availability": {
+            "type": "string",
+            "enum": [
+              "available",
+              "stopped_shown",
+              "stopped_hidden"
+            ]
+          },
+          "photoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "weightGrams": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "dishId",
+          "name",
+          "price",
+          "availability",
+          "photoUrl",
+          "weightGrams"
+        ]
+      },
+      "BanquetInvoiceListItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string",
+            "example": "GL-S-2026-000001"
+          },
+          "branchId": {
+            "type": "string",
+            "nullable": true
+          },
+          "payerType": {
+            "type": "string",
+            "enum": [
+              "individual",
+              "company"
+            ]
+          },
+          "companyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "buyer": {
+            "$ref": "#/components/schemas/BanquetPartyShortDto"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "prepayment",
+              "payment"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "amount": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "vat": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "vatRateBp": {
+            "type": "number"
+          },
+          "paid": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "refunded": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "remaining": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "dueDate": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "issued",
+              "partially_paid",
+              "paid",
+              "cancelled"
+            ]
+          },
+          "overdue": {
+            "type": "boolean",
+            "description": "Срок оплаты прошёл, счёт оплачен не полностью"
+          },
+          "paymentId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Онлайн-платёж (физлицо)"
+          },
+          "publicUrl": {
+            "type": "string",
+            "description": "Страница счёта для клиента"
+          },
+          "pdfReady": {
+            "type": "boolean"
+          },
+          "issuedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "paidAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "cancelledAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "cancelReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "payments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanquetInvoicePaymentDto"
+            }
+          },
+          "requestNumber": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "requestId",
+          "number",
+          "branchId",
+          "payerType",
+          "companyId",
+          "buyer",
+          "purpose",
+          "description",
+          "amount",
+          "vat",
+          "vatRateBp",
+          "paid",
+          "refunded",
+          "remaining",
+          "dueDate",
+          "status",
+          "overdue",
+          "paymentId",
+          "publicUrl",
+          "pdfReady",
+          "issuedAt",
+          "paidAt",
+          "cancelledAt",
+          "cancelReason",
+          "payments",
+          "requestNumber"
+        ]
+      },
+      "BanquetInvoicesPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanquetInvoiceListItemDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "perPage": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "perPage"
+        ]
+      },
+      "BanquetIssueInvoiceDto": {
+        "type": "object",
+        "properties": {
+          "payerType": {
+            "type": "string",
+            "enum": [
+              "individual",
+              "company"
+            ]
+          },
+          "companyId": {
+            "type": "string",
+            "description": "Компания-заказчик (по умолчанию — компания заявки)"
+          },
+          "amount": {
+            "description": "По умолчанию — остаток предоплаты или остаток до итога сметы",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyInputDto"
+              }
+            ]
+          },
+          "dueDate": {
+            "type": "string",
+            "example": "2026-10-05"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "payerType"
+        ]
+      },
+      "BanquetBankTransferDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "$ref": "#/components/schemas/MoneyInputDto"
+          },
+          "paidAt": {
+            "type": "string",
+            "example": "2026-10-02T10:00:00+05:00",
+            "description": "Дата и время поступления"
+          },
+          "documentNumber": {
+            "type": "string",
+            "example": "1234",
+            "description": "Номер платёжного поручения"
+          }
+        },
+        "required": [
+          "amount",
+          "paidAt",
+          "documentNumber"
+        ]
+      },
+      "BanquetBankTransferResultDto": {
+        "type": "object",
+        "properties": {
+          "invoice": {
+            "$ref": "#/components/schemas/BanquetInvoiceDto"
+          },
+          "paymentId": {
+            "type": "string"
+          },
+          "duplicate": {
+            "type": "boolean",
+            "description": "Этот документ уже был зарегистрирован (повтор)"
+          }
+        },
+        "required": [
+          "invoice",
+          "paymentId",
+          "duplicate"
+        ]
+      },
+      "BanquetCancelInvoiceDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "BanquetGenerateContractDto": {
+        "type": "object",
+        "properties": {
+          "templateId": {
+            "type": "string",
+            "description": "Шаблон (по умолчанию — шаблон по умолчанию)"
+          }
+        }
+      },
+      "BanquetCompaniesPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanquetCompanyDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "perPage": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "perPage"
+        ]
+      },
+      "BanquetCompanyInputDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "ТОО «Ромашка»"
+          },
+          "bin": {
+            "type": "string",
+            "example": "940140001234",
+            "description": "БИН, 12 цифр"
+          },
+          "legalAddress": {
+            "type": "string"
+          },
+          "bankName": {
+            "type": "string"
+          },
+          "iban": {
+            "type": "string",
+            "example": "KZ123456789012345678",
+            "description": "ИИК (IBAN)"
+          },
+          "bik": {
+            "type": "string",
+            "example": "CASPKZKA"
+          },
+          "kbe": {
+            "type": "string",
+            "example": "17"
+          },
+          "directorName": {
+            "type": "string"
+          },
+          "directorPosition": {
+            "type": "string",
+            "example": "Директор"
+          },
+          "actingBasis": {
+            "type": "string",
+            "example": "Устава"
+          },
+          "contactName": {
+            "type": "string"
+          },
+          "contactPhone": {
+            "type": "string"
+          },
+          "contactEmail": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "bin",
+          "legalAddress"
+        ]
+      },
+      "BanquetContractTemplateDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "isDefault": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "body",
+          "isDefault",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "BanquetPlaceholderDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "example": "seller.name"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "description"
+        ]
+      },
+      "BanquetTemplateInputDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "banquet-standard"
+          },
+          "name": {
+            "type": "string",
+            "example": "Договор на банкетное обслуживание"
+          },
+          "body": {
+            "type": "string",
+            "description": "Текст с подстановками {{seller.name}}, {{client.bin}}, {{event.date}}, {{quote.total}} …"
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "body"
+        ]
+      },
+      "BanquetEventTypeDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "wedding",
+              "birthday",
+              "corporate",
+              "anniversary",
+              "kudalyk",
+              "memorial",
+              "graduation",
+              "other"
+            ]
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "label"
+        ]
+      },
+      "BanquetPublicCreateRequestDto": {
+        "type": "object",
+        "properties": {
+          "eventDate": {
+            "type": "string",
+            "example": "2026-11-14",
+            "description": "Дата мероприятия (локальная)"
+          },
+          "eventTime": {
+            "type": "string",
+            "example": "18:00"
+          },
+          "eventType": {
+            "type": "string",
+            "enum": [
+              "wedding",
+              "birthday",
+              "corporate",
+              "anniversary",
+              "kudalyk",
+              "memorial",
+              "graduation",
+              "other"
+            ]
+          },
+          "guests": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5000,
+            "example": 80
+          },
+          "branchId": {
+            "type": "string",
+            "description": "Филиал (обязателен, если не выезд)"
+          },
+          "offsite": {
+            "type": "boolean",
+            "description": "Выездное обслуживание (кейтеринг): нужен адрес"
+          },
+          "address": {
+            "type": "string",
+            "description": "Адрес выезда"
+          },
+          "budget": {
+            "description": "Бюджет",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyInputDto"
+              }
+            ]
+          },
+          "contact": {
+            "$ref": "#/components/schemas/BanquetContactInputDto"
+          },
+          "wishes": {
+            "type": "string",
+            "description": "Пожелания"
+          },
+          "consent": {
+            "$ref": "#/components/schemas/BanquetConsentInputDto"
+          },
+          "locale": {
+            "type": "string",
+            "enum": [
+              "kk",
+              "ru",
+              "en"
+            ]
+          }
+        },
+        "required": [
+          "eventDate",
+          "eventType",
+          "guests",
+          "contact",
+          "consent",
+          "locale"
+        ]
+      },
+      "BanquetPublicRequestCreatedDto": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "string",
+            "example": "GL-B-2026-000001"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "new",
+              "in_progress",
+              "quote_sent",
+              "agreed",
+              "prepaid",
+              "held",
+              "cancelled"
+            ]
+          },
+          "managerName": {
+            "type": "string",
+            "description": "Ваш менеджер"
+          },
+          "managerPhone": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "number",
+          "status",
+          "managerName",
+          "managerPhone"
+        ]
+      },
+      "BanquetPublicQuoteLineDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unitPrice": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "discount": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BanquetDiscountDto"
+              }
+            ]
+          },
+          "total": {
+            "$ref": "#/components/schemas/MoneyDto"
+          }
+        },
+        "required": [
+          "title",
+          "unit",
+          "quantity",
+          "unitPrice",
+          "discount",
+          "total"
+        ]
+      },
+      "BanquetPublicManagerDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "name",
+          "phone"
+        ]
+      },
+      "BanquetPublicQuoteDto": {
+        "type": "object",
+        "properties": {
+          "requestNumber": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "new",
+              "in_progress",
+              "quote_sent",
+              "agreed",
+              "prepaid",
+              "held",
+              "cancelled"
+            ]
+          },
+          "statusLabel": {
+            "type": "string"
+          },
+          "eventDate": {
+            "type": "string"
+          },
+          "eventTime": {
+            "type": "string",
+            "nullable": true
+          },
+          "eventType": {
+            "type": "string",
+            "enum": [
+              "wedding",
+              "birthday",
+              "corporate",
+              "anniversary",
+              "kudalyk",
+              "memorial",
+              "graduation",
+              "other"
+            ]
+          },
+          "eventTypeLabel": {
+            "type": "string"
+          },
+          "guests": {
+            "type": "number"
+          },
+          "place": {
+            "type": "string"
+          },
+          "version": {
+            "type": "number"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanquetPublicQuoteLineDto"
+            }
+          },
+          "subtotal": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "discount": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "serviceChargeBp": {
+            "type": "number"
+          },
+          "service": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "total": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "vatPayer": {
+            "type": "boolean"
+          },
+          "vatRateBp": {
+            "type": "number"
+          },
+          "vat": {
+            "description": "в т.ч. НДС",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          },
+          "perGuest": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "validUntil": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "canAccept": {
+            "type": "boolean",
+            "description": "Можно согласовать сейчас"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "pdfUrl": {
+            "type": "string",
+            "description": "PDF сметы (подписанная ссылка)"
+          },
+          "manager": {
+            "$ref": "#/components/schemas/BanquetPublicManagerDto"
+          }
+        },
+        "required": [
+          "requestNumber",
+          "status",
+          "statusLabel",
+          "eventDate",
+          "eventTime",
+          "eventType",
+          "eventTypeLabel",
+          "guests",
+          "place",
+          "version",
+          "lines",
+          "subtotal",
+          "discount",
+          "serviceChargeBp",
+          "service",
+          "total",
+          "vatPayer",
+          "vatRateBp",
+          "vat",
+          "perGuest",
+          "validUntil",
+          "notes",
+          "canAccept",
+          "accepted",
+          "pdfUrl",
+          "manager"
+        ]
+      },
+      "BanquetAcceptQuoteDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "description": "Версия сметы, которую видел клиент"
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "BanquetPublicAcceptResultDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "new",
+              "in_progress",
+              "quote_sent",
+              "agreed",
+              "prepaid",
+              "held",
+              "cancelled"
+            ]
+          },
+          "version": {
+            "type": "number"
+          },
+          "prepayment": {
+            "nullable": true,
+            "description": "Требуемая предоплата",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "version",
+          "prepayment"
+        ]
+      },
+      "BanquetPublicSellerDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "bin": {
+            "type": "string"
+          },
+          "iban": {
+            "type": "string"
+          },
+          "bik": {
+            "type": "string"
+          },
+          "bankName": {
+            "type": "string"
+          },
+          "kbe": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "bin",
+          "iban",
+          "bik",
+          "bankName",
+          "kbe"
+        ]
+      },
+      "BanquetPublicInvoiceDto": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "string"
+          },
+          "requestNumber": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "issued",
+              "partially_paid",
+              "paid",
+              "cancelled"
+            ]
+          },
+          "payerType": {
+            "type": "string",
+            "enum": [
+              "individual",
+              "company"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "amount": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "paid": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "remaining": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "vatRateBp": {
+            "type": "number"
+          },
+          "vat": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "dueDate": {
+            "type": "string"
+          },
+          "overdue": {
+            "type": "boolean"
+          },
+          "paymentUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "Ссылка на оплату (появляется асинхронно)"
+          },
+          "paymentStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "pdfUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "PDF счёта на оплату (юрлицо)"
+          },
+          "seller": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BanquetPublicSellerDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "number",
+          "requestNumber",
+          "status",
+          "payerType",
+          "description",
+          "amount",
+          "paid",
+          "remaining",
+          "vatRateBp",
+          "vat",
+          "dueDate",
+          "overdue",
+          "paymentUrl",
+          "paymentStatus",
+          "pdfUrl"
+        ]
       },
       "RevenueDayDto": {
         "type": "object",

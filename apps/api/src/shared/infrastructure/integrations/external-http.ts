@@ -28,6 +28,11 @@ export interface ExternalRequest {
   body?: unknown;
   timeoutMs?: number;
   correlationId?: string | null;
+  /**
+   * Что записать в журнал вместо тела запроса, если тело содержит секреты, которые не распознаёт
+   * общее маскирование (например, ключ ЭЦП в массиве подписантов).
+   */
+  logBody?: unknown;
 }
 
 export interface ExternalResponse<T = unknown> {
@@ -85,7 +90,8 @@ export class ExternalHttp {
         headers['content-type'] ??= 'application/json';
       }
     }
-    const loggedBody = req.body instanceof URLSearchParams ? Object.fromEntries(req.body) : (req.body ?? null);
+    const loggedBody =
+      req.logBody !== undefined ? req.logBody : req.body instanceof URLSearchParams ? Object.fromEntries(req.body) : (req.body ?? null);
     const started = Date.now();
     let status: number | null = null;
     let rawText = '';

@@ -5,6 +5,9 @@ import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/routing';
 import { OrnamentDivider, OrnamentPattern } from '@/components/brand/Ornament';
 import { BranchCard } from '@/components/branches/BranchCard';
+import { BannerCards, HeroBanners } from '@/components/content/Banners';
+import { HomeCategories } from '@/components/content/HomeCategories';
+import { PromotionCard } from '@/components/content/PromotionCard';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { buttonClasses } from '@/components/ui/button';
 import { Container } from '@/components/ui/Container';
@@ -17,12 +20,22 @@ import {
   TruckIcon,
   UtensilsIcon,
 } from '@/components/ui/icons';
+import { translate } from '@aula/api-client';
+import { getBranchMenuOrNull } from '@/lib/catalog';
 import { getSiteUrl } from '@/lib/config';
-import { getPublicBranches } from '@/lib/data';
+import { getBanners, getPromotions } from '@/lib/content';
+import { getPublicBranches, getSelectedBranchSlug, resolveSelectedBranch } from '@/lib/data';
 import { organizationJsonLd, restaurantJsonLd, websiteJsonLd } from '@/lib/jsonld';
 import { resolveLocale, type LocaleParams } from '@/lib/page';
 import { routes } from '@/lib/routes';
 import { buildMetadata, localizedUrl } from '@/lib/seo';
+
+/** Контент главной (баннеры, акции, меню) кэшируется на 60 с. */
+export const revalidate = 60;
+
+/** Сколько категорий меню и акций показывать на главной. */
+const HOME_CATEGORIES = 6;
+const HOME_PROMOTIONS = 3;
 
 export async function generateMetadata({ params }: { params: LocaleParams }): Promise<Metadata> {
   const locale = await resolveLocale(params);
@@ -58,8 +71,19 @@ export default async function HomePage({ params }: { params: LocaleParams }) {
   const locale: AppLocale = await resolveLocale(params);
   const t = await getTranslations('Home');
   const common = await getTranslations('Common');
-  const branchesResult = await getPublicBranches(locale);
+  const [branchesResult, selectedSlug] = await Promise.all([getPublicBranches(locale), getSelectedBranchSlug()]);
   const branches = branchesResult.ok ? branchesResult.branches : [];
+  // Филиал для персональных блоков: выбранный гостем, иначе первый по порядку.
+  const featured = resolveSelectedBranch(branches, selectedSlug) ?? branches[0] ?? null;
+  const featuredSlug = featured?.slug ?? null;
+  const [heroBanners, secondaryBanners, promotions, menu] = await Promise.all([
+    getBanners(locale, 'home_hero', featuredSlug),
+    getBanners(locale, 'home_secondary', featuredSlug),
+    getPromotions(locale, featuredSlug),
+    featuredSlug ? getBranchMenuOrNull(locale, featuredSlug) : Promise.resolve(null),
+  ]);
+  const branchNames = new Map(branches.map((b) => [b.id, translate(b.name, locale)]));
+  const categories = (menu?.categories ?? []).filter((c) => c.dishes.length > 0).slice(0, HOME_CATEGORIES);
   const siteUrl = getSiteUrl();
 
   const jsonLd = [
@@ -78,6 +102,8 @@ export default async function HomePage({ params }: { params: LocaleParams }) {
   return (
     <>
       <JsonLd data={jsonLd} />
+
+      <HeroBanners banners={heroBanners} />
 
       <section className="relative isolate overflow-hidden bg-earth-800 text-cream-50">
         <OrnamentPattern className="text-gold-400/10" />
@@ -122,6 +148,42 @@ export default async function HomePage({ params }: { params: LocaleParams }) {
           ))}
         </ul>
       </Container>
+
+      {featured && categories.length > 0 ? (
+        <Container>
+          <HomeCategories categories={categories} branchSlug={featured.slug} branchName={translate(featured.name, locale)} />
+        </Container>
+      ) : null}
+
+      {promotions && promotions.length > 0 ? (
+        <section aria-labelledby="home-promotions" className="py-12">
+          <Container>
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <h2 id="home-promotions" className="text-3xl font-semibold text-earth-900">
+                {t('promotionsTitle')}
+              </h2>
+              <Link href={routes.promotions()} className="inline-flex min-h-11 items-center gap-1 font-semibold text-earth-700 underline-offset-4 hover:underline">
+                {t('promotionsAll')}
+                <ArrowRightIcon size={18} />
+              </Link>
+            </div>
+            <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {promotions.slice(0, HOME_PROMOTIONS).map((promotion) => (
+                <li key={promotion.id}>
+                  <PromotionCard promotion={promotion} locale={locale} branchNames={branchNames} />
+                </li>
+              ))}
+            </ul>
+          </Container>
+        </section>
+      ) : null}
+
+      {secondaryBanners.length > 0 ? (
+        <Container className="py-12">
+          <h2 className="sr-only">{t('bannersLabel')}</h2>
+          <BannerCards banners={secondaryBanners} />
+        </Container>
+      ) : null}
 
       <section aria-labelledby="home-branches" className="bg-cream-200/60 py-12">
         <Container>

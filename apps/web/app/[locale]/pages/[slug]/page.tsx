@@ -1,50 +1,62 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { PlaceholderPage } from '@/components/placeholders/PlaceholderPage';
+import { RichText } from '@/components/content/RichText';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
+import { Container } from '@/components/ui/Container';
+import { PageHeading } from '@/components/ui/PageHeading';
+import { getSiteUrl } from '@/lib/config';
+import { getContentPage } from '@/lib/content';
+import { formatDate } from '@/lib/format';
+import { breadcrumbJsonLd } from '@/lib/jsonld';
 import { resolveLocale } from '@/lib/page';
-import { LEGAL_PAGES, routes, type LegalPageSlug } from '@/lib/routes';
-import { buildMetadata } from '@/lib/seo';
+import { routes } from '@/lib/routes';
+import { buildMetadata, localizedUrl } from '@/lib/seo';
 
 type Params = Promise<{ locale: string; slug: string }>;
 
-/*
- * TODO(catalog/content): текстовые страницы (оферта, политика конфиденциальности, согласие на обработку ПД,
- *   доставка и оплата, «О нас»…) редактируются контент-менеджером.
- *   GET /api/v1/public/content/pages/{slug}?locale= → заголовок, санитизированное тело, SEO-поля, updatedAt | 404
- *   (список — GET /api/v1/public/content/pages). После подключения: убрать ограничение LEGAL_PAGES,
- *   отдавать 404 по ответу API, снять noindex. В sitemap страницы уже попадают из
- *   GET /api/v1/public/catalog/sitemap (pages).
- */
-function isKnownPage(slug: string): slug is LegalPageSlug {
-  return (LEGAL_PAGES as readonly string[]).includes(slug);
-}
+export const revalidate = 60;
 
+const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/**
+ * Текстовые страницы (о ресторане, доставка, оплата, оферта, политика, контакты) — редактирует
+ * контент-менеджер: GET /api/v1/public/content/pages/{slug}. Неопубликованная/неизвестная — HTTP 404
+ * (в сегменте нет loading.tsx — notFound() до отправки заголовков).
+ */
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const locale = await resolveLocale(params);
   const { slug } = await params;
-  if (!isKnownPage(slug)) return {};
-  const t = await getTranslations({ locale, namespace: 'InfoPage' });
-  return buildMetadata({
-    locale,
-    path: routes.page(slug),
-    title: t(`titles.${slug}`),
-    description: t('placeholderText'),
-    noindex: true,
-  });
+  if (!SLUG_RE.test(slug)) return {};
+  const page = await getContentPage(locale, slug);
+  if (!page) return {};
+  return buildMetadata({ locale, path: routes.page(page.slug), title: page.seo.title || page.title, description: page.seo.description, type: 'article' });
 }
 
 export default async function InfoPage({ params }: { params: Params }) {
   const locale = await resolveLocale(params);
   const { slug } = await params;
-  if (!isKnownPage(slug)) notFound();
-  const t = await getTranslations('InfoPage');
+  if (!SLUG_RE.test(slug)) notFound();
+  const page = await getContentPage(locale, slug);
+  if (!page) notFound();
+  const [t, nav] = await Promise.all([getTranslations('InfoPage'), getTranslations('Nav')]);
+  const siteUrl = getSiteUrl();
   return (
-    <PlaceholderPage
-      locale={locale}
-      title={t(`titles.${slug}`)}
-      placeholderTitle={t('placeholderTitle')}
-      placeholderText={t('placeholderText')}
-    />
+    <Container>
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: nav('home'), url: localizedUrl(locale, routes.home(), siteUrl) },
+          { name: page.title, url: localizedUrl(locale, routes.page(page.slug), siteUrl) },
+        ])}
+      />
+      <Breadcrumbs items={[{ label: nav('home'), href: routes.home() }, { label: page.title }]} />
+      <PageHeading title={page.title} compact>
+        <p className="mt-2 text-sm text-muted">{t('updatedAt', { date: formatDate(page.updatedAt, locale) })}</p>
+      </PageHeading>
+      <article className="max-w-3xl">
+        <RichText html={page.bodyHtml} />
+      </article>
+    </Container>
   );
 }

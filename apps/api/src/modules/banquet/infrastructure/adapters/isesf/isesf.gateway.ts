@@ -93,6 +93,8 @@ export class IsEsfGateway extends EsfGateway {
         withTsp: true,
         detached: true,
       },
+      // Ключ ЭЦП и пароль к нему в журнал не пишем.
+      logBody: { data: '[base64 xml]', signers: [{ key: '***', password: '***', keyAlias: null }], withTsp: true, detached: true },
       timeoutMs: config.timeoutMs,
       correlationId,
     });

@@ -2600,6 +2600,630 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/banquets/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBanquetRequests_list"];
+        put?: never;
+        post: operations["AdminBanquetRequests_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/pipeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBanquetRequests_pipeline"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/managers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBanquetRequests_managers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBanquetRequests_calendar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/sla-stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBanquetRequests_sla"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/requests/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBanquetRequests_detail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AdminBanquetRequests_update"];
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/requests/{id}/transition": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminBanquetRequests_changeStatus"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/requests/{id}/assign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminBanquetRequests_reassign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/requests/{id}/activities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminBanquetRequests_activity"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/requests/{id}/venue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["AdminBanquetRequests_venue"];
+        post?: never;
+        delete: operations["AdminBanquetRequests_release"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/requests/{id}/prepayment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["AdminBanquetRequests_prepayment"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/requests/{id}/refunds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminBanquetRequests_refundPayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/requests/{id}/quotes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBanquetQuotes_versions"];
+        put?: never;
+        post: operations["AdminBanquetQuotes_save"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/quotes/{quoteId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBanquetQuotes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/quotes/{quoteId}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBanquetQuotes_pdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/quotes/{quoteId}/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminBanquetQuotes_send"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/menu/dishes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBanquetQuotes_dishes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBanquetInvoices_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/requests/{id}/invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminBanquetInvoices_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/invoices/{invoiceId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBanquetInvoices_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/invoices/{invoiceId}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBanquetInvoices_pdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/invoices/{invoiceId}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminBanquetInvoices_payment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/invoices/{invoiceId}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminBanquetInvoices_cancelInvoice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/requests/{id}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBanquetDocuments_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/documents/{documentId}/link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBanquetDocuments_link"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/requests/{id}/contract": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminBanquetDocuments_contract"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/requests/{id}/act": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminBanquetDocuments_act"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/acts/{actId}/esf/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminBanquetDocuments_esfRetry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/companies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBanquetCompanies_search"];
+        put?: never;
+        post: operations["AdminBanquetCompanies_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/companies/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBanquetCompanies_get"];
+        put: operations["AdminBanquetCompanies_update"];
+        post?: never;
+        delete: operations["AdminBanquetCompanies_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/contract-templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBanquetTemplates_list"];
+        put?: never;
+        post: operations["AdminBanquetTemplates_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/contract-templates/placeholders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBanquetTemplates_placeholders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/contract-templates/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBanquetTemplates_get"];
+        put: operations["AdminBanquetTemplates_update"];
+        post?: never;
+        delete: operations["AdminBanquetTemplates_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/banquets/event-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicBanquets_eventTypes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/banquets/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublicBanquets_request"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/banquets/quotes/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicBanquets_quote"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/banquets/quotes/{token}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublicBanquets_acceptQuote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/banquets/invoices/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicBanquets_invoice"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/banquets/invoices/{token}/pay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublicBanquets_pay"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/reports/revenue": {
         parameters: {
             query?: never;
@@ -7054,6 +7678,862 @@ export interface components {
         GuestCancelReservationDto: {
             /** @description Причина (необязательно) */
             reason?: string;
+        };
+        BanquetContactDto: {
+            /** @description Гость в базе гостей */
+            customerId: string | null;
+            name: string;
+            /** @example +77011234567 */
+            phone: string;
+            email: string | null;
+        };
+        BanquetRequestSummaryDto: {
+            id: string;
+            /** @example GL-B-2026-000001 */
+            number: string;
+            /** @enum {string} */
+            status: "new" | "in_progress" | "quote_sent" | "agreed" | "prepaid" | "held" | "cancelled";
+            /** @enum {string} */
+            source: "web" | "admin";
+            branchId: string | null;
+            branchName: components["schemas"]["TranslatableDto"] | null;
+            isOffsite: boolean;
+            offsiteAddress: string | null;
+            /** @example 2026-11-14 */
+            eventDate: string;
+            /** @example 18:00 */
+            eventTime: string | null;
+            /** @enum {string} */
+            eventType: "wedding" | "birthday" | "corporate" | "anniversary" | "kudalyk" | "memorial" | "graduation" | "other";
+            guests: number;
+            budget: components["schemas"]["MoneyDto"] | null;
+            contact: components["schemas"]["BanquetContactDto"];
+            managerId: string;
+            managerName: string;
+            quoteVersion: number | null;
+            /** @description Итог последней версии сметы */
+            quoteTotal: components["schemas"]["MoneyDto"] | null;
+            /**
+             * Format: date-time
+             * @description Срок первого ответа (30 минут)
+             */
+            slaDeadline: string;
+            slaBreached: boolean;
+            /** Format: date-time */
+            firstResponseAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        BanquetRequestsPageDto: {
+            items: components["schemas"]["BanquetRequestSummaryDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+        };
+        BanquetPipelineColumnDto: {
+            /** @enum {string} */
+            status: "new" | "in_progress" | "quote_sent" | "agreed" | "prepaid" | "held" | "cancelled";
+            count: number;
+            items: components["schemas"]["BanquetRequestSummaryDto"][];
+        };
+        BanquetManagerDto: {
+            id: string;
+            name: string;
+            phone: string | null;
+            email: string;
+            /** @description Открытых заявок */
+            openRequests: number;
+        };
+        BanquetCalendarVenueDto: {
+            id: string;
+            branchId: string;
+            hallId: string;
+            hallName: components["schemas"]["TranslatableDto"];
+            name: components["schemas"]["TranslatableDto"];
+            typeId: string;
+            typeCode: string;
+            typeName: components["schemas"]["TranslatableDto"];
+            capacityMin: number;
+            capacityMax: number;
+            deposit: components["schemas"]["MoneyDto"] | null;
+            isActive: boolean;
+        };
+        BanquetOccupancyDto: {
+            reservationId: string;
+            venueId: string;
+            /** @enum {string} */
+            kind: "regular" | "banquet";
+            status: string;
+            start: string;
+            end: string;
+            guests: number;
+            banquetRequestId: string | null;
+        };
+        BanquetCalendarDto: {
+            branchId: string;
+            from: string;
+            to: string;
+            venues: components["schemas"]["BanquetCalendarVenueDto"][];
+            /** @description Занятость залов: брони и банкеты */
+            occupancy: components["schemas"]["BanquetOccupancyDto"][];
+            banquets: components["schemas"]["BanquetRequestSummaryDto"][];
+        };
+        BanquetManagerSlaDto: {
+            total: number;
+            answered: number;
+            answeredWithinSla: number;
+            /** @description Доля ответов за 30 минут, bp (9500 = 95%) */
+            withinSlaShareBp: number | null;
+            breached: number;
+            unanswered: number;
+            /** @description Отменены без ответа менеджера */
+            lost: number;
+            averageFirstResponseMinutes: number | null;
+            managerId: string;
+            managerName: string;
+        };
+        BanquetSlaStatsDto: {
+            total: number;
+            answered: number;
+            answeredWithinSla: number;
+            /** @description Доля ответов за 30 минут, bp (9500 = 95%) */
+            withinSlaShareBp: number | null;
+            breached: number;
+            unanswered: number;
+            /** @description Отменены без ответа менеджера */
+            lost: number;
+            averageFirstResponseMinutes: number | null;
+            from: string;
+            to: string;
+            /** @description Целевая доля (ТЗ: 95%) */
+            targetShareBp: number;
+            byManager: components["schemas"]["BanquetManagerSlaDto"][];
+        };
+        BanquetContactInputDto: {
+            /** @example Айгерим */
+            name: string;
+            /**
+             * @description Нормализуется в +7XXXXXXXXXX
+             * @example +7 701 123 45 67
+             */
+            phone: string;
+            /** @example aigerim@mail.kz */
+            email?: string;
+        };
+        BanquetConsentInputDto: {
+            /** @description Согласие на обработку персональных данных (на витрине обязательно true) */
+            personalData: boolean;
+            /** @description Согласие на рекламные рассылки */
+            marketing?: boolean;
+        };
+        BanquetAdminCreateRequestDto: {
+            /** @example 2026-11-14 */
+            eventDate: string;
+            /** @example 18:00 */
+            eventTime?: string;
+            /** @enum {string} */
+            eventType: "wedding" | "birthday" | "corporate" | "anniversary" | "kudalyk" | "memorial" | "graduation" | "other";
+            guests: number;
+            /** @description Филиал проведения или филиал-исполнитель выезда */
+            branchId?: string;
+            offsite?: boolean;
+            address?: string;
+            budget?: components["schemas"]["MoneyInputDto"];
+            contact: components["schemas"]["BanquetContactInputDto"];
+            wishes?: string;
+            /** @description Согласие гостя, полученное менеджером (по телефону / лично) */
+            consent?: components["schemas"]["BanquetConsentInputDto"];
+            /**
+             * @default ru
+             * @enum {string}
+             */
+            locale: "kk" | "ru" | "en";
+            /** @description Ответственный менеджер (иначе — автоназначение) */
+            managerId?: string;
+            /** @description Компания-заказчик */
+            companyId?: string;
+        };
+        BanquetCompanyDto: {
+            id: string;
+            name: string;
+            bin: string;
+            legalAddress: string;
+            bankName: string | null;
+            iban: string | null;
+            bik: string | null;
+            kbe: string | null;
+            directorName: string | null;
+            directorPosition: string | null;
+            actingBasis: string | null;
+            contactName: string | null;
+            contactPhone: string | null;
+            contactEmail: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        BanquetVenueHoldDto: {
+            venueId: string;
+            venueName: components["schemas"]["TranslatableDto"] | null;
+            /** @description Занятость в модуле бронирования */
+            reservationId: string;
+            /** Format: date-time */
+            start: string;
+            /** Format: date-time */
+            end: string;
+        };
+        BanquetPrepaymentStateDto: {
+            /** @description Требуемая предоплата (по умолчанию 50% сметы) */
+            required: components["schemas"]["MoneyDto"] | null;
+            paid: components["schemas"]["MoneyDto"];
+            remaining: components["schemas"]["MoneyDto"] | null;
+            covered: boolean;
+            /** @description Сумму задал менеджер */
+            isCustom: boolean;
+        };
+        BanquetBalanceDto: {
+            quoteTotal: components["schemas"]["MoneyDto"] | null;
+            invoiced: components["schemas"]["MoneyDto"];
+            paid: components["schemas"]["MoneyDto"];
+            remaining: components["schemas"]["MoneyDto"] | null;
+        };
+        BanquetQuoteSummaryDto: {
+            id: string;
+            requestId: string;
+            version: number;
+            guests: number;
+            total: components["schemas"]["MoneyDto"];
+            vat: components["schemas"]["MoneyDto"];
+            linesCount: number;
+            validUntil: string | null;
+            createdByName: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            sentAt: string | null;
+            /** Format: date-time */
+            acceptedAt: string | null;
+            isLatest: boolean;
+        };
+        BanquetPartyShortDto: {
+            name: string;
+            bin: string | null;
+        };
+        BanquetInvoicePaymentDto: {
+            paymentId: string;
+            /** @example bank_transfer */
+            method: string;
+            amount: components["schemas"]["MoneyDto"];
+            refunded: components["schemas"]["MoneyDto"];
+            documentNumber: string | null;
+            /** Format: date-time */
+            paidAt: string;
+            recordedByName: string;
+        };
+        BanquetInvoiceDto: {
+            id: string;
+            requestId: string;
+            /** @example GL-S-2026-000001 */
+            number: string;
+            branchId: string | null;
+            /** @enum {string} */
+            payerType: "individual" | "company";
+            companyId: string | null;
+            buyer: components["schemas"]["BanquetPartyShortDto"];
+            /** @enum {string} */
+            purpose: "prepayment" | "payment";
+            description: string;
+            amount: components["schemas"]["MoneyDto"];
+            vat: components["schemas"]["MoneyDto"];
+            vatRateBp: number;
+            paid: components["schemas"]["MoneyDto"];
+            refunded: components["schemas"]["MoneyDto"];
+            remaining: components["schemas"]["MoneyDto"];
+            dueDate: string;
+            /** @enum {string} */
+            status: "issued" | "partially_paid" | "paid" | "cancelled";
+            /** @description Срок оплаты прошёл, счёт оплачен не полностью */
+            overdue: boolean;
+            /** @description Онлайн-платёж (физлицо) */
+            paymentId: string | null;
+            /** @description Страница счёта для клиента */
+            publicUrl: string;
+            pdfReady: boolean;
+            /** Format: date-time */
+            issuedAt: string;
+            /** Format: date-time */
+            paidAt: string | null;
+            /** Format: date-time */
+            cancelledAt: string | null;
+            cancelReason: string | null;
+            payments: components["schemas"]["BanquetInvoicePaymentDto"][];
+        };
+        BanquetEsfDto: {
+            /** @enum {string} */
+            status: "not_required" | "pending" | "draft_ready" | "sent" | "registered" | "failed";
+            provider: string | null;
+            esfId: string | null;
+            registrationNumber: string | null;
+            error: string | null;
+            /** Format: date-time */
+            updatedAt: string | null;
+        };
+        BanquetActDto: {
+            id: string;
+            /** @example GL-A-2026-000001 */
+            number: string;
+            actDate: string;
+            /** @enum {string} */
+            payerType: "individual" | "company";
+            buyer: components["schemas"]["BanquetPartyShortDto"];
+            amount: components["schemas"]["MoneyDto"];
+            vat: components["schemas"]["MoneyDto"];
+            esf: components["schemas"]["BanquetEsfDto"];
+            /** Format: date-time */
+            createdAt: string;
+        };
+        BanquetDocumentDto: {
+            id: string;
+            /** @enum {string} */
+            kind: "quote" | "contract" | "invoice" | "act" | "esf_xml";
+            number: string | null;
+            title: string;
+            filename: string;
+            contentType: string;
+            createdByName: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        BanquetActivityDto: {
+            id: string;
+            /** @enum {string} */
+            kind: "created" | "note" | "call" | "contact" | "meeting" | "status_changed" | "assigned" | "details_updated" | "venue_set" | "venue_released" | "quote_saved" | "quote_sent" | "quote_accepted" | "prepayment_set" | "invoice_issued" | "invoice_cancelled" | "payment_recorded" | "refund_requested" | "refund_recorded" | "document_generated" | "act_issued" | "esf" | "sla_breach";
+            text: string | null;
+            data: {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            authorKind: "staff" | "system" | "guest";
+            authorName: string;
+            /** Format: date-time */
+            occurredAt: string;
+        };
+        BanquetRequestDetailDto: {
+            id: string;
+            /** @example GL-B-2026-000001 */
+            number: string;
+            /** @enum {string} */
+            status: "new" | "in_progress" | "quote_sent" | "agreed" | "prepaid" | "held" | "cancelled";
+            /** @enum {string} */
+            source: "web" | "admin";
+            branchId: string | null;
+            branchName: components["schemas"]["TranslatableDto"] | null;
+            isOffsite: boolean;
+            offsiteAddress: string | null;
+            /** @example 2026-11-14 */
+            eventDate: string;
+            /** @example 18:00 */
+            eventTime: string | null;
+            /** @enum {string} */
+            eventType: "wedding" | "birthday" | "corporate" | "anniversary" | "kudalyk" | "memorial" | "graduation" | "other";
+            guests: number;
+            budget: components["schemas"]["MoneyDto"] | null;
+            contact: components["schemas"]["BanquetContactDto"];
+            managerId: string;
+            managerName: string;
+            quoteVersion: number | null;
+            /** @description Итог последней версии сметы */
+            quoteTotal: components["schemas"]["MoneyDto"] | null;
+            /**
+             * Format: date-time
+             * @description Срок первого ответа (30 минут)
+             */
+            slaDeadline: string;
+            slaBreached: boolean;
+            /** Format: date-time */
+            firstResponseAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            wishes: string | null;
+            locale: string;
+            company: components["schemas"]["BanquetCompanyDto"] | null;
+            /** @description Переходы, доступные сейчас */
+            allowedTransitions: ("new" | "in_progress" | "quote_sent" | "agreed" | "prepaid" | "held" | "cancelled")[];
+            venue: components["schemas"]["BanquetVenueHoldDto"] | null;
+            prepayment: components["schemas"]["BanquetPrepaymentStateDto"];
+            balance: components["schemas"]["BanquetBalanceDto"];
+            contractNumber: string | null;
+            contractDate: string | null;
+            cancelReason: string | null;
+            /** Format: date-time */
+            heldAt: string | null;
+            /** Format: date-time */
+            cancelledAt: string | null;
+            /** @description Ссылка на страницу сметы для клиента */
+            publicQuoteUrl: string;
+            quotes: components["schemas"]["BanquetQuoteSummaryDto"][];
+            invoices: components["schemas"]["BanquetInvoiceDto"][];
+            act: components["schemas"]["BanquetActDto"] | null;
+            documents: components["schemas"]["BanquetDocumentDto"][];
+            timeline: components["schemas"]["BanquetActivityDto"][];
+        };
+        BanquetUpdateRequestDto: {
+            /** @example 2026-11-14 */
+            eventDate?: string;
+            /** @example 18:00 */
+            eventTime?: Record<string, never> | null;
+            /** @enum {string} */
+            eventType?: "wedding" | "birthday" | "corporate" | "anniversary" | "kudalyk" | "memorial" | "graduation" | "other";
+            guests?: number;
+            budget?: components["schemas"]["MoneyInputDto"] | null;
+            /** @description Филиал проведения / филиал-исполнитель выезда */
+            branchId?: Record<string, never> | null;
+            offsite?: boolean;
+            address?: Record<string, never> | null;
+            wishes?: Record<string, never> | null;
+            contact?: components["schemas"]["BanquetContactInputDto"];
+            /** @description Компания-заказчик (null — физлицо) */
+            companyId?: Record<string, never> | null;
+        };
+        BanquetTransitionDto: {
+            /** @enum {string} */
+            to: "new" | "in_progress" | "quote_sent" | "agreed" | "prepaid" | "held" | "cancelled";
+            /** @description Причина (для отмены обязательна) */
+            reason?: string;
+        };
+        BanquetAssignDto: {
+            managerId: string;
+        };
+        BanquetActivityInputDto: {
+            /**
+             * @description call / contact / meeting — ответ гостю (SLA)
+             * @enum {string}
+             */
+            kind: "note" | "call" | "contact" | "meeting";
+            text?: string;
+        };
+        BanquetIdDto: {
+            id: string;
+        };
+        BanquetSetVenueDto: {
+            venueId: string;
+            /**
+             * @description Локальная дата начала (по умолчанию — дата мероприятия)
+             * @example 2026-11-14
+             */
+            date?: string;
+            /** @example 17:00 */
+            startTime: string;
+            /**
+             * @description Раньше начала — следующий день
+             * @example 23:30
+             */
+            endTime: string;
+        };
+        BanquetPrepaymentInputDto: {
+            /** @description null — 50% итога согласованной сметы */
+            amount?: components["schemas"]["MoneyInputDto"] | null;
+        };
+        BanquetRefundInputDto: {
+            /** @description Платёж по счёту заявки */
+            paymentId: string;
+            /** @description Частичный возврат; без суммы — полный */
+            amount?: components["schemas"]["MoneyInputDto"];
+            reason: string;
+            /** @description Ключ идемпотентности (генерирует админка на одну попытку) */
+            idempotencyKey: string;
+        };
+        BanquetRefundResultDto: {
+            id: string;
+            paymentId: string;
+            amount: components["schemas"]["MoneyDto"];
+            /** @enum {string} */
+            status: "pending" | "succeeded" | "failed";
+            reason: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        BanquetDiscountInputDto: {
+            /** @enum {string} */
+            type: "percent" | "amount";
+            /** @description Процент в базисных пунктах (1000 = 10%) */
+            bp?: number;
+            amount?: components["schemas"]["MoneyInputDto"];
+        };
+        BanquetQuoteLineInputDto: {
+            /** @enum {string} */
+            kind: "menu" | "hall_rent" | "musicians" | "decoration" | "service" | "other";
+            /** @description Блюдо (для kind=menu): название и цена филиала — снимок на момент добавления */
+            dishId?: string;
+            /** @description Название произвольной позиции */
+            title?: components["schemas"]["TranslatableDto"];
+            /** @example порц. */
+            unit?: string;
+            /** @description Цена за единицу произвольной позиции */
+            unitPrice?: components["schemas"]["MoneyInputDto"];
+            quantity: number;
+            discount?: components["schemas"]["BanquetDiscountInputDto"];
+        };
+        BanquetSaveQuoteDto: {
+            lines: components["schemas"]["BanquetQuoteLineInputDto"][];
+            /** @description Общая скидка */
+            discount?: components["schemas"]["BanquetDiscountInputDto"];
+            /** @description Процент за обслуживание, базисные пункты (1000 = 10%) */
+            serviceChargeBp?: number;
+            /** @description Гостей для расчёта «на гостя» (по умолчанию — из заявки) */
+            guests?: number;
+            /** @example 2026-10-15 */
+            validUntil?: string;
+            notes?: string;
+            /** @description Обновить цены позиций меню по текущему меню филиала */
+            refreshMenuPrices?: boolean;
+        };
+        BanquetDiscountDto: {
+            /** @enum {string} */
+            type: "percent" | "amount";
+            /** @description Процент, базисные пункты */
+            bp: number | null;
+            amount: components["schemas"]["MoneyDto"] | null;
+        };
+        BanquetQuoteLineDto: {
+            position: number;
+            /** @enum {string} */
+            kind: "menu" | "hall_rent" | "musicians" | "decoration" | "service" | "other";
+            dishId: string | null;
+            title: components["schemas"]["TranslatableDto"];
+            unit: string;
+            quantity: number;
+            unitPrice: components["schemas"]["MoneyDto"];
+            discount: components["schemas"]["BanquetDiscountDto"] | null;
+            /** @description Цена × количество */
+            gross: components["schemas"]["MoneyDto"];
+            discountAmount: components["schemas"]["MoneyDto"];
+            total: components["schemas"]["MoneyDto"];
+        };
+        BanquetQuoteTotalsDto: {
+            subtotal: components["schemas"]["MoneyDto"];
+            linesDiscount: components["schemas"]["MoneyDto"];
+            overallDiscount: components["schemas"]["MoneyDto"];
+            discount: components["schemas"]["MoneyDto"];
+            service: components["schemas"]["MoneyDto"];
+            total: components["schemas"]["MoneyDto"];
+            /** @description НДС, включённый в итог */
+            vat: components["schemas"]["MoneyDto"];
+            perGuest: components["schemas"]["MoneyDto"];
+        };
+        BanquetQuoteDto: {
+            id: string;
+            requestId: string;
+            version: number;
+            branchId: string | null;
+            guests: number;
+            discount: components["schemas"]["BanquetDiscountDto"] | null;
+            serviceChargeBp: number;
+            vatPayer: boolean;
+            vatRateBp: number;
+            lines: components["schemas"]["BanquetQuoteLineDto"][];
+            totals: components["schemas"]["BanquetQuoteTotalsDto"];
+            validUntil: string | null;
+            notes: string | null;
+            seller: components["schemas"]["BanquetPartyShortDto"];
+            pdfReady: boolean;
+            createdByName: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            sentAt: string | null;
+            /** Format: date-time */
+            acceptedAt: string | null;
+            isLatest: boolean;
+        };
+        BanquetSignedLinkDto: {
+            url: string;
+            /** Format: date-time */
+            expiresAt: string;
+            filename: string;
+        };
+        BanquetDishOptionDto: {
+            dishId: string;
+            name: components["schemas"]["TranslatableDto"];
+            /** @description Цена в филиале сейчас */
+            price: components["schemas"]["MoneyDto"];
+            /** @enum {string} */
+            availability: "available" | "stopped_shown" | "stopped_hidden";
+            photoUrl: string | null;
+            weightGrams: number | null;
+        };
+        BanquetInvoiceListItemDto: {
+            id: string;
+            requestId: string;
+            /** @example GL-S-2026-000001 */
+            number: string;
+            branchId: string | null;
+            /** @enum {string} */
+            payerType: "individual" | "company";
+            companyId: string | null;
+            buyer: components["schemas"]["BanquetPartyShortDto"];
+            /** @enum {string} */
+            purpose: "prepayment" | "payment";
+            description: string;
+            amount: components["schemas"]["MoneyDto"];
+            vat: components["schemas"]["MoneyDto"];
+            vatRateBp: number;
+            paid: components["schemas"]["MoneyDto"];
+            refunded: components["schemas"]["MoneyDto"];
+            remaining: components["schemas"]["MoneyDto"];
+            dueDate: string;
+            /** @enum {string} */
+            status: "issued" | "partially_paid" | "paid" | "cancelled";
+            /** @description Срок оплаты прошёл, счёт оплачен не полностью */
+            overdue: boolean;
+            /** @description Онлайн-платёж (физлицо) */
+            paymentId: string | null;
+            /** @description Страница счёта для клиента */
+            publicUrl: string;
+            pdfReady: boolean;
+            /** Format: date-time */
+            issuedAt: string;
+            /** Format: date-time */
+            paidAt: string | null;
+            /** Format: date-time */
+            cancelledAt: string | null;
+            cancelReason: string | null;
+            payments: components["schemas"]["BanquetInvoicePaymentDto"][];
+            requestNumber: string;
+        };
+        BanquetInvoicesPageDto: {
+            items: components["schemas"]["BanquetInvoiceListItemDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+        };
+        BanquetIssueInvoiceDto: {
+            /** @enum {string} */
+            payerType: "individual" | "company";
+            /** @description Компания-заказчик (по умолчанию — компания заявки) */
+            companyId?: string;
+            /** @description По умолчанию — остаток предоплаты или остаток до итога сметы */
+            amount?: components["schemas"]["MoneyInputDto"];
+            /** @example 2026-10-05 */
+            dueDate?: string;
+            description?: string;
+        };
+        BanquetBankTransferDto: {
+            amount: components["schemas"]["MoneyInputDto"];
+            /**
+             * @description Дата и время поступления
+             * @example 2026-10-02T10:00:00+05:00
+             */
+            paidAt: string;
+            /**
+             * @description Номер платёжного поручения
+             * @example 1234
+             */
+            documentNumber: string;
+        };
+        BanquetBankTransferResultDto: {
+            invoice: components["schemas"]["BanquetInvoiceDto"];
+            paymentId: string;
+            /** @description Этот документ уже был зарегистрирован (повтор) */
+            duplicate: boolean;
+        };
+        BanquetCancelInvoiceDto: {
+            reason?: string;
+        };
+        BanquetGenerateContractDto: {
+            /** @description Шаблон (по умолчанию — шаблон по умолчанию) */
+            templateId?: string;
+        };
+        BanquetCompaniesPageDto: {
+            items: components["schemas"]["BanquetCompanyDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+        };
+        BanquetCompanyInputDto: {
+            /** @example ТОО «Ромашка» */
+            name: string;
+            /**
+             * @description БИН, 12 цифр
+             * @example 940140001234
+             */
+            bin: string;
+            legalAddress: string;
+            bankName?: string;
+            /**
+             * @description ИИК (IBAN)
+             * @example KZ123456789012345678
+             */
+            iban?: string;
+            /** @example CASPKZKA */
+            bik?: string;
+            /** @example 17 */
+            kbe?: string;
+            directorName?: string;
+            /** @example Директор */
+            directorPosition?: string;
+            /** @example Устава */
+            actingBasis?: string;
+            contactName?: string;
+            contactPhone?: string;
+            contactEmail?: string;
+        };
+        BanquetContractTemplateDto: {
+            id: string;
+            code: string;
+            name: string;
+            body: string;
+            isDefault: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        BanquetPlaceholderDto: {
+            /** @example seller.name */
+            key: string;
+            description: string;
+        };
+        BanquetTemplateInputDto: {
+            /** @example banquet-standard */
+            code: string;
+            /** @example Договор на банкетное обслуживание */
+            name: string;
+            /** @description Текст с подстановками {{seller.name}}, {{client.bin}}, {{event.date}}, {{quote.total}} … */
+            body: string;
+            isDefault?: boolean;
+        };
+        BanquetEventTypeDto: {
+            /** @enum {string} */
+            code: "wedding" | "birthday" | "corporate" | "anniversary" | "kudalyk" | "memorial" | "graduation" | "other";
+            label: string;
+        };
+        BanquetPublicCreateRequestDto: {
+            /**
+             * @description Дата мероприятия (локальная)
+             * @example 2026-11-14
+             */
+            eventDate: string;
+            /** @example 18:00 */
+            eventTime?: string;
+            /** @enum {string} */
+            eventType: "wedding" | "birthday" | "corporate" | "anniversary" | "kudalyk" | "memorial" | "graduation" | "other";
+            /** @example 80 */
+            guests: number;
+            /** @description Филиал (обязателен, если не выезд) */
+            branchId?: string;
+            /** @description Выездное обслуживание (кейтеринг): нужен адрес */
+            offsite?: boolean;
+            /** @description Адрес выезда */
+            address?: string;
+            /** @description Бюджет */
+            budget?: components["schemas"]["MoneyInputDto"];
+            contact: components["schemas"]["BanquetContactInputDto"];
+            /** @description Пожелания */
+            wishes?: string;
+            consent: components["schemas"]["BanquetConsentInputDto"];
+            /** @enum {string} */
+            locale: "kk" | "ru" | "en";
+        };
+        BanquetPublicRequestCreatedDto: {
+            /** @example GL-B-2026-000001 */
+            number: string;
+            /** @enum {string} */
+            status: "new" | "in_progress" | "quote_sent" | "agreed" | "prepaid" | "held" | "cancelled";
+            /** @description Ваш менеджер */
+            managerName: string;
+            managerPhone: string | null;
+        };
+        BanquetPublicQuoteLineDto: {
+            title: string;
+            unit: string;
+            quantity: number;
+            unitPrice: components["schemas"]["MoneyDto"];
+            discount: components["schemas"]["BanquetDiscountDto"] | null;
+            total: components["schemas"]["MoneyDto"];
+        };
+        BanquetPublicManagerDto: {
+            name: string;
+            phone: string | null;
+        };
+        BanquetPublicQuoteDto: {
+            requestNumber: string;
+            /** @enum {string} */
+            status: "new" | "in_progress" | "quote_sent" | "agreed" | "prepaid" | "held" | "cancelled";
+            statusLabel: string;
+            eventDate: string;
+            eventTime: string | null;
+            /** @enum {string} */
+            eventType: "wedding" | "birthday" | "corporate" | "anniversary" | "kudalyk" | "memorial" | "graduation" | "other";
+            eventTypeLabel: string;
+            guests: number;
+            place: string;
+            version: number;
+            lines: components["schemas"]["BanquetPublicQuoteLineDto"][];
+            subtotal: components["schemas"]["MoneyDto"];
+            discount: components["schemas"]["MoneyDto"];
+            serviceChargeBp: number;
+            service: components["schemas"]["MoneyDto"];
+            total: components["schemas"]["MoneyDto"];
+            vatPayer: boolean;
+            vatRateBp: number;
+            /** @description в т.ч. НДС */
+            vat: components["schemas"]["MoneyDto"];
+            perGuest: components["schemas"]["MoneyDto"];
+            validUntil: string | null;
+            notes: string | null;
+            /** @description Можно согласовать сейчас */
+            canAccept: boolean;
+            accepted: boolean;
+            /** @description PDF сметы (подписанная ссылка) */
+            pdfUrl: string;
+            manager: components["schemas"]["BanquetPublicManagerDto"];
+        };
+        BanquetAcceptQuoteDto: {
+            /** @description Версия сметы, которую видел клиент */
+            version: number;
+        };
+        BanquetPublicAcceptResultDto: {
+            /** @enum {string} */
+            status: "new" | "in_progress" | "quote_sent" | "agreed" | "prepaid" | "held" | "cancelled";
+            version: number;
+            /** @description Требуемая предоплата */
+            prepayment: components["schemas"]["MoneyDto"] | null;
+        };
+        BanquetPublicSellerDto: {
+            name: string;
+            bin: string;
+            iban: string;
+            bik: string;
+            bankName: string;
+            kbe: string;
+        };
+        BanquetPublicInvoiceDto: {
+            number: string;
+            requestNumber: string;
+            /** @enum {string} */
+            status: "issued" | "partially_paid" | "paid" | "cancelled";
+            /** @enum {string} */
+            payerType: "individual" | "company";
+            description: string;
+            amount: components["schemas"]["MoneyDto"];
+            paid: components["schemas"]["MoneyDto"];
+            remaining: components["schemas"]["MoneyDto"];
+            vatRateBp: number;
+            vat: components["schemas"]["MoneyDto"];
+            dueDate: string;
+            overdue: boolean;
+            /** @description Ссылка на оплату (появляется асинхронно) */
+            paymentUrl: string | null;
+            paymentStatus: string | null;
+            /** @description PDF счёта на оплату (юрлицо) */
+            pdfUrl: string | null;
+            seller?: components["schemas"]["BanquetPublicSellerDto"] | null;
         };
         RevenueDayDto: {
             /** @description Доставка (нетто с возвратами) */
@@ -12916,6 +14396,1127 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PublicReservationDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetRequests_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                perPage?: number;
+                /** @description Статусы через запятую: new, in_progress, quote_sent, agreed, prepaid, held, cancelled */
+                status?: string;
+                managerId?: string;
+                branchId?: string;
+                /** @description Дата мероприятия с */
+                dateFrom?: string;
+                /** @description Дата мероприятия по */
+                dateTo?: string;
+                /** @description Номер, имя или телефон */
+                q?: string;
+                offsite?: boolean;
+                /** @description Нарушен SLA первого ответа */
+                slaBreached?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetRequestsPageDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetRequests_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BanquetAdminCreateRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetRequestDetailDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetRequests_pipeline: {
+        parameters: {
+            query?: {
+                branchId?: string;
+                managerId?: string;
+                dateFrom?: string;
+                dateTo?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetPipelineColumnDto"][];
+                };
+            };
+        };
+    };
+    AdminBanquetRequests_managers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetManagerDto"][];
+                };
+            };
+        };
+    };
+    AdminBanquetRequests_calendar: {
+        parameters: {
+            query: {
+                branchId: string;
+                from: string;
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetCalendarDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetRequests_sla: {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetSlaStatsDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetRequests_detail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetRequestDetailDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetRequests_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BanquetUpdateRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetRequestDetailDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetRequests_changeStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BanquetTransitionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetRequestDetailDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetRequests_reassign: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BanquetAssignDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetRequestDetailDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetRequests_activity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BanquetActivityInputDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetIdDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetRequests_venue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BanquetSetVenueDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetRequestDetailDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetRequests_release: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetRequestDetailDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetRequests_prepayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BanquetPrepaymentInputDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetRequestDetailDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetRequests_refundPayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BanquetRefundInputDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetRefundResultDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetQuotes_versions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetQuoteSummaryDto"][];
+                };
+            };
+        };
+    };
+    AdminBanquetQuotes_save: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BanquetSaveQuoteDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetQuoteDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetQuotes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                quoteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetQuoteDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetQuotes_pdf: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                quoteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetSignedLinkDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetQuotes_send: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                quoteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetRequestDetailDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetQuotes_dishes: {
+        parameters: {
+            query: {
+                branchId: string;
+                q: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetDishOptionDto"][];
+                };
+            };
+        };
+    };
+    AdminBanquetInvoices_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                perPage?: number;
+                branchId?: string;
+                /** @description Статусы через запятую: issued, partially_paid, paid, cancelled */
+                status?: string;
+                /** @description Только просроченные */
+                overdue?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetInvoicesPageDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetInvoices_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BanquetIssueInvoiceDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetInvoiceListItemDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetInvoices_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoiceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetInvoiceListItemDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetInvoices_pdf: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoiceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetSignedLinkDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetInvoices_payment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoiceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BanquetBankTransferDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetBankTransferResultDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetInvoices_cancelInvoice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoiceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BanquetCancelInvoiceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetInvoiceListItemDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetDocuments_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetDocumentDto"][];
+                };
+            };
+        };
+    };
+    AdminBanquetDocuments_link: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                documentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetSignedLinkDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetDocuments_contract: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BanquetGenerateContractDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetDocumentDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetDocuments_act: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetActDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetDocuments_esfRetry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                actId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetActDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetCompanies_search: {
+        parameters: {
+            query?: {
+                page?: number;
+                perPage?: number;
+                /** @description Название или БИН */
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetCompaniesPageDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetCompanies_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BanquetCompanyInputDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetCompanyDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetCompanies_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetCompanyDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetCompanies_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BanquetCompanyInputDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetCompanyDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetCompanies_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminBanquetTemplates_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetContractTemplateDto"][];
+                };
+            };
+        };
+    };
+    AdminBanquetTemplates_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BanquetTemplateInputDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetContractTemplateDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetTemplates_placeholders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetPlaceholderDto"][];
+                };
+            };
+        };
+    };
+    AdminBanquetTemplates_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetContractTemplateDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetTemplates_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BanquetTemplateInputDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetContractTemplateDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetTemplates_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PublicBanquets_eventTypes: {
+        parameters: {
+            query?: {
+                locale?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetEventTypeDto"][];
+                };
+            };
+        };
+    };
+    PublicBanquets_request: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BanquetPublicCreateRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetPublicRequestCreatedDto"];
+                };
+            };
+        };
+    };
+    PublicBanquets_quote: {
+        parameters: {
+            query?: {
+                locale?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetPublicQuoteDto"];
+                };
+            };
+        };
+    };
+    PublicBanquets_acceptQuote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BanquetAcceptQuoteDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetPublicAcceptResultDto"];
+                };
+            };
+        };
+    };
+    PublicBanquets_invoice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetPublicInvoiceDto"];
+                };
+            };
+        };
+    };
+    PublicBanquets_pay: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetPublicInvoiceDto"];
                 };
             };
         };
