@@ -62,7 +62,7 @@ export function CartView() {
               <button
                 type="button"
                 onClick={() => cart.setQuantity(line.key, line.quantity - 1)}
-                className={buttonClasses('outline', 'sm', 'w-11 px-0')}
+                className={buttonClasses('outline', 'icon')}
                 aria-label={t('decrease')}
               >
                 <MinusIcon size={18} />
@@ -73,7 +73,7 @@ export function CartView() {
               <button
                 type="button"
                 onClick={() => cart.setQuantity(line.key, line.quantity + 1)}
-                className={buttonClasses('outline', 'sm', 'w-11 px-0')}
+                className={buttonClasses('outline', 'icon')}
                 aria-label={t('increase')}
               >
                 <PlusIcon size={18} />
@@ -82,7 +82,7 @@ export function CartView() {
             <button
               type="button"
               onClick={() => cart.remove(line.key)}
-              className={buttonClasses('ghostDanger', 'sm', 'w-11 px-0')}
+              className={buttonClasses('ghostDanger', 'icon')}
               aria-label={t('remove')}
             >
               <TrashIcon size={18} />

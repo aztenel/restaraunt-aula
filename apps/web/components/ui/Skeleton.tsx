@@ -1,8 +1,10 @@
 import clsx from 'clsx';
 
 /** Заглушка загрузки (анимация отключается при prefers-reduced-motion). */
-export function Skeleton({ className }: { className?: string }) {
-  return <div className={clsx('animate-pulse rounded-xl bg-earth-100/80 motion-reduce:animate-none', className)} />;
+const RADIUS = { none: 'rounded-none', xl: 'rounded-xl', full: 'rounded-full' } as const;
+
+export function Skeleton({ className, rounded = 'xl' }: { className?: string; rounded?: keyof typeof RADIUS }) {
+  return <div className={clsx('animate-pulse bg-earth-100/80 motion-reduce:animate-none', RADIUS[rounded], className)} />;
 }
 
 export function CardSkeleton() {
@@ -12,8 +14,8 @@ export function CardSkeleton() {
       <Skeleton className="mt-3 h-4 w-full" />
       <Skeleton className="mt-2 h-4 w-4/5" />
       <div className="mt-5 flex gap-2">
-        <Skeleton className="h-11 w-28 rounded-full" />
-        <Skeleton className="h-11 w-11 rounded-full" />
+        <Skeleton className="h-11 w-28" rounded="full" />
+        <Skeleton className="h-11 w-11" rounded="full" />
       </div>
     </div>
   );

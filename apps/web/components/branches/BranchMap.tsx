@@ -17,7 +17,7 @@ function MapFallback() {
   const t = useTranslations('Map');
   return (
     <div className="relative h-full w-full">
-      <Skeleton className="h-full w-full rounded-none" />
+      <Skeleton className="h-full w-full" rounded="none" />
       <span className="absolute inset-0 grid place-items-center text-sm text-muted">{t('loading')}</span>
     </div>
   );

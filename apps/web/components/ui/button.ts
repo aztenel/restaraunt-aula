@@ -14,7 +14,8 @@ export type ButtonVariant =
   | 'ghostWhatsapp'
   | 'ghostDanger'
   | 'whatsapp';
-export type ButtonSize = 'md' | 'lg' | 'sm';
+/** icon — квадратная кнопка 44×44 только с иконкой (подпись — aria-label). */
+export type ButtonSize = 'md' | 'lg' | 'sm' | 'icon';
 
 /** Классы кнопок/ссылок-кнопок. Минимальная высота 44–52 px — удобные цели касания на телефоне. */
 export function buttonClasses(variant: ButtonVariant = 'primary', size: ButtonSize = 'md', className?: string): string {
@@ -24,6 +25,7 @@ export function buttonClasses(variant: ButtonVariant = 'primary', size: ButtonSi
     'disabled:cursor-not-allowed disabled:opacity-50',
     {
       'min-h-11 px-4 text-sm': size === 'sm',
+      'h-11 w-11 shrink-0 p-0': size === 'icon',
       'min-h-12 px-5 text-base': size === 'md',
       'min-h-13 px-7 text-base sm:text-lg': size === 'lg',
     },

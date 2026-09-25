@@ -80,7 +80,7 @@ export default async function BranchPage({ params }: { params: Params }) {
           {t('allBranches')}
         </Link>
       </nav>
-      <PageHeading title={name} className="pt-2 sm:pt-4">
+      <PageHeading title={name} compact>
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <OpenStatusBadge isOpen={branch.isOpenNow} openLabel={common('openNow')} closedLabel={common('closedNow')} />
           <p className="flex items-center gap-1.5 text-earth-700">

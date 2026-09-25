@@ -44,7 +44,7 @@ export async function BranchCard({ branch, locale }: { branch: PublicBranch; loc
           {common('details')}
         </Link>
         <span className="ml-auto flex gap-1">
-          <a href={telHref(branch.phone)} className={buttonClasses('ghost', 'sm', 'w-11 px-0')} aria-label={`${common('call')}: ${name}`}>
+          <a href={telHref(branch.phone)} className={buttonClasses('ghost', 'icon')} aria-label={`${common('call')}: ${name}`}>
             <PhoneIcon />
           </a>
           {branch.whatsapp ? (
@@ -52,7 +52,7 @@ export async function BranchCard({ branch, locale }: { branch: PublicBranch; loc
               href={whatsappHref(branch.whatsapp)}
               target="_blank"
               rel="noopener noreferrer"
-              className={buttonClasses('ghostWhatsapp', 'sm', 'w-11 px-0')}
+              className={buttonClasses('ghostWhatsapp', 'icon')}
               aria-label={`${common('writeWhatsapp')}: ${name}`}
             >
               <WhatsAppIcon />
