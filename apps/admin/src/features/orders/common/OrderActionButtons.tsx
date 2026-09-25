@@ -3,6 +3,7 @@ import { Button, Flex, Popconfirm, type ButtonProps } from 'antd';
 import type { TFunction } from 'i18next';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { formatMoney, type Money } from '@aula/api-client';
 import type { OrderAction, OrderActionKey } from '../order-actions';
 import type { CheckoutPaymentMethod, OrderType } from '../types';
 import { useTransitionOrder } from '../useOrderMutations';
@@ -26,11 +27,13 @@ export interface ActionOrderRef {
   id: string;
   type: OrderType;
   paymentMethod: CheckoutPaymentMethod;
+  /** Сколько получить с гостя при оплате на месте (итог минус сертификат, считает сервер). */
+  amountDue: Money;
 }
 
 /**
  * Кнопки действий заказа (набор — от сервера, см. order-actions.ts). Переходы выполняются сразу,
- * «Выполнен» при оплате на месте — с подтверждением (деньги отмечаются полученными);
+ * «Выполнен» при оплате на месте — с подтверждением и суммой к получению (деньги отмечаются полученными);
  * отказ и отмена открывают диалог с причиной (onReject / onCancel).
  */
 export function OrderActionButtons({
@@ -51,7 +54,7 @@ export function OrderActionButtons({
   onCancel?: () => void;
   onDone?: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const transition = useTransitionOrder();
   const pendingFor = transition.isPending ? transition.variables : undefined;
 
@@ -95,7 +98,7 @@ export function OrderActionButtons({
             <Popconfirm
               key={action.key}
               title={t('orders.completeConfirm.title')}
-              description={t('orders.completeConfirm.onReceipt')}
+              description={t('orders.completeConfirm.onReceipt', { amount: formatMoney(order.amountDue, i18n.language) })}
               okText={label}
               cancelText={t('common.cancel')}
               onConfirm={run}

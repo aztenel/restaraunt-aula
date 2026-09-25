@@ -33,7 +33,7 @@ test('банкет: заявка → смета (админ-API) → согла�
   await test.step('страница сметы: позиции, итоги, НДС, PDF → согласование', async () => {
     await page.goto(`/ru/banquets/quote/${quote.token}`);
     await expect(page.getByRole('heading', { level: 1 })).toContainText(number);
-    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+    await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute('content', /noindex/);
     await expect(page.getByText('Аренда зала')).toBeVisible();
     await expect(page.getByText(msg('BanquetQuote.total'), { exact: true })).toBeVisible();
     await expect(page.getByText(new RegExp(`${escapeRegExp(msgPrefix('BanquetQuote.vatIncluded'))}|${escapeRegExp(msg('BanquetQuote.vatNone'))}`))).toBeVisible();

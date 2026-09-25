@@ -4,6 +4,7 @@ import {
   invoiceActions,
   newIdempotencyKey,
   overpaymentRemaining,
+  paymentLinkActions,
   toBankTransferInput,
   toIssueInvoiceInput,
   toRefundInput,
@@ -72,8 +73,8 @@ describe('поступление по безналу', () => {
   });
 });
 
-describe('возврат по платежу', () => {
-  const payment = { amount: tenge(5_000_000), refunded: tenge(0) };
+describe('возврат по платежу (остаток к возврату — от сервера)', () => {
+  const payment = { refundable: tenge(3_000_000) };
 
   it('полный возврат — без суммы; причина обязательна', () => {
     expect(validateRefund({ amount: null, reason: 'Отмена банкета' }, payment)).toEqual([]);
@@ -85,11 +86,15 @@ describe('возврат по платежу', () => {
     expect(validateRefund({ amount: null, reason: '  ' }, payment)).toEqual(['reasonRequired']);
   });
 
-  it('частичный — сумма больше нуля и не больше платежа', () => {
-    expect(validateRefund({ amount: 1_000_000, reason: 'Меньше гостей' }, payment)).toEqual([]);
+  it('частичный — больше нуля и не больше refundable', () => {
+    expect(validateRefund({ amount: 3_000_000, reason: 'Меньше гостей' }, payment)).toEqual([]);
     expect(toRefundInput({ amount: 1_000_000, reason: 'Меньше гостей' }, 'p1', 'key-12345678').amount).toEqual({ amount: 1_000_000, currency: 'KZT' });
     expect(validateRefund({ amount: 0, reason: 'x' }, payment)).toEqual(['amountPositive']);
-    expect(validateRefund({ amount: 5_000_001, reason: 'x' }, payment)).toEqual(['exceedsPayment']);
+    expect(validateRefund({ amount: 3_000_001, reason: 'x' }, payment)).toEqual(['exceedsRefundable']);
+  });
+
+  it('возвращать нечего — возврат недоступен', () => {
+    expect(validateRefund({ amount: null, reason: 'x' }, { refundable: tenge(0) })).toEqual(['nothingToRefund']);
   });
 
   it('ключ идемпотентности — не короче 8 символов и уникальный', () => {
@@ -110,9 +115,16 @@ describe('кнопки счёта', () => {
     expect(invoiceActions({ status: 'issued', paid: tenge(0) }, { invoice: false, refund: true })).toEqual({ registerPayment: false, cancel: false });
   });
 
-  it('возврат — с правом payments.refund, пока платёж возвращён не полностью', () => {
-    expect(canRefundPayment({ amount: tenge(100), refunded: tenge(0) }, rights)).toBe(true);
-    expect(canRefundPayment({ amount: tenge(100), refunded: tenge(100) }, rights)).toBe(false);
-    expect(canRefundPayment({ amount: tenge(100), refunded: tenge(0) }, { invoice: true, refund: false })).toBe(false);
+  it('возврат — с правом payments.refund, пока сервер говорит, что есть что вернуть', () => {
+    expect(canRefundPayment({ refundable: tenge(100) }, rights)).toBe(true);
+    expect(canRefundPayment({ refundable: tenge(0) }, rights)).toBe(false);
+    expect(canRefundPayment({ refundable: tenge(100) }, { invoice: true, refund: false })).toBe(false);
+  });
+
+  it('ссылка на оплату: по флагу сервера; «новая ссылка» — только когда действующая есть', () => {
+    expect(paymentLinkActions({ canResendPaymentLink: true, paymentUrl: 'https://pay/1' }, rights)).toEqual({ resend: true, regenerate: true });
+    expect(paymentLinkActions({ canResendPaymentLink: true, paymentUrl: null }, rights)).toEqual({ resend: true, regenerate: false });
+    expect(paymentLinkActions({ canResendPaymentLink: false, paymentUrl: 'https://pay/1' }, rights)).toEqual({ resend: false, regenerate: false });
+    expect(paymentLinkActions({ canResendPaymentLink: true, paymentUrl: 'https://pay/1' }, { invoice: false })).toEqual({ resend: false, regenerate: false });
   });
 });

@@ -11,13 +11,12 @@ import { PageLoader } from '@/shared/ui/PageLoader';
 import { banquetsApi, banquetsKeys, openSignedLink } from '../api';
 import { CopyLink } from '../common/ui';
 import { formatIsoDate } from '../common/format';
-import { canEditQuoteIn, canSendQuoteVersion } from '../request-actions';
 import { useRequestMutation } from '../request/useRequestMutation';
 import type { BanquetRequestDetail, QuoteSummary } from '../types';
 import { QuoteView } from './QuoteView';
 
 /** Версии сметы заявки: просмотр (неизменяемые), PDF, отправка клиенту, ссылка для клиента, новая версия. */
-export function QuotesTab({ request, canManage }: { request: BanquetRequestDetail; canManage: boolean }) {
+export function QuotesTab({ request }: { request: BanquetRequestDetail }) {
   const { t } = useTranslation();
   const { modal } = App.useApp();
   const navigate = useNavigate();
@@ -26,7 +25,7 @@ export function QuotesTab({ request, canManage }: { request: BanquetRequestDetai
   const openId = params.get('quote');
   const quote = useApiQuery(banquetsKeys.quote(openId ?? ''), () => banquetsApi.quote(openId ?? ''), { enabled: Boolean(openId) });
   const send = useRequestMutation((quoteId: string) => banquetsApi.sendQuote(quoteId), { successMessage: t('banquets.quote.sent') });
-  const editable = canManage && canEditQuoteIn(request.status);
+  const editable = request.canEditQuote;
   const hasQuotes = request.quotes.length > 0;
 
   const setOpen = (id: string | null) => {
@@ -49,7 +48,7 @@ export function QuotesTab({ request, canManage }: { request: BanquetRequestDetai
     });
 
   const sendButton = (q: Sendable, size: 'small' | 'middle' = 'small') =>
-    canManage && canSendQuoteVersion(request.status, q) ? (
+    request.canSendLatestQuote && q.isLatest ? (
       <Button size={size} type="primary" icon={<SendOutlined />} onClick={() => confirmSend(q)} loading={send.isPending && send.variables === q.id}>
         {t('banquets.quote.send')}
       </Button>

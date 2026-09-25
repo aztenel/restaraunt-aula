@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canEditQuoteIn, canInvoiceIn, canIssueActFor, canRetryEsf, canSendQuoteVersion, requestActions } from './request-actions';
+import { isOpenRequest, requestActions } from './request-actions';
 
 const keys = (actions: Array<{ key: string }>) => actions.map((a) => a.key);
 
@@ -58,31 +58,10 @@ describe('кнопки воронки из allowedTransitions', () => {
   });
 });
 
-describe('подсказки видимости', () => {
-  it('смету можно менять до согласования включительно', () => {
-    expect(['new', 'in_progress', 'quote_sent', 'agreed'].every(canEditQuoteIn)).toBe(true);
-    expect(['prepaid', 'held', 'cancelled'].some(canEditQuoteIn)).toBe(false);
-  });
-
-  it('счета — после согласования сметы', () => {
-    expect(['agreed', 'prepaid', 'held'].every(canInvoiceIn)).toBe(true);
-    expect(['new', 'in_progress', 'quote_sent', 'cancelled'].some(canInvoiceIn)).toBe(false);
-  });
-
-  it('отправить можно только последнюю неотправленную версию', () => {
-    expect(canSendQuoteVersion('in_progress', { isLatest: true, sentAt: null })).toBe(true);
-    expect(canSendQuoteVersion('quote_sent', { isLatest: true, sentAt: '2026-10-01T10:00:00Z' })).toBe(false);
-    expect(canSendQuoteVersion('quote_sent', { isLatest: false, sentAt: null })).toBe(false);
-    expect(canSendQuoteVersion('prepaid', { isLatest: true, sentAt: null })).toBe(false);
-  });
-
-  it('акт — после проведения, один; ЭСФ — повтор при ошибке или черновике', () => {
-    expect(canIssueActFor('held', false)).toBe(true);
-    expect(canIssueActFor('held', true)).toBe(false);
-    expect(canIssueActFor('prepaid', false)).toBe(false);
-    expect(canRetryEsf('failed')).toBe(true);
-    expect(canRetryEsf('draft_ready')).toBe(true);
-    expect(canRetryEsf('registered')).toBe(false);
-    expect(canRetryEsf('pending')).toBe(false);
+describe('заявка в работе', () => {
+  it('по разрешённым сервером переходам: у открытой заявки всегда есть отмена', () => {
+    expect(isOpenRequest({ allowedTransitions: ['in_progress', 'cancelled'] })).toBe(true);
+    expect(isOpenRequest({ allowedTransitions: ['cancelled'] })).toBe(true);
+    expect(isOpenRequest({ allowedTransitions: [] })).toBe(false);
   });
 });

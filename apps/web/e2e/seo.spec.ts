@@ -2,7 +2,16 @@ import { branch, createPickupOrder, createTableReservation, pickDish } from './s
 import { DEMO } from './support/env';
 import { expect, test } from './support/fixtures';
 
+/**
+ * Метаданные проверяем глазами поискового робота: для роботов из списка htmlLimitedBots Next.js
+ * отдаёт title/description/canonical/hreflang в <head> блокирующим рендером (обычным браузерам и Googlebot
+ * они приходят потоком в конце документа). Яндекс — основной поисковик аудитории.
+ */
+const YANDEX_BOT = 'Mozilla/5.0 (compatible; YandexBot/3.0; +http://yandex.com/bots)';
+
 test.describe('SEO', () => {
+  test.use({ userAgent: YANDEX_BOT });
+
   test('индексируемые страницы: уникальные title и description, canonical, hreflang kk/ru/en/x-default', async ({ page }) => {
     const b = await branch(DEMO.deliveryBranch);
     const dish = await pickDish(b.slug);
@@ -27,13 +36,14 @@ test.describe('SEO', () => {
       const title = await page.title();
       expect(title.trim(), `${path}: title`).not.toBe('');
       titles.set(path, title);
-      await expect(page.locator('meta[name="description"]'), path).toHaveAttribute('content', /\S{10,}/);
+      await expect(page.locator('head title'), `${path}: title в <head>`).toHaveCount(1);
+      await expect(page.locator('head meta[name="description"]'), path).toHaveAttribute('content', /\S{10,}/);
       await expect(page.locator('meta[name="robots"][content*="noindex"]'), `${path} индексируется`).toHaveCount(0);
-      const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');
+      const canonical = await page.locator('head link[rel="canonical"]').getAttribute('href');
       expect(canonical, `${path}: canonical`).toMatch(/^https?:\/\//);
       expect(new URL(canonical!).pathname.replace(/\/$/, ''), `${path}: canonical path`).toBe(path);
       for (const lang of ['kk', 'ru', 'en', 'x-default']) {
-        await expect(page.locator(`link[rel="alternate"][hreflang="${lang}"]`), `${path}: hreflang ${lang}`).toHaveCount(1);
+        await expect(page.locator(`head link[rel="alternate"][hreflang="${lang}"]`), `${path}: hreflang ${lang}`).toHaveCount(1);
       }
       const lang = path.split('/')[1];
       await expect(page.locator('html')).toHaveAttribute('lang', lang!);

@@ -17,7 +17,7 @@ import { useNow } from '../common/ui';
 import { RequestFormDrawer } from '../request/RequestFormDrawer';
 import { BANQUET_STATUSES, type BanquetRequestSummary, type BanquetStatus } from '../types';
 import { PipelineBoard } from './PipelineBoard';
-import { activeFilterCount, BOARD_LIST_LIMIT, boardUsesList, EMPTY_FILTERS, groupByStatus, toListQuery, toPipelineQuery, type PipelineFilters } from './pipeline-utils';
+import { activeFilterCount, EMPTY_FILTERS, toListQuery, toPipelineQuery, type PipelineFilters, type PlaceFilter } from './pipeline-utils';
 import { RequestsTable } from './RequestsTable';
 import { useNewRequestHighlights } from './useNewRequestHighlights';
 
@@ -49,14 +49,12 @@ export function PipelinePage() {
     setPage(1);
   };
 
-  const fromList = boardUsesList(filters);
   const pipelineParams = toPipelineQuery(filters);
-  const boardListParams = toListQuery(filters);
-  const board = useApiQuery(
-    fromList ? banquetsKeys.boardList(boardListParams) : banquetsKeys.pipeline(pipelineParams),
-    async () => (fromList ? groupByStatus((await banquetsApi.list(boardListParams)).items) : banquetsApi.pipeline(pipelineParams)),
-    { enabled: view === 'board', refetchInterval: 60_000, keepPrevious: true },
-  );
+  const board = useApiQuery(banquetsKeys.pipeline(pipelineParams), () => banquetsApi.pipeline(pipelineParams), {
+    enabled: view === 'board',
+    refetchInterval: 60_000,
+    keepPrevious: true,
+  });
   const listParams = toListQuery(filters, { status: statuses, page, perPage });
   const list = useApiQuery(banquetsKeys.list(listParams), () => banquetsApi.list(listParams), {
     enabled: view === 'list',
@@ -130,6 +128,13 @@ export function PipelinePage() {
             }
             aria-label={t('banquets.pipeline.filters.eventDates')}
           />
+          <Select<PlaceFilter>
+            value={filters.place}
+            onChange={(place) => update({ place })}
+            options={(['all', 'branch', 'offsite'] as const).map((place) => ({ value: place, label: t(`banquets.pipeline.filters.places.${place}`) }))}
+            style={{ width: 170 }}
+            aria-label={t('banquets.pipeline.filters.place')}
+          />
           {view === 'list' ? (
             <Select<BanquetStatus[]>
               mode="multiple"
@@ -186,9 +191,6 @@ export function PipelinePage() {
         </Space>
       </Flex>
       {feedStatus === 'unavailable' ? <Alert type="info" showIcon style={{ marginBottom: 12 }} message={t('banquets.pipeline.feedOff')} /> : null}
-      {view === 'board' && fromList ? (
-        <Alert type="info" showIcon style={{ marginBottom: 12 }} message={t('banquets.pipeline.listLimit', { limit: BOARD_LIST_LIMIT })} />
-      ) : null}
       {error ? <ErrorAlert error={error} onRetry={() => void (view === 'board' ? board.refetch() : list.refetch())} /> : null}
       {view === 'board' ? (
         <PipelineBoard columns={board.data ?? []} now={now} highlighted={highlighted} onOpen={open} />

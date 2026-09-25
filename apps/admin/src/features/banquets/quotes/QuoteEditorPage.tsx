@@ -20,7 +20,7 @@ import {
   Tooltip,
   Typography,
 } from 'antd';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
 import { formatMoney, translate } from '@aula/api-client';
@@ -33,9 +33,12 @@ import { PageLoader } from '@/shared/ui/PageLoader';
 import { StatusTag } from '@/shared/ui/StatusTag';
 import { useUnsavedChangesGuard } from '@/features/menu/useUnsavedChangesGuard';
 import { useRequestAbilities } from '../abilities';
-import { banquetsApi, banquetsKeys } from '../api';
+import { toApiError } from '@aula/api-client';
+import { errorMessage } from '@/shared/api/errors';
+import { MoneyText } from '@/shared/ui/MoneyText';
+import { banquetRefKeys, banquetsApi, banquetsKeys } from '../api';
+import { useDebounced } from '../common/ui';
 import { todayLocal } from '../calendar-layout';
-import { canEditQuoteIn } from '../request-actions';
 import { useInvalidateBanquets } from '../request/useRequestMutation';
 import { bpToPercentText } from '../sla';
 import { CUSTOM_LINE_KINDS, type DishOption, type Quote } from '../types';
@@ -45,6 +48,7 @@ import {
   formToSaveInput,
   isCustomKind,
   lineIssues,
+  previewLineTotal,
   moveLine,
   newCustomLine,
   newMenuLine,
@@ -115,6 +119,21 @@ export function QuoteEditorPage() {
   const [issues, setIssues] = useState<QuoteFormIssue[]>([]);
   const [base, setBase] = useState<Quote | null>(null);
   const dirty = useUnsavedChangesGuard(true);
+  // Предпросмотр итогов сервером: форма без ошибок → (через паузу) POST /quotes/preview; в браузере ничего не считается.
+  const previewInput = useMemo(() => {
+    if (!values) return null;
+    const result = formToSaveInput(values);
+    return result.ok ? result.input : null;
+  }, [values]);
+  const debouncedInput = useDebounced(previewInput, 600);
+  const canPreview = Boolean(detail.data?.canEditQuote) && debouncedInput !== null;
+  const preview = useApiQuery(banquetRefKeys.quotePreview(id, debouncedInput), () => banquetsApi.previewQuote(id, debouncedInput!), {
+    enabled: canPreview,
+    keepPrevious: true,
+    retry: false,
+    staleTime: 60_000,
+  });
+  const previewCurrent = canPreview && previewInput === debouncedInput && !preview.isFetching && !preview.error ? preview.data : undefined;
 
   // Основа новой версии — последняя сохранённая версия (или пустая смета).
   useEffect(() => {
@@ -139,7 +158,7 @@ export function QuoteEditorPage() {
   const request = detail.data;
   if (!request || !values) return <PageLoader />;
 
-  const editable = abilities.manage && canEditQuoteIn(request.status);
+  const editable = request.canEditQuote;
   const branchId = request.branchId;
 
   const change = (next: QuoteFormValues) => {
@@ -166,11 +185,13 @@ export function QuoteEditorPage() {
   };
 
   const has = (line: number, field: QuoteFormIssue['field']) => lineIssues(issues, line).some((i) => i.field === field);
-  const vatInfo = base
-    ? base.vatPayer
-      ? t('banquets.quote.editor.vatPayer', { percent: bpToPercentText(base.vatRateBp, i18n.language) })
+  const vatSource = preview.data ?? base;
+  const vatInfo = vatSource
+    ? vatSource.vatPayer
+      ? t('banquets.quote.editor.vatPayer', { percent: bpToPercentText(vatSource.vatRateBp, i18n.language) })
       : t('banquets.quote.editor.vatNone')
     : t('banquets.quote.editor.vatUnknown');
+  const recalculating = canPreview && (previewInput !== debouncedInput || preview.isFetching);
 
   return (
     <>
@@ -370,6 +391,15 @@ export function QuoteEditorPage() {
                 ),
               },
               {
+                title: t('banquets.quote.columns.total'),
+                key: 'total',
+                align: 'right',
+                render: (_, __, index) => {
+                  const total = previewLineTotal(previewCurrent, index, values.lines.length);
+                  return total ? <MoneyText value={total} strong /> : <Typography.Text type="secondary">—</Typography.Text>;
+                },
+              },
+              {
                 title: '',
                 key: 'actions',
                 render: (_, __, index) =>
@@ -475,6 +505,26 @@ export function QuoteEditorPage() {
             <Space direction="vertical" size={12} style={{ width: '100%' }}>
               <Alert type="info" showIcon message={t('banquets.quote.editor.totalsServer')} />
               <Typography.Text>{vatInfo}</Typography.Text>
+              {editable ? (
+                <Card
+                  size="small"
+                  type="inner"
+                  title={t('banquets.quote.editor.previewTitle')}
+                  extra={recalculating ? <Typography.Text type="secondary">{t('banquets.quote.editor.recalculating')}</Typography.Text> : null}
+                >
+                  {previewInput === null ? (
+                    <Typography.Text type="secondary">{t('banquets.quote.editor.previewIncomplete')}</Typography.Text>
+                  ) : preview.error && !recalculating ? (
+                    <Alert type="warning" showIcon message={errorMessage(toApiError(preview.error), i18n.language)} />
+                  ) : preview.data ? (
+                    <div style={{ opacity: recalculating ? 0.55 : 1, transition: 'opacity 0.2s' }}>
+                      <QuoteTotals quote={preview.data} />
+                    </div>
+                  ) : (
+                    <Typography.Text type="secondary">{t('banquets.quote.editor.recalculating')}</Typography.Text>
+                  )}
+                </Card>
+              ) : null}
               {base ? (
                 <>
                   <Flex justify="space-between">

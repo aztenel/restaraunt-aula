@@ -346,6 +346,58 @@ describe('Gift certificates (integration)', () => {
       expect(ctx.fakes.notifier.staff.map((s) => s.template)).toEqual(['staff.system_alert']);
     });
 
+    it('staff checks use a per-user limit, not the public per-IP counter (shared till tablet)', async () => {
+      const [cert] = await issueCertificate(ctx, { nominal: 10_000 });
+      const limiter = ctx.t.get(RateLimiter);
+      const tablet = '10.5.5.5';
+      const cashier = await tokenFor(ctx.t, [{ role: 'branch_operator', branchId: branchA }], 'Кассир 1');
+      const other = await tokenFor(ctx.t, [{ role: 'branch_operator', branchId: branchA }], 'Кассир 2');
+      const adminCheck = (auth: string, code: string) =>
+        http().post('/api/v1/admin/certificates/check').set('x-forwarded-for', tablet).set('authorization', auth).send({ code });
+      const wrong = (i: number) => `ZZZZ-ZZZZ-${String(i).padStart(4, 'Z').replace(/[01]/g, 'Z')}`;
+
+      // Гости исчерпали лимит IP планшета — сотрудник на том же IP не заблокирован.
+      for (let i = 0; i < 20; i++) {
+        limiter.clearMemory();
+        await http().post('/api/v1/public/certificates/check').set('x-forwarded-for', tablet).send({ code: wrong(i) });
+      }
+      limiter.clearMemory();
+      expect((await http().post('/api/v1/public/certificates/check').set('x-forwarded-for', tablet).send({ code: cert!.code })).status).toBe(429);
+      expect((await adminCheck(cashier.auth, cert!.code)).status).toBe(200);
+
+      // Ошибки сотрудника не попадают в счётчик IP и не блокируют гостей другого IP.
+      const shared = '10.4.4.4';
+      for (let i = 0; i < 25; i++) {
+        const res = await http().post('/api/v1/admin/certificates/check').set('x-forwarded-for', shared).set('authorization', other.auth).send({ code: wrong(i) });
+        expect(res.status).toBe(404);
+      }
+      limiter.clearMemory();
+      expect((await http().post('/api/v1/public/certificates/check').set('x-forwarded-for', shared).send({ code: cert!.code })).status).toBe(200);
+
+      // Лимит на сотрудника: 60 неудач за час — дальше 429 только для него (включая погашение).
+      for (let i = 25; i < 60; i++) {
+        limiter.clearMemory();
+        expect((await http().post('/api/v1/admin/certificates/check').set('x-forwarded-for', shared).set('authorization', other.auth).send({ code: wrong(i) })).status).toBe(404);
+      }
+      limiter.clearMemory();
+      const limited = await http().post('/api/v1/admin/certificates/check').set('x-forwarded-for', shared).set('authorization', other.auth).send({ code: cert!.code });
+      expect(limited.status).toBe(429);
+      expect(limited.body.error).toMatchObject({ code: 'certificate.check_limit_user', details: { limit: 60 } });
+      expect(Number(limited.headers['retry-after'])).toBeGreaterThan(3000);
+      const redeem = await http()
+        .post('/api/v1/admin/certificates/redeem')
+        .set('authorization', other.auth)
+        .send({ code: cert!.code, amount: { amount: 100_000 }, branchId: branchA });
+      expect(redeem.status).toBe(429);
+      expect((await adminCheck(cashier.auth, cert!.code)).status).toBe(200);
+      ctx.t.clock.advance(61 * 60_000);
+      limiter.clearMemory();
+      expect((await http().post('/api/v1/admin/certificates/check').set('authorization', other.auth).send({ code: cert!.code })).status).toBe(200);
+      // IP-блокировок из-за сотрудников нет.
+      const blocks = await sql<{ ip: string }>`select ip from payments.certificate_ip_blocks`.execute(ctx.t.database.rootConnection());
+      expect(blocks.rows.map((r) => r.ip)).toEqual([tablet]);
+    });
+
     it('admin check (point staff) includes the certificate id', async () => {
       const [cert] = await issueCertificate(ctx);
       const operator = await tokenFor(ctx.t, [{ role: 'branch_operator', branchId: branchA }]);

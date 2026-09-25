@@ -2,7 +2,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import { Alert, Button, Card, Drawer, Table } from 'antd';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { canInvoiceIn } from '../request-actions';
+import { isOpenRequest } from '../request-actions';
 import type { BanquetRequestDetail, Invoice } from '../types';
 import { invoiceColumns } from './invoice-columns';
 import { InvoiceDetails } from './InvoiceDetails';
@@ -14,21 +14,20 @@ export function RequestInvoicesTab({ request, canInvoice }: { request: BanquetRe
   const [issuing, setIssuing] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
   const opened = request.invoices.find((i) => i.id === openId) ?? null;
-  const invoiceable = canInvoiceIn(request.status);
 
   return (
     <Card
       size="small"
       title={t('banquets.invoices.title')}
       extra={
-        canInvoice && invoiceable ? (
+        request.canIssueInvoice ? (
           <Button type="primary" icon={<PlusOutlined />} onClick={() => setIssuing(true)}>
             {t('banquets.invoices.issue')}
           </Button>
         ) : null
       }
     >
-      {!invoiceable && request.status !== 'cancelled' ? (
+      {canInvoice && !request.canIssueInvoice && request.invoices.length === 0 && isOpenRequest(request) ? (
         <Alert type="info" showIcon style={{ marginBottom: 12 }} message={t('banquets.invoices.onlyAfterAgree')} />
       ) : null}
       <Table<Invoice>

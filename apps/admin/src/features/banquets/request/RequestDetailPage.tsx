@@ -18,7 +18,7 @@ import { EventTypeLabel, PlaceTag, SlaTimer, useNow } from '../common/ui';
 import { DocumentsTab } from '../documents/DocumentsTab';
 import { RequestInvoicesTab } from '../invoices/RequestInvoicesTab';
 import { QuotesTab } from '../quotes/QuotesTab';
-import { isOpenStatus } from '../request-actions';
+import { isOpenRequest } from '../request-actions';
 import { firstResponseInfo } from '../sla';
 import type { BanquetRequestDetail } from '../types';
 import { ActivityTimeline } from './ActivityTimeline';
@@ -44,7 +44,7 @@ function ManagerCard({ request, canManage }: { request: BanquetRequestDetail; ca
         </Space>
       }
     >
-      {canManage && isOpenStatus(request.status) ? (
+      {canManage && isOpenRequest(request) ? (
         <ManagerSelect
           value={request.managerId}
           onChange={(managerId) => {
@@ -156,7 +156,7 @@ function OverviewTab({ request, canManage, now }: { request: BanquetRequestDetai
       <Col xs={24} xl={9}>
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
           <ManagerCard request={request} canManage={canManage} />
-          <ActivityTimeline requestId={request.id} timeline={request.timeline} canAdd={canManage && isOpenStatus(request.status)} />
+          <ActivityTimeline requestId={request.id} timeline={request.timeline} canAdd={canManage && isOpenRequest(request)} />
         </Space>
       </Col>
     </Row>
@@ -228,7 +228,7 @@ export function RequestDetailPage() {
         extra={
           <>
             <RequestActions request={request} canManage={canManage} />
-            {canManage && isOpenStatus(request.status) ? (
+            {canManage && isOpenRequest(request) ? (
               <Button icon={<EditOutlined />} onClick={() => setEditing(true)}>
                 {t('banquets.detail.edit')}
               </Button>
@@ -249,7 +249,7 @@ export function RequestDetailPage() {
                 {request.quoteVersion ? <Badge count={`v${request.quoteVersion}`} color="#8a5a36" /> : null}
               </Space>
             ),
-            children: <QuotesTab request={request} canManage={canManage} />,
+            children: <QuotesTab request={request} />,
           },
           {
             key: 'invoices',

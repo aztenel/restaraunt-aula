@@ -1,19 +1,22 @@
-import { BankOutlined, FilePdfOutlined, RollbackOutlined, StopOutlined } from '@ant-design/icons';
-import { Button, Card, Descriptions, Empty, Space, Table, Typography } from 'antd';
+import { BankOutlined, FilePdfOutlined, LinkOutlined, ReloadOutlined, RollbackOutlined, SendOutlined, StopOutlined } from '@ant-design/icons';
+import { App, Button, Card, Descriptions, Empty, Space, Table, Tag, Typography } from 'antd';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
+import { useApiMutation } from '@/shared/api/hooks';
 import { useNotifyError } from '@/shared/api/useNotifyError';
 import { tx } from '@/shared/i18n/tx';
 import { formatDateTime } from '@/shared/lib/dates';
 import { MoneyText } from '@/shared/ui/MoneyText';
+import { StatusTag } from '@/shared/ui/StatusTag';
 import { useRequestAbilities } from '../abilities';
 import { banquetsApi, openSignedLink } from '../api';
 import { formatIsoDate } from '../common/format';
 import { CopyLink, InvoiceStatusTag } from '../common/ui';
-import { canRefundPayment, invoiceActions } from '../invoice-form';
+import { canRefundPayment, invoiceActions, paymentLinkActions } from '../invoice-form';
+import { useInvalidateBanquets } from '../request/useRequestMutation';
 import { bpToPercentText } from '../sla';
-import type { Invoice, InvoicePayment } from '../types';
+import type { Invoice, InvoicePayment, InvoiceRefund } from '../types';
 import { BankTransferModal, CancelInvoiceModal, RefundModal } from './InvoiceModals';
 
 /** Счёт: реквизиты, суммы (от сервера), поступления, регистрация перевода, отмена, возвраты, PDF. */
@@ -25,6 +28,13 @@ export function InvoiceDetails({ invoice, requestNumber }: { invoice: Invoice; r
   const [transferOpen, setTransferOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [refundPayment, setRefundPayment] = useState<InvoicePayment | null>(null);
+  const { modal } = App.useApp();
+  const invalidate = useInvalidateBanquets();
+  const link = paymentLinkActions(invoice, abilities);
+  const sendLink = useApiMutation((regenerate: boolean) => banquetsApi.sendPaymentLink(invoice.id, regenerate), {
+    successMessage: t('banquets.invoices.paymentLink.sent'),
+    onSuccess: () => invalidate(),
+  });
 
   return (
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
@@ -99,6 +109,53 @@ export function InvoiceDetails({ invoice, requestNumber }: { invoice: Invoice; r
             {invoice.payerType === 'individual' ? <Typography.Text type="secondary">{t('banquets.invoices.onlineHint')}</Typography.Text> : null}
           </Space>
         </Descriptions.Item>
+        {invoice.payerType === 'individual' ? (
+          <Descriptions.Item label={t('banquets.invoices.paymentLink.title')} span={2}>
+            <Space direction="vertical" size={6}>
+              <Space wrap size={6}>
+                {invoice.paymentStatus ? <StatusTag domain="payment" status={invoice.paymentStatus} /> : <Tag>{t('banquets.invoices.paymentLink.none')}</Tag>}
+                {invoice.paymentUrl ? <CopyLink url={invoice.paymentUrl} label={t('banquets.invoices.paymentLink.open')} /> : null}
+              </Space>
+              {link.resend || link.regenerate ? (
+                <Space wrap>
+                  {link.resend ? (
+                    <Button
+                      size="small"
+                      icon={<SendOutlined />}
+                      loading={sendLink.isPending && sendLink.variables === false}
+                      onClick={() => sendLink.mutate(false)}
+                    >
+                      {t('banquets.invoices.paymentLink.resend')}
+                    </Button>
+                  ) : null}
+                  {link.regenerate ? (
+                    <Button
+                      size="small"
+                      icon={<ReloadOutlined />}
+                      loading={sendLink.isPending && sendLink.variables === true}
+                      onClick={() =>
+                        modal.confirm({
+                          title: t('banquets.invoices.paymentLink.regenerateConfirm'),
+                          content: t('banquets.invoices.paymentLink.regenerateHint'),
+                          okText: t('banquets.invoices.paymentLink.regenerate'),
+                          cancelText: t('common.cancel'),
+                          onOk: () => sendLink.mutateAsync(true).catch(() => undefined),
+                        })
+                      }
+                    >
+                      {t('banquets.invoices.paymentLink.regenerate')}
+                    </Button>
+                  ) : null}
+                </Space>
+              ) : null}
+              {!invoice.paymentUrl && invoice.paymentStatus && link.resend ? (
+                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                  <LinkOutlined /> {t('banquets.invoices.paymentLink.inactiveHint')}
+                </Typography.Text>
+              ) : null}
+            </Space>
+          </Descriptions.Item>
+        ) : null}
       </Descriptions>
       <Card size="small" title={t('banquets.invoices.detail.payments')}>
         {invoice.payments.length === 0 ? (
@@ -120,6 +177,12 @@ export function InvoiceDetails({ invoice, requestNumber }: { invoice: Invoice; r
                 align: 'right',
                 render: (v: InvoicePayment['refunded']) => (v.amount > 0 ? <MoneyText value={v} type="danger" /> : '—'),
               },
+              {
+                title: t('banquets.invoices.refundable'),
+                dataIndex: 'refundable',
+                align: 'right',
+                render: (v: InvoicePayment['refundable']) => <MoneyText value={v} type={v.amount > 0 ? undefined : 'secondary'} />,
+              },
               { title: t('banquets.invoices.detail.documentNumber'), dataIndex: 'documentNumber', render: (v: string | null) => v ?? '—' },
               { title: t('banquets.invoices.detail.recordedBy'), dataIndex: 'recordedByName' },
               {
@@ -136,9 +199,38 @@ export function InvoiceDetails({ invoice, requestNumber }: { invoice: Invoice; r
           />
         )}
       </Card>
+      {invoice.refunds.length > 0 ? (
+        <Card size="small" title={t('banquets.invoices.refunds.title')}>
+          <Table<InvoiceRefund>
+            size="small"
+            rowKey="refundId"
+            pagination={false}
+            dataSource={invoice.refunds}
+            scroll={{ x: 'max-content' }}
+            columns={[
+              { title: t('banquets.invoices.refunds.createdAt'), dataIndex: 'createdAt', render: (v: string) => formatDateTime(v) },
+              { title: t('banquets.invoices.amount'), dataIndex: 'amount', align: 'right', render: (v: InvoiceRefund['amount']) => <MoneyText value={v} strong /> },
+              { title: t('banquets.common.status'), dataIndex: 'status', render: (status: string) => <RefundStatusTag status={status} /> },
+              { title: t('banquets.invoices.refunds.reason'), dataIndex: 'reason' },
+              { title: t('banquets.invoices.refunds.completedAt'), dataIndex: 'completedAt', render: (v: string | null) => (v ? formatDateTime(v) : '—') },
+            ]}
+          />
+        </Card>
+      ) : null}
       <BankTransferModal open={transferOpen} invoice={invoice} onClose={() => setTransferOpen(false)} />
       <CancelInvoiceModal open={cancelOpen} invoice={invoice} onClose={() => setCancelOpen(false)} />
       <RefundModal open={refundPayment !== null} requestId={invoice.requestId} payment={refundPayment} onClose={() => setRefundPayment(null)} />
     </Space>
+  );
+}
+
+const REFUND_COLORS: Record<string, string> = { pending: 'processing', succeeded: 'success', failed: 'error' };
+
+export function RefundStatusTag({ status }: { status: string }) {
+  const { t } = useTranslation();
+  return (
+    <Tag color={REFUND_COLORS[status] ?? 'default'} style={{ marginInlineEnd: 0 }}>
+      {tx(t, `banquets.invoices.refunds.statuses.${status}`, status)}
+    </Tag>
   );
 }

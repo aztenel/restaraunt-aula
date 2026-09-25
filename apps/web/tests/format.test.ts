@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { formatMoney, parseTengeToTiyn } from '@aula/api-client';
-import { formatPhone, formatPrice, telHref, whatsappHref } from '@/lib/format';
+import { formatDate, formatDateTime, formatLocalDate, formatPhone, formatPrice, telHref, whatsappHref } from '@/lib/format';
 import { endsNextDay, weekdayInTimeZone } from '@/lib/hours';
 
 const NNBSP = ' ';
@@ -57,5 +57,22 @@ describe('события витрины для отчёта конверсии',
     expect(viewEventForPath('/greenline/menu/hot/beshbarmak', RESERVED_FIRST_SEGMENTS)).toBe('dish_view');
     expect(viewEventForPath('/branches/greenline', RESERVED_FIRST_SEGMENTS)).toBe('page_view');
     expect(viewEventForPath('/', RESERVED_FIRST_SEGMENTS)).toBe('page_view');
+  });
+});
+
+describe('даты на казахском — без данных ICU браузера (одинаково на сервере и в браузере)', () => {
+  it('дата, дата и время, время, календарная дата — в формате CLDR kk', () => {
+    const at = '2026-09-25T12:00:00Z'; // 17:00 в Астане
+    expect(formatDate(at, 'kk')).toBe('2026 ж. 25 қыркүйек');
+    expect(formatDateTime(at, 'kk')).toBe('25 қыркүйек, 17:00');
+    expect(formatDate(at, 'kk', { hour: '2-digit', minute: '2-digit' })).toBe('17:00');
+    expect(formatLocalDate('2027-01-05', 'kk')).toBe('2027 ж. 5 қаңтар');
+    expect(formatDateTime('2026-12-31T19:05:00Z', 'kk')).toBe('1 қаңтар, 00:05');
+  });
+
+  it('совпадает с Intl kk-KZ там, где данные есть (Node с full-icu)', () => {
+    const at = new Date('2026-03-08T04:30:00Z');
+    const intl = new Intl.DateTimeFormat('kk-KZ', { timeZone: 'Asia/Almaty', day: 'numeric', month: 'long', year: 'numeric' }).format(at);
+    if (/[а-яәіңғүұқөһ]/i.test(intl)) expect(formatDate(at, 'kk')).toBe(intl);
   });
 });

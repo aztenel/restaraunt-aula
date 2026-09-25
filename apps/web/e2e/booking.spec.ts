@@ -60,7 +60,7 @@ test('бронь VIP с депозитом: поиск → выбор на сх�
     await payInSandbox(page);
     await page.waitForURL(new RegExp(`/ru/booking/${token}$`));
     await expect(page.getByRole('heading', { name: msg('BookingStatus.phase.confirmed') })).toBeVisible();
-    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+    await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute('content', /noindex/);
     const r = await reservation(token);
     expect(r).toMatchObject({ status: 'confirmed', venue: { id: venue.id }, guests, date, time: TIME, deposit: { state: 'paid' } });
   });

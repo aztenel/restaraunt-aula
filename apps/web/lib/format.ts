@@ -49,6 +49,41 @@ function intlLocale(locale: string): string {
   return INTL_LOCALE[locale] ?? locale;
 }
 
+const KK_MONTHS = ['қаңтар', 'ақпан', 'наурыз', 'сәуір', 'мамыр', 'маусым', 'шілде', 'тамыз', 'қыркүйек', 'қазан', 'қараша', 'желтоқсан'];
+
+/**
+ * Казахский формат дат без данных ICU для kk: во многих браузерах (и в сборках Chromium без полного ICU)
+ * Intl для kk-KZ молча откатывается на английский — серверная и клиентская разметка расходятся
+ * (ошибка гидратации React #418) и гость видит английские месяцы. Части даты берём из en-GB (есть
+ * везде), слова и порядок — как в CLDR kk: «2026 ж. 25 қыркүйек», «25 қыркүйек, 17:00».
+ */
+function formatKk(date: Date, timeZone: string, options: Intl.DateTimeFormatOptions): string {
+  const parts: Record<string, string> = {};
+  for (const part of new Intl.DateTimeFormat('en-GB', {
+    timeZone,
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(date)) {
+    parts[part.type] = part.value;
+  }
+  const hasDate = Boolean(options.day || options.month || options.year);
+  const hasTime = Boolean(options.hour || options.minute);
+  const dayMonth = `${Number(parts.day)} ${KK_MONTHS[Number(parts.month) - 1] ?? ''}`;
+  const datePart = options.year ? `${parts.year} ж. ${dayMonth}` : dayMonth;
+  const time = `${parts.hour}:${parts.minute}`;
+  if (hasDate && hasTime) return `${datePart}, ${time}`;
+  return hasTime ? time : datePart;
+}
+
+function formatIn(date: Date, locale: string, timeZone: string, options: Intl.DateTimeFormatOptions): string {
+  if (locale === 'kk') return formatKk(date, timeZone, options);
+  return new Intl.DateTimeFormat(intlLocale(locale), { timeZone, ...options }).format(date);
+}
+
 /** Дата (ISO от сервера) на языке интерфейса в Asia/Almaty: «25 сентября 2026 г.». */
 export function formatDate(
   value: string | Date | null | undefined,
@@ -59,7 +94,7 @@ export function formatDate(
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return '';
   try {
-    return new Intl.DateTimeFormat(intlLocale(locale), { timeZone: DISPLAY_TIME_ZONE, ...options }).format(date);
+    return formatIn(date, locale, DISPLAY_TIME_ZONE, options);
   } catch {
     return date.toISOString().slice(0, 10);
   }
@@ -76,7 +111,7 @@ export function formatLocalDate(ymd: string | null | undefined, locale: string):
   if (!match) return ymd ?? '';
   const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12));
   try {
-    return new Intl.DateTimeFormat(intlLocale(locale), { timeZone: 'UTC', day: 'numeric', month: 'long', year: 'numeric' }).format(date);
+    return formatIn(date, locale, 'UTC', { day: 'numeric', month: 'long', year: 'numeric' });
   } catch {
     return ymd ?? '';
   }

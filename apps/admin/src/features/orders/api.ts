@@ -16,9 +16,8 @@ import type {
   OrderSlots,
   OrdersListQuery,
   OrderType,
+  OrderMenu,
   PublicDeliveryZone,
-  PublicDishDetail,
-  PublicMenu,
   QuoteOrderInput,
   RefundOrderInput,
   StaffTransitionTarget,
@@ -36,8 +35,8 @@ export const ordersKeys = {
 /** Ключи справочников телефонного заказа: не под 'orders', чтобы лента их не перезапрашивала. */
 export const phoneOrderKeys = {
   quote: (input: QuoteOrderInput | null) => ['phone-order', 'quote', input] as const,
-  menu: (branchSlug: string, locale: Locale) => ['phone-order', 'menu', branchSlug, locale] as const,
-  dish: (branchSlug: string, dishSlug: string, locale: Locale) => ['phone-order', 'dish', branchSlug, dishSlug, locale] as const,
+  /** Меню филиала с модификаторами; обновляется лентой при изменении стоп-листа (entityType dish). */
+  menu: (branchId: string) => ['phone-order', 'menu', branchId] as const,
   slots: (branchId: string, type: OrderType, date: string | null) => ['phone-order', 'slots', branchId, type, date] as const,
   zones: (branchId: string, locale: Locale) => ['phone-order', 'zones', branchId, locale] as const,
 };
@@ -82,6 +81,9 @@ export const ordersApi = {
     (await call(api.POST('/api/v1/admin/orders/{id}/courier/retry', { params: { path: { id } } }))) as unknown as AdminOrderDetails,
   courierCancel: async (id: string) =>
     (await call(api.POST('/api/v1/admin/orders/{id}/courier/cancel', { params: { path: { id } } }))) as unknown as AdminOrderDetails,
+  /** Меню филиала для телефонного заказа: блюда с ценами филиала, модификаторами и отметкой стоп-листа. */
+  menu: async (branchId: string) =>
+    (await call(api.GET('/api/v1/admin/orders/menu', { params: { query: { branchId } } }))) as unknown as OrderMenu,
   /** Расчёт телефонного заказа: все суммы считает сервер. */
   quote: async (input: QuoteOrderInput) =>
     (await call(api.POST('/api/v1/admin/orders/quote', { body: input }))) as unknown as OrderQuote,
@@ -90,18 +92,8 @@ export const ordersApi = {
     (await call(api.POST('/api/v1/admin/orders', { body: input }))) as unknown as AdminOrderDetails,
 };
 
-/** Публичные справочники витрины (меню филиала с ценами, карточка блюда с модификаторами, слоты, зоны). */
+/** Публичные справочники витрины: время заказа (слоты) и зоны доставки филиала. */
 export const storefrontApi = {
-  menu: async (branchSlug: string, locale: Locale) =>
-    (await call(
-      api.GET('/api/v1/public/catalog/branches/{branchSlug}/menu', { params: { path: { branchSlug }, query: { locale } } }),
-    )) as unknown as PublicMenu,
-  dish: async (branchSlug: string, dishSlug: string, locale: Locale) =>
-    (await call(
-      api.GET('/api/v1/public/catalog/branches/{branchSlug}/dishes/{dishSlug}', {
-        params: { path: { branchSlug, dishSlug }, query: { locale } },
-      }),
-    )) as unknown as PublicDishDetail,
   slots: async (branchId: string, type: OrderType, date: string | null, locale: Locale) =>
     (await call(
       api.GET('/api/v1/public/branches/{branchId}/order-slots', {

@@ -196,6 +196,20 @@ export interface CertificateCheckFailuresTable {
   id: string;
   ip: string;
   occurred_at: Date;
+  /** Сотрудник (проверка из админки/с точки); null — гость витрины (учёт по IP). */
+  user_id: string | null;
+}
+
+export interface PaymentStatusHistoryTable {
+  id: string;
+  payment_id: string;
+  from_status: string | null;
+  to_status: string;
+  reason: string | null;
+  actor_kind: string;
+  actor_user_id: string | null;
+  actor_name: string;
+  occurred_at: Date;
 }
 
 export interface CertificateIpBlocksTable {
@@ -217,4 +231,5 @@ export interface PaymentsTables {
   'payments.certificate_transactions': CertificateTransactionsTable;
   'payments.certificate_check_failures': CertificateCheckFailuresTable;
   'payments.certificate_ip_blocks': CertificateIpBlocksTable;
+  'payments.payment_status_history': PaymentStatusHistoryTable;
 }

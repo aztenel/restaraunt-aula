@@ -75,7 +75,7 @@ test('меню → блюдо → корзина → доставка по ка�
   await test.step('возврат с оплаты: статус обновляется опросом, корзина пуста', async () => {
     await page.waitForURL(new RegExp(`/ru/orders/${token}$`));
     await expect(page.locator('h2').first()).toHaveText(new RegExp(`${msg('Order.status.paid')}|${msg('Order.status.accepted')}|${msg('Order.status.cooking')}`));
-    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+    await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute('content', /noindex/);
     const tracking = await orderTracking(token);
     expect(tracking.payment.isPaid).toBe(true);
     expect(tracking.type).toBe('delivery');

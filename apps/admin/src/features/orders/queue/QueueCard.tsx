@@ -1,13 +1,11 @@
-import { ClockCircleOutlined, EnvironmentOutlined, FieldTimeOutlined, MessageOutlined, UserOutlined } from '@ant-design/icons';
+import { CarOutlined, ClockCircleOutlined, EnvironmentOutlined, FieldTimeOutlined, MessageOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Card, Flex, Space, Tag, Typography } from 'antd';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
-import { translate } from '@aula/api-client';
-import { useApiQuery } from '@/shared/api/hooks';
+import { formatMoney, translate } from '@aula/api-client';
 import { useBranch } from '@/shared/branch/BranchProvider';
 import { dayjs, DISPLAY_TIMEZONE, toDisplay } from '@/shared/lib/dates';
 import { MoneyText } from '@/shared/ui/MoneyText';
-import { ordersApi, ordersKeys } from '../api';
 import { OrderActionButtons } from '../common/OrderActionButtons';
 import { ChannelTag, CourierStatusTag, OrderTypeTag, PaymentTag } from '../common/OrderTags';
 import { queueCardActions } from '../order-actions';
@@ -31,16 +29,9 @@ export function formatQueueTime(iso: string): string {
   return local.isSame(dayjs().tz(DISPLAY_TIMEZONE), 'day') ? local.format('HH:mm') : local.format('DD.MM HH:mm');
 }
 
-/** Статус курьерской службы (в ответе очереди его нет — берётся из карточки заказа, кэш 30 с). */
-function CourierBadge({ orderId }: { orderId: string }) {
-  const detail = useApiQuery(ordersKeys.detail(orderId), () => ordersApi.get(orderId), { staleTime: 30_000, refetchInterval: 30_000 });
-  const dispatch = detail.data?.courierDispatch;
-  return dispatch ? <CourierStatusTag status={dispatch.status} /> : null;
-}
-
 /**
  * Карточка заказа в очереди: номер, сколько прошло, тип, оплата, время «ко времени», опоздание,
- * гость, адрес, состав, итог и крупные кнопки разрешённых сервером действий.
+ * гость, адрес, состав, итог, курьер службы доставки и крупные кнопки разрешённых сервером действий.
  */
 export function QueueCard({
   order,
@@ -90,8 +81,21 @@ export function QueueCard({
         <PaymentTag method={order.paymentMethod} status={order.status} />
         <ChannelTag channel={order.channel} />
         {order.contactless ? <Tag color="purple">{t('orders.queue.contactless')}</Tag> : null}
-        {order.type === 'delivery' && (order.status === 'ready' || order.status === 'delivering') ? <CourierBadge orderId={order.id} /> : null}
+        {order.courier ? <CourierStatusTag status={order.courier.status} /> : null}
       </Space>
+      {order.courier && (order.courier.courierName || order.courier.trackingUrl) ? (
+        <Typography.Text type="secondary" style={{ display: 'block', marginTop: 4, fontSize: 13 }}>
+          <CarOutlined /> {order.courier.courierName ?? t('orders.courier.title')}
+          {order.courier.trackingUrl ? (
+            <>
+              {' · '}
+              <a href={order.courier.trackingUrl} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>
+                {t('orders.courier.tracking')}
+              </a>
+            </>
+          ) : null}
+        </Typography.Text>
+      ) : null}
 
       {order.scheduledFor ? (
         <Tag color="orange" icon={<FieldTimeOutlined />} style={{ marginTop: 6, fontSize: 14, paddingBlock: 2 }}>
@@ -149,7 +153,14 @@ export function QueueCard({
       ) : null}
 
       <Flex justify="space-between" align="center" style={{ marginTop: 8 }}>
-        <MoneyText value={order.total} strong />
+        <span>
+          <MoneyText value={order.total} strong />
+          {order.paymentMethod === 'on_receipt' && order.amountDue.amount !== order.total.amount ? (
+            <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
+              {t('orders.queue.toCollect', { amount: formatMoney(order.amountDue, i18n.language) })}
+            </Typography.Text>
+          ) : null}
+        </span>
         <Button type="link" size="small" onClick={onOpen} style={{ paddingInline: 0 }}>
           {t('orders.queue.details')}
         </Button>

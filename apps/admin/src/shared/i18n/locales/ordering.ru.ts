@@ -66,7 +66,7 @@ export const orderingRu = {
     },
     completeConfirm: {
       title: 'Отметить заказ выполненным?',
-      onReceipt: 'Оплата при получении будет отмечена как полученная.',
+      onReceipt: 'Получите с гостя {{amount}} — оплата при получении будет отмечена как полученная.',
     },
     elapsed: {
       justNow: 'только что',
@@ -94,6 +94,7 @@ export const orderingRu = {
       placedAgo: '{{time}} назад',
       scheduledFor: 'Ко времени: {{time}}',
       promisedAt: 'Обещано к {{time}}',
+      toCollect: 'к получению: {{amount}}',
       contactless: 'Бесконтактно',
       more: 'Ещё {{count}} поз.',
       details: 'Подробнее',
@@ -155,6 +156,7 @@ export const orderingRu = {
       scheduledFor: 'Ко времени',
       asap: 'Как можно скорее',
       eta: 'Время приготовления/доставки: {{minutes}} мин',
+      createdBy: 'Принял: {{name}}',
       channel: 'Канал',
       branch: 'Филиал',
       trackingUrl: 'Страница статуса для гостя',
@@ -202,6 +204,7 @@ export const orderingRu = {
       price: 'Стоимость',
       attempts: 'Попыток: {{count}}',
       lastError: 'Последняя ошибка',
+      request: 'Вызвать курьера',
       retry: 'Вызвать курьера снова',
       retryConfirm: 'Создать новую заявку на курьера?',
       cancel: 'Отменить заявку',

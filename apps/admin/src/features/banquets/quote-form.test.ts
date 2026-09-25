@@ -10,6 +10,7 @@ import {
   newCustomLine,
   newMenuLine,
   percentTextToBp,
+  previewLineTotal,
   quoteToForm,
   type QuoteFormValues,
 } from './quote-form';
@@ -222,5 +223,22 @@ describe('проверки формы сметы (подсказки до отп
     const b = newCustomLine('service');
     expect(moveLine([a, b], 1, -1).map((l) => l.key)).toEqual([b.key, a.key]);
     expect(moveLine([a, b], 0, -1).map((l) => l.key)).toEqual([a.key, b.key]);
+  });
+});
+
+describe('предпросмотр сметы (итоги — только от сервера)', () => {
+  it('итог строки из ответа сервера по позиции; устаревший предпросмотр не показывается', () => {
+    const preview = { lines: savedQuote.lines };
+    expect(previewLineTotal(preview, 0, 2)).toEqual(tenge(16_800_000));
+    expect(previewLineTotal(preview, 1, 2)).toEqual(tenge(30_000_300));
+    // Строку добавили, а предпросмотр ещё считается для старого набора.
+    expect(previewLineTotal(preview, 0, 3)).toBeNull();
+    expect(previewLineTotal(null, 0, 2)).toBeNull();
+  });
+
+  it('тело предпросмотра — то же, что при сохранении версии', () => {
+    const values = { ...emptyQuoteForm(40), lines: [{ ...newMenuLine(plov), quantity: 40 }], serviceCharge: '10' };
+    const result = formToSaveInput(values);
+    expect(result).toEqual({ ok: true, input: { lines: [{ kind: 'menu', dishId: 'dish-plov', quantity: 40, unit: 'порц.' }], serviceChargeBp: 1000, guests: 40 } });
   });
 });

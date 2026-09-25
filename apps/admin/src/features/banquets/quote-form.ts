@@ -16,6 +16,7 @@ import {
   type QuoteDiscount,
   type QuoteLineInput,
   type QuoteLineKind,
+  type QuotePreview,
   type SaveQuoteInput,
 } from './types';
 
@@ -324,4 +325,13 @@ export function moveLine(lines: readonly QuoteLineForm[], index: number, delta: 
   const [item] = next.splice(index, 1);
   next.splice(target, 0, item!);
   return next;
+}
+
+/**
+ * Итог строки из предпросмотра сервера — только если предпросмотр посчитан для текущего набора строк
+ * (строк столько же; позиции сервера — с 1 по порядку формы). Иначе null — показывается «—».
+ */
+export function previewLineTotal(preview: Pick<QuotePreview, 'lines'> | null | undefined, index: number, lineCount: number): Money | null {
+  if (!preview || preview.lines.length !== lineCount) return null;
+  return preview.lines.find((l) => l.position === index + 1)?.total ?? null;
 }

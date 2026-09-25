@@ -27,4 +27,17 @@ export abstract class StaffDirectory {
   abstract withRole(role: StaffRole, branchId?: string | null): Promise<StaffMember[]>;
   /** Активные сотрудники, у которых есть право в филиале (глобальные роли включаются). */
   abstract withPermission(permission: Permission, branchId?: string | null): Promise<StaffMember[]>;
+
+  /**
+   * Имена сотрудников по id — для подписей «кто сделал» в админке (без права users.manage).
+   * Пустые id пропускаются; неизвестный сотрудник в результат не попадает.
+   */
+  async names(userIds: ReadonlyArray<string | null | undefined>): Promise<Map<string, string>> {
+    const result = new Map<string, string>();
+    for (const id of new Set(userIds.filter((u): u is string => typeof u === 'string' && u.length > 0))) {
+      const member = await this.get(id);
+      if (member) result.set(id, member.name);
+    }
+    return result;
+  }
 }

@@ -70,8 +70,3 @@ export function CourierStatusTag({ status }: { status: CourierDispatchStatus }) 
     </Tag>
   );
 }
-
-/** Заявка службы доставки завершена (можно вызвать курьера снова) — иначе её можно отменить. */
-export function isFinishedDispatch(status: CourierDispatchStatus): boolean {
-  return status === 'delivered' || status === 'cancelled' || status === 'failed';
-}

@@ -28,7 +28,7 @@ import { BranchSelect } from '@/shared/ui/BranchSelect';
 import { ordersApi, ordersKeys, phoneOrderKeys, storefrontApi } from '../api';
 import { BranchScope, useBranchIdsWith } from '../common/BranchScope';
 import { formatQueueTime } from '../queue/QueueCard';
-import type { AdminCreateOrderInput, AdminOrderDetails, CheckoutPaymentMethod, OrderType, PublicDishCard } from '../types';
+import type { AdminCreateOrderInput, AdminOrderDetails, CheckoutPaymentMethod, OrderMenuDish, OrderType } from '../types';
 import { DishPicker } from './DishPicker';
 import { ModifiersModal } from './ModifiersModal';
 import {
@@ -36,6 +36,7 @@ import {
   buildCreateInput,
   buildQuoteInput,
   checkoutChecks,
+  dishNeedsModifiers,
   newIdempotencyKey,
   normalizePhoneInput,
   removeLine,
@@ -102,7 +103,7 @@ function PhoneOrderForm({ branchId, onCreated }: { branchId: string; onCreated: 
   const [slot, setSlot] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<CheckoutPaymentMethod>(paymentMethods.includes('on_receipt') ? 'on_receipt' : 'online');
   const [locale, setLocale] = useState<Locale>(uiLocale);
-  const [modifiersFor, setModifiersFor] = useState<PublicDishCard | null>(null);
+  const [modifiersFor, setModifiersFor] = useState<OrderMenuDish | null>(null);
   const [idempotencyKey] = useState(newIdempotencyKey);
 
   const phone = Form.useWatch('phone', form) ?? '';
@@ -152,9 +153,19 @@ function PhoneOrderForm({ branchId, onCreated }: { branchId: string; onCreated: 
     create.mutate(buildCreateInput(draft, details, idempotencyKey));
   };
 
-  const pickDish = (dish: PublicDishCard) => {
-    if (dish.hasModifiers) setModifiersFor(dish);
-    else setCart((current) => addLine(current, { dishId: dish.id, dishSlug: dish.slug, name: dish.name, quantity: 1, modifierOptionIds: [], modifierLabels: [] }));
+  const pickDish = (dish: OrderMenuDish) => {
+    if (dishNeedsModifiers(dish)) setModifiersFor(dish);
+    else
+      setCart((current) =>
+        addLine(current, {
+          dishId: dish.dishId,
+          dishSlug: dish.slug,
+          name: translate(dish.name, i18n.language),
+          quantity: 1,
+          modifierOptionIds: [],
+          modifierLabels: [],
+        }),
+      );
   };
 
   if (!branch) return <Spin style={{ display: 'block', margin: '48px auto' }} />;
@@ -389,7 +400,7 @@ function PhoneOrderForm({ branchId, onCreated }: { branchId: string; onCreated: 
         <Col xs={24} xl={10}>
           <Space direction="vertical" size={16} style={{ width: '100%', position: 'sticky', top: 72 }}>
             <Card title={t('orders.phone.menu')} size="small">
-              <DishPicker branchSlug={branch.slug} locale={uiLocale} onPick={pickDish} />
+              <DishPicker branchId={branchId} onPick={pickDish} />
             </Card>
             <Card title={t('orders.phone.cart.title')} size="small">
               {quote.error && quoteInput ? <ErrorAlert error={quote.error} onRetry={() => void quote.refetch()} /> : null}
@@ -431,15 +442,21 @@ function PhoneOrderForm({ branchId, onCreated }: { branchId: string; onCreated: 
         </Col>
       </Row>
       <ModifiersModal
-        branchSlug={branch.slug}
-        locale={uiLocale}
+        key={modifiersFor?.dishId ?? 'closed'}
         dish={modifiersFor}
         onClose={() => setModifiersFor(null)}
         onAdd={({ optionIds, labels, quantity }) => {
           const dish = modifiersFor;
           if (dish) {
             setCart((current) =>
-              addLine(current, { dishId: dish.id, dishSlug: dish.slug, name: dish.name, quantity, modifierOptionIds: optionIds, modifierLabels: labels }),
+              addLine(current, {
+                dishId: dish.dishId,
+                dishSlug: dish.slug,
+                name: translate(dish.name, i18n.language),
+                quantity,
+                modifierOptionIds: optionIds,
+                modifierLabels: labels,
+              }),
             );
           }
           setModifiersFor(null);

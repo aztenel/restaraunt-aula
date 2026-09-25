@@ -2,10 +2,8 @@
  * Кнопки воронки банкетной заявки — только из того, что разрешил сервер (allowedTransitions).
  * Фронт не знает автомата статусов и его условий (есть ли смета, отправлена ли она, покрыта ли
  * предоплата, наступила ли дата): он лишь сопоставляет разрешённый переход с кнопкой и подписью.
- *
- * Подсказки видимости второстепенных кнопок (новая версия сметы, счёт, акт) повторяют
- * константы модуля (QUOTE_EDITABLE_STATUSES, INVOICEABLE_STATUSES) — только чтобы не показывать
- * заведомо бесполезную кнопку; окончательное решение и текст ошибки — всегда от сервера.
+ * Остальные кнопки (новая версия сметы, отправка, счёт, акт, ЭСФ) — по флагам карточки заявки
+ * (canEditQuote, canSendLatestQuote, canIssueInvoice, canIssueAct, act.esfRetryable).
  */
 import type { BanquetStatus } from './types';
 
@@ -74,35 +72,10 @@ export function requestActions(source: RequestActionSource, canManage: boolean):
   return actions.map((a) => ({ ...a, emphasis: a.key === 'cancel' ? 'danger' : a.key === primary ? 'primary' : 'default' }));
 }
 
-/** Заявка ещё в работе (не проведена и не отменена). */
-export function isOpenStatus(status: string): boolean {
-  return status !== 'held' && status !== 'cancelled';
-}
-
-/** Подсказка: смету можно сохранить новой версией (сервер: QUOTE_EDITABLE_STATUSES). */
-export function canEditQuoteIn(status: string): boolean {
-  return status === 'new' || status === 'in_progress' || status === 'quote_sent' || status === 'agreed';
-}
-
-/** Подсказка: по заявке выставляются счета (сервер: INVOICEABLE_STATUSES — есть согласованная смета). */
-export function canInvoiceIn(status: string): boolean {
-  return status === 'agreed' || status === 'prepaid' || status === 'held';
-}
-
 /**
- * Можно ли отправить клиенту версию сметы кнопкой в списке версий: только последнюю и ещё не отправленную,
- * пока смету можно менять. Повторную отправку той же версии сервер отклонит (banquet_quote.already_sent).
+ * Заявка ещё в работе: у незавершённой заявки сервер всегда разрешает отмену, у проведённой и
+ * отменённой переходов нет (правка деталей, зал, менеджер, лента доступны только в работе).
  */
-export function canSendQuoteVersion(status: string, quote: { isLatest: boolean; sentAt: string | null }): boolean {
-  return canEditQuoteIn(status) && quote.isLatest && !quote.sentAt;
-}
-
-/** Акт выполненных работ — после проведения банкета, один на заявку. */
-export function canIssueActFor(status: string, hasAct: boolean): boolean {
-  return status === 'held' && !hasAct;
-}
-
-/** ЭСФ по акту можно повторить при ошибке или когда готов черновик для ручной загрузки (сервер: RetryEsf). */
-export function canRetryEsf(esfStatus: string): boolean {
-  return esfStatus === 'failed' || esfStatus === 'draft_ready';
+export function isOpenRequest(source: Pick<RequestActionSource, 'allowedTransitions'>): boolean {
+  return source.allowedTransitions.includes('cancelled');
 }

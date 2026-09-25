@@ -5,6 +5,11 @@
  */
 export const CERTIFICATE_CHECK_POLICY = {
   maxFailuresPerIp: 20,
+  /**
+   * Сотрудник (админка, касса на точке) ограничивается по пользователю, а не по IP: общий планшет
+   * кассы не блокируется публичной защитой. Не больше 60 неудачных проверок за час на сотрудника.
+   */
+  maxFailuresPerUser: 60,
   windowMs: 60 * 60_000,
   blockMs: 60 * 60_000,
   /** Неудачных проверок со всех IP за окно, после которых оповещаем администратора. */
@@ -36,4 +41,9 @@ export function windowStart(now: Date): Date {
 
 export function retryAfterSeconds(until: Date, now: Date): number {
   return Math.max(1, Math.ceil((until.getTime() - now.getTime()) / 1000));
+}
+
+/** Исчерпан ли лимит неудачных проверок сотрудника за окно (до новой проверки). */
+export function isUserLimitReached(failuresInWindow: number): boolean {
+  return failuresInWindow >= CERTIFICATE_CHECK_POLICY.maxFailuresPerUser;
 }

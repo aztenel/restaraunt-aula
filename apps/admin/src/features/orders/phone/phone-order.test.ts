@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { PublicModifierGroup } from '../types';
+import type { OrderMenuModifierGroup } from '../types';
 import {
   addLine,
   buildCreateInput,
   buildQuoteInput,
   checkoutChecks,
   defaultModifierSelection,
+  dishNeedsModifiers,
+  minSelectOf,
   isPhoneComplete,
   modifierIssues,
   newIdempotencyKey,
@@ -124,30 +126,28 @@ describe('запросы расчёта и оформления (без сумм
 });
 
 describe('модификаторы', () => {
-  const groups: PublicModifierGroup[] = [
+  const groups: OrderMenuModifierGroup[] = [
     {
       id: 'size',
-      name: 'Размер',
-      description: '',
+      name: { ru: 'Размер', kk: 'Өлшемі' },
       minSelect: 1,
       maxSelect: 1,
       isRequired: true,
       options: [
-        { id: 's', name: 'Стандарт', price: { amount: 0, currency: 'KZT' }, isDefault: true },
-        { id: 'l', name: 'Большой', price: { amount: 50_000, currency: 'KZT' }, isDefault: false },
+        { id: 's', name: { ru: 'Стандарт' }, price: { amount: 0, currency: 'KZT' }, isDefault: true },
+        { id: 'l', name: { ru: 'Большой' }, price: { amount: 50_000, currency: 'KZT' }, isDefault: false },
       ],
     },
     {
       id: 'extra',
-      name: 'Добавки',
-      description: '',
+      name: { ru: 'Добавки' },
       minSelect: 0,
       maxSelect: 2,
       isRequired: false,
       options: [
-        { id: 'e1', name: 'Сыр', price: { amount: 30_000, currency: 'KZT' }, isDefault: false },
-        { id: 'e2', name: 'Соус', price: { amount: 10_000, currency: 'KZT' }, isDefault: false },
-        { id: 'e3', name: 'Лук', price: { amount: 0, currency: 'KZT' }, isDefault: false },
+        { id: 'e1', name: { ru: 'Сыр' }, price: { amount: 30_000, currency: 'KZT' }, isDefault: false },
+        { id: 'e2', name: { ru: 'Соус' }, price: { amount: 10_000, currency: 'KZT' }, isDefault: false },
+        { id: 'e3', name: { ru: 'Лук' }, price: { amount: 0, currency: 'KZT' }, isDefault: false },
       ],
     },
   ];
@@ -160,6 +160,16 @@ describe('модификаторы', () => {
   });
 
   it('выбранные опции в порядке меню', () => {
-    expect(selectedOptions(groups, { size: ['l'], extra: ['e2', 'e1'] })).toEqual({ optionIds: ['l', 'e1', 'e2'], labels: ['Большой', 'Сыр', 'Соус'] });
+    expect(selectedOptions(groups, { size: ['l'], extra: ['e2', 'e1'] }, (name) => name.ru ?? '')).toEqual({
+      optionIds: ['l', 'e1', 'e2'],
+      labels: ['Большой', 'Сыр', 'Соус'],
+    });
+  });
+
+  it('обязательная группа требует хотя бы одну опцию; блюдо без групп добавляется сразу', () => {
+    expect(minSelectOf({ minSelect: 0, isRequired: true })).toBe(1);
+    expect(minSelectOf({ minSelect: 2, isRequired: false })).toBe(2);
+    expect(dishNeedsModifiers({ modifierGroups: [] })).toBe(false);
+    expect(dishNeedsModifiers({ modifierGroups: groups })).toBe(true);
   });
 });

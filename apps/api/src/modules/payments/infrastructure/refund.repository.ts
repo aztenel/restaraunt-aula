@@ -40,6 +40,21 @@ export interface RefundListRow {
   completedAt: Date | null;
 }
 
+export interface RefundSearchFilter {
+  branches: 'all' | string[];
+  status?: RefundStatus;
+  mode?: RefundMode;
+  /** Создан не раньше / раньше. */
+  from?: Date;
+  to?: Date;
+  /** Возврат, платёж или объект оплаты. */
+  id?: string;
+  /** Сумма возврата, тиыны. */
+  amount?: number;
+  /** Текст в описании платежа (номер заказа, брони, счёта) или объекте оплаты. */
+  text?: string;
+}
+
 @Injectable()
 export class RefundRepository {
   constructor(private readonly database: Database) {}
@@ -183,10 +198,7 @@ export class RefundRepository {
     await this.database.rootConnection().updateTable('payments.refunds').set({ claimed_at: null }).where('id', '=', id).execute();
   }
 
-  async search(
-    filter: { branches: 'all' | string[]; status?: RefundStatus; mode?: RefundMode },
-    page: PageRequest,
-  ): Promise<Page<RefundListRow>> {
+  async search(filter: RefundSearchFilter, page: PageRequest): Promise<Page<RefundListRow>> {
     let q = this.db()
       .selectFrom('payments.refunds as r')
       .innerJoin('payments.payments as p', 'p.id', 'r.payment_id');
@@ -196,6 +208,21 @@ export class RefundRepository {
     }
     if (filter.status) q = q.where('r.status', '=', filter.status);
     if (filter.mode) q = q.where('r.mode', '=', filter.mode);
+    if (filter.from) q = q.where('r.created_at', '>=', filter.from);
+    if (filter.to) q = q.where('r.created_at', '<', filter.to);
+    if (filter.id) {
+      const id = filter.id;
+      q = q.where((eb) => eb.or([eb('r.id', '=', id), eb('p.id', '=', id), eb('p.reference_id', '=', id)]));
+    } else if (filter.amount !== undefined || filter.text) {
+      const pattern = filter.text ? `%${filter.text.toLowerCase().replace(/[%_\\]/g, (c) => `\\${c}`)}%` : null;
+      const amount = filter.amount;
+      q = q.where((eb) =>
+        eb.or([
+          ...(amount !== undefined ? [eb('r.refund_amount', '=', amount)] : []),
+          ...(pattern ? [eb(eb.fn('lower', ['p.description']), 'like', pattern), eb(eb.fn('lower', ['p.reference_id']), 'like', pattern)] : []),
+        ]),
+      );
+    }
     const total = await q.select((eb) => eb.fn.countAll<number>().as('n')).executeTakeFirst();
     const rows = await q
       .selectAll('r')

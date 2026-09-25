@@ -108,14 +108,18 @@ export interface RefundFormValues {
   reason: string;
 }
 
-export type RefundIssue = 'amountPositive' | 'exceedsPayment' | 'reasonRequired' | 'reasonTooLong';
+export type RefundIssue = 'amountPositive' | 'exceedsRefundable' | 'nothingToRefund' | 'reasonRequired' | 'reasonTooLong';
 
-/** Сумма частичного возврата — положительная и не больше суммы платежа (точный остаток проверит сервер). */
-export function validateRefund(values: RefundFormValues, payment: Pick<InvoicePayment, 'amount'>): RefundIssue[] {
+/**
+ * Сумма частичного возврата — положительная и не больше того, что ещё можно вернуть по платежу
+ * (refundable считает сервер: сумма минус прошедшие и ожидающие возвраты).
+ */
+export function validateRefund(values: RefundFormValues, payment: Pick<InvoicePayment, 'refundable'>): RefundIssue[] {
   const issues: RefundIssue[] = [];
-  if (values.amount !== null) {
+  if (payment.refundable.amount <= 0) issues.push('nothingToRefund');
+  else if (values.amount !== null) {
     if (!Number.isSafeInteger(values.amount) || values.amount <= 0) issues.push('amountPositive');
-    else if (values.amount > payment.amount.amount) issues.push('exceedsPayment');
+    else if (values.amount > payment.refundable.amount) issues.push('exceedsRefundable');
   }
   const reason = values.reason.trim();
   if (!reason) issues.push('reasonRequired');
@@ -163,7 +167,20 @@ export function invoiceActions(invoice: Pick<Invoice, 'status' | 'paid'>, abilit
   };
 }
 
-/** Возврат по платежу: право payments.refund и платёж возвращён не полностью (суммы — от сервера). */
-export function canRefundPayment(payment: Pick<InvoicePayment, 'amount' | 'refunded'>, abilities: InvoiceAbilities): boolean {
-  return abilities.refund && payment.refunded.amount < payment.amount.amount;
+/** Возврат по платежу: право payments.refund и сервер говорит, что ещё есть что вернуть. */
+export function canRefundPayment(payment: Pick<InvoicePayment, 'refundable'>, abilities: InvoiceAbilities): boolean {
+  return abilities.refund && payment.refundable.amount > 0;
+}
+
+export interface PaymentLinkActions {
+  /** Отправить ссылку на оплату ещё раз (прежняя не прошла — сервер создаст новую на остаток). */
+  resend: boolean;
+  /** Перевыпустить действующую ссылку: прежний неоплаченный платёж отменяется. */
+  regenerate: boolean;
+}
+
+/** Ссылка на онлайн-оплату счёта физлица — по флагу сервера canResendPaymentLink. */
+export function paymentLinkActions(invoice: Pick<Invoice, 'canResendPaymentLink' | 'paymentUrl'>, abilities: Pick<InvoiceAbilities, 'invoice'>): PaymentLinkActions {
+  const allowed = abilities.invoice && invoice.canResendPaymentLink;
+  return { resend: allowed, regenerate: allowed && invoice.paymentUrl !== null };
 }

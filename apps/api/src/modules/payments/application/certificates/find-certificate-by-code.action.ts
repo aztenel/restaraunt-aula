@@ -3,7 +3,7 @@ import { RequestContext } from '../../../../shared/infrastructure/context/reques
 import { SecretBox } from '../../../../shared/infrastructure/crypto/secret-box';
 import { Clock } from '../../../../shared/kernel/clock';
 import { NotFoundError, TooManyRequestsError } from '../../../../shared/kernel/errors';
-import { blockedUntil, retryAfterSeconds, shouldBlockIp, windowStart } from '../../domain/brute-force';
+import { blockedUntil, CERTIFICATE_CHECK_POLICY, isUserLimitReached, retryAfterSeconds, shouldBlockIp, windowStart } from '../../domain/brute-force';
 import { certificateHashInput, normalizeCertificateCode } from '../../domain/certificate-code';
 import { CertificateCheckRepository } from '../../infrastructure/certificate-check.repository';
 import { CertificateRecord, CertificateRepository } from '../../infrastructure/certificate.repository';
@@ -19,8 +19,10 @@ export class CertificateCodeHasher {
 }
 
 /**
- * Поиск сертификата по коду с защитой от подбора: проверка блокировки IP, учёт неудач,
- * блокировка IP на час после 20 неудач за час. Используется проверкой кода (витрина, админка),
+ * Поиск сертификата по коду с защитой от подбора. Гость (витрина): проверка блокировки IP, учёт неудач,
+ * блокировка IP на час после 20 неудач за час. Сотрудник (админка, касса на точке, телефонный заказ):
+ * публичный счётчик IP не используется — лимит 60 неудачных проверок за час на сотрудника
+ * (общий планшет кассы не блокируется из-за чужих ошибок). Используется проверкой кода,
  * погашением на точке и оплатой заказа сертификатом.
  */
 @Injectable()
@@ -37,6 +39,9 @@ export class FindCertificateByCode {
   async execute(code: string, options: { forUpdate?: boolean } = {}): Promise<CertificateRecord> {
     const now = this.clock.now();
     const ip = RequestContext.current()?.ip ?? null;
+    const actor = RequestContext.actor();
+    const staffUserId = actor?.isStaff() && actor.userId ? actor.userId : null;
+    if (staffUserId) return this.findForStaff(staffUserId, ip, code, now, options);
     if (ip) {
       const until = await this.checks.findBlock(ip, now);
       if (until) {
@@ -49,6 +54,27 @@ export class FindCertificateByCode {
     const record = normalized ? await this.certificates.findByCodeHash(this.hasher.hash(normalized), options) : null;
     if (!record) {
       await this.registerFailure(ip, now);
+      throw new NotFoundError('certificate');
+    }
+    return record;
+  }
+
+  private async findForStaff(userId: string, ip: string | null, code: string, now: Date, options: { forUpdate?: boolean }): Promise<CertificateRecord> {
+    const { count, oldest } = await this.checks.userFailuresSince(userId, windowStart(now));
+    if (isUserLimitReached(count)) {
+      const until = new Date((oldest ?? now).getTime() + CERTIFICATE_CHECK_POLICY.windowMs);
+      throw new TooManyRequestsError('certificate.check_limit_user', 'Too many failed certificate checks by this user, try again later', {
+        retryAfterSeconds: retryAfterSeconds(until, now),
+        limit: CERTIFICATE_CHECK_POLICY.maxFailuresPerUser,
+      });
+    }
+    const normalized = normalizeCertificateCode(code);
+    const record = normalized ? await this.certificates.findByCodeHash(this.hasher.hash(normalized), options) : null;
+    if (!record) {
+      await this.checks.recordUserFailure(userId, ip, now);
+      if (count + 1 >= CERTIFICATE_CHECK_POLICY.maxFailuresPerUser) {
+        this.logger.warn({ userId, failures: count + 1 }, 'Staff user reached the certificate check limit');
+      }
       throw new NotFoundError('certificate');
     }
     return record;

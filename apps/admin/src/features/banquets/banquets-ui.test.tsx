@@ -8,8 +8,14 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { i18n } from '@/shared/i18n';
 import { SlaTimer } from './common/ui';
 import { PipelineBoard } from './pipeline/PipelineBoard';
-import { groupByStatus } from './pipeline/pipeline-utils';
-import type { BanquetRequestSummary } from './types';
+import { BANQUET_STATUSES, type BanquetRequestSummary, type PipelineColumn } from './types';
+
+function groupByStatus(items: BanquetRequestSummary[]): PipelineColumn[] {
+  return BANQUET_STATUSES.map((status) => {
+    const inStatus = items.filter((i) => i.status === status);
+    return { status, count: inStatus.length, items: inStatus };
+  });
+}
 
 beforeAll(async () => {
   window.matchMedia ??= ((query: string) => ({

@@ -6,7 +6,7 @@ import { translate } from '@aula/api-client';
 import { ConfirmAction } from '@/shared/ui/ConfirmAction';
 import { banquetsApi } from '../api';
 import { formatInterval } from '../common/format';
-import { isOpenStatus } from '../request-actions';
+import { isOpenRequest } from '../request-actions';
 import type { BanquetRequestDetail } from '../types';
 import { useRequestMutation } from './useRequestMutation';
 import { VenueHoldModal } from './VenueHoldModal';
@@ -16,7 +16,7 @@ export function VenueHoldCard({ request, canManage }: { request: BanquetRequestD
   const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
   const release = useRequestMutation(() => banquetsApi.releaseVenue(request.id), { errorTitle: false });
-  const editable = canManage && isOpenStatus(request.status);
+  const editable = canManage && isOpenRequest(request);
   const venue = request.venue;
 
   let body;

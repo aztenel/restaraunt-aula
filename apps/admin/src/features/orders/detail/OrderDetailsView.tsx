@@ -31,7 +31,7 @@ import { ErrorAlert } from '@/shared/ui/ErrorAlert';
 import { MoneyText } from '@/shared/ui/MoneyText';
 import { StatusTag } from '@/shared/ui/StatusTag';
 import { OrderActionButtons } from '../common/OrderActionButtons';
-import { ChannelTag, CourierStatusTag, isFinishedDispatch, OrderTypeTag, PaymentTag } from '../common/OrderTags';
+import { ChannelTag, CourierStatusTag, OrderTypeTag, PaymentTag } from '../common/OrderTags';
 import { detailActions } from '../order-actions';
 import type { AdminOrderDetails, AdminOrderItem, AdminOrderPayment, AdminOrderRefund } from '../types';
 import { useCourierAction } from '../useOrderMutations';
@@ -124,14 +124,12 @@ function Totals({ order }: { order: AdminOrderDetails }) {
 
 function CourierCard({ order }: { order: AdminOrderDetails }) {
   const { t } = useTranslation();
-  const { can } = useCan();
   const courier = useCourierAction();
   const dispatch = order.courierDispatch;
-  if (!dispatch) return null;
-  const canManage = can(Permission.OrdersManage, order.branchId);
-  const finished = isFinishedDispatch(dispatch.status);
+  if (!dispatch && !order.canRetryCourier) return null;
   return (
     <Card size="small" title={t('orders.courier.title')} style={{ marginTop: 16 }}>
+      {dispatch ? (
       <Descriptions size="small" column={{ xs: 1, sm: 2 }}>
         <Descriptions.Item label={t('orders.courier.provider')}>{dispatch.provider}</Descriptions.Item>
         <Descriptions.Item label={t('orders.courier.status')}>
@@ -159,22 +157,24 @@ function CourierCard({ order }: { order: AdminOrderDetails }) {
         ) : null}
         <Descriptions.Item label={t('orders.courier.attempts', { count: dispatch.attempts })}>{formatDateTime(dispatch.requestedAt)}</Descriptions.Item>
       </Descriptions>
-      {dispatch.lastError ? (
+      ) : null}
+      {dispatch?.lastError ? (
         <Alert type="error" showIcon style={{ marginTop: 8 }} message={t('orders.courier.lastError')} description={dispatch.lastError} />
       ) : null}
-      {canManage ? (
+      {order.canRetryCourier || order.canCancelCourier ? (
         <Flex gap={8} style={{ marginTop: 12 }} wrap>
-          {finished ? (
+          {order.canRetryCourier ? (
             <Popconfirm title={t('orders.courier.retryConfirm')} onConfirm={() => courier.mutateAsync({ id: order.id, action: 'retry' })}>
-              <Button loading={courier.isPending}>{t('orders.courier.retry')}</Button>
+              <Button loading={courier.isPending}>{dispatch ? t('orders.courier.retry') : t('orders.courier.request')}</Button>
             </Popconfirm>
-          ) : (
+          ) : null}
+          {order.canCancelCourier ? (
             <Popconfirm title={t('orders.courier.cancelConfirm')} onConfirm={() => courier.mutateAsync({ id: order.id, action: 'cancel' })}>
               <Button danger loading={courier.isPending}>
                 {t('orders.courier.cancel')}
               </Button>
             </Popconfirm>
-          )}
+          ) : null}
         </Flex>
       ) : null}
     </Card>
@@ -215,7 +215,14 @@ function InfoTab({ order }: { order: AdminOrderDetails }) {
           </Descriptions.Item>
           {order.customer.email ? <Descriptions.Item label={t('orders.detail.email')}>{order.customer.email}</Descriptions.Item> : null}
           <Descriptions.Item label={t('orders.detail.branch')}>{branchName(order.branchId)}</Descriptions.Item>
-          <Descriptions.Item label={t('orders.detail.channel')}>{t(`orders.channel.${order.channel}`)}</Descriptions.Item>
+          <Descriptions.Item label={t('orders.detail.channel')}>
+            {t(`orders.channel.${order.channel}`)}
+            {order.createdByName ? (
+              <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
+                {t('orders.detail.createdBy', { name: order.createdByName })}
+              </Typography.Text>
+            ) : null}
+          </Descriptions.Item>
           <Descriptions.Item label={t('orders.detail.placedAt')}>{formatDateTime(order.placedAt)}</Descriptions.Item>
           <Descriptions.Item label={t('orders.detail.scheduledFor')}>
             {order.scheduledFor ? <Tag color="orange">{formatDateTime(order.scheduledFor)}</Tag> : t('orders.detail.asap')}

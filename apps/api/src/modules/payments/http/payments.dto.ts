@@ -4,9 +4,8 @@ import { IsIn, IsISO8601, IsOptional, IsString, IsUUID, Length, MaxLength, Valid
 import { MoneyDto, MoneyInputDto, PageQueryDto } from '../../../shared/infrastructure/http/api-types';
 import { Money } from '../../../shared/kernel/money';
 import { enumValues } from '../../../shared/kernel/state-machine';
-import { PaymentAdminView, PaymentDetailsView, PaymentProviderLogEntry } from '../application/payment.queries';
+import { PaymentAdminView, PaymentDetailsView, PaymentHistoryEvent, PaymentProviderLogEntry, RefundAdminRow } from '../application/payment.queries';
 import { RefundMode } from '../domain/refund';
-import { RefundListRow } from '../infrastructure/refund.repository';
 import { PaymentMethod, PaymentPurpose, PaymentStatus, PaymentView, RefundView } from '../public';
 
 export const PAYMENT_PURPOSES = enumValues(PaymentPurpose);
@@ -113,9 +112,16 @@ export class RefundDto {
   @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) completedAt: Date | null;
   @ApiProperty({ description: 'Ожидает ручного подтверждения финансистом' }) awaitingManualConfirmation: boolean;
   @ApiProperty({ type: RefundPaymentRefDto }) payment: RefundPaymentRefDto;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true, description: 'Сотрудник, запросивший возврат (null — система)' })
+  requestedBy: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) requestedByName: string | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true, description: 'Сотрудник, подтвердивший (или отклонивший) ручной возврат' })
+  confirmedBy: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) confirmedByName: string | null;
 
-  static from(r: RefundListRow & { mode: RefundMode }): RefundDto {
+  static from(r: RefundAdminRow): RefundDto {
     const view = r.refund.toView();
+    const snapshot = r.refund.snapshot();
     return {
       id: view.id,
       paymentId: view.paymentId,
@@ -130,7 +136,30 @@ export class RefundDto {
       completedAt: r.completedAt,
       awaitingManualConfirmation: r.mode === 'manual' && view.status === 'pending',
       payment: { purpose: r.paymentPurpose, referenceId: r.paymentReferenceId, branchId: r.paymentBranchId, method: r.paymentMethod },
+      requestedBy: snapshot.requestedBy,
+      requestedByName: r.requestedByName,
+      confirmedBy: snapshot.completedBy,
+      confirmedByName: r.completedByName,
     };
+  }
+}
+
+export const PAYMENT_HISTORY_TYPES = ['status', 'refund_requested', 'refund_succeeded', 'refund_failed'] as const;
+
+export class PaymentHistoryEventDto {
+  @ApiProperty() at: Date;
+  @ApiProperty({ enum: PAYMENT_HISTORY_TYPES, description: 'status — переход статуса платежа; refund_* — события возврата' })
+  type: (typeof PAYMENT_HISTORY_TYPES)[number];
+  @ApiPropertyOptional({ enum: PAYMENT_STATUSES, nullable: true, description: 'Прежний статус (null — создание)' }) fromStatus: PaymentStatus | null;
+  @ApiPropertyOptional({ enum: PAYMENT_STATUSES, nullable: true }) toStatus: PaymentStatus | null;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) refundId: string | null;
+  @ApiPropertyOptional({ type: MoneyDto, nullable: true }) amount: MoneyDto | null;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Причина отказа/отмены, причина возврата, комментарий подтверждения' })
+  reason: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Сотрудник (null — система, провайдер или гость)' }) actorName: string | null;
+
+  static from(e: PaymentHistoryEvent): PaymentHistoryEventDto {
+    return { ...e, amount: e.amount ? money(e.amount) : null };
   }
 }
 
@@ -186,6 +215,8 @@ export class ProviderLogEntryDto {
 
 export class PaymentDetailsDto {
   @ApiProperty({ type: PaymentDto }) payment: PaymentDto;
+  @ApiProperty({ type: [PaymentHistoryEventDto], description: 'История: создание, переходы статуса, возвраты — по времени' })
+  history: PaymentHistoryEventDto[];
   @ApiProperty({ type: [RefundDto] }) refunds: RefundDto[];
   @ApiProperty({ type: [WebhookEventDto] }) webhookEvents: WebhookEventDto[];
   @ApiProperty({ type: [ProviderLogEntryDto], description: 'Обмен с провайдером (журнал интеграций, с маскированием)' })
@@ -194,6 +225,7 @@ export class PaymentDetailsDto {
   static from(d: PaymentDetailsView): PaymentDetailsDto {
     return {
       payment: PaymentDto.from(d.payment),
+      history: d.history.map(PaymentHistoryEventDto.from),
       refunds: d.refunds.map(RefundDto.from),
       webhookEvents: d.webhookEvents.map((e) => ({ ...e, reportedAmount: e.reportedAmount ? money(e.reportedAmount) : null })),
       providerLog: d.providerLog.map(ProviderLogEntryDto.from),
@@ -212,12 +244,50 @@ export class PaymentListQueryDto extends PageQueryDto {
   @ApiPropertyOptional({ description: 'Объект оплаты (id заказа, брони, счёта)' }) @IsOptional() @IsString() @MaxLength(100) referenceId?: string;
   @ApiPropertyOptional({ description: 'Создан не раньше (ISO 8601)' }) @IsOptional() @IsISO8601() from?: string;
   @ApiPropertyOptional({ description: 'Создан раньше (ISO 8601)' }) @IsOptional() @IsISO8601() to?: string;
+  @ApiPropertyOptional({ description: 'Телефон гостя: полный номер или часть (от 4 цифр)', example: '7011234567' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  phone?: string;
 }
 
 export class RefundListQueryDto extends PageQueryDto {
   @ApiPropertyOptional() @IsOptional() @IsUUID() branchId?: string;
   @ApiPropertyOptional({ enum: REFUND_STATUSES }) @IsOptional() @IsIn(REFUND_STATUSES as unknown as string[]) status?: 'pending' | 'succeeded' | 'failed';
   @ApiPropertyOptional({ enum: REFUND_MODES }) @IsOptional() @IsIn(REFUND_MODES) mode?: RefundMode;
+  @ApiPropertyOptional({ description: 'Запрошен не раньше (ISO 8601)' }) @IsOptional() @IsISO8601() from?: string;
+  @ApiPropertyOptional({ description: 'Запрошен раньше (ISO 8601)' }) @IsOptional() @IsISO8601() to?: string;
+  @ApiPropertyOptional({
+    description: 'Поиск: id возврата/платежа/объекта оплаты, сумма в тенге («1500», «1500.50») или текст описания платежа (номер заказа, брони, счёта)',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  q?: string;
+}
+
+export class PaymentProviderInfoDto {
+  @ApiProperty({ example: 'kaspi' }) provider: string;
+  @ApiProperty({ example: 'Kaspi Pay' }) title: string;
+  @ApiProperty({ description: 'Включён и настроен (можно принимать новые платежи)' }) enabled: boolean;
+  @ApiProperty({ description: 'Провайдер по умолчанию для онлайн-оплаты' }) isDefault: boolean;
+  @ApiProperty({ description: 'Тестовый провайдер вне production, если маршрутизация не настроена' }) devFallback: boolean;
+  @ApiProperty({ type: [String], description: 'Филиалы, переопределённые на этого провайдера' }) branchIds: string[];
+}
+
+export class PaymentMethodInfoDto {
+  @ApiProperty({ enum: PAYMENT_METHODS }) method: PaymentMethod;
+  @ApiProperty() title: string;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Провайдер: для online — провайдер по умолчанию; для остальных — сам способ' })
+  provider: string | null;
+  @ApiProperty({ description: 'Доступен сейчас' }) available: boolean;
+}
+
+export class PaymentProvidersDto {
+  @ApiProperty({ description: 'Маршрутизация онлайн-оплаты настроена (payments.routing)' }) routingConfigured: boolean;
+  @ApiPropertyOptional({ type: String, nullable: true }) defaultProvider: string | null;
+  @ApiProperty({ type: [PaymentProviderInfoDto] }) providers: PaymentProviderInfoDto[];
+  @ApiProperty({ type: [PaymentMethodInfoDto] }) methods: PaymentMethodInfoDto[];
 }
 
 export class CreateRefundDto {

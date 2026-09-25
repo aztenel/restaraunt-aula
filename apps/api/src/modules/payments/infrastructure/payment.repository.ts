@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Selectable, sql } from 'kysely';
+import { RequestContext } from '../../../shared/infrastructure/context/request-context';
 import { Database } from '../../../shared/infrastructure/database/database';
+import { Clock } from '../../../shared/kernel/clock';
+import { newId } from '../../../shared/kernel/ids';
 import { Currency, Money } from '../../../shared/kernel/money';
 import { offsetOf, Page, pageOf, PageRequest } from '../../../shared/kernel/pagination';
 import { Payment, PaymentProps } from '../domain/payment';
@@ -54,6 +57,20 @@ export interface PaymentSearchFilter {
   referenceId?: string;
   from?: Date;
   to?: Date;
+  /** Телефон гостя (цифры, от 4): частичное совпадение по нормализованному номеру. */
+  phoneDigits?: string;
+}
+
+/** Запись истории статусов платежа. */
+export interface PaymentStatusHistoryEntry {
+  id: string;
+  from: PaymentStatus | null;
+  to: PaymentStatus;
+  reason: string | null;
+  actorKind: 'staff' | 'system' | 'guest';
+  actorUserId: string | null;
+  actorName: string;
+  occurredAt: Date;
 }
 
 export interface PaymentListRow {
@@ -68,10 +85,58 @@ export interface PaymentListRow {
 
 @Injectable()
 export class PaymentRepository {
-  constructor(private readonly database: Database) {}
+  constructor(
+    private readonly database: Database,
+    private readonly clock: Clock,
+  ) {}
 
   private db() {
     return this.database.db<PaymentsTables>();
+  }
+
+  /** Записать накопленные переходы статуса платежа (в транзакции сохранения платежа). */
+  private async writeStatusHistory(payment: Payment): Promise<void> {
+    const changes = payment.pullStatusChanges();
+    if (changes.length === 0) return;
+    const actor = RequestContext.actor();
+    const now = this.clock.now();
+    await this.db()
+      .insertInto('payments.payment_status_history')
+      .values(
+        changes.map((c, i) => ({
+          id: newId(),
+          payment_id: payment.id,
+          from_status: c.from,
+          to_status: c.to,
+          reason: c.reason,
+          actor_kind: actor?.kind ?? 'system',
+          actor_user_id: actor?.userId ?? null,
+          actor_name: actor?.name ?? 'payments',
+          // Несколько переходов одного сохранения — в порядке выполнения.
+          occurred_at: new Date(now.getTime() + i),
+        })),
+      )
+      .execute();
+  }
+
+  async statusHistory(paymentId: string): Promise<PaymentStatusHistoryEntry[]> {
+    const rows = await this.db()
+      .selectFrom('payments.payment_status_history')
+      .selectAll()
+      .where('payment_id', '=', paymentId)
+      .orderBy('occurred_at')
+      .orderBy('id')
+      .execute();
+    return rows.map((r) => ({
+      id: r.id,
+      from: r.from_status as PaymentStatus | null,
+      to: r.to_status as PaymentStatus,
+      reason: r.reason,
+      actorKind: r.actor_kind as PaymentStatusHistoryEntry['actorKind'],
+      actorUserId: r.actor_user_id,
+      actorName: r.actor_name,
+      occurredAt: r.occurred_at,
+    }));
   }
 
   async findById(id: string, options: { forUpdate?: boolean } = {}): Promise<Payment | null> {
@@ -126,12 +191,15 @@ export class PaymentRepository {
       .onConflict((oc) => oc.column('idempotency_key').doNothing())
       .returning('id')
       .executeTakeFirst();
+    if (inserted) await this.writeStatusHistory(payment);
+    else payment.pullStatusChanges();
     return !!inserted;
   }
 
   async save(payment: Payment): Promise<void> {
     const s = payment.snapshot();
     await this.db().updateTable('payments.payments').set(this.toRow(s)).where('id', '=', s.id).execute();
+    await this.writeStatusHistory(payment);
   }
 
   private toRow(s: Readonly<PaymentProps>) {
@@ -260,6 +328,7 @@ export class PaymentRepository {
     if (filter.referenceId) q = q.where('reference_id', '=', filter.referenceId);
     if (filter.from) q = q.where('created_at', '>=', filter.from);
     if (filter.to) q = q.where('created_at', '<', filter.to);
+    if (filter.phoneDigits) q = q.where('customer_phone', 'like', `%${filter.phoneDigits}%`);
     const total = await q.select((eb) => eb.fn.countAll<number>().as('n')).executeTakeFirst();
     const rows = await q
       .selectAll()

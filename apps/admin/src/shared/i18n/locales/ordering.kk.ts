@@ -67,7 +67,7 @@ export const orderingKk: DeepMessages<typeof orderingRu> = {
     },
     completeConfirm: {
       title: 'Тапсырысты орындалды деп белгілеу керек пе?',
-      onReceipt: 'Алған кездегі төлем алынды деп белгіленеді.',
+      onReceipt: 'Қонақтан {{amount}} алыңыз — алған кездегі төлем алынды деп белгіленеді.',
     },
     elapsed: {
       justNow: 'жаңа ғана',
@@ -95,6 +95,7 @@ export const orderingKk: DeepMessages<typeof orderingRu> = {
       placedAgo: '{{time}} бұрын',
       scheduledFor: 'Уақытқа: {{time}}',
       promisedAt: '{{time}} дейін уәде етілді',
+      toCollect: 'алынатын сома: {{amount}}',
       contactless: 'Байланыссыз',
       more: 'Тағы {{count}} позиция',
       details: 'Толығырақ',
@@ -156,6 +157,7 @@ export const orderingKk: DeepMessages<typeof orderingRu> = {
       scheduledFor: 'Уақытқа',
       asap: 'Мүмкіндігінше тез',
       eta: 'Дайындау/жеткізу уақыты: {{minutes}} мин',
+      createdBy: 'Қабылдаған: {{name}}',
       channel: 'Арна',
       branch: 'Филиалы',
       trackingUrl: 'Қонаққа арналған мәртебе беті',
@@ -203,6 +205,7 @@ export const orderingKk: DeepMessages<typeof orderingRu> = {
       price: 'Құны',
       attempts: 'Әрекеттер: {{count}}',
       lastError: 'Соңғы қате',
+      request: 'Курьер шақыру',
       retry: 'Курьерді қайта шақыру',
       retryConfirm: 'Курьерге жаңа өтінім жасау керек пе?',
       cancel: 'Өтінімді болдырмау',

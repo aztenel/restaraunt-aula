@@ -29,7 +29,6 @@ describe('кнопки действий из allowedTransitions', () => {
 
   it('ничего не разрешено (нет права orders.manage) — нет кнопок', () => {
     expect(actionsFromTransitions([])).toEqual([]);
-    expect(queueCardActions({ status: 'paid', allowedTransitions: [] })).toEqual([]);
   });
 
   it('клиент не придумывает переходов: draft/paid/refunded не превращаются в кнопки', () => {
@@ -37,19 +36,28 @@ describe('кнопки действий из allowedTransitions', () => {
   });
 });
 
-describe('очередь оператора', () => {
-  it('новый оплаченный заказ: принять или отказать', () => {
-    expect(keys(queueCardActions({ status: 'paid', allowedTransitions: ['accepted'] }))).toEqual(['accept', 'reject']);
+describe('очередь оператора: флаги сервера', () => {
+  const card = (status: string, allowedTransitions: string[], canCancel = false, canReject = false) => ({ status, allowedTransitions, canCancel, canReject });
+
+  it('новый оплаченный заказ: принять или отказать — отказ только по canReject', () => {
+    expect(keys(queueCardActions(card('paid', ['accepted'], false, true)))).toEqual(['accept', 'reject']);
+    // Сервер не разрешил отказ — кнопки нет, хотя статус paid и переход accepted доступен.
+    expect(keys(queueCardActions(card('paid', ['accepted'], false, false)))).toEqual(['accept']);
   });
 
-  it('отказ только для оплаченного, не принятого заказа', () => {
-    expect(keys(queueCardActions({ status: 'accepted', allowedTransitions: ['cooking', 'cancelled'] }))).toEqual(['startCooking', 'cancel']);
-    expect(keys(queueCardActions({ status: 'awaiting_payment', allowedTransitions: ['cancelled'] }))).toEqual(['cancel']);
+  it('отмена — только по canCancel', () => {
+    expect(keys(queueCardActions(card('accepted', ['cooking', 'cancelled'], true)))).toEqual(['startCooking', 'cancel']);
+    expect(keys(queueCardActions(card('accepted', ['cooking', 'cancelled'], false)))).toEqual(['startCooking']);
+    expect(keys(queueCardActions(card('awaiting_payment', ['cancelled'], true)))).toEqual(['cancel']);
   });
 
   it('готовый заказ: доставка — «передать курьеру», самовывоз — «выдан» (как решил сервер)', () => {
-    expect(keys(queueCardActions({ status: 'ready', allowedTransitions: ['delivering'] }))).toEqual(['dispatch']);
-    expect(keys(queueCardActions({ status: 'ready', allowedTransitions: ['completed'] }))).toEqual(['complete']);
+    expect(keys(queueCardActions(card('ready', ['delivering'])))).toEqual(['dispatch']);
+    expect(keys(queueCardActions(card('ready', ['completed'])))).toEqual(['complete']);
+  });
+
+  it('без права orders.manage сервер не присылает ни переходов, ни флагов — кнопок нет', () => {
+    expect(queueCardActions(card('paid', []))).toEqual([]);
   });
 });
 

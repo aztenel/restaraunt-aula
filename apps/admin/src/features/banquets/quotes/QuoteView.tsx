@@ -16,7 +16,7 @@ export function DiscountText({ discount }: { discount: QuoteDiscount | null }) {
 }
 
 /** Итоги версии сметы — только из ответа сервера. */
-export function QuoteTotals({ quote }: { quote: Quote }) {
+export function QuoteTotals({ quote }: { quote: Pick<Quote, 'totals' | 'serviceChargeBp' | 'vatPayer' | 'vatRateBp' | 'guests'> }) {
   const { t, i18n } = useTranslation();
   const { totals } = quote;
   const row = (label: string, value: Quote['totals']['total'], options: { strong?: boolean; negative?: boolean } = {}) => (

@@ -9,7 +9,6 @@ import { MoneyText } from '@/shared/ui/MoneyText';
 import { banquetRefKeys, banquetsApi, openSignedLink } from '../api';
 import { formatIsoDate } from '../common/format';
 import { DocumentKindTag, EsfStatusTag } from '../common/ui';
-import { canIssueActFor, canRetryEsf } from '../request-actions';
 import { useInvalidateBanquets } from '../request/useRequestMutation';
 import type { BanquetDocument, BanquetRequestDetail } from '../types';
 
@@ -100,7 +99,7 @@ export function DocumentsTab({ request, canIssue }: { request: BanquetRequestDet
                           {t('banquets.documents.esf.registrationNumber')}: {request.act.esf.registrationNumber}
                         </Typography.Text>
                       ) : null}
-                      {canIssue && canRetryEsf(request.act.esf.status) ? (
+                      {canIssue && request.act.esfRetryable ? (
                         <Button size="small" icon={<RedoOutlined />} loading={esfRetry.isPending} onClick={() => esfRetry.mutate(request.act!.id)}>
                           {t('banquets.documents.esf.retry')}
                         </Button>
@@ -114,7 +113,7 @@ export function DocumentsTab({ request, canIssue }: { request: BanquetRequestDet
             ) : (
               <Space direction="vertical" size={8}>
                 <Typography.Text type="secondary">{t('banquets.documents.act.notYet')}</Typography.Text>
-                {canIssue && canIssueActFor(request.status, false) ? (
+                {request.canIssueAct ? (
                   <Button type="primary" icon={<FileAddOutlined />} loading={act.isPending} onClick={() => act.mutate()}>
                     {t('banquets.documents.act.issue')}
                   </Button>

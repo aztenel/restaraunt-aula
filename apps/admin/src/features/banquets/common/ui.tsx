@@ -6,6 +6,16 @@ import { translate, type Translatable } from '@aula/api-client';
 import { tx } from '@/shared/i18n/tx';
 import { slaCountdown, type SlaSubject } from '../sla';
 
+/** Значение с задержкой (поиск, предпросмотр сметы): меняется, когда ввод «успокоился». */
+export function useDebounced<T>(value: T, delayMs: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const id = window.setTimeout(() => setDebounced(value), delayMs);
+    return () => window.clearTimeout(id);
+  }, [value, delayMs]);
+  return debounced;
+}
+
 /** Текущее время с обновлением (таймеры SLA). Выключено — не тикает. */
 export function useNow(intervalMs = 1000, enabled = true): number {
   const [now, setNow] = useState(() => Date.now());

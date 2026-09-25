@@ -44,12 +44,15 @@ export type BanquetActivity = Schemas['BanquetActivityDto'];
 export type BanquetVenueHold = Schemas['BanquetVenueHoldDto'];
 export type QuoteSummary = Schemas['BanquetQuoteSummaryDto'];
 export type Quote = Schemas['BanquetQuoteDto'];
+/** Предпросмотр сметы (POST /requests/{id}/quotes/preview): итоги по правилам сохранения, без новой версии. */
+export type QuotePreview = Schemas['BanquetQuotePreviewDto'];
 export type QuoteLine = Schemas['BanquetQuoteLineDto'];
 export type QuoteDiscount = Schemas['BanquetDiscountDto'];
 export type DishOption = Schemas['BanquetDishOptionDto'];
 export type Invoice = Schemas['BanquetInvoiceDto'];
 export type InvoiceListItem = Schemas['BanquetInvoiceListItemDto'];
 export type InvoicePayment = Schemas['BanquetInvoicePaymentDto'];
+export type InvoiceRefund = Schemas['BanquetInvoiceRefundDto'];
 export type BankTransferResult = Schemas['BanquetBankTransferResultDto'];
 export type RefundResult = Schemas['BanquetRefundResultDto'];
 export type BanquetAct = Schemas['BanquetActDto'];
@@ -133,6 +136,18 @@ export interface PipelineQuery {
   managerId?: string;
   dateFrom?: string;
   dateTo?: string;
+  /** Номер, имя или телефон. */
+  q?: string;
+  /** true — только выездные, false — только в залах филиалов. */
+  offsite?: boolean;
+  slaBreached?: boolean;
+}
+
+/** Календарь: без филиала — все доступные филиалы и выездные заявки. */
+export interface CalendarQuery {
+  branchId?: string;
+  from: string;
+  to: string;
 }
 
 export interface InvoiceListQuery {

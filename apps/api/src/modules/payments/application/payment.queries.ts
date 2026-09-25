@@ -5,10 +5,12 @@ import { NotFoundError } from '../../../shared/kernel/errors';
 import { Money } from '../../../shared/kernel/money';
 import { Page, PageRequest, pageRequest } from '../../../shared/kernel/pagination';
 import { Permission } from '../../../shared/kernel/permissions';
+import { tryNormalizePhone } from '../../../shared/kernel/phone';
+import { StaffDirectory } from '../../identity/public';
 import { Payment } from '../domain/payment';
 import { RefundMode } from '../domain/refund';
-import { PaymentListRow, PaymentRepository, PaymentSearchFilter } from '../infrastructure/payment.repository';
-import { mapRefund, RefundListRow, RefundRepository } from '../infrastructure/refund.repository';
+import { PaymentListRow, PaymentRepository, PaymentSearchFilter, PaymentStatusHistoryEntry } from '../infrastructure/payment.repository';
+import { mapRefund, RefundListRow, RefundRepository, RefundSearchFilter } from '../infrastructure/refund.repository';
 import { WebhookEventRepository } from '../infrastructure/webhook-event.repository';
 import { PaymentMethod, PaymentPurpose, PaymentStatus, PaymentView, RefundStatus } from '../public';
 
@@ -34,9 +36,25 @@ export interface PaymentProviderLogEntry {
   response: unknown;
 }
 
+/** Строка возврата для админки: с именами сотрудников, запросившего и подтвердившего (отклонившего). */
+export type RefundAdminRow = RefundListRow & { mode: RefundMode; requestedByName: string | null; completedByName: string | null };
+
+/** Событие истории платежа: переход статуса или событие возврата. */
+export interface PaymentHistoryEvent {
+  at: Date;
+  type: 'status' | 'refund_requested' | 'refund_succeeded' | 'refund_failed';
+  fromStatus: PaymentStatus | null;
+  toStatus: PaymentStatus | null;
+  refundId: string | null;
+  amount: Money | null;
+  reason: string | null;
+  actorName: string | null;
+}
+
 export interface PaymentDetailsView {
   payment: PaymentAdminView;
-  refunds: Array<RefundListRow & { mode: RefundMode }>;
+  history: PaymentHistoryEvent[];
+  refunds: RefundAdminRow[];
   webhookEvents: Array<{ id: string; eventId: string; status: string; outcome: string; reportedAmount: Money | null; receivedAt: Date }>;
   providerLog: PaymentProviderLogEntry[];
 }
@@ -50,6 +68,8 @@ export interface AdminPaymentFilter {
   referenceId?: string;
   from?: Date;
   to?: Date;
+  /** Телефон гостя (часть номера, от 4 цифр). */
+  phone?: string;
 }
 
 /** Чтение платежей: контракт (getPayment, listForReference) и админка (списки с учётом прав по филиалу). */
@@ -60,6 +80,7 @@ export class PaymentQueries {
     private readonly refunds: RefundRepository,
     private readonly webhookEvents: WebhookEventRepository,
     private readonly integrationLog: IntegrationLog,
+    private readonly staff: StaffDirectory,
   ) {}
 
   async get(paymentId: string): Promise<PaymentView> {
@@ -74,7 +95,8 @@ export class PaymentQueries {
 
   async search(actor: Actor, filter: AdminPaymentFilter, page: PageRequest): Promise<Page<PaymentAdminView>> {
     const branches = actor.scopeBranches(Permission.PaymentsView, filter.branchId);
-    const search: PaymentSearchFilter = { ...filter, branches };
+    const { phone, ...rest } = filter;
+    const search: PaymentSearchFilter = { ...rest, branches, phoneDigits: phoneDigits(phone) };
     const result = await this.payments.search(search, page);
     const reserved = await this.refunds.reservedByPayment(result.items.map((r) => r.payment.id));
     return { ...result, items: result.items.map((row) => this.adminView(actor, row, reserved.get(row.payment.id) ?? 0)) };
@@ -89,9 +111,8 @@ export class PaymentQueries {
     const events = await this.webhookEvents.listForPayment(paymentId);
     const log = await this.integrationLog.search({ correlationId: paymentId }, pageRequest(1, 100));
     const reserved = await this.refunds.reservedByPayment([paymentId]);
-    return {
-      payment: this.adminView(actor, listRow, reserved.get(paymentId) ?? 0),
-      refunds: refundRows.map((r) => ({
+    const refunds = await this.withNames(
+      refundRows.map((r) => ({
         refund: mapRefund(r),
         mode: r.mode as RefundMode,
         paymentBranchId: row.branch_id,
@@ -103,6 +124,11 @@ export class PaymentQueries {
         comment: r.comment,
         completedAt: r.completed_at,
       })),
+    );
+    return {
+      payment: this.adminView(actor, listRow, reserved.get(paymentId) ?? 0),
+      history: paymentHistory(await this.payments.statusHistory(paymentId), refunds),
+      refunds,
       webhookEvents: events.map((e) => ({
         id: e.id,
         eventId: e.event_id,
@@ -130,12 +156,25 @@ export class PaymentQueries {
 
   async refundQueue(
     actor: Actor,
-    filter: { branchId?: string; status?: RefundStatus; mode?: RefundMode },
+    filter: { branchId?: string; status?: RefundStatus; mode?: RefundMode; from?: Date; to?: Date; q?: string },
     page: PageRequest,
-  ): Promise<Page<RefundListRow & { mode: RefundMode }>> {
+  ): Promise<Page<RefundAdminRow>> {
     const branches = actor.scopeBranches(Permission.PaymentsView, filter.branchId);
-    const result = await this.refunds.search({ branches, status: filter.status, mode: filter.mode }, page);
-    return { ...result, items: result.items.map((r) => ({ ...r, mode: r.refund.mode })) };
+    const search: RefundSearchFilter = { branches, status: filter.status, mode: filter.mode, from: filter.from, to: filter.to, ...refundQuery(filter.q) };
+    const result = await this.refunds.search(search, page);
+    return { ...result, items: await this.withNames(result.items.map((r) => ({ ...r, mode: r.refund.mode }))) };
+  }
+
+  private async withNames(rows: Array<RefundListRow & { mode: RefundMode }>): Promise<RefundAdminRow[]> {
+    const names = await this.staff.names(rows.flatMap((r) => [r.refund.snapshot().requestedBy, r.refund.snapshot().completedBy]));
+    return rows.map((r) => {
+      const s = r.refund.snapshot();
+      return {
+        ...r,
+        requestedByName: s.requestedBy ? (names.get(s.requestedBy) ?? null) : null,
+        completedByName: s.completedBy ? (names.get(s.completedBy) ?? null) : null,
+      };
+    });
   }
 
   private adminView(actor: Actor, row: PaymentListRow, reservedAmount: number): PaymentAdminView {
@@ -149,4 +188,68 @@ export class PaymentQueries {
       allowedTransitions: payment.allowedTransitions(),
     };
   }
+}
+
+/** Цифры телефона для частичного поиска (от 4 цифр); полный номер нормализуется (8/+7 → 7…). */
+function phoneDigits(phone: string | undefined): string | undefined {
+  const text = phone?.trim();
+  if (!text) return undefined;
+  const normalized = tryNormalizePhone(text);
+  if (normalized) return normalized.replace(/\D/g, '').slice(-10);
+  const digits = text.replace(/\D/g, '');
+  return digits.length >= 4 ? digits.slice(-10) : undefined;
+}
+
+/**
+ * Поиск в очереди возвратов: UUID — возврат, платёж или объект оплаты; число — сумма в тенге
+ * (или тиынах, если с копейками: «1500» и «1500.50»); иначе — текст описания платежа
+ * (номер заказа, брони, счёта).
+ */
+function refundQuery(q: string | undefined): Pick<RefundSearchFilter, 'id' | 'amount' | 'text'> {
+  const text = q?.trim();
+  if (!text) return {};
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(text)) return { id: text.toLowerCase() };
+  const numeric = text.replace(/\s/g, '').replace(',', '.');
+  if (/^\d+(\.\d{1,2})?$/.test(numeric)) return { amount: Math.round(Number(numeric) * 100), text };
+  return { text };
+}
+
+/** История платежа: переходы статуса и события возвратов по времени. */
+function paymentHistory(statuses: PaymentStatusHistoryEntry[], refunds: RefundAdminRow[]): PaymentHistoryEvent[] {
+  const events: PaymentHistoryEvent[] = statuses.map((h) => ({
+    at: h.occurredAt,
+    type: 'status',
+    fromStatus: h.from,
+    toStatus: h.to,
+    refundId: null,
+    amount: null,
+    reason: h.reason,
+    actorName: h.actorKind === 'staff' ? h.actorName : null,
+  }));
+  for (const r of refunds) {
+    const s = r.refund.snapshot();
+    events.push({
+      at: s.createdAt,
+      type: 'refund_requested',
+      fromStatus: null,
+      toStatus: null,
+      refundId: s.id,
+      amount: s.amount,
+      reason: s.reason,
+      actorName: r.requestedByName,
+    });
+    if (s.status !== 'pending' && s.completedAt) {
+      events.push({
+        at: s.completedAt,
+        type: s.status === 'succeeded' ? 'refund_succeeded' : 'refund_failed',
+        fromStatus: null,
+        toStatus: null,
+        refundId: s.id,
+        amount: s.amount,
+        reason: s.status === 'failed' ? s.failureReason : s.comment,
+        actorName: r.completedByName,
+      });
+    }
+  }
+  return events.sort((a, b) => a.at.getTime() - b.at.getTime());
 }

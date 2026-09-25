@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { MoneyInput } from '@/shared/ui/MoneyInput';
 import { MoneyText } from '@/shared/ui/MoneyText';
 import { banquetsApi } from '../api';
-import { isOpenStatus } from '../request-actions';
+import { isOpenRequest } from '../request-actions';
 import { moneyInput, type BanquetRequestDetail } from '../types';
 import { useRequestMutation } from './useRequestMutation';
 
@@ -18,7 +18,7 @@ export function PrepaymentCard({ request, canManage }: { request: BanquetRequest
     successMessage: t('banquets.prepayment.saved'),
   });
   const { prepayment, balance } = request;
-  const editable = canManage && isOpenStatus(request.status);
+  const editable = canManage && isOpenRequest(request);
 
   return (
     <Card

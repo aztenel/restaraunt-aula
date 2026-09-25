@@ -90,6 +90,13 @@ export interface AdminOrderItem {
   modifiers: AdminOrderModifier[];
 }
 
+/** Заявка службы доставки в карточке очереди. */
+export interface QueueCourier {
+  status: CourierDispatchStatus;
+  trackingUrl: string | null;
+  courierName: string | null;
+}
+
 export interface QueueOrder extends AdminOrderListItem {
   items: AdminOrderItem[];
   comment: string | null;
@@ -99,6 +106,14 @@ export interface QueueOrder extends AdminOrderListItem {
   allowedTransitions: OrderStatus[];
   /** Обещанное время прошло. */
   isLate: boolean;
+  /** Сотрудник может отменить заказ (статус и право orders.manage). */
+  canCancel: boolean;
+  /** Сотрудник может отказать в оплаченном заказе (paid → accepted → cancelled). */
+  canReject: boolean;
+  /** Заявка службы доставки; null — своих курьеров или заявки нет. */
+  courier: QueueCourier | null;
+  /** К оплате при получении / онлайн (итог минус сертификат). */
+  amountDue: Money;
 }
 
 export interface QueueGroup {
@@ -213,6 +228,8 @@ export interface AdminOrderDetails extends AdminOrderListItem {
   etaMinutes: number;
   analyticsSessionId: string | null;
   createdBy: string | null;
+  /** Сотрудник, принявший телефонный заказ. */
+  createdByName: string | null;
   wasPaid: boolean;
   cancellation: { reasonCode: CancelReasonCode; reason: string | null } | null;
   timestamps: OrderTimestamps;
@@ -228,6 +245,10 @@ export interface AdminOrderDetails extends AdminOrderListItem {
   canRefund: boolean;
   /** Сколько ещё можно вернуть (считает сервер). */
   refundable: Money;
+  /** Можно вызвать курьера службы доставки снова (прошлая заявка завершилась, филиал работает со службой). */
+  canRetryCourier: boolean;
+  /** Можно отменить активную заявку службы доставки. */
+  canCancelCourier: boolean;
   trackingUrl: string;
 }
 
@@ -384,55 +405,52 @@ export interface AdminCreateOrderInput {
   idempotencyKey: string;
 }
 
-// ---------------------------------------------------------------- Витрина: меню филиала и время
+// ---------------------------------------------------------------- Меню филиала для телефонного заказа (GET /admin/orders/menu)
 
-export interface PublicDishCard {
+export interface OrderMenuOption {
   id: string;
-  slug: string;
-  categoryId: string;
-  name: string;
-  description: string;
-  price: Money;
-  available: boolean;
-  availability: 'available' | 'stopped_shown' | 'stopped_hidden';
-  weightGrams: number | null;
-  hasModifiers: boolean;
-  hasRequiredModifiers: boolean;
-  photo: { url: string } | null;
-}
-
-export interface PublicMenuCategory {
-  id: string;
-  slug: string;
-  name: string;
-  dishes: PublicDishCard[];
-}
-
-export interface PublicMenu {
-  branch: { id: string; slug: string; name: string };
-  categories: PublicMenuCategory[];
-}
-
-export interface PublicModifierOption {
-  id: string;
-  name: string;
+  name: Translatable;
   price: Money;
   isDefault: boolean;
 }
 
-export interface PublicModifierGroup {
+export interface OrderMenuModifierGroup {
   id: string;
-  name: string;
-  description: string;
+  name: Translatable;
   minSelect: number;
   maxSelect: number;
   isRequired: boolean;
-  options: PublicModifierOption[];
+  options: OrderMenuOption[];
 }
 
-export interface PublicDishDetail extends PublicDishCard {
-  modifierGroups: PublicModifierGroup[];
+export interface OrderMenuDish {
+  dishId: string;
+  slug: string;
+  categoryId: string;
+  name: Translatable;
+  /** Цена филиала без модификаторов. */
+  price: Money;
+  availability: 'available' | 'stopped_shown' | 'stopped_hidden';
+  /** В стоп-листе — к заказу недоступно. */
+  stopped: boolean;
+  /** Стоп до (null — до ручного возврата). */
+  stoppedUntil: string | null;
+  stopReason: string | null;
+  photoUrl: string | null;
+  weightGrams: number | null;
+  sku: string | null;
+  modifierGroups: OrderMenuModifierGroup[];
 }
+
+export interface OrderMenu {
+  branchId: string;
+  /** Категории меню филиала в порядке меню. */
+  categories: Array<{ id: string; slug: string; name: Translatable }>;
+  /** Все блюда меню филиала, включая стоп-лист (stopped = true). */
+  dishes: OrderMenuDish[];
+}
+
+// ---------------------------------------------------------------- Витрина: время и зоны
 
 export interface OrderSlots {
   branchId: string;

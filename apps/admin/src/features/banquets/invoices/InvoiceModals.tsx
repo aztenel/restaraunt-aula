@@ -185,7 +185,10 @@ export function RefundModal({ open, requestId, payment, onClose }: { open: boole
 
   const refund = useApiMutation((input: ReturnType<typeof toRefundInput>) => banquetsApi.refund(requestId, input), {
     onSuccess: async (result) => {
-      void message.success(t('banquets.invoices.refund.done', { amount: formatMoney(result.amount, i18n.language) }));
+      const amount = formatMoney(result.amount, i18n.language);
+      if (result.status === 'pending') void message.info(t('banquets.invoices.refund.pending', { amount }));
+      else if (result.status === 'failed') void message.error(t('banquets.invoices.refund.failed', { amount }));
+      else void message.success(t('banquets.invoices.refund.done', { amount }));
       await invalidate();
       onClose();
     },
@@ -202,7 +205,7 @@ export function RefundModal({ open, requestId, payment, onClose }: { open: boole
 
   const errorOf = (...codes: RefundIssue[]) => {
     const found = issues.find((i) => codes.includes(i));
-    return found ? t(`banquets.invoices.refund.issues.${found}`) : undefined;
+    return found ? t(`banquets.invoices.refund.issues.${found}`, { amount: formatMoney(payment.refundable, i18n.language) }) : undefined;
   };
 
   return (
@@ -225,13 +228,15 @@ export function RefundModal({ open, requestId, payment, onClose }: { open: boole
             <Typography.Text type="secondary">{t('banquets.invoices.refund.alreadyRefunded', { amount: formatMoney(payment.refunded, i18n.language) })}</Typography.Text>
           </>
         ) : null}
+        <br />
+        <Typography.Text strong>{t('banquets.invoices.refund.refundable', { amount: formatMoney(payment.refundable, i18n.language) })}</Typography.Text>
       </Typography.Paragraph>
       <Form layout="vertical" requiredMark="optional">
         <Form.Item
           label={t('banquets.invoices.refund.amount')}
           extra={t('banquets.invoices.refund.amountHint')}
-          validateStatus={errorOf('amountPositive', 'exceedsPayment') ? 'error' : undefined}
-          help={errorOf('amountPositive', 'exceedsPayment')}
+          validateStatus={errorOf('amountPositive', 'exceedsRefundable', 'nothingToRefund') ? 'error' : undefined}
+          help={errorOf('amountPositive', 'exceedsRefundable', 'nothingToRefund')}
         >
           <MoneyInput value={amount} onChange={setAmount} allowClear />
         </Form.Item>

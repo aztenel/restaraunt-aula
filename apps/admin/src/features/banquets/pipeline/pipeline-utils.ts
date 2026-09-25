@@ -1,9 +1,11 @@
 /**
  * Воронка заявок: фильтры → параметры API, колонки канбана, новые заявки между опросами.
- * GET /pipeline фильтрует по филиалу, менеджеру и датам мероприятия; поиск и «SLA нарушен» есть только
- * у списка GET /requests — с этими фильтрами доска строится из списка (до BOARD_LIST_LIMIT заявок).
+ * Доска и список фильтруются сервером одинаково (филиал, менеджер, даты мероприятия, поиск,
+ * выезд / в зале, нарушен SLA): GET /pipeline и GET /requests.
  */
-import { BANQUET_STATUSES, type BanquetRequestSummary, type BanquetStatus, type PipelineColumn, type PipelineQuery, type RequestListQuery } from '../types';
+import type { BanquetStatus, PipelineColumn, PipelineQuery, RequestListQuery } from '../types';
+
+export type PlaceFilter = 'all' | 'branch' | 'offsite';
 
 export interface PipelineFilters {
   branchId: string | null;
@@ -13,44 +15,32 @@ export interface PipelineFilters {
   dateTo: string | null;
   slaBreached: boolean;
   q: string;
+  /** Выездные / в залах филиалов / все. */
+  place: PlaceFilter;
 }
 
-export const EMPTY_FILTERS: PipelineFilters = { branchId: null, managerId: null, dateFrom: null, dateTo: null, slaBreached: false, q: '' };
-
-/** Максимум заявок на доске, построенной из списка (perPage API — до 200). */
-export const BOARD_LIST_LIMIT = 200;
-
-export function boardUsesList(filters: PipelineFilters): boolean {
-  return filters.slaBreached || filters.q.trim() !== '';
-}
+export const EMPTY_FILTERS: PipelineFilters = { branchId: null, managerId: null, dateFrom: null, dateTo: null, slaBreached: false, q: '', place: 'all' };
 
 export function toPipelineQuery(filters: PipelineFilters): PipelineQuery {
+  const q = filters.q.trim();
   return {
     ...(filters.branchId ? { branchId: filters.branchId } : {}),
     ...(filters.managerId ? { managerId: filters.managerId } : {}),
     ...(filters.dateFrom ? { dateFrom: filters.dateFrom } : {}),
     ...(filters.dateTo ? { dateTo: filters.dateTo } : {}),
+    ...(q ? { q } : {}),
+    ...(filters.place !== 'all' ? { offsite: filters.place === 'offsite' } : {}),
+    ...(filters.slaBreached ? { slaBreached: true } : {}),
   };
 }
 
 export function toListQuery(filters: PipelineFilters, extra: { status?: BanquetStatus[]; page?: number; perPage?: number } = {}): RequestListQuery {
-  const q = filters.q.trim();
   return {
     ...toPipelineQuery(filters),
-    ...(q ? { q } : {}),
-    ...(filters.slaBreached ? { slaBreached: true } : {}),
     ...(extra.status && extra.status.length > 0 ? { status: extra.status } : {}),
     page: extra.page ?? 1,
-    perPage: extra.perPage ?? BOARD_LIST_LIMIT,
+    perPage: extra.perPage ?? 50,
   };
-}
-
-/** Колонки из плоского списка (порядок заявок — как в ответе сервера). */
-export function groupByStatus(items: readonly BanquetRequestSummary[]): PipelineColumn[] {
-  return BANQUET_STATUSES.map((status) => {
-    const inStatus = items.filter((i) => i.status === status);
-    return { status, count: inStatus.length, items: inStatus };
-  });
 }
 
 export function columnOf(columns: readonly PipelineColumn[] | undefined, status: BanquetStatus): PipelineColumn {
@@ -81,5 +71,6 @@ export function activeFilterCount(filters: PipelineFilters, defaults: PipelineFi
   if (filters.dateFrom || filters.dateTo) n += 1;
   if (filters.slaBreached) n += 1;
   if (filters.q.trim()) n += 1;
+  if (filters.place !== 'all') n += 1;
   return n;
 }

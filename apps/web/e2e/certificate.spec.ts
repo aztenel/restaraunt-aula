@@ -24,5 +24,5 @@ test('подарочный сертификат: выбор → данные п�
   await page.waitForURL(new RegExp(`/ru/certificates/order/${token}$`));
   await expect(page.getByRole('heading', { name: msg('CertificateOrder.issuedTitle') })).toBeVisible();
   await expect(page.getByText(msg('CertificateOrder.codeNote'))).toBeVisible();
-  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+  await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute('content', /noindex/);
 });

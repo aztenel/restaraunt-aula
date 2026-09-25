@@ -8,7 +8,6 @@ import type {
   CheckoutPaymentMethod,
   OrderQuote,
   OrderType,
-  PublicModifierGroup,
   QuoteOrderInput,
 } from '../types';
 
@@ -174,27 +173,41 @@ export function checkoutChecks(
 export type ModifierSelection = Record<string, string[]>;
 export type ModifierIssue = 'too_few' | 'too_many';
 
+/** Группа модификаторов из меню филиала (GET /admin/orders/menu); подпись опции — любого вида. */
+export interface ModifierGroupLike<TName = unknown> {
+  id: string;
+  minSelect: number;
+  maxSelect: number;
+  isRequired: boolean;
+  options: ReadonlyArray<{ id: string; isDefault: boolean; name: TName }>;
+}
+
 /** Опции по умолчанию (как на витрине). */
-export function defaultModifierSelection(groups: readonly PublicModifierGroup[]): ModifierSelection {
+export function defaultModifierSelection(groups: readonly ModifierGroupLike[]): ModifierSelection {
   return Object.fromEntries(groups.map((g) => [g.id, g.options.filter((o) => o.isDefault).slice(0, g.maxSelect).map((o) => o.id)]));
 }
 
+/** Сколько опций группы нужно выбрать минимум (обязательная группа — хотя бы одну). */
+export function minSelectOf(group: Pick<ModifierGroupLike, 'minSelect' | 'isRequired'>): number {
+  return Math.max(group.minSelect, group.isRequired ? 1 : 0);
+}
+
 /** Границы выбора в группе (minSelect/maxSelect из меню). Окончательно выбор проверяет сервер. */
-export function modifierIssues(groups: readonly PublicModifierGroup[], selection: ModifierSelection): Record<string, ModifierIssue> {
+export function modifierIssues(groups: readonly ModifierGroupLike[], selection: ModifierSelection): Record<string, ModifierIssue> {
   const issues: Record<string, ModifierIssue> = {};
   for (const group of groups) {
     const count = selection[group.id]?.length ?? 0;
-    const min = Math.max(group.minSelect, group.isRequired ? 1 : 0);
-    if (count < min) issues[group.id] = 'too_few';
+    if (count < minSelectOf(group)) issues[group.id] = 'too_few';
     else if (count > group.maxSelect) issues[group.id] = 'too_many';
   }
   return issues;
 }
 
-/** Выбранные опции в порядке групп и подписи «Группа: опция». */
-export function selectedOptions(
-  groups: readonly PublicModifierGroup[],
+/** Выбранные опции в порядке групп и их подписи (label — перевод названия опции). */
+export function selectedOptions<TName>(
+  groups: readonly ModifierGroupLike<TName>[],
   selection: ModifierSelection,
+  label: (name: TName) => string,
 ): { optionIds: string[]; labels: string[] } {
   const optionIds: string[] = [];
   const labels: string[] = [];
@@ -202,11 +215,16 @@ export function selectedOptions(
     for (const option of group.options) {
       if (selection[group.id]?.includes(option.id)) {
         optionIds.push(option.id);
-        labels.push(option.name);
+        labels.push(label(option.name));
       }
     }
   }
   return { optionIds, labels };
+}
+
+/** Блюдо можно добавить: не в стоп-листе. Модификаторы выбираются, если у блюда есть группы. */
+export function dishNeedsModifiers(dish: { modifierGroups: readonly unknown[] }): boolean {
+  return dish.modifierGroups.length > 0;
 }
 
 /** Новый ключ идемпотентности оформления (повтор запроса вернёт тот же заказ). */

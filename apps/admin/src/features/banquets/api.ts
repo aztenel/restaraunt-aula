@@ -17,6 +17,7 @@ import type {
   BanquetRequestDetail,
   BanquetRequestSummary,
   BanquetStatus,
+  CalendarQuery,
   ClientCompany,
   CompanyInput,
   ContractTemplate,
@@ -30,6 +31,7 @@ import type {
   PipelineColumn,
   PipelineQuery,
   Quote,
+  QuotePreview,
   QuoteSummary,
   RefundInput,
   RefundResult,
@@ -60,12 +62,10 @@ export const banquetsKeys = {
   all: ['banquets'] as const,
   pipeline: (params: PipelineQuery) => ['banquets', 'pipeline', params] as const,
   list: (params: RequestListQuery) => ['banquets', 'list', params] as const,
-  /** Доска из списка (поиск / «SLA нарушен»): другая форма данных, чем у списка. */
-  boardList: (params: RequestListQuery) => ['banquets', 'board-list', params] as const,
   detail: (id: string) => ['banquets', 'detail', id] as const,
   quote: (quoteId: string) => ['banquets', 'quote', quoteId] as const,
   managers: ['banquets', 'managers'] as const,
-  calendar: (params: { branchId: string; from: string; to: string }) => ['banquets', 'calendar', params] as const,
+  calendar: (params: CalendarQuery) => ['banquets', 'calendar', params] as const,
   sla: (params: { from: string; to: string; branchId?: string }) => ['banquets', 'sla', params] as const,
   invoices: (params: InvoiceListQuery) => ['banquets', 'invoices', params] as const,
   invoice: (id: string) => ['banquets', 'invoice', id] as const,
@@ -74,6 +74,8 @@ export const banquetsKeys = {
 export const banquetRefKeys = {
   all: ['banquets-ref'] as const,
   dishes: (branchId: string, q: string) => ['banquets-ref', 'dishes', branchId, q] as const,
+  /** Предпросмотр итогов сметы — не под 'banquets': лента событий его не перезапрашивает. */
+  quotePreview: (requestId: string, input: SaveQuoteInput | null) => ['banquets-ref', 'quote-preview', requestId, input] as const,
   companies: ['banquets-ref', 'companies'] as const,
   companyList: (params: { q?: string; page?: number; perPage?: number }) => ['banquets-ref', 'companies', 'list', params] as const,
   company: (id: string) => ['banquets-ref', 'companies', 'detail', id] as const,
@@ -84,7 +86,21 @@ export const banquetRefKeys = {
 export const banquetsApi = {
   // ---------------------------------------------------------------- заявки
   pipeline: (params: PipelineQuery): Promise<PipelineColumn[]> =>
-    call(api.GET('/api/v1/admin/banquets/pipeline', { params: { query: params } })),
+    call(
+      api.GET('/api/v1/admin/banquets/pipeline', {
+        params: {
+          query: {
+            branchId: params.branchId,
+            managerId: params.managerId,
+            dateFrom: params.dateFrom,
+            dateTo: params.dateTo,
+            q: text(params.q),
+            offsite: params.offsite,
+            slaBreached: params.slaBreached || undefined,
+          },
+        },
+      }),
+    ),
   list: (params: RequestListQuery): Promise<Page<BanquetRequestSummary>> =>
     call(
       api.GET('/api/v1/admin/banquets/requests', {
@@ -124,8 +140,9 @@ export const banquetsApi = {
   refund: (id: string, input: RefundInput): Promise<RefundResult> =>
     call(api.POST('/api/v1/admin/banquets/requests/{id}/refunds', { params: { path: { id } }, body: input })),
   managers: (): Promise<BanquetManager[]> => call(api.GET('/api/v1/admin/banquets/managers')),
-  calendar: (params: { branchId: string; from: string; to: string }): Promise<BanquetCalendar> =>
-    call(api.GET('/api/v1/admin/banquets/calendar', { params: { query: params } })),
+  /** Без branchId — все филиалы, доступные сотруднику, и выездные заявки. */
+  calendar: (params: CalendarQuery): Promise<BanquetCalendar> =>
+    call(api.GET('/api/v1/admin/banquets/calendar', { params: { query: { branchId: params.branchId || undefined, from: params.from, to: params.to } } })),
   sla: (params: { from: string; to: string; branchId?: string }): Promise<SlaStats> =>
     call(api.GET('/api/v1/admin/banquets/sla-stats', { params: { query: params } })),
 
@@ -134,6 +151,9 @@ export const banquetsApi = {
   /** Сохранить смету — всегда новая версия; итоги считает сервер. */
   saveQuote: (id: string, input: SaveQuoteInput): Promise<Quote> =>
     call(api.POST('/api/v1/admin/banquets/requests/{id}/quotes', { params: { path: { id } }, body: body<Schemas['BanquetSaveQuoteDto']>(input) })),
+  /** Итоги сметы по правилам сохранения, без новой версии (предпросмотр в конструкторе). */
+  previewQuote: (id: string, input: SaveQuoteInput): Promise<QuotePreview> =>
+    call(api.POST('/api/v1/admin/banquets/requests/{id}/quotes/preview', { params: { path: { id } }, body: body<Schemas['BanquetSaveQuoteDto']>(input) })),
   quote: (quoteId: string): Promise<Quote> => call(api.GET('/api/v1/admin/banquets/quotes/{quoteId}', { params: { path: { quoteId } } })),
   quotePdf: (quoteId: string): Promise<SignedLink> =>
     call(api.GET('/api/v1/admin/banquets/quotes/{quoteId}/pdf', { params: { path: { quoteId } } })),
@@ -165,6 +185,9 @@ export const banquetsApi = {
     call(api.GET('/api/v1/admin/banquets/invoices/{invoiceId}/pdf', { params: { path: { invoiceId } } })),
   registerBankTransfer: (invoiceId: string, input: BankTransferInput): Promise<BankTransferResult> =>
     call(api.POST('/api/v1/admin/banquets/invoices/{invoiceId}/payments', { params: { path: { invoiceId } }, body: input })),
+  /** Ссылка на онлайн-оплату счёта физлица ещё раз; regenerate — новая ссылка (прежний неоплаченный платёж отменяется). */
+  sendPaymentLink: (invoiceId: string, regenerate: boolean): Promise<InvoiceListItem> =>
+    call(api.POST('/api/v1/admin/banquets/invoices/{invoiceId}/payment-link', { params: { path: { invoiceId } }, body: { regenerate } })),
   cancelInvoice: (invoiceId: string, reason?: string): Promise<InvoiceListItem> =>
     call(api.POST('/api/v1/admin/banquets/invoices/{invoiceId}/cancel', { params: { path: { invoiceId } }, body: { reason: text(reason) } })),
 

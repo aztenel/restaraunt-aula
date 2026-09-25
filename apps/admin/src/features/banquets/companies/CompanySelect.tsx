@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApiQuery } from '@/shared/api/hooks';
 import { banquetRefKeys, banquetsApi } from '../api';
+import { useDebounced } from '../common/ui';
 import type { ClientCompany } from '../types';
 import { CompanyFormModal } from './CompanyFormModal';
 
@@ -17,14 +18,6 @@ export interface CompanySelectProps extends Omit<SelectProps<string | null>, 'op
   allowCreate?: boolean;
 }
 
-function useDebounced<T>(value: T, delayMs: number): T {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const id = window.setTimeout(() => setDebounced(value), delayMs);
-    return () => window.clearTimeout(id);
-  }, [value, delayMs]);
-  return debounced;
-}
 
 /** Выбор компании-заказчика: поиск по названию или БИН, создание новой прямо из формы. Совместим с Form.Item. */
 export function CompanySelect({ value, onChange, initialCompany, allowCreate, placeholder, ...rest }: CompanySelectProps) {

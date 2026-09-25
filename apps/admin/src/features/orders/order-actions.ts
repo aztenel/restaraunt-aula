@@ -46,20 +46,15 @@ export function actionsFromTransitions(allowed: readonly string[], flags: Action
 }
 
 /**
- * Кнопки карточки очереди. В ответе очереди нет флага canReject: отказ — это переходы paid → accepted →
- * cancelled, поэтому он предлагается, когда сервер разрешил сотруднику первый шаг (accepted из paid).
- * Окончательно отказ проверяет сервер (диалог отказа загружает карточку заказа с canReject).
+ * Кнопки заказа (карточка очереди или карточка заказа): переходы и флаги сервера canReject / canCancel.
+ * Сервер решает всё: фронт не выводит отказ или отмену из статуса заказа.
  */
-export function queueCardActions(card: { status: string; allowedTransitions: readonly string[] }): OrderAction[] {
-  const canReject = card.status === 'paid' && card.allowedTransitions.includes('accepted');
-  return actionsFromTransitions(card.allowedTransitions, { canReject });
-}
-
-/** Кнопки карточки заказа: переходы и флаги из GET /admin/orders/{id}. */
-export function detailActions(order: {
-  allowedTransitions: readonly string[];
-  canCancel: boolean;
-  canReject: boolean;
-}): OrderAction[] {
+export function orderActions(order: { allowedTransitions: readonly string[]; canCancel: boolean; canReject: boolean }): OrderAction[] {
   return actionsFromTransitions(order.allowedTransitions, { canReject: order.canReject, canCancel: order.canCancel });
 }
+
+/** Кнопки карточки очереди (GET /admin/orders/queue). */
+export const queueCardActions = orderActions;
+
+/** Кнопки карточки заказа (GET /admin/orders/{id}). */
+export const detailActions = orderActions;

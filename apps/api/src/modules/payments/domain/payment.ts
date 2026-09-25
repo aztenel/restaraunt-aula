@@ -87,8 +87,24 @@ export interface NewPaymentInput {
 /** Результат попытки применить подтверждение провайдера. */
 export type ConfirmationOutcome = 'applied' | 'ignored' | 'amount_mismatch';
 
+/** Переход статуса, ещё не записанный в историю (репозиторий сохраняет их вместе с платежом). */
+export interface PaymentStatusChange {
+  from: PaymentStatus | null;
+  to: PaymentStatus;
+  reason: string | null;
+}
+
 export class Payment {
+  private statusChanges: PaymentStatusChange[] = [];
+
   private constructor(private props: PaymentProps) {}
+
+  /** Забрать накопленные переходы статуса (для истории платежа). */
+  pullStatusChanges(): PaymentStatusChange[] {
+    const changes = this.statusChanges;
+    this.statusChanges = [];
+    return changes;
+  }
 
   /**
    * Новый платёж. Начальный статус зависит от способа:
@@ -121,7 +137,7 @@ export class Payment {
     if (input.method === 'bank_transfer' && !input.documentNumber?.trim()) {
       throw new ValidationError('payment.document_required', 'Bank transfer needs a payment document number');
     }
-    return new Payment({
+    const payment = new Payment({
       id: input.id,
       invoiceNo: 0,
       purpose: input.purpose,
@@ -150,6 +166,8 @@ export class Payment {
       cancelledAt: null,
       createdAt: now,
     });
+    payment.statusChanges.push({ from: null, to: status, reason: null });
+    return payment;
   }
 
   static restore(props: PaymentProps): Payment {
@@ -214,8 +232,9 @@ export class Payment {
     return PaymentFsm.allowedFrom(this.props.status);
   }
 
-  private transition(to: PaymentStatus): void {
+  private transition(to: PaymentStatus, reason: string | null = null): void {
     PaymentFsm.assertTransition(this.props.status, to);
+    this.statusChanges.push({ from: this.props.status, to, reason });
     this.props.status = to;
   }
 
@@ -282,7 +301,7 @@ export class Payment {
   /** Отказ провайдера / исчерпаны попытки инициирования. Для завершённых платежей — без изменений. */
   fail(reason: string, now: Date): 'applied' | 'ignored' {
     if (!this.isOpen()) return 'ignored';
-    this.transition('failed');
+    this.transition('failed', reason.slice(0, 1000));
     this.props.failureReason = reason.slice(0, 1000);
     this.props.failedAt = now;
     return 'applied';
@@ -291,7 +310,7 @@ export class Payment {
   /** Отмена неоплаченного платежа. Идемпотентно: оплаченный/завершённый платёж не меняется. */
   cancel(reason: string, now: Date): 'applied' | 'ignored' {
     if (!this.isOpen()) return 'ignored';
-    this.transition('cancelled');
+    this.transition('cancelled', reason.slice(0, 1000));
     this.props.cancelReason = reason.slice(0, 1000);
     this.props.cancelledAt = now;
     return 'applied';
