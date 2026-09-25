@@ -740,7 +740,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditPageDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -759,7 +766,17 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IntegrationDescriptorDto"
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -878,7 +895,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationLogsPageDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -914,7 +938,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailedJobsPageDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -9154,7 +9185,8 @@
             ]
           },
           "branchId": {
-            "type": "object",
+            "type": "string",
+            "format": "uuid",
             "nullable": true,
             "description": "Филиал для филиальных ролей; null для глобальных"
           }
@@ -9248,11 +9280,11 @@
             "type": "string"
           },
           "phone": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "telegramChatId": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "isActive": {
@@ -9262,7 +9294,8 @@
             "type": "boolean"
           },
           "lastLoginAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "createdAt": {
@@ -9326,7 +9359,15 @@
             ]
           },
           "title": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+              "ru": {
+                "type": "string"
+              },
+              "kk": {
+                "type": "string"
+              }
+            }
           },
           "permissions": {
             "type": "array",
@@ -9352,11 +9393,11 @@
             "type": "string"
           },
           "phone": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "telegramChatId": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "password": {
@@ -9402,11 +9443,11 @@
             "type": "string"
           },
           "phone": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "telegramChatId": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "isActive": {
@@ -9521,11 +9562,11 @@
             "type": "boolean"
           },
           "staffNotifyPhone": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "staffTelegramChatId": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         }
@@ -9555,24 +9596,53 @@
             "type": "string"
           },
           "whatsapp": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "email": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "timezone": {
             "type": "string"
           },
           "openingHours": {
-            "type": "object"
+            "type": "object",
+            "description": "Часы работы по дням недели (mon..sun), интервалы в локальном времени; close может быть после полуночи",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "open": {
+                    "type": "string",
+                    "example": "10:00"
+                  },
+                  "close": {
+                    "type": "string",
+                    "example": "00:00"
+                  }
+                },
+                "required": [
+                  "open",
+                  "close"
+                ]
+              }
+            },
+            "example": {
+              "mon": [
+                {
+                  "open": "10:00",
+                  "close": "23:00"
+                }
+              ]
+            }
           },
           "settings": {
             "$ref": "#/components/schemas/BranchSettingsDto"
           },
           "legalEntityId": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "isActive": {
@@ -9622,11 +9692,11 @@
             "type": "string"
           },
           "whatsapp": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "email": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "timezone": {
@@ -9635,7 +9705,27 @@
           },
           "openingHours": {
             "type": "object",
-            "description": "Часы работы по дням: { mon: [{ open: \"10:00\", close: \"23:00\" }], ... }",
+            "description": "Часы работы по дням недели (mon..sun), интервалы в локальном времени; close может быть после полуночи",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "open": {
+                    "type": "string",
+                    "example": "10:00"
+                  },
+                  "close": {
+                    "type": "string",
+                    "example": "00:00"
+                  }
+                },
+                "required": [
+                  "open",
+                  "close"
+                ]
+              }
+            },
             "example": {
               "mon": [
                 {
@@ -9649,7 +9739,7 @@
             "$ref": "#/components/schemas/BranchSettingsDto"
           },
           "legalEntityId": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "isActive": {
@@ -9688,7 +9778,7 @@
             "type": "string"
           },
           "actualAddress": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "directorName": {
@@ -9724,15 +9814,15 @@
             "description": "Ставка НДС, базисные пункты (1600 = 16%)"
           },
           "vatCertificate": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "phone": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "email": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "isDefault": {
@@ -9778,7 +9868,7 @@
             "type": "string"
           },
           "actualAddress": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "directorName": {
@@ -9814,15 +9904,15 @@
             "description": "Ставка НДС, базисные пункты (1600 = 16%)"
           },
           "vatCertificate": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "phone": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "email": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "isDefault": {
@@ -9843,6 +9933,196 @@
           "kbe",
           "vatPayer",
           "vatRateBp"
+        ]
+      },
+      "AuditRecordDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "actorKind": {
+            "type": "string",
+            "enum": [
+              "staff",
+              "system",
+              "guest"
+            ]
+          },
+          "actorUserId": {
+            "type": "string",
+            "nullable": true
+          },
+          "actorName": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "entityType": {
+            "type": "string"
+          },
+          "entityId": {
+            "type": "string"
+          },
+          "branchId": {
+            "type": "string",
+            "nullable": true
+          },
+          "before": {
+            "type": "object",
+            "nullable": true,
+            "description": "Прежнее значение (JSON)"
+          },
+          "after": {
+            "type": "object",
+            "nullable": true,
+            "description": "Новое значение (JSON)"
+          },
+          "meta": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "ip": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "occurredAt",
+          "actorKind",
+          "actorName",
+          "action",
+          "entityType",
+          "entityId",
+          "meta"
+        ]
+      },
+      "AuditPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuditRecordDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "perPage": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "perPage"
+        ]
+      },
+      "IntegrationFieldDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "string",
+              "url",
+              "number",
+              "boolean",
+              "select",
+              "json"
+            ]
+          },
+          "secret": {
+            "type": "boolean"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "help": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "label",
+          "type"
+        ]
+      },
+      "IntegrationDescriptorDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "payments",
+              "notifications",
+              "pos",
+              "delivery",
+              "accounting",
+              "esf",
+              "geocoding",
+              "analytics",
+              "other"
+            ]
+          },
+          "stage": {
+            "type": "number",
+            "enum": [
+              1,
+              2,
+              3
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntegrationFieldDto"
+            }
+          }
+        },
+        "required": [
+          "key",
+          "title",
+          "category",
+          "stage",
+          "description",
+          "fields"
         ]
       },
       "IntegrationSettingDto": {
@@ -9866,7 +10146,8 @@
             "description": "Маскированные секреты"
           },
           "updatedAt": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         },
@@ -9901,6 +10182,170 @@
           "config"
         ]
       },
+      "IntegrationLogDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "integration": {
+            "type": "string"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "outbound",
+              "inbound"
+            ]
+          },
+          "operation": {
+            "type": "string"
+          },
+          "correlation_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "request": {
+            "type": "object",
+            "nullable": true,
+            "description": "Запрос (маскирован)"
+          },
+          "response": {
+            "type": "object",
+            "nullable": true,
+            "description": "Ответ (маскирован)"
+          },
+          "status_code": {
+            "type": "number",
+            "nullable": true
+          },
+          "success": {
+            "type": "boolean"
+          },
+          "duration_ms": {
+            "type": "number",
+            "nullable": true
+          },
+          "error": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "occurred_at",
+          "integration",
+          "direction",
+          "operation",
+          "success"
+        ]
+      },
+      "IntegrationLogsPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntegrationLogDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "perPage": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "perPage"
+        ]
+      },
+      "FailedJobDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "topic": {
+            "type": "string"
+          },
+          "handler": {
+            "type": "string",
+            "nullable": true
+          },
+          "payload": {
+            "type": "object",
+            "nullable": true
+          },
+          "error": {
+            "type": "string"
+          },
+          "attempts": {
+            "type": "number"
+          },
+          "failedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "retriedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "resolvedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "topic",
+          "error",
+          "attempts",
+          "failedAt"
+        ]
+      },
+      "FailedJobsPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FailedJobDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "perPage": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "perPage"
+        ]
+      },
       "PublicBranchDto": {
         "type": "object",
         "properties": {
@@ -9923,14 +10368,43 @@
             "type": "string"
           },
           "whatsapp": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "timezone": {
             "type": "string"
           },
           "openingHours": {
-            "type": "object"
+            "type": "object",
+            "description": "Часы работы по дням недели (mon..sun), интервалы в локальном времени; close может быть после полуночи",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "open": {
+                    "type": "string",
+                    "example": "10:00"
+                  },
+                  "close": {
+                    "type": "string",
+                    "example": "00:00"
+                  }
+                },
+                "required": [
+                  "open",
+                  "close"
+                ]
+              }
+            },
+            "example": {
+              "mon": [
+                {
+                  "open": "10:00",
+                  "close": "23:00"
+                }
+              ]
+            }
           },
           "isOpenNow": {
             "type": "boolean"

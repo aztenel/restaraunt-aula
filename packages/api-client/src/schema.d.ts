@@ -2570,8 +2570,11 @@ export interface components {
         RoleAssignmentDto: {
             /** @enum {string} */
             role: "branch_operator" | "banquet_manager" | "branch_manager" | "content_manager" | "finance" | "owner" | "sysadmin";
-            /** @description Филиал для филиальных ролей; null для глобальных */
-            branchId?: Record<string, never> | null;
+            /**
+             * Format: uuid
+             * @description Филиал для филиальных ролей; null для глобальных
+             */
+            branchId?: string | null;
         };
         MeDto: {
             id: string;
@@ -2595,11 +2598,12 @@ export interface components {
             id: string;
             email: string;
             name: string;
-            phone?: Record<string, never> | null;
-            telegramChatId?: Record<string, never> | null;
+            phone?: string | null;
+            telegramChatId?: string | null;
             isActive: boolean;
             mustChangePassword: boolean;
-            lastLoginAt?: Record<string, never> | null;
+            /** Format: date-time */
+            lastLoginAt?: string | null;
             /** Format: date-time */
             createdAt: string;
             roles: components["schemas"]["RoleAssignmentDto"][];
@@ -2614,14 +2618,17 @@ export interface components {
             role: string;
             /** @enum {string} */
             scope: "branch" | "global";
-            title: Record<string, never>;
+            title: {
+                ru?: string;
+                kk?: string;
+            };
             permissions: string[];
         };
         CreateUserDto: {
             email: string;
             name: string;
-            phone?: Record<string, never> | null;
-            telegramChatId?: Record<string, never> | null;
+            phone?: string | null;
+            telegramChatId?: string | null;
             /** @description Если не задан — будет сгенерирован временный пароль */
             password?: string;
             roles: components["schemas"]["RoleAssignmentDto"][];
@@ -2634,8 +2641,8 @@ export interface components {
         UpdateUserDto: {
             email?: string;
             name?: string;
-            phone?: Record<string, never> | null;
-            telegramChatId?: Record<string, never> | null;
+            phone?: string | null;
+            telegramChatId?: string | null;
             isActive?: boolean;
         };
         SetRolesDto: {
@@ -2671,8 +2678,8 @@ export interface components {
             awaitingPaymentTimeoutMinutes?: number;
             requirePhoneVerificationForOnReceipt?: boolean;
             requirePhoneVerificationForReservations?: boolean;
-            staffNotifyPhone?: Record<string, never> | null;
-            staffTelegramChatId?: Record<string, never> | null;
+            staffNotifyPhone?: string | null;
+            staffTelegramChatId?: string | null;
         };
         BranchDto: {
             id: string;
@@ -2682,12 +2689,30 @@ export interface components {
             address: components["schemas"]["TranslatableDto"];
             location: components["schemas"]["GeoPointDto"];
             phone: string;
-            whatsapp?: Record<string, never> | null;
-            email?: Record<string, never> | null;
+            whatsapp?: string | null;
+            email?: string | null;
             timezone: string;
-            openingHours: Record<string, never>;
+            /**
+             * @description Часы работы по дням недели (mon..sun), интервалы в локальном времени; close может быть после полуночи
+             * @example {
+             *       "mon": [
+             *         {
+             *           "open": "10:00",
+             *           "close": "23:00"
+             *         }
+             *       ]
+             *     }
+             */
+            openingHours: {
+                [key: string]: {
+                    /** @example 10:00 */
+                    open: string;
+                    /** @example 00:00 */
+                    close: string;
+                }[];
+            };
             settings: components["schemas"]["BranchSettingsDto"];
-            legalEntityId?: Record<string, never> | null;
+            legalEntityId?: string | null;
             isActive: boolean;
             sortOrder: number;
         };
@@ -2703,12 +2728,12 @@ export interface components {
             address: components["schemas"]["TranslatableDto"];
             location: components["schemas"]["GeoPointDto"];
             phone: string;
-            whatsapp?: Record<string, never> | null;
-            email?: Record<string, never> | null;
+            whatsapp?: string | null;
+            email?: string | null;
             /** @default Asia/Almaty */
             timezone: string;
             /**
-             * @description Часы работы по дням: { mon: [{ open: "10:00", close: "23:00" }], ... }
+             * @description Часы работы по дням недели (mon..sun), интервалы в локальном времени; close может быть после полуночи
              * @example {
              *       "mon": [
              *         {
@@ -2718,9 +2743,16 @@ export interface components {
              *       ]
              *     }
              */
-            openingHours: Record<string, never>;
+            openingHours: {
+                [key: string]: {
+                    /** @example 10:00 */
+                    open: string;
+                    /** @example 00:00 */
+                    close: string;
+                }[];
+            };
             settings?: components["schemas"]["BranchSettingsDto"];
-            legalEntityId?: Record<string, never> | null;
+            legalEntityId?: string | null;
             isActive?: boolean;
             sortOrder?: number;
         };
@@ -2732,7 +2764,7 @@ export interface components {
             /** @example 000000000000 */
             bin: string;
             legalAddress: string;
-            actualAddress?: Record<string, never> | null;
+            actualAddress?: string | null;
             directorName: string;
             /** @example Директор */
             directorPosition: string;
@@ -2747,9 +2779,9 @@ export interface components {
             vatPayer: boolean;
             /** @description Ставка НДС, базисные пункты (1600 = 16%) */
             vatRateBp: number;
-            vatCertificate?: Record<string, never> | null;
-            phone?: Record<string, never> | null;
-            email?: Record<string, never> | null;
+            vatCertificate?: string | null;
+            phone?: string | null;
+            email?: string | null;
             isDefault?: boolean;
             id: string;
         };
@@ -2761,7 +2793,7 @@ export interface components {
             /** @example 000000000000 */
             bin: string;
             legalAddress: string;
-            actualAddress?: Record<string, never> | null;
+            actualAddress?: string | null;
             directorName: string;
             /** @example Директор */
             directorPosition: string;
@@ -2776,10 +2808,58 @@ export interface components {
             vatPayer: boolean;
             /** @description Ставка НДС, базисные пункты (1600 = 16%) */
             vatRateBp: number;
-            vatCertificate?: Record<string, never> | null;
-            phone?: Record<string, never> | null;
-            email?: Record<string, never> | null;
+            vatCertificate?: string | null;
+            phone?: string | null;
+            email?: string | null;
             isDefault?: boolean;
+        };
+        AuditRecordDto: {
+            id: string;
+            /** Format: date-time */
+            occurredAt: string;
+            /** @enum {string} */
+            actorKind: "staff" | "system" | "guest";
+            actorUserId?: string | null;
+            actorName: string;
+            action: string;
+            entityType: string;
+            entityId: string;
+            branchId?: string | null;
+            /** @description Прежнее значение (JSON) */
+            before?: Record<string, never> | null;
+            /** @description Новое значение (JSON) */
+            after?: Record<string, never> | null;
+            meta: {
+                [key: string]: unknown;
+            };
+            ip?: string | null;
+            requestId?: string | null;
+        };
+        AuditPageDto: {
+            items: components["schemas"]["AuditRecordDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+        };
+        IntegrationFieldDto: {
+            name: string;
+            label: string;
+            /** @enum {string} */
+            type: "string" | "url" | "number" | "boolean" | "select" | "json";
+            secret?: boolean;
+            required?: boolean;
+            options?: string[];
+            help?: string;
+        };
+        IntegrationDescriptorDto: {
+            key: string;
+            title: string;
+            /** @enum {string} */
+            category: "payments" | "notifications" | "pos" | "delivery" | "accounting" | "esf" | "geocoding" | "analytics" | "other";
+            /** @enum {number} */
+            stage: 1 | 2 | 3;
+            description: string;
+            fields: components["schemas"]["IntegrationFieldDto"][];
         };
         IntegrationSettingDto: {
             key: string;
@@ -2791,7 +2871,8 @@ export interface components {
             secrets: {
                 [key: string]: string;
             };
-            updatedAt?: Record<string, never> | null;
+            /** Format: date-time */
+            updatedAt?: string | null;
         };
         SaveIntegrationSettingDto: {
             enabled: boolean;
@@ -2803,6 +2884,51 @@ export interface components {
                 [key: string]: string | null;
             };
         };
+        IntegrationLogDto: {
+            id: string;
+            /** Format: date-time */
+            occurred_at: string;
+            integration: string;
+            /** @enum {string} */
+            direction: "outbound" | "inbound";
+            operation: string;
+            correlation_id?: string | null;
+            /** @description Запрос (маскирован) */
+            request?: Record<string, never> | null;
+            /** @description Ответ (маскирован) */
+            response?: Record<string, never> | null;
+            status_code?: number | null;
+            success: boolean;
+            duration_ms?: number | null;
+            error?: string | null;
+        };
+        IntegrationLogsPageDto: {
+            items: components["schemas"]["IntegrationLogDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+        };
+        FailedJobDto: {
+            id: string;
+            kind: string;
+            topic: string;
+            handler?: string | null;
+            payload?: Record<string, never> | null;
+            error: string;
+            attempts: number;
+            /** Format: date-time */
+            failedAt: string;
+            /** Format: date-time */
+            retriedAt?: string | null;
+            /** Format: date-time */
+            resolvedAt?: string | null;
+        };
+        FailedJobsPageDto: {
+            items: components["schemas"]["FailedJobDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+        };
         PublicBranchDto: {
             id: string;
             slug: string;
@@ -2810,9 +2936,27 @@ export interface components {
             address: components["schemas"]["TranslatableDto"];
             location: components["schemas"]["GeoPointDto"];
             phone: string;
-            whatsapp?: Record<string, never> | null;
+            whatsapp?: string | null;
             timezone: string;
-            openingHours: Record<string, never>;
+            /**
+             * @description Часы работы по дням недели (mon..sun), интервалы в локальном времени; close может быть после полуночи
+             * @example {
+             *       "mon": [
+             *         {
+             *           "open": "10:00",
+             *           "close": "23:00"
+             *         }
+             *       ]
+             *     }
+             */
+            openingHours: {
+                [key: string]: {
+                    /** @example 10:00 */
+                    open: string;
+                    /** @example 00:00 */
+                    close: string;
+                }[];
+            };
             isOpenNow: boolean;
             acceptsDelivery: boolean;
             acceptsPickup: boolean;
@@ -5976,7 +6120,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AuditPageDto"];
+                };
             };
         };
     };
@@ -5993,7 +6139,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["IntegrationDescriptorDto"][];
+                };
             };
         };
     };
@@ -6057,7 +6205,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["IntegrationLogsPageDto"];
+                };
             };
         };
     };
@@ -6077,7 +6227,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["FailedJobsPageDto"];
+                };
             };
         };
     };
