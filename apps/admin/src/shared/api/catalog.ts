@@ -33,6 +33,7 @@ import {
   type SetAvailabilityInput,
   type SetMenuPriceInput,
   type TranslationEntityType,
+  type Translatable,
   type TranslationReport,
 } from '@aula/api-client';
 import { api } from './client';
@@ -57,6 +58,25 @@ export function imageFormData(files: File | readonly File[]): FormData {
   if (Array.isArray(files)) for (const file of files as readonly File[]) form.append('files', file, file.name);
   else form.append('file', files as File, (files as File).name);
   return form;
+}
+
+/** Позиция меню филиала: к общему типу добавлено имя сотрудника, последним менявшего позицию. */
+export type BranchMenuRow = BranchMenuItem & { updatedByName?: string | null };
+
+/** Пропуск перевода: для опции модификатора сервер отдаёт её группу (groupId). */
+export type TranslationGapRow = TranslationReport['items'][number] & { groupId?: string | null };
+
+/** Результат пакетного добавления блюд в меню филиала (всё или ничего). */
+export interface BulkAddResult {
+  added: number;
+  dishIds: string[];
+}
+
+/** Предпросмотр HTML страницы: как сервер сохранит его после санитизации. */
+export interface PagePreview {
+  body: Translatable;
+  /** Санитайзер что-то убрал или изменил. */
+  changed: boolean;
 }
 
 export interface DishListQuery {
@@ -158,7 +178,7 @@ export const catalogApi = {
   translations: async (params: TranslationReportQuery) =>
     (await call(
       api.GET('/api/v1/admin/catalog/translations', { params: { query: query({ ...params }) } }),
-    )) as unknown as TranslationReport,
+    )) as unknown as Omit<TranslationReport, 'items'> & { items: TranslationGapRow[] },
 };
 
 /** Меню филиала: цены (menu.prices) и стоп-лист (menu.stoplist) — всегда в разрезе филиала. */
@@ -166,10 +186,10 @@ export const branchMenuApi = {
   list: async (branchId: string, params: BranchMenuQuery) =>
     (await call(
       api.GET('/api/v1/admin/catalog/branches/{branchId}/menu', { params: { path: { branchId }, query: query({ ...params }) } }),
-    )) as unknown as Page<BranchMenuItem>,
+    )) as unknown as Page<BranchMenuRow>,
   /** Всё меню филиала (страницами по 200 — максимум API). */
-  all: async (branchId: string): Promise<BranchMenuItem[]> => {
-    const items: BranchMenuItem[] = [];
+  all: async (branchId: string): Promise<BranchMenuRow[]> => {
+    const items: BranchMenuRow[] = [];
     for (let page = 1; page <= 50; page++) {
       const result = await branchMenuApi.list(branchId, { page, perPage: 200 });
       items.push(...result.items);
@@ -188,6 +208,14 @@ export const branchMenuApi = {
         body: body<Schemas['AddMenuItemDto']>(input),
       }),
     )) as unknown as BranchMenuItem,
+  /** Несколько блюд с ценами филиала одним запросом — всё или ничего (до 500). */
+  bulkAdd: async (branchId: string, items: AddMenuItemInput[]) =>
+    (await call(
+      api.POST('/api/v1/admin/catalog/branches/{branchId}/menu/bulk-add', {
+        params: { path: { branchId } },
+        body: body<Schemas['BulkAddMenuItemsDto']>({ items }),
+      }),
+    )) as unknown as BulkAddResult,
   remove: (branchId: string, dishId: string) =>
     call(api.DELETE('/api/v1/admin/catalog/branches/{branchId}/menu/{dishId}', { params: { path: { branchId, dishId } } })),
   setPrice: async (branchId: string, dishId: string, input: SetMenuPriceInput) =>
@@ -197,6 +225,11 @@ export const branchMenuApi = {
         body: body<Schemas['SetPriceDto']>(input),
       }),
     )) as unknown as BranchMenuItem,
+  /** Код POS филиала без изменения цены; null — сбросить (в POS уйдёт общий код блюда). */
+  setSku: async (branchId: string, dishId: string, sku: string | null) =>
+    (await call(
+      api.PUT('/api/v1/admin/catalog/branches/{branchId}/menu/{dishId}/sku', { params: { path: { branchId, dishId } }, body: { sku } }),
+    )) as unknown as BranchMenuRow,
   /** Массовое изменение цен: всё или ничего. */
   bulkPrices: async (branchId: string, items: Array<{ dishId: string; price: { amount: number } }>) =>
     (await call(
@@ -222,7 +255,7 @@ export const branchMenuApi = {
   stopList: async (branchId: string) =>
     (await call(
       api.GET('/api/v1/admin/catalog/branches/{branchId}/stop-list', { params: { path: { branchId } } }),
-    )) as unknown as BranchMenuItem[],
+    )) as unknown as BranchMenuRow[],
 };
 
 /** Контент витрины (content.manage): баннеры, акции, страницы. */
@@ -236,6 +269,8 @@ export const contentApi = {
       api.PUT('/api/v1/admin/content/banners/{id}', { params: { path: { id } }, body: body<Schemas['BannerInputDto']>(input) }),
     )) as unknown as Banner,
   deleteBanner: (id: string) => call(api.DELETE('/api/v1/admin/content/banners/{id}', { params: { path: { id } } })),
+  removeBannerImage: async (id: string) =>
+    (await call(api.DELETE('/api/v1/admin/content/banners/{id}/image', { params: { path: { id } } }))) as unknown as Banner,
   uploadBannerImage: async (id: string, file: File) =>
     (await call(
       api.POST('/api/v1/admin/content/banners/{id}/image', {
@@ -254,6 +289,8 @@ export const contentApi = {
       api.PUT('/api/v1/admin/content/promotions/{id}', { params: { path: { id } }, body: body<Schemas['PromotionInputDto']>(input) }),
     )) as unknown as Promotion,
   deletePromotion: (id: string) => call(api.DELETE('/api/v1/admin/content/promotions/{id}', { params: { path: { id } } })),
+  removePromotionImage: async (id: string) =>
+    (await call(api.DELETE('/api/v1/admin/content/promotions/{id}/image', { params: { path: { id } } }))) as unknown as Promotion,
   uploadPromotionImage: async (id: string, file: File) =>
     (await call(
       api.POST('/api/v1/admin/content/promotions/{id}/image', {
@@ -271,4 +308,7 @@ export const contentApi = {
       api.PUT('/api/v1/admin/content/pages/{id}', { params: { path: { id } }, body: body<Schemas['PageInputDto']>(input) }),
     )) as unknown as ContentPage,
   deletePage: (id: string) => call(api.DELETE('/api/v1/admin/content/pages/{id}', { params: { path: { id } } })),
+  /** Очистить HTML страницы, как при сохранении, но ничего не сохраняя (настоящий предпросмотр). */
+  previewPage: async (pageBody: Translatable) =>
+    (await call(api.POST('/api/v1/admin/content/pages/preview', { body: body<Schemas['PagePreviewInputDto']>({ body: pageBody }) }))) as unknown as PagePreview,
 };

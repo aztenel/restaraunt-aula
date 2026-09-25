@@ -74,11 +74,11 @@ describe('Customers: consent texts and consents (integration)', () => {
 
   it('admin publishes a new version (customers.manage): becomes current, versions are immutable, audited', async () => {
     await seedCustomers(seedCtx());
-    const { auth } = await tokenFor(t, [{ role: 'banquet_manager' }]);
+    const { auth, userId } = await tokenFor(t, [{ role: 'banquet_manager' }], 'Менеджер Дина');
     const text = { ru: 'Новая редакция согласия', kk: 'Келісімнің жаңа редакциясы' };
     const res = await t.http().post(ADMIN).set('authorization', auth).send({ kind: 'personal_data', version: '2026-10-15', text });
     expect(res.status).toBe(201);
-    expect(res.body).toMatchObject({ kind: 'personal_data', version: '2026-10-15', text, isCurrent: true });
+    expect(res.body).toMatchObject({ kind: 'personal_data', version: '2026-10-15', text, isCurrent: true, publishedBy: userId, publishedByName: 'Менеджер Дина' });
 
     expect((await t.http().get(`${PUBLIC}/personal_data?locale=ru`)).body).toMatchObject({ version: '2026-10-15', text: text.ru });
     expect(await t.get(CustomerDirectory).currentConsentVersion('personal_data')).toBe('2026-10-15');
@@ -97,6 +97,7 @@ describe('Customers: consent texts and consents (integration)', () => {
       ['2026-10-15', true],
       ['2026-09-25', false],
     ]);
+    expect(list.body[0].publishedByName).toBe('Менеджер Дина');
 
     await expect(sql`update customers.consent_texts set version = 'x'`.execute(t.database.rootConnection())).rejects.toThrow(/append-only/);
 
@@ -121,7 +122,7 @@ describe('Customers: consent texts and consents (integration)', () => {
   it('staff records consent obtained by phone: history with source and employee, audited', async () => {
     await seedCustomers(seedCtx());
     const { customerId } = await t.get(CustomerDirectory).identify({ phone: '+77011234567' });
-    const { auth, userId } = await tokenFor(t, [{ role: 'banquet_manager' }]);
+    const { auth, userId } = await tokenFor(t, [{ role: 'banquet_manager' }], 'Менеджер Арман');
     const res = await t
       .http()
       .post(`/api/v1/admin/customers/${customerId}/consents`)
@@ -131,7 +132,14 @@ describe('Customers: consent texts and consents (integration)', () => {
     expect(res.body).toMatchObject({ marketingConsent: true, marketingConsentVersion: '2026-09-25' });
 
     const detail = await t.http().get(`/api/v1/admin/customers/${customerId}`).set('authorization', auth);
-    expect(detail.body.consents[0]).toMatchObject({ kind: 'marketing', granted: true, source: 'phone', recordedBy: userId, textVersion: '2026-09-25' });
+    expect(detail.body.consents[0]).toMatchObject({
+      kind: 'marketing',
+      granted: true,
+      source: 'phone',
+      recordedBy: userId,
+      recordedByName: 'Менеджер Арман',
+      textVersion: '2026-09-25',
+    });
 
     const bad = await t
       .http()

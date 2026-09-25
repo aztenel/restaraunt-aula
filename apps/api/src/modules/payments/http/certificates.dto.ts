@@ -392,6 +392,9 @@ export class CertificateListQueryDto extends PageQueryDto {
   @ApiPropertyOptional({ enum: CERTIFICATE_STATUSES }) @IsOptional() @IsIn(CERTIFICATE_STATUSES as unknown as string[])
   status?: 'active' | 'redeemed' | 'expired' | 'blocked';
   @ApiPropertyOptional() @IsOptional() @IsUUID() orderId?: string;
+  @ApiPropertyOptional({ description: 'Покупатель: имя, email или компания (часть, без учёта регистра)' }) @IsOptional() @IsString() @MaxLength(100) buyer?: string;
+  @ApiPropertyOptional({ example: '2026-10-01', description: 'Выпущен с даты (Asia/Almaty, включительно)' }) @IsOptional() @Matches(DATE_RE) issuedFrom?: string;
+  @ApiPropertyOptional({ example: '2026-10-31', description: 'Выпущен по дату (включительно)' }) @IsOptional() @Matches(DATE_RE) issuedTo?: string;
 }
 
 export class AdminCertificateBalanceDto extends CertificateBalanceDto {
@@ -480,7 +483,14 @@ export class PdfLinkDto {
 export class CertificateReportQueryDto {
   @ApiProperty({ example: '2026-10-01' }) @Matches(DATE_RE) from: string;
   @ApiProperty({ example: '2026-10-31' }) @Matches(DATE_RE) to: string;
+  @ApiPropertyOptional({
+    description: 'Филиал (где продан/погашен сертификат): certificates.view или reports.branch в филиале. Не задан — вся сеть (глобальные роли)',
+  })
+  @IsOptional()
+  @IsUUID()
+  branchId?: string;
 }
+
 
 export class ReportCountAmountDto {
   @ApiProperty() count: number;
@@ -504,6 +514,14 @@ export class ReportLiabilityDto {
   @ApiProperty({ type: ReportCountAmountDto, description: 'Заблокированные (остаток, не доступный к списанию)' }) blocked: ReportCountAmountDto;
 }
 
+export class CertificateBranchTotalsDto {
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true, description: 'null — продажа на сайте или по счёту (без филиала)' })
+  branchId: string | null;
+  @ApiProperty({ type: ReportCountAmountDto, description: 'Выпущено (количество, выручка от продажи)' }) issued: ReportCountAmountDto;
+  @ApiProperty({ type: ReportCountAmountDto, description: 'Погашено (операций, сумма)' }) redeemed: ReportCountAmountDto;
+  @ApiProperty({ type: ReportCountAmountDto, description: 'Возвращено на сертификаты (операций, сумма)' }) returned: ReportCountAmountDto;
+}
+
 export class CertificateReportDto {
   @ApiProperty() from: string;
   @ApiProperty() to: string;
@@ -512,7 +530,12 @@ export class CertificateReportDto {
   @ApiProperty({ type: ReportCountAmountDto, description: 'Возвращено на сертификаты (отмена заказов)' }) returned: ReportCountAmountDto;
   @ApiProperty({ type: ReportCountAmountDto, description: 'Просрочено (сгоревший остаток)' }) expired: ReportCountAmountDto;
   @ApiProperty({ type: ReportCountAmountDto, description: 'Восстановлено продлением срока' }) reinstated: ReportCountAmountDto;
-  @ApiProperty({ type: ReportLiabilityDto, description: 'Остаток обязательств на момент запроса' }) liability: ReportLiabilityDto;
+  @ApiProperty({ type: ReportLiabilityDto, description: 'Остаток обязательств на момент запроса (в отчёте филиала — нули, см. liabilityIncluded)' })
+  liability: ReportLiabilityDto;
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true, description: 'Филиал отчёта; null — вся сеть' }) branchId: string | null;
+  @ApiProperty({ description: 'Остаток обязательств включён (только сетевой отчёт: по филиалам не делится)' }) liabilityIncluded: boolean;
+  @ApiProperty({ type: [CertificateBranchTotalsDto], description: 'Движения по филиалам (продажа, погашение, возврат)' })
+  byBranch: CertificateBranchTotalsDto[];
 
   static from(r: CertificateReport): CertificateReportDto {
     const m = (amount: number) => ({ amount, currency: 'KZT' as const });
@@ -520,6 +543,14 @@ export class CertificateReportDto {
     return {
       from: r.from,
       to: r.to,
+      branchId: r.branchId,
+      liabilityIncluded: r.liabilityIncluded,
+      byBranch: r.byBranch.map((b) => ({
+        branchId: b.branchId,
+        issued: { count: b.issued.count, amount: m(b.issued.price) },
+        redeemed: { count: b.redeemed.operations, amount: m(b.redeemed.amount) },
+        returned: { count: b.returned.operations, amount: m(b.returned.amount) },
+      })),
       issued: { count: t.issued.count, nominal: m(t.issued.nominal), price: m(t.issued.price) },
       redeemed: { operations: t.redeemed.operations, certificates: t.redeemed.certificates, amount: m(t.redeemed.amount) },
       returned: { count: t.returned.operations, amount: m(t.returned.amount) },

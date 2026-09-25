@@ -8,16 +8,17 @@ import {
   PushOrderToPos,
   RegisterOrderExport,
   ReportOrderExportFailure,
+  RetryFailedOrderExports,
   RetryOrderExport,
 } from './application/order-export.actions';
 import { POS_CLIENTS, PosClientRegistry, posRoutingDescriptor } from './application/pos-client.registry';
-import { MappingSuggestionsQuery, OrderExportsQuery, PosProductsQuery, PosStatusQuery, ProductMappingsQuery } from './application/pos.queries';
+import { MappingSuggestionsQuery, OrderExportsQuery, PosDishesQuery, PosProductsQuery, PosStatusQuery, ProductMappingsQuery } from './application/pos.queries';
 import { ImportPosProducts, RequestProductImport } from './application/product-import.actions';
 import { RequestStopListSync, ScheduleStopListSync, SyncStopList } from './application/stop-list.actions';
 import { PosClient } from './domain/pos-client';
 import { PosOrderEventsHandler } from './handlers/order-events.handler';
 import { PosJobsHandler } from './handlers/pos-jobs.handler';
-import { PosExportsController, PosMappingsController, PosProductsController, PosStatusController } from './http/admin/pos.controller';
+import { PosDishesController, PosExportsController, PosMappingsController, PosProductsController, PosStatusController } from './http/admin/pos.controller';
 import { IikoPosClient } from './infrastructure/adapters/iiko/iiko-pos.client';
 import { IIKO_INTEGRATION } from './infrastructure/adapters/iiko/iiko.settings';
 import { ManualPosClient } from './infrastructure/adapters/manual/manual-pos.client';
@@ -34,7 +35,7 @@ import { SyncStateRepository } from './infrastructure/sync-state.repository';
  */
 @Global()
 @Module({
-  controllers: [PosStatusController, PosExportsController, PosMappingsController, PosProductsController],
+  controllers: [PosStatusController, PosExportsController, PosMappingsController, PosProductsController, PosDishesController],
   providers: [
     // Хранилище
     OrderExportRepository,
@@ -58,6 +59,7 @@ import { SyncStateRepository } from './infrastructure/sync-state.repository';
     PushOrderToPos,
     ConfirmPosOrder,
     RetryOrderExport,
+    RetryFailedOrderExports,
     HandleCancelledOrder,
     CreateProductMapping,
     UpdateProductMapping,
@@ -74,6 +76,7 @@ import { SyncStateRepository } from './infrastructure/sync-state.repository';
     ProductMappingsQuery,
     PosProductsQuery,
     MappingSuggestionsQuery,
+    PosDishesQuery,
     // Подписки, задачи, расписания
     PosOrderEventsHandler,
     PosJobsHandler,

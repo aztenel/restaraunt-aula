@@ -1,0 +1,5 @@
+# Playwright (e2e): отчёты, трассы, скриншоты
+/playwright-report/
+/test-results/
+/blob-report/
+/playwright/.cache/

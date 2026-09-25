@@ -7,7 +7,6 @@ import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import type {
   Availability,
-  BanquetRequestCreated,
   BranchMenu,
   CheckoutResult,
   DeliveryZone,
@@ -199,8 +198,6 @@ export async function issueIndividualInvoice(requestId: string): Promise<{ token
 export function tokenFromUrl(url: string): string {
   return new URL(url).pathname.split('/').filter(Boolean).pop()!;
 }
-
-export type { BanquetRequestCreated };
 
 // ---------------------------------------------------------------- Код SMS
 

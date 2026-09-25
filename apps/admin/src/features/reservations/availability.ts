@@ -1,154 +1,90 @@
 /**
- * Подбор мест для брони оператором и состояние мест на карте зала — по данным сервера:
- * занятость из календаря дня (GET /admin/reservations/timeline: start, blockedUntil занимающих броней)
- * и действующие правила мест (GET /admin/venues: длительность и буфер уборки).
+ * Подбор места для брони оператором и переноса — по серверу: GET /admin/reservations/availability
+ * отдаёт свободные на это время места (включая «только по телефону»; часы работы, вместимость, занятость
+ * с уборкой проверены; упреждение и горизонт витрины к оператору не применяются), причину, если мест нет,
+ * и ближайшее свободное время. Здесь — только параметры запроса и раскладка ответа для интерфейса.
+ * Окончательную проверку при сохранении делает сервер в транзакции (409 reservation.venue_occupied).
  *
- * Это предварительный фильтр для интерфейса («показать только свободные места»). Окончательную проверку
- * делает сервер в транзакции с блокировкой места (409 reservation.venue_occupied), поэтому ошибка
- * сервера всегда показывается и список обновляется. В API нет админского эндпоинта свободных мест:
- * публичный /reservation-availability скрывает места «только по телефону» и применяет ограничения витрины.
+ * Состояние места на карте зала в выбранный момент — по календарю дня (занимающие брони).
  */
 import { toMs } from './timeline-layout';
-import type { ReservationKind, ReservationStatus, TimelineItem } from './types';
+import type { AdminAvailability, AdminAvailabilityQuery, AdminVenueSlot, ReservationKind, ReservationStatus, TimelineItem } from './types';
 
 const MINUTE = 60_000;
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 
-/** Оператор может оформить бронь с началом чуть в прошлом («живая» посадка) — как на сервере. */
-export const STAFF_BACKDATE_GRACE_MINUTES = 15;
-
-export interface BookableVenue {
-  id: string;
-  hallId: string;
-  capacityMin: number;
-  capacityMax: number;
-  isBookable: boolean;
-  rules: { durationMinutes: number; cleanupMinutes: number };
-}
-
-export interface OccupancyItem {
-  reservationId: string;
-  blocking: boolean;
-  start: string;
-  blockedUntil: string;
-}
-
-export type VenueSlotStatus =
-  /** Свободно. */
-  | 'free'
-  /** Гостей больше вместимости (сервер отклонит: capacity_exceeded). */
-  | 'too_many_guests'
-  /** Место пересекается с другой бронью или банкетом (с учётом буфера уборки). */
-  | 'occupied'
-  /** Место, его зал или тип выключены. */
-  | 'inactive'
-  /** Время вне часов работы филиала. */
-  | 'closed'
-  /** Время в прошлом. */
-  | 'past';
-
-export interface VenueSlot {
-  venueId: string;
-  status: VenueSlotStatus;
-  durationMinutes: number;
-  start: number;
-  end: number;
-  /** Занятость места этой бронью: [start, end + уборка). */
-  blockedUntil: number;
-  /** Гостей меньше минимальной вместимости (оператору можно, но стоит предупредить). */
-  belowMinimum: boolean;
-  /** Бронь, с которой пересекается слот. */
-  conflictId: string | null;
-}
-
-export interface SlotRequest {
-  /** Начало брони, UTC мс. */
-  start: number;
-  guests: number;
-  /** null — длительность по правилу места. */
-  durationMinutes: number | null;
-  now: number;
-  openingRanges: ReadonlyArray<{ start: string; end: string }>;
-  /** Бронь, которую переносим (её собственная занятость не мешает). */
+export interface SlotParams {
+  date?: string | null;
+  time?: string | null;
+  guests?: number | null;
+  durationMinutes?: number | null;
   excludeReservationId?: string | null;
 }
 
-function fitsOpening(start: number, end: number, ranges: SlotRequest['openingRanges']): boolean {
-  return ranges.some((r) => toMs(r.start) <= start && end <= toMs(r.end));
-}
-
-/** Состояние одного места для запрошенного времени. */
-export function venueSlot(venue: BookableVenue, occupancy: readonly OccupancyItem[], request: SlotRequest): VenueSlot {
-  const durationMinutes = request.durationMinutes ?? venue.rules.durationMinutes;
-  const start = request.start;
-  const end = start + durationMinutes * MINUTE;
-  const blockedUntil = end + venue.rules.cleanupMinutes * MINUTE;
-  const base = {
-    venueId: venue.id,
-    durationMinutes,
-    start,
-    end,
-    blockedUntil,
-    belowMinimum: request.guests < venue.capacityMin,
-    conflictId: null as string | null,
+/** Параметры запроса свободных мест; null — ввод неполный (запрос не отправляется). */
+export function availabilityQuery(branchId: string, params: SlotParams): AdminAvailabilityQuery | null {
+  if (!params.date || !DATE_RE.test(params.date) || !params.time || !TIME_RE.test(params.time)) return null;
+  if (!params.guests || !Number.isInteger(params.guests) || params.guests < 1) return null;
+  return {
+    branchId,
+    date: params.date,
+    time: params.time,
+    guests: params.guests,
+    ...(params.durationMinutes ? { durationMinutes: params.durationMinutes } : {}),
+    ...(params.excludeReservationId ? { excludeReservationId: params.excludeReservationId } : {}),
   };
-  if (!venue.isBookable) return { ...base, status: 'inactive' };
-  if (request.guests > venue.capacityMax) return { ...base, status: 'too_many_guests' };
-  if (start < request.now - STAFF_BACKDATE_GRACE_MINUTES * MINUTE) return { ...base, status: 'past' };
-  if (!fitsOpening(start, end, request.openingRanges)) return { ...base, status: 'closed' };
-  const conflict = occupancy.find(
-    (item) =>
-      item.blocking &&
-      item.reservationId !== request.excludeReservationId &&
-      toMs(item.start) < blockedUntil &&
-      start < toMs(item.blockedUntil),
-  );
-  if (conflict) return { ...base, status: 'occupied', conflictId: conflict.reservationId };
-  return { ...base, status: 'free' };
 }
 
-export interface VenueChoice<V extends BookableVenue> {
-  venue: V;
-  slot: VenueSlot;
+export interface HallSlots {
+  hallId: string;
+  hallName: AdminVenueSlot['hallName'];
+  slots: AdminVenueSlot[];
 }
 
 /**
- * Места для выбора: сначала свободные — по возрастанию вместимости (самое подходящее по размеру),
- * затем занятые и неподходящие (для пояснения, почему их нет). onlyFree — только свободные.
+ * Свободные места по залам (порядок залов — как у сервера). Внутри зала: сначала места, где гостей не
+ * меньше минимума, затем — по возрастанию вместимости (самое подходящее по размеру — первым).
  */
-export function venueChoices<V extends BookableVenue>(
-  venues: readonly V[],
-  occupancyByVenue: ReadonlyMap<string, readonly OccupancyItem[]>,
-  request: SlotRequest,
-  options: { onlyFree?: boolean } = {},
-): Array<VenueChoice<V>> {
-  const rank: Record<VenueSlotStatus, number> = { free: 0, occupied: 1, too_many_guests: 2, closed: 3, past: 4, inactive: 5 };
-  const choices = venues.map((venue) => ({ venue, slot: venueSlot(venue, occupancyByVenue.get(venue.id) ?? [], request) }));
-  return choices
-    .filter((c) => !options.onlyFree || c.slot.status === 'free')
-    .sort(
-      (a, b) =>
-        rank[a.slot.status] - rank[b.slot.status] ||
-        Number(a.slot.belowMinimum) - Number(b.slot.belowMinimum) ||
-        a.venue.capacityMax - b.venue.capacityMax,
-    );
-}
-
-/** Почему свободных мест нет (для подсказки): первая «общая» причина или occupied / no_capacity. */
-export function noFreeReason(choices: ReadonlyArray<{ slot: VenueSlot }>): VenueSlotStatus | 'no_venues' | null {
-  if (choices.length === 0) return 'no_venues';
-  if (choices.some((c) => c.slot.status === 'free')) return null;
-  const statuses = new Set(choices.map((c) => c.slot.status));
-  for (const status of ['past', 'closed', 'occupied', 'too_many_guests', 'inactive'] as const) {
-    if (statuses.has(status)) return status;
+export function slotsByHall(venues: readonly AdminVenueSlot[]): HallSlots[] {
+  const halls: HallSlots[] = [];
+  for (const slot of venues) {
+    let hall = halls.find((h) => h.hallId === slot.hallId);
+    if (!hall) {
+      hall = { hallId: slot.hallId, hallName: slot.hallName, slots: [] };
+      halls.push(hall);
+    }
+    hall.slots.push(slot);
   }
-  return null;
+  for (const hall of halls) {
+    hall.slots.sort((a, b) => Number(a.belowMinimum) - Number(b.belowMinimum) || a.capacityMax - b.capacityMax || a.code.localeCompare(b.code));
+  }
+  return halls;
 }
 
-/** Занятость мест из ответа календаря: venueId → брони. */
-export function occupancyByVenue(halls: ReadonlyArray<{ venues: ReadonlyArray<{ id: string; items: readonly TimelineItem[] }> }>): Map<string, TimelineItem[]> {
-  const map = new Map<string, TimelineItem[]>();
-  for (const hall of halls) for (const venue of hall.venues) map.set(venue.id, [...venue.items]);
-  return map;
+/** Выбранное место свободно в ответе (иначе выбор снимается). */
+export function isVenueFree(availability: Pick<AdminAvailability, 'venues'> | null | undefined, venueId: string | null | undefined): boolean {
+  return Boolean(venueId && availability?.venues.some((v) => v.venueId === venueId));
+}
+
+/**
+ * Ближайшее свободное время (кнопки «выбрать 20:30»): без повторов, по времени; число мест —
+ * для подписи. currentVenueId — при переносе отмечается, свободно ли текущее место.
+ */
+export function alternativeOptions(
+  availability: Pick<AdminAvailability, 'alternatives'> | null | undefined,
+  currentVenueId?: string | null,
+): Array<{ time: string; date: string; venues: number; includesCurrent: boolean }> {
+  const seen = new Set<string>();
+  return (availability?.alternatives ?? [])
+    .filter((a) => {
+      const key = `${a.date} ${a.time}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .sort((a, b) => a.start.localeCompare(b.start))
+    .map((a) => ({ time: a.time, date: a.date, venues: a.venueIds.length, includesCurrent: Boolean(currentVenueId && a.venueIds.includes(currentVenueId)) }));
 }
 
 // ---------------------------------------------------------------- карта зала: состояние места на момент

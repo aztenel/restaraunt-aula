@@ -51,3 +51,17 @@ export function byHoldExpiry<T extends { holdExpiresAt: string | null; start: st
   if (ha !== hb) return ha - hb;
   return new Date(a.start).getTime() - new Date(b.start).getTime();
 }
+
+/**
+ * Отсчёт удержания для плашки в календаре дня: только для броней, которые ждут подтверждения или оплаты
+ * депозита (holdExpiresAt из календаря); минуты — с округлением вверх (календарь обновляется раз в 30 с).
+ */
+export function timelineHold(
+  item: { status: string; holdExpiresAt: string | null },
+  now: number,
+): { minutes: number; urgency: HoldUrgency } | null {
+  if (item.status !== 'pending' && item.status !== 'awaiting_deposit') return null;
+  const countdown = holdCountdown(item.holdExpiresAt, now);
+  if (!countdown) return null;
+  return { minutes: Math.ceil(countdown.seconds / 60), urgency: countdown.urgency };
+}

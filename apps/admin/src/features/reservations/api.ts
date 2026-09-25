@@ -8,6 +8,8 @@
 import { call, type Page, type Schemas } from '@aula/api-client';
 import { api } from '@/shared/api/client';
 import type {
+  AdminAvailability,
+  AdminAvailabilityQuery,
   CancelReservationInput,
   ConfirmReservationInput,
   CreateStaffReservationInput,
@@ -31,6 +33,8 @@ export const reservationKeys = {
   list: (params: ReservationsListQuery) => ['reservations', 'list', params] as const,
   queue: (branchId: string | null, kind: QueueKind) => ['reservations', 'queue', branchId ?? 'all', kind] as const,
   detail: (id: string) => ['reservations', 'detail', id] as const,
+  /** Свободные места для оператора (бронь по телефону, перенос). */
+  availability: (params: AdminAvailabilityQuery) => ['reservations', 'availability', params] as const,
 };
 
 /** Параметры очереди: ждут подтверждения, ждут депозит, требуют отметки «пришли / не пришли». */
@@ -64,6 +68,27 @@ export const reservationsApi = {
     )) as unknown as Page<ReservationSummary>,
   timeline: async (branchId: string, date: string) =>
     (await call(api.GET('/api/v1/admin/reservations/timeline', { params: { query: { branchId, date } } }))) as unknown as Timeline,
+  /**
+   * Свободные места на время для оператора: включая места «только по телефону», без ограничений витрины
+   * по упреждению и горизонту; часы работы, вместимость и занятость (с уборкой) проверяет сервер.
+   */
+  availability: async (params: AdminAvailabilityQuery) =>
+    (await call(
+      api.GET('/api/v1/admin/reservations/availability', {
+        params: {
+          query: {
+            branchId: params.branchId,
+            date: params.date,
+            time: params.time,
+            guests: params.guests,
+            durationMinutes: params.durationMinutes,
+            hallId: params.hallId,
+            typeCode: params.typeCode,
+            excludeReservationId: params.excludeReservationId,
+          },
+        },
+      }),
+    )) as unknown as AdminAvailability,
   get: async (id: string) =>
     (await call(api.GET('/api/v1/admin/reservations/{id}', { params: { path: { id } } }))) as unknown as ReservationDetail,
   /** Бронь оператором (по телефону). */

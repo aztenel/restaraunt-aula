@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { translate, type BranchMenuItem, type MenuItemAvailability } from '@aula/api-client';
-import { branchMenuApi, catalogApi, type BranchMenuQuery } from '@/shared/api/catalog';
+import { branchMenuApi, catalogApi, type BranchMenuQuery, type BranchMenuRow } from '@/shared/api/catalog';
 import { queryKeys } from '@/shared/api/query-keys';
 import { useBranch } from '@/shared/branch/BranchProvider';
 import { formatDateTime } from '@/shared/lib/dates';
@@ -125,7 +125,7 @@ function BranchMenuView({ branchId }: { branchId: string }) {
         {!editPrices ? ` ${t('catalog.branchMenu.readOnlyPrices')}` : ''}
       </Typography.Paragraph>
       {menu.error ? <ErrorAlert error={menu.error} onRetry={() => void menu.refetch()} /> : null}
-      <PaginatedTable<BranchMenuItem>
+      <PaginatedTable<BranchMenuRow>
         rowKey="dishId"
         data={menu.data}
         loading={menu.isLoading || menu.isPlaceholderData}
@@ -184,8 +184,17 @@ function BranchMenuView({ branchId }: { branchId: string }) {
           },
           {
             title: t('catalog.branchMenu.updatedAt'),
-            dataIndex: 'updatedAt',
-            render: (value: string) => <Typography.Text type="secondary">{formatDateTime(value)}</Typography.Text>,
+            key: 'updatedAt',
+            render: (_: unknown, item: BranchMenuRow) => (
+              <div>
+                <Typography.Text type="secondary">{formatDateTime(item.updatedAt)}</Typography.Text>
+                {item.updatedByName ? (
+                  <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
+                    {item.updatedByName}
+                  </Typography.Text>
+                ) : null}
+              </div>
+            ),
           },
           ...(editPrices
             ? [

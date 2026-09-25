@@ -5,7 +5,7 @@ import { Database } from '../../../shared/infrastructure/database/database';
 import { EventBus, JobQueue } from '../../../shared/infrastructure/events/event-bus';
 import { Actor } from '../../../shared/kernel/actor';
 import { Clock } from '../../../shared/kernel/clock';
-import { NotFoundError } from '../../../shared/kernel/errors';
+import { InvalidStateTransitionError, NotFoundError } from '../../../shared/kernel/errors';
 import { newId } from '../../../shared/kernel/ids';
 import { DEFAULT_TIMEZONE } from '../../../shared/kernel/time';
 import { BranchDirectory } from '../../identity/public';
@@ -405,6 +405,50 @@ export class RetryOrderExport {
       await this.jobs.enqueue<PushOrderJobPayload>(PUSH_ORDER_JOB, { orderId }, { branchId, aggregateId: orderId });
     });
     return (await this.exports.getRecord(exportId))!;
+  }
+}
+
+/** Сколько неудачных передач повторять за один запрос. */
+export const BULK_RETRY_MAX = 200;
+
+/**
+ * Массовый повтор неудачных передач филиала (после сопоставления блюд или восстановления связи с POS):
+ * каждая передача — отдельная запись журнала и задача в очереди; итог — сводная запись журнала.
+ */
+@Injectable()
+export class RetryFailedOrderExports {
+  constructor(
+    private readonly exports: OrderExportRepository,
+    private readonly retry: RetryOrderExport,
+    private readonly database: Database,
+    private readonly audit: AuditLog,
+  ) {}
+
+  async execute(actor: Actor, branchId: string): Promise<{ retried: number; exportIds: string[]; remaining: number }> {
+    assertCanOperatePos(actor, branchId);
+    const ids = await this.exports.failedIds(branchId, BULK_RETRY_MAX + 1);
+    const batch = ids.slice(0, BULK_RETRY_MAX);
+    const retried: string[] = [];
+    for (const id of batch) {
+      try {
+        await this.retry.execute(actor, id);
+        retried.push(id);
+      } catch (error) {
+        // Передачу уже повторили параллельно (статус сменился) — пропускаем.
+        if (!(error instanceof InvalidStateTransitionError)) throw error;
+      }
+    }
+    await this.database.transaction(async () => {
+      await this.audit.record({
+        action: 'pos.order_exports_bulk_retried',
+        entityType: 'branch',
+        entityId: branchId,
+        branchId,
+        after: { retried: retried.length },
+        meta: { exportIds: retried },
+      });
+    });
+    return { retried: retried.length, exportIds: retried, remaining: Math.max(0, ids.length - batch.length) };
   }
 }
 

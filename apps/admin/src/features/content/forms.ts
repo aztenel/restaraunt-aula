@@ -179,3 +179,13 @@ export function sanitizedLocales(sent: Translatable, saved: Translatable): Local
     return before !== '' && before !== after;
   });
 }
+
+/** В теле страницы есть текст хотя бы на одном языке (иначе предпросмотр не запрашивается). */
+export function bodyHasText(body: Translatable | null | undefined): boolean {
+  return LOCALES.some((locale) => Boolean(body?.[locale]?.trim()));
+}
+
+/** Стабильный ключ черновика для кэша предпросмотра (порядок языков фиксирован, пустые — пропущены). */
+export function previewBodyKey(body: Translatable | null | undefined): string {
+  return JSON.stringify(LOCALES.filter((locale) => body?.[locale]?.trim()).map((locale) => [locale, body?.[locale] ?? '']));
+}

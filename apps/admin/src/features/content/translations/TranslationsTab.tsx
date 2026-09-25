@@ -10,7 +10,7 @@ import { useAuth } from '@/shared/auth/AuthProvider';
 import { tx } from '@/shared/i18n/tx';
 import { ErrorAlert } from '@/shared/ui/ErrorAlert';
 import { canViewContent, catalogAbilities } from '../../menu/abilities';
-import { translationEditPath } from '../../menu/translation-links';
+import { needsModifierGroups, translationEditPath } from '../../menu/translation-links';
 
 const ENTITY_TYPES: TranslationEntityType[] = ['category', 'dish', 'modifier_group', 'modifier_option', 'banner', 'promotion', 'page'];
 const MENU_ENTITIES: TranslationEntityType[] = ['category', 'dish', 'modifier_group', 'modifier_option'];
@@ -29,7 +29,13 @@ export function TranslationsTab() {
   const params = useMemo(() => ({ locales: locales.join(','), entityType }), [locales, entityType]);
   const report = useQuery({ queryKey: queryKeys.translations(params), queryFn: () => catalogApi.translations(params), enabled: locales.length > 0 });
   // Опции модификаторов: ссылка ведёт на группу (отчёт отдаёт id опции).
-  const groups = useQuery({ queryKey: queryKeys.modifierGroups, queryFn: catalogApi.modifierGroups, enabled: menuAccess, staleTime: 60_000 });
+  // Группа опции модификатора приходит в отчёте (groupId); список групп — только для ответов без неё.
+  const groups = useQuery({
+    queryKey: queryKeys.modifierGroups,
+    queryFn: catalogApi.modifierGroups,
+    enabled: menuAccess && needsModifierGroups(report.data?.items ?? []),
+    staleTime: 60_000,
+  });
 
   const canOpen = (type: TranslationEntityType) => (MENU_ENTITIES.includes(type) ? menuAccess : contentAccess);
   const entityLabel = (type: string) => tx(t, `content.translations.entities.${type}`, type);

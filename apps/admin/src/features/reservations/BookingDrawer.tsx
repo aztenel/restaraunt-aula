@@ -1,5 +1,6 @@
 /**
- * Бронь оператором по телефону: дата, время, гости, длительность; место — из свободных на это время;
+ * Бронь оператором по телефону: дата, время, гости, длительность; место — из свободных на это время
+ * по серверу (GET /admin/reservations/availability, включая места «только по телефону»);
  * гость (телефон обязателен), пожелания, служебная заметка, язык уведомлений, согласия; депозит места —
  * ссылка на оплату гостю или отказ от депозита с причиной. Ошибки сервера — в форме.
  */
@@ -26,7 +27,8 @@ import type { BookingPrefill } from './hooks';
 import { InlineApiError } from './ReservationDialogs';
 import { todayIn } from './timeline-layout';
 import type { ReservationDetail } from './types';
-import { useSlotChoices, VenuePicker } from './VenuePicker';
+import { isVenueFree } from './availability';
+import { useSlotAvailability, VenuePicker } from './VenuePicker';
 
 export function BookingDrawer({
   open,
@@ -54,14 +56,13 @@ export function BookingDrawer({
   const values = (Form.useWatch([], form) ?? {}) as BookingFormValues;
   const canWaiveDeposit = can(Permission.ReservationsManage, branchId);
 
-  const slot = useSlotChoices(branchId, tz, {
+  const slot = useSlotAvailability(branchId, {
     date: values.date,
     time: values.time,
     guests: values.guests,
     durationMinutes: values.durationMinutes,
   });
-  const selectedVenue = useMemo(() => slot.venues?.find((v) => v.id === values.venueId) ?? null, [slot.venues, values.venueId]);
-  const selectedChoice = slot.choices?.find((c) => c.venue.id === values.venueId);
+  const selectedVenue = useMemo(() => slot.availability?.venues.find((v) => v.venueId === values.venueId) ?? null, [slot.availability, values.venueId]);
   const venueHasDeposit = Boolean(selectedVenue?.deposit);
 
   useEffect(() => {
@@ -81,10 +82,11 @@ export function BookingDrawer({
     // Заполнение формы — только при открытии (правки оператора не сбрасываются).
   }, [open, prefill, tz, form, i18n.language]);
 
-  // Выбранное место стало занятым / неподходящим после изменения времени или гостей — снять выбор.
+  // Выбранное место перестало быть свободным после изменения времени или гостей — снять выбор.
   useEffect(() => {
-    if (values.venueId && selectedChoice && selectedChoice.slot.status !== 'free') form.setFieldValue('venueId', null);
-  }, [selectedChoice, values.venueId, form]);
+    if (slot.loading || !slot.availability) return;
+    if (values.venueId && !isVenueFree(slot.availability, values.venueId)) form.setFieldValue('venueId', null);
+  }, [slot.availability, slot.loading, values.venueId, form]);
 
   const applyErrors = (errors: BookingErrors) => {
     form.setFields(
@@ -118,6 +120,7 @@ export function BookingDrawer({
         setOccupiedNotice(true);
         form.setFieldValue('venueId', null);
         setIdempotencyKey(newIdempotencyKey());
+        slot.refetch();
         void queryClient.invalidateQueries({ queryKey: reservationKeys.timeline(branchId, current.date ?? '') });
       } else if (apiError.status >= 400 && apiError.status < 500 && apiError.code !== 'reservation.idempotency_conflict') {
         // Бронь не создана — следующая попытка с исправленными данными получает новый ключ.
@@ -196,7 +199,14 @@ export function BookingDrawer({
               </Col>
             </Row>
             <Form.Item name="venueId" label={t('reservations.booking.venue')} required>
-              <VenuePicker choices={slot.choices} tz={tz} />
+              <VenuePicker
+                availability={slot.availability}
+                loading={slot.loading}
+                error={slot.error}
+                onRetry={slot.refetch}
+                tz={tz}
+                onPickTime={(time) => form.setFieldValue('time', time)}
+              />
             </Form.Item>
           </Col>
           <Col xs={24} lg={11}>

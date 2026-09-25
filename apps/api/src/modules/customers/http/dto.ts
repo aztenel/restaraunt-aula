@@ -265,6 +265,7 @@ export class ConsentRecordDto {
   @ApiProperty({ enum: ['web', 'admin', 'phone'] }) source: string;
   @ApiPropertyOptional({ type: String, nullable: true }) ip: string | null;
   @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true, description: 'Сотрудник, внёсший согласие' }) recordedBy: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Имя сотрудника, внёсшего согласие' }) recordedByName: string | null;
   @ApiProperty() recordedAt: Date;
 }
 
@@ -365,14 +366,15 @@ export class SegmentDto {
   @ApiPropertyOptional({ type: String, nullable: true }) description: string | null;
   @ApiProperty({ type: CustomerFilterDto }) filter: CustomerFilterDto;
   @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) createdBy: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) createdByName: string | null;
   @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) updatedBy: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) updatedByName: string | null;
   @ApiProperty() createdAt: Date;
   @ApiProperty() updatedAt: Date;
+  @ApiProperty({ description: 'Сколько гостей сейчас в сегменте (без обезличенных)' }) customersCount: number;
 }
 
-export class SegmentDetailDto extends SegmentDto {
-  @ApiProperty({ description: 'Сколько гостей сейчас в сегменте' }) customersCount: number;
-}
+export class SegmentDetailDto extends SegmentDto {}
 
 export class SaveSegmentDto {
   @ApiProperty({ example: 'Постоянные гости GreenLine' }) @IsString() @Length(1, 120) name: string;
@@ -405,6 +407,7 @@ export class ConsentTextDto {
   @ApiProperty({ type: TranslatableDto }) text: TranslatableDto;
   @ApiProperty() publishedAt: Date;
   @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true }) publishedBy: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Имя опубликовавшего сотрудника' }) publishedByName: string | null;
   @ApiProperty({ description: 'Действующая версия (показывается на формах)' }) isCurrent: boolean;
 }
 

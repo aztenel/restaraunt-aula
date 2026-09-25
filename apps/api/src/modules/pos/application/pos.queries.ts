@@ -3,7 +3,7 @@ import { Actor } from '../../../shared/kernel/actor';
 import { Page, pageOf, PageRequest } from '../../../shared/kernel/pagination';
 import { Permission } from '../../../shared/kernel/permissions';
 import { Translatable } from '../../../shared/kernel/translatable';
-import { MenuQuery, StopListControl } from '../../catalog/public';
+import { BranchOrderMenu, MenuQuery, OrderMenuDish, StopListControl } from '../../catalog/public';
 import { BranchDirectory } from '../../identity/public';
 import { rankCandidates, searchKeywords } from '../domain/name-matching';
 import { OrderExportStatus } from '../domain/order-export';
@@ -147,7 +147,7 @@ export class ProductMappingsQuery {
 
   async execute(
     actor: Actor,
-    filter: { branchId?: string | null; provider?: string; dishId?: string; externalProductId?: string },
+    filter: { branchId?: string | null; provider?: string; dishId?: string; externalProductId?: string; q?: string },
     page: PageRequest,
   ): Promise<Page<ProductMappingView>> {
     const branchIds = actor.scopeBranches(Permission.IntegrationsManage, filter.branchId);
@@ -164,6 +164,93 @@ export class ProductMappingsQuery {
       page,
     );
   }
+}
+
+export interface PosDishOptionView {
+  optionId: string;
+  name: Translatable;
+  /** Товар-модификатор POS, сопоставленный с опцией (null — не сопоставлена). */
+  externalProductId: string | null;
+  externalGroupId: string | null;
+}
+
+export interface PosDishGroupView {
+  groupId: string;
+  name: Translatable;
+  isRequired: boolean;
+  options: PosDishOptionView[];
+}
+
+export interface PosDishView {
+  dishId: string;
+  categoryId: string;
+  name: Translatable;
+  sku: string | null;
+  price: OrderMenuDish['price'];
+  stopped: boolean;
+  /** Сопоставление блюда для провайдера филиала (null — блюдо не сопоставлено). */
+  mapping: { mappingId: string; externalProductId: string; externalName: string | null } | null;
+  /** Опции модификаторов без сопоставления (при заказе с ними передача в POS не удастся). */
+  unmappedOptionIds: string[];
+  modifierGroups: PosDishGroupView[];
+}
+
+/**
+ * Блюда меню филиала для экрана сопоставления с POS (право integrations.manage в филиале):
+ * меню каталога (MenuQuery.branchOrderMenu) + текущие сопоставления провайдера филиала.
+ */
+@Injectable()
+export class PosDishesQuery {
+  constructor(
+    private readonly menu: MenuQuery,
+    private readonly mappings: ProductMappingRepository,
+    private readonly registry: PosClientRegistry,
+  ) {}
+
+  async execute(
+    actor: Actor,
+    input: { branchId: string; provider?: string; q?: string; unmappedOnly?: boolean },
+  ): Promise<{ branchId: string; provider: string; categories: BranchOrderMenu['categories']; dishes: PosDishView[] }> {
+    actor.assertCan(Permission.IntegrationsManage, input.branchId);
+    const provider = await viewProvider(this.registry, input.branchId, input.provider);
+    const [menu, records] = await Promise.all([this.menu.branchOrderMenu(input.branchId), this.mappings.recordsForBranch(input.branchId, provider)]);
+    const byDish = new Map(records.map((r) => [r.dishId, r]));
+    const needle = input.q?.trim().toLowerCase() ?? '';
+    const dishes: PosDishView[] = [];
+    for (const dish of menu.dishes) {
+      const mapping = byDish.get(dish.dishId) ?? null;
+      if (input.unmappedOnly && mapping) continue;
+      if (needle && !matchesDish(dish, needle)) continue;
+      const modifierGroups = dish.modifierGroups.map((g) => ({
+        groupId: g.id,
+        name: g.name,
+        isRequired: g.isRequired,
+        options: g.options.map((o) => ({
+          optionId: o.id,
+          name: o.name,
+          externalProductId: mapping?.modifiers[o.id]?.externalProductId ?? null,
+          externalGroupId: mapping?.modifiers[o.id]?.externalGroupId ?? null,
+        })),
+      }));
+      dishes.push({
+        dishId: dish.dishId,
+        categoryId: dish.categoryId,
+        name: dish.name,
+        sku: dish.sku,
+        price: dish.price,
+        stopped: dish.stopped,
+        mapping: mapping ? { mappingId: mapping.id, externalProductId: mapping.externalProductId, externalName: mapping.externalName } : null,
+        unmappedOptionIds: modifierGroups.flatMap((g) => g.options.filter((o) => !o.externalProductId).map((o) => o.optionId)),
+        modifierGroups,
+      });
+    }
+    return { branchId: input.branchId, provider, categories: menu.categories, dishes };
+  }
+}
+
+function matchesDish(dish: OrderMenuDish, needle: string): boolean {
+  if (dish.sku?.toLowerCase().includes(needle)) return true;
+  return Object.values(dish.name).some((v) => typeof v === 'string' && v.toLowerCase().includes(needle));
 }
 
 export interface PosProductView extends PosProductRecord {

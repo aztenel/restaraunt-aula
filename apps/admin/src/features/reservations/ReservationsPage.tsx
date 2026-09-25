@@ -2,7 +2,8 @@
  * Брони (reservations.view): день по местам — главный экран оператора, карта зала, список с фильтрами,
  * очереди (ждут подтверждения / депозит / отметки). Карточка брони открывается поверх любого вида
  * (?open=<id>, ссылка из уведомлений /reservations/<id>), бронь по телефону — reservations.manage в филиале.
- * Новые брони из ленты событий: звук (FeedProvider), счётчик и подсветка до просмотра.
+ * Новые брони из ленты событий (в т.ч. оплаченный депозит у места с ручным подтверждением — событие «создана»):
+ * звук (FeedProvider), счётчик и подсветка до просмотра.
  */
 import { PlusOutlined } from '@ant-design/icons';
 import { App, Badge, Button, Tabs } from 'antd';
@@ -21,7 +22,6 @@ import {
   ReservationsUiContext,
   useBranchTimezone,
   useNewReservations,
-  useQueueArrivalSound,
   type BookingPrefill,
   type ReservationsUi,
 } from './hooks';
@@ -51,9 +51,6 @@ export function ReservationsPage() {
   const activeTab: ReservationsTab = TABS.includes(segment as ReservationsTab) ? (segment as ReservationsTab) : 'day';
   const openId = params.get('open');
   const canCreate = Boolean(selectedBranchId) && can(Permission.ReservationsManage, selectedBranchId);
-
-  const pendingIds = useMemo(() => queues.pending.data?.items.map((r) => r.id), [queues.pending.data]);
-  useQueueArrivalSound(pendingIds, selectedBranchId ?? 'all', news.announced);
 
   const openReservation = useCallback(
     (id: string) =>

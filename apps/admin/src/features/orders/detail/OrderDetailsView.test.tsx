@@ -124,6 +124,7 @@ const order: AdminOrderDetails = {
   etaMinutes: 60,
   analyticsSessionId: null,
   createdBy: null,
+  createdByName: null,
   wasPaid: true,
   cancellation: null,
   timestamps: {
@@ -163,6 +164,8 @@ const order: AdminOrderDetails = {
   canReject: false,
   canRefund: false,
   refundable: money(0),
+  canRetryCourier: true,
+  canCancelCourier: false,
   trackingUrl: 'https://aula.kz/ru/orders/tok',
 };
 
@@ -188,10 +191,24 @@ describe('карточка заказа', { timeout: 30_000 }, () => {
     await waitFor(() => expect(screen.getByText(/Журнал действий доступен/)).toBeTruthy());
   });
 
-  it('без права orders.manage — нет кнопок курьера', () => {
-    permissions.delete('orders.manage');
-    wrap(<OrderDetailsView order={{ ...order, allowedTransitions: [] }} />);
+  it('кнопки курьера — только по флагам сервера canRetryCourier / canCancelCourier', () => {
+    wrap(<OrderDetailsView order={{ ...order, allowedTransitions: [], canRetryCourier: false, canCancelCourier: false }} />);
     expect(screen.queryByRole('button', { name: /Вызвать курьера снова/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Отменить заявку/ })).toBeNull();
     expect(screen.queryByRole('button', { name: /Передать курьеру/ })).toBeNull();
+    cleanup();
+    wrap(
+      <OrderDetailsView
+        order={{ ...order, courierDispatch: { ...order.courierDispatch!, status: 'searching', lastError: null }, canRetryCourier: false, canCancelCourier: true }}
+      />,
+    );
+    expect(screen.getByText('Поиск курьера')).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Отменить заявку/ })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Вызвать курьера снова/ })).toBeNull();
+  });
+
+  it('телефонный заказ: кто принял', () => {
+    wrap(<OrderDetailsView order={{ ...order, channel: 'admin', createdBy: 'u7', createdByName: 'Оператор Асель' }} />);
+    expect(screen.getByText('Принял: Оператор Асель')).toBeTruthy();
   });
 });

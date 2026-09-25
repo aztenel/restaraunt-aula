@@ -1,7 +1,8 @@
 /**
  * Очереди оператора: ждут подтверждения (места с ручным подтверждением), ждут депозит (онлайн-оплата)
  * — с отсчётом до автоматического снятия; требуют отметки «пришли / не пришли». Новые брони из ленты
- * подсвечиваются до просмотра. Действия — в карточке брони (разрешённые переходы отдаёт сервер).
+ * подсвечиваются до просмотра. Подтвердить / «пришли» / «не пришли» — в один клик прямо на карточке очереди
+ * (разрешённые переходы приходят с каждой бронью списка); остальное — в карточке брони.
  */
 import { Badge, Card, Col, Empty, Flex, Row, Space, Tag, Typography } from 'antd';
 import type { UseQueryResult } from '@tanstack/react-query';
@@ -15,6 +16,7 @@ import { formatInTz, formatLocalDate, venueTitle } from './format';
 import { byHoldExpiry } from './hold-countdown';
 import { useReservationsUi } from './hooks';
 import { DepositTag, HoldCountdownTag } from './parts';
+import { QuickActions } from './QuickActions';
 import type { ReservationSummary } from './types';
 
 export const QUEUE_KINDS: QueueKind[] = ['pending', 'awaiting_deposit', 'needs_mark'];
@@ -132,6 +134,9 @@ function QueueCard({ reservation: r, kind }: { reservation: ReservationSummary; 
         )}
         {r.deposit ? <DepositTag state={r.depositState} amount={r.deposit} /> : null}
       </Flex>
+      <div style={{ marginTop: 8 }}>
+        <QuickActions reservation={r} />
+      </div>
     </div>
   );
 }

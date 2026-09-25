@@ -251,5 +251,10 @@ function paymentHistory(statuses: PaymentStatusHistoryEntry[], refunds: RefundAd
       });
     }
   }
-  return events.sort((a, b) => a.at.getTime() - b.at.getTime());
+  // При равном времени: запрос возврата → переход статуса → итог возврата.
+  const rank: Record<PaymentHistoryEvent['type'], number> = { refund_requested: 0, status: 1, refund_succeeded: 2, refund_failed: 2 };
+  return events
+    .map((e, index) => ({ e, index }))
+    .sort((a, b) => a.e.at.getTime() - b.e.at.getTime() || rank[a.e.type] - rank[b.e.type] || a.index - b.index)
+    .map(({ e }) => e);
 }

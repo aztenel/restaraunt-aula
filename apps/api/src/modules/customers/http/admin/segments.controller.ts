@@ -29,23 +29,24 @@ export class AdminCustomerSegmentsController {
   @Get(':id')
   @RequirePermissions(Permission.CustomersView)
   @ApiOkResponse({ type: SegmentDetailDto })
-  async get(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string): Promise<SegmentDetailDto> {
-    const segment = await this.queries.get(actor, id);
-    return { ...segment, customersCount: segment.customersCount ?? 0 };
+  get(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string): Promise<SegmentDetailDto> {
+    return this.queries.get(actor, id);
   }
 
   @Post()
   @RequirePermissions(Permission.CustomersManage)
   @ApiCreatedResponse({ type: SegmentDto })
-  create(@CurrentActor() actor: Actor, @Body() dto: SaveSegmentDto): Promise<SegmentDto> {
-    return this.createSegment.execute(actor, { name: dto.name, description: dto.description, filter: { ...dto.filter } });
+  async create(@CurrentActor() actor: Actor, @Body() dto: SaveSegmentDto): Promise<SegmentDto> {
+    const segment = await this.createSegment.execute(actor, { name: dto.name, description: dto.description, filter: { ...dto.filter } });
+    return this.queries.get(actor, segment.id);
   }
 
   @Patch(':id')
   @RequirePermissions(Permission.CustomersManage)
   @ApiOkResponse({ type: SegmentDto })
-  update(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: SaveSegmentDto): Promise<SegmentDto> {
-    return this.updateSegment.execute(actor, id, { name: dto.name, description: dto.description, filter: { ...dto.filter } });
+  async update(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string, @Body() dto: SaveSegmentDto): Promise<SegmentDto> {
+    await this.updateSegment.execute(actor, id, { name: dto.name, description: dto.description, filter: { ...dto.filter } });
+    return this.queries.get(actor, id);
   }
 
   @Delete(':id')

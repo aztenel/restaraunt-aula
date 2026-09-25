@@ -8,17 +8,16 @@ import { errorMessage } from '@/shared/api/errors';
 import { queryKeys } from '@/shared/api/query-keys';
 import { CatalogThumb } from '@/shared/ui/CatalogThumb';
 import { MoneyInput } from '@/shared/ui/MoneyInput';
+import { bulkAddItems, MAX_BULK_ADD, rowsForBulkAddError, type AddDraft } from './add-dishes';
 import { MAX_MENU_PRICE_TIYN } from './PriceCell';
 
-interface Draft {
-  price: number | null;
-  sku: string;
-}
+type Draft = AddDraft;
 
 /**
  * Добавление блюд в меню филиала (menu.prices): только блюда, которых ещё нет в меню
  * (GET /dishes?notInBranchId=), цена обязательна (тиыны), код POS филиала — по желанию.
- * Каждое блюдо — отдельный запрос (у API нет пакетного добавления); ошибки — по строкам.
+ * Все выбранные блюда — одним запросом POST .../menu/bulk-add (всё или ничего); ошибка сервера
+ * подсвечивает строки, к которым относится (блюдо уже в меню, занятый код POS).
  */
 export function AddDishesModal({ branchId, branchName, open, onClose }: { branchId: string; branchName: string; open: boolean; onClose: () => void }) {
   const { t, i18n } = useTranslation();
@@ -30,6 +29,7 @@ export function AddDishesModal({ branchId, branchName, open, onClose }: { branch
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [dishes, setDishes] = useState<Record<string, Dish>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [failure, setFailure] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const params = useMemo(() => ({ q: q || undefined, notInBranchId: branchId, isActive: true, page, perPage: 20 }), [q, branchId, page]);
@@ -49,34 +49,32 @@ export function AddDishesModal({ branchId, branchName, open, onClose }: { branch
     setDrafts({});
     setDishes({});
     setErrors({});
+    setFailure(null);
     setQ('');
     setPage(1);
   };
 
   const submit = async () => {
-    if (selected.length === 0 || missingPrice.length > 0) return;
+    const items = bulkAddItems(selected, drafts);
+    if (!items || items.length === 0) return;
     setSaving(true);
-    const failed: Record<string, string> = {};
-    let added = 0;
-    for (const dishId of selected) {
-      const { price, sku } = draft(dishId);
-      try {
-        await branchMenuApi.add(branchId, { dishId, price: { amount: price ?? 0 }, sku: sku.trim() || null });
-        added++;
-      } catch (error) {
-        failed[dishId] = errorMessage(toApiError(error), i18n.language);
-      }
-    }
-    setSaving(false);
-    await queryClient.invalidateQueries({ queryKey: queryKeys.branchMenu(branchId) });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.dishes });
-    if (added > 0) void message.success(t('catalog.branchMenu.added', { count: added }));
-    if (Object.keys(failed).length === 0) {
+    setErrors({});
+    setFailure(null);
+    try {
+      const result = await branchMenuApi.bulkAdd(branchId, items);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.branchMenu(branchId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.dishes });
+      void message.success(t('catalog.branchMenu.added', { count: result.added }));
       reset();
       onClose();
-    } else {
-      setErrors(failed);
-      setSelected(Object.keys(failed));
+    } catch (error) {
+      // Всё или ничего: ни одно блюдо не добавлено — показываем причину и строки, к которым она относится.
+      const apiError = toApiError(error);
+      const text = errorMessage(apiError, i18n.language);
+      setFailure(text);
+      setErrors(Object.fromEntries(rowsForBulkAddError(apiError, items).map((id) => [id, text])));
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -86,7 +84,7 @@ export function AddDishesModal({ branchId, branchName, open, onClose }: { branch
       width={900}
       title={t('catalog.branchMenu.addTitle', { branch: branchName })}
       okText={t('catalog.branchMenu.addSubmit', { count: selected.length })}
-      okButtonProps={{ disabled: selected.length === 0 || missingPrice.length > 0, loading: saving }}
+      okButtonProps={{ disabled: selected.length === 0 || selected.length > MAX_BULK_ADD || missingPrice.length > 0, loading: saving }}
       cancelText={t('common.cancel')}
       onOk={() => void submit()}
       onCancel={() => {
@@ -105,7 +103,7 @@ export function AddDishesModal({ branchId, branchName, open, onClose }: { branch
             setPage(1);
           }}
         />
-        {Object.keys(errors).length > 0 ? <Alert type="error" showIcon message={t('catalog.branchMenu.addFailed')} /> : null}
+        {failure ? <Alert type="error" showIcon message={t('catalog.branchMenu.addFailed')} description={failure} /> : null}
         {missingPrice.length > 0 ? <Alert type="warning" showIcon message={t('catalog.branchMenu.priceRequired')} /> : null}
         <Table<Dish>
           rowKey="id"

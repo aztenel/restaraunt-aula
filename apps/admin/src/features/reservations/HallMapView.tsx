@@ -13,14 +13,13 @@ import { StatusTag } from '@/shared/ui/StatusTag';
 import { ErrorAlert } from '@/shared/ui/ErrorAlert';
 import { PageLoader } from '@/shared/ui/PageLoader';
 import { dayjs } from '@/shared/lib/dates';
-import { venueKeys, venueConfigApi } from '../venues/api';
 import { backgroundUrl, HallPlan, type PlanShape } from '../venues/HallPlan';
 import { reservationKeys, reservationsApi } from './api';
 import { venueStateAt, type VenueMapState } from './availability';
 import { formatInTz, formatLocalDate, formatTimeRange, venueTitle } from './format';
 import { useBranchTimezone, useNow, useReservationDate, useReservationsUi } from './hooks';
 import { MAP_STATE_SWATCH, MAP_STATES } from './palette';
-import { DateNavigator, KindTag, LegendItem } from './parts';
+import { DateNavigator, HoldCountdownTag, KindTag, LegendItem } from './parts';
 import { SingleBranchGate } from './SingleBranchGate';
 import { localDateTime, timelineWindow, todayIn, zonedToMs } from './timeline-layout';
 import type { TimelineVenue } from './types';
@@ -77,7 +76,6 @@ function HallMap({ branchId }: { branchId: string }) {
     keepPrevious: true,
     refetchInterval: 60_000,
   });
-  const halls = useApiQuery(venueKeys.halls(branchId), () => venueConfigApi.halls(branchId), { staleTime: 5 * 60_000 });
   const data = timeline.data?.branchId === branchId ? timeline.data : undefined;
   const mapHalls = useMemo(() => (data ? data.halls.filter((h) => h.isActive || h.venues.some((v) => v.items.length > 0)) : []), [data]);
   const [hallId, setHallId] = useState<string | null>(null);
@@ -127,7 +125,6 @@ function HallMap({ branchId }: { branchId: string }) {
   }, [hall, at, tz, t, i18n.language, ui.newIds]);
 
   const selected = hall?.venues.find((v) => v.id === selectedId) ?? null;
-  const hallImage = halls.data?.find((h) => h.id === hall?.id)?.background;
 
   const book = (venue: TimelineVenue) =>
     ui.openBooking({ venueId: venue.id, date, time, guests: Math.min(Math.max(2, venue.capacityMin), venue.capacityMax) });
@@ -196,7 +193,7 @@ function HallMap({ branchId }: { branchId: string }) {
               <HallPlan
                 width={hall.planWidth}
                 height={hall.planHeight}
-                background={backgroundUrl(hallImage)}
+                background={backgroundUrl(hall.background)}
                 shapes={shapes}
                 selectedId={selectedId}
                 onShapeClick={onShapeClick}
@@ -267,7 +264,17 @@ function VenueDayPanel({
           {translate(venue.typeName, i18n.language)} · {t('reservations.capacityRange', { min: venue.capacityMin, max: venue.capacityMax })}
           {venue.deposit ? ` · ${t('reservations.fields.deposit')} ${formatMoney(venue.deposit, i18n.language)}` : ''}
         </Typography.Text>
-        {!venue.bookableOnline ? <Tag>{t('reservations.phoneOnly')}</Tag> : null}
+        <Space size={4} wrap>
+          {!venue.bookableOnline ? <Tag>{t('reservations.phoneOnly')}</Tag> : null}
+          {venue.rules.requiresManualConfirmation ? <Tag color="gold">{t('reservations.booking.manualConfirmation')}</Tag> : null}
+        </Space>
+        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+          {t('reservations.map.venueRules', {
+            duration: t('reservations.minutes', { count: venue.rules.durationMinutes }),
+            cleanup: t('reservations.minutes', { count: venue.rules.cleanupMinutes }),
+            hold: t('reservations.minutes', { count: venue.rules.holdMinutes }),
+          })}
+        </Typography.Text>
         {canCreate && venue.isActive ? (
           <Button type="primary" icon={<PlusOutlined />} block onClick={() => onBook(venue)}>
             {t('reservations.map.bookAt', { time })}
@@ -288,6 +295,7 @@ function VenueDayPanel({
                   <Space wrap size={4}>
                     <Typography.Text strong>{formatTimeRange(item.start, item.end, tz)}</Typography.Text>
                     {item.kind === 'banquet' ? <KindTag kind="banquet" /> : <StatusTag domain="reservation" status={item.status} />}
+                    {item.status === 'pending' || item.status === 'awaiting_deposit' ? <HoldCountdownTag holdExpiresAt={item.holdExpiresAt} /> : null}
                   </Space>
                   <Typography.Text type="secondary" style={{ fontSize: 12 }}>
                     {item.number} · {t('reservations.guestsCount', { count: item.guests })}

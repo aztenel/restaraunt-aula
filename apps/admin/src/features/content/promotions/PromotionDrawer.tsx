@@ -1,3 +1,4 @@
+import { DeleteOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { Alert, App, Button, Col, Divider, Drawer, Flex, Form, Input, InputNumber, Row, Select, Space, Switch } from 'antd';
 import { useEffect, useState } from 'react';
@@ -8,6 +9,7 @@ import { queryKeys } from '@/shared/api/query-keys';
 import { useNotifyError } from '@/shared/api/useNotifyError';
 import { useBranch } from '@/shared/branch/BranchProvider';
 import { CatalogThumb } from '@/shared/ui/CatalogThumb';
+import { ConfirmAction } from '@/shared/ui/ConfirmAction';
 import { ImageDropZone } from '@/shared/ui/ImageDropZone';
 import { MissingTranslationsTag } from '@/shared/ui/MissingTranslationsTag';
 import { TranslatableInput, translatableRule } from '@/shared/ui/TranslatableInput';
@@ -198,6 +200,20 @@ export function PromotionDrawer({
             <ImageDropZone disabled={!canEdit} loading={uploading} onFiles={(files) => void upload(files)}>
               {promotion.image ? t('catalog.images.replace') : t('catalog.images.dropOne')}
             </ImageDropZone>
+            {promotion.image && canEdit ? (
+              <div style={{ marginTop: 8 }}>
+                <ConfirmAction
+                  danger
+                  title={t('catalog.images.removeConfirm')}
+                  description={t('catalog.auditNote')}
+                  buttonProps={{ size: 'small', icon: <DeleteOutlined /> }}
+                  successMessage={t('common.saved')}
+                  onConfirm={async () => applyServer(await contentApi.removePromotionImage(promotion.id))}
+                >
+                  {t('catalog.images.remove')}
+                </ConfirmAction>
+              </div>
+            ) : null}
           </div>
         </Flex>
       ) : (

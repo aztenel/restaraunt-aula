@@ -41,8 +41,9 @@ const STATUS_BORDER: Record<string, string> = {
   default: '#8c8c8c',
 };
 
-function EventChip({ banquet }: { banquet: BanquetRequestSummary }) {
-  const { t } = useTranslation();
+function EventChip({ banquet, showPlace }: { banquet: BanquetRequestSummary; showPlace?: boolean }) {
+  const { t, i18n } = useTranslation();
+  const place = banquet.isOffsite ? t('banquets.common.offsite') : banquet.branchName ? translate(banquet.branchName, i18n.language) : '';
   const border = STATUS_BORDER[statusColor('banquet', banquet.status)] ?? '#722ed1';
   return (
     <Tooltip
@@ -57,6 +58,7 @@ function EventChip({ banquet }: { banquet: BanquetRequestSummary }) {
           <div>
             {banquet.contact.name} · {banquet.managerName}
           </div>
+          {place ? <div>{banquet.isOffsite && banquet.offsiteAddress ? `${place}: ${banquet.offsiteAddress}` : place}</div> : null}
         </div>
       }
     >
@@ -67,29 +69,35 @@ function EventChip({ banquet }: { banquet: BanquetRequestSummary }) {
       >
         {banquet.eventTime ? `${banquet.eventTime} ` : ''}
         {tx(t, `banquets.eventTypes.${banquet.eventType}`, banquet.eventType)} · {banquet.guests}
+        {showPlace && place ? ` · ${place}` : ''}
       </Link>
     </Tooltip>
   );
 }
 
 /**
- * Календарь мероприятий филиала (GET /admin/banquets/calendar): месяц — банкеты по датам и сводка
- * занятости залов; неделя — залы × дни с полосами занятости (брони и банкеты из модуля брони).
+ * Календарь мероприятий (GET /admin/banquets/calendar): филиал или «Все филиалы» (все доступные филиалы
+ * и выездные заявки). Месяц — банкеты по датам и сводка занятости залов; неделя — залы × дни с полосами
+ * занятости (брони и банкеты из модуля брони).
  */
 export function CalendarPage() {
   const { t, i18n } = useTranslation();
-  const { selectedBranchId, branches } = useBranch();
+  const { selectedBranchId, branches, canSelectAll, branchName } = useBranch();
   const [mode, setMode] = useStoredState<CalendarMode>('aula_admin_banquets_calendar', 'month');
   const [anchor, setAnchor] = useState(() => todayLocal());
   const [branchId, setBranchId] = useState<string | null>(selectedBranchId);
 
+  // «Все филиалы» (null) — только при глобальных правах; иначе — филиал из шапки или первый доступный.
+  const fallbackBranch = canSelectAll ? null : (branches[0]?.id ?? null);
   useEffect(() => {
-    setBranchId(selectedBranchId ?? branches[0]?.id ?? null);
-  }, [selectedBranchId, branches]);
+    setBranchId(selectedBranchId ?? fallbackBranch);
+  }, [selectedBranchId, fallbackBranch]);
 
+  const allBranches = branchId === null;
+  const ready = Boolean(branchId) || canSelectAll;
   const range = calendarRange(mode, anchor);
-  const params = { branchId: branchId ?? '', from: range.from, to: range.to };
-  const calendar = useApiQuery(banquetsKeys.calendar(params), () => banquetsApi.calendar(params), { enabled: Boolean(branchId), keepPrevious: true });
+  const params = { ...(branchId ? { branchId } : {}), from: range.from, to: range.to };
+  const calendar = useApiQuery(banquetsKeys.calendar(params), () => banquetsApi.calendar(params), { enabled: ready, keepPrevious: true });
   const today = todayLocal();
 
   const segments = useMemo(() => splitOccupancy(calendar.data?.occupancy ?? []), [calendar.data]);
@@ -110,7 +118,7 @@ export function CalendarPage() {
     <>
       <Flex justify="space-between" align="center" gap={12} wrap style={{ marginBottom: 12 }}>
         <Space wrap>
-          <BranchSelect value={branchId} onChange={setBranchId} style={{ width: 220 }} />
+          <BranchSelect allowAll={canSelectAll} value={branchId} onChange={setBranchId} style={{ width: 220 }} />
           <Segmented<CalendarMode>
             value={mode}
             onChange={setMode}
@@ -135,10 +143,11 @@ export function CalendarPage() {
         </Space>
       </Flex>
       <Typography.Paragraph type="secondary">{t('banquets.calendar.syncHint')}</Typography.Paragraph>
-      {!branchId ? <Alert type="info" showIcon message={t('banquets.calendar.chooseBranch')} /> : null}
+      {!ready ? <Alert type="info" showIcon message={t('banquets.calendar.chooseBranch')} /> : null}
+      {allBranches && ready ? <Alert type="info" showIcon style={{ marginBottom: 12 }} message={t('banquets.calendar.allBranchesHint')} /> : null}
       {calendar.error ? <ErrorAlert error={calendar.error} onRetry={() => void calendar.refetch()} /> : null}
-      {branchId && calendar.isLoading ? <PageLoader /> : null}
-      {branchId && calendar.data && mode === 'month' ? (
+      {ready && calendar.isLoading ? <PageLoader /> : null}
+      {ready && calendar.data && mode === 'month' ? (
         <div style={{ overflowX: 'auto' }}>
           <div className="aula-bq-month" style={{ minWidth: 840 }}>
             {weekdayHeader.map((d) => (
@@ -158,7 +167,7 @@ export function CalendarPage() {
                       {dayjs(day).date()}
                     </span>
                     {events.slice(0, 4).map((b) => (
-                      <EventChip key={b.id} banquet={b} />
+                      <EventChip key={b.id} banquet={b} showPlace={allBranches} />
                     ))}
                     {events.length > 4 ? <Typography.Text type="secondary" style={{ fontSize: 11 }}>{t('banquets.calendar.more', { count: events.length - 4 })}</Typography.Text> : null}
                     {occ ? (
@@ -174,7 +183,7 @@ export function CalendarPage() {
           </div>
         </div>
       ) : null}
-      {branchId && calendar.data && mode === 'week' ? (
+      {ready && calendar.data && mode === 'week' ? (
         calendar.data.venues.length === 0 ? (
           <Empty description={t('banquets.calendar.noVenues')} />
         ) : (
@@ -194,14 +203,14 @@ export function CalendarPage() {
                   {(byDate.get(day) ?? [])
                     .filter((b) => !withVenue.has(b.id))
                     .map((b) => (
-                      <EventChip key={b.id} banquet={b} />
+                      <EventChip key={b.id} banquet={b} showPlace={allBranches} />
                     ))}
                 </div>
               ))}
               {calendar.data.venues.map((venue) => (
                 <VenueRow
                   key={venue.id}
-                  label={`${translate(venue.hallName, i18n.language)} · ${translate(venue.name, i18n.language)}`}
+                  label={`${allBranches ? `${branchName(venue.branchId)} · ` : ''}${translate(venue.hallName, i18n.language)} · ${translate(venue.name, i18n.language)}`}
                   capacity={`${venue.capacityMin}–${venue.capacityMax}`}
                   inactive={!venue.isActive}
                   days={range.days}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { translationEditPath } from './translation-links';
+import { needsModifierGroups, translationEditPath } from './translation-links';
 
 describe('отчёт о переводах: ссылки на формы', () => {
   it('каждый тип объекта ведёт на свою форму', () => {
@@ -11,7 +11,13 @@ describe('отчёт о переводах: ссылки на формы', () =>
     expect(translationEditPath({ entityType: 'page', entityId: 'pg1' })).toBe('/content/pages/pg1');
   });
 
-  it('опция модификатора — форма её группы (группа ищется по списку групп)', () => {
+  it('опция модификатора — форма её группы из groupId отчёта (список групп не нужен)', () => {
+    expect(translationEditPath({ entityType: 'modifier_option', entityId: 'o3', groupId: 'g2' })).toBe('/menu/modifiers?edit=g2');
+    expect(needsModifierGroups([{ entityType: 'modifier_option', entityId: 'o3', groupId: 'g2' }, { entityType: 'dish', entityId: 'd1' }])).toBe(false);
+    expect(needsModifierGroups([{ entityType: 'modifier_option', entityId: 'o4', groupId: null }])).toBe(true);
+  });
+
+  it('старый ответ без groupId — группа ищется по списку групп', () => {
     const groups = [
       { id: 'g1', options: [{ id: 'o1' }] },
       { id: 'g2', options: [{ id: 'o2' }, { id: 'o3' }] },

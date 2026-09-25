@@ -25,7 +25,7 @@ import {
   type CancelDepositChoice,
 } from './reservation-actions';
 import type { ReservationDetail } from './types';
-import { useSlotChoices, VenuePicker } from './VenuePicker';
+import { useSlotAvailability, VenuePicker } from './VenuePicker';
 
 /** Ошибка сервера внутри диалога: текст по коду, поля валидации, requestId. */
 export function InlineApiError({ error }: { error: unknown }) {
@@ -298,7 +298,7 @@ export function RescheduleModal({
     durationMinutes: reservation.durationMinutes,
     guests: reservation.guests,
   };
-  const slot = useSlotChoices(reservation.branchId, tz, {
+  const slot = useSlotAvailability(reservation.branchId, {
     date: values?.date ?? current.date,
     time: values?.time ?? current.time,
     guests: values?.guests ?? current.guests,
@@ -393,7 +393,15 @@ export function RescheduleModal({
           </Col>
         </Row>
         <Form.Item name="venueId" label={t('reservations.fields.venue')}>
-          <VenuePicker choices={slot.choices} tz={tz} currentVenueId={reservation.venue.id} />
+          <VenuePicker
+            availability={slot.availability}
+            loading={slot.loading}
+            error={slot.error}
+            onRetry={slot.refetch}
+            tz={tz}
+            currentVenueId={reservation.venue.id}
+            onPickTime={(time) => form.setFieldValue('time', time)}
+          />
         </Form.Item>
         <Form.Item name="reason" label={t('reservations.reschedule.reason')}>
           <Input maxLength={500} />

@@ -3,7 +3,9 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createBranch, tokenFor } from '../../../test/support/fixtures';
 import { RateLimiter } from '../../shared/infrastructure/rate-limit/rate-limiter';
 import { FileStorage } from '../../shared/infrastructure/storage/file-storage';
+import { Actor } from '../../shared/kernel/actor';
 import { Money } from '../../shared/kernel/money';
+import { IssueCorporateCertificates } from './application/certificates/purchase-certificate.action';
 import { CertificateCheckRepository } from './infrastructure/certificate-check.repository';
 import { PaymentsEvents, PaymentsService } from './public';
 import {
@@ -499,6 +501,27 @@ describe('Gift certificates (integration)', () => {
       expect(byPhone.body.total).toBe(2);
       const byStatus = await http().get('/api/v1/admin/certificates?status=redeemed').set('authorization', finance.auth);
       expect(byStatus.body.total).toBe(0);
+      // Покупатель (имя, email, компания заказа) и период выпуска.
+      const search = async (query: Record<string, string>) =>
+        (await http().get('/api/v1/admin/certificates').query(query).set('authorization', finance.auth).expect(200)).body.total;
+      expect(await search({ buyer: 'ромашка' })).toBe(2);
+      expect(await search({ buyer: 'HR@ROMASHKA' })).toBe(2);
+      expect(await search({ buyer: 'Альфа' })).toBe(0);
+      expect(await search({ issuedFrom: '2026-10-01', issuedTo: '2026-10-01' })).toBe(2);
+      expect(await search({ issuedFrom: '2026-10-02' })).toBe(0);
+      expect(await search({ issuedTo: '2026-09-30' })).toBe(0);
+      expect((await http().get('/api/v1/admin/certificates?issuedFrom=01.10.2026').set('authorization', finance.auth)).status).toBe(400);
+      await ctx.t.get(IssueCorporateCertificates).execute(Actor.system('test'), {
+        productId: (await createCertificateProduct(ctx)).id,
+        quantity: 1,
+        buyer: { name: 'Бухгалтер', company: 'ТОО Альфа', email: 'buh@alfa.kz' },
+        deliveryChannel: 'none',
+        locale: 'ru',
+        documentNumber: 'PP-ALFA',
+        paidAt: ctx.t.clock.now(),
+        idempotencyKey: 'alfa-1',
+      });
+      expect(await search({ buyer: 'альфа' })).toBe(1);
 
       const details = await http().get(`/api/v1/admin/certificates/${a!.id}`).set('authorization', finance.auth);
       expect(details.status).toBe(200);
@@ -629,6 +652,28 @@ describe('Gift certificates (integration)', () => {
         expired: { count: 1, amount: { amount: 500_000 } },
         liability: { active: { count: 1, amount: { amount: 750_000 } }, blocked: { count: 1, amount: { amount: 900_000 } } },
       });
+      expect(res.body).toMatchObject({ branchId: null, liabilityIncluded: true });
+      expect(res.body.byBranch).toEqual([
+        { branchId: branchA, issued: { count: 0, amount: { amount: 0, currency: 'KZT' } }, redeemed: { count: 2, amount: { amount: 350_000, currency: 'KZT' } }, returned: { count: 0, amount: { amount: 0, currency: 'KZT' } } },
+        expect.objectContaining({ branchId: null, issued: { count: 3, amount: { amount: 2_500_000, currency: 'KZT' } } }),
+      ]);
+      // Отчёт филиала: где погашен; управляющему — только свой филиал; без остатка обязательств.
+      const branch = await http().get(`/api/v1/admin/certificates/report?from=2026-10-01&to=2026-12-31&branchId=${branchA}`).set('authorization', manager.auth);
+      expect(branch.status).toBe(200);
+      expect(branch.body).toMatchObject({
+        branchId: branchA,
+        liabilityIncluded: false,
+        issued: { count: 0 },
+        redeemed: { operations: 2, certificates: 2, amount: { amount: 350_000 } },
+        liability: { active: { count: 0 }, blocked: { count: 0 } },
+      });
+      expect(branch.body.byBranch.map((x: any) => x.branchId)).toEqual([branchA]);
+      const foreign = await http().get(`/api/v1/admin/certificates/report?from=2026-10-01&to=2026-12-31&branchId=${branchB}`).set('authorization', manager.auth);
+      expect(foreign.status).toBe(403);
+      const reportsOnly = await tokenFor(ctx.t, [{ role: 'branch_manager', branchId: branchB }]);
+      expect((await http().get(`/api/v1/admin/certificates/report?from=2026-10-01&to=2026-12-31&branchId=${branchB}`).set('authorization', reportsOnly.auth)).body.redeemed.operations).toBe(0);
+      const branchXlsx = await http().get(`/api/v1/admin/certificates/report/export?from=2026-10-01&to=2026-12-31&branchId=${branchA}`).set('authorization', manager.auth);
+      expect(branchXlsx.status).toBe(200);
       const empty = await http().get('/api/v1/admin/certificates/report?from=2025-01-01&to=2025-01-31').set('authorization', finance.auth);
       expect(empty.body.issued.count).toBe(0);
       expect((await http().get('/api/v1/admin/certificates/report?from=2026-12-01&to=2026-01-01').set('authorization', finance.auth)).status).toBe(422);

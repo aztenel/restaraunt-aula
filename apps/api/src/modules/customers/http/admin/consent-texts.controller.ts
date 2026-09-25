@@ -30,6 +30,6 @@ export class AdminConsentTextsController {
   @ApiCreatedResponse({ type: ConsentTextDto })
   async create(@CurrentActor() actor: Actor, @Body() dto: PublishConsentTextDto): Promise<ConsentTextDto> {
     const record = await this.publish.execute(actor, { kind: dto.kind, version: dto.version, text: { ...dto.text } });
-    return { ...record, isCurrent: true };
+    return this.queries.view(record, true);
   }
 }

@@ -126,6 +126,20 @@ export class OrderExportRepository {
     );
   }
 
+  /** Неудачные передачи филиала (для массового повтора), самые старые — первыми. */
+  async failedIds(branchId: string, limit: number): Promise<string[]> {
+    const rows = await this.db()
+      .selectFrom('pos.order_exports')
+      .select('id')
+      .where('branch_id', '=', branchId)
+      .where('status', '=', 'failed')
+      .orderBy('created_at')
+      .orderBy('id')
+      .limit(limit)
+      .execute();
+    return rows.map((r) => r.id);
+  }
+
   /** Число записей по статусам в разрезе филиалов. */
   async countsByBranch(branchIds: string[]): Promise<Map<string, ExportCounts>> {
     const result = new Map<string, ExportCounts>();

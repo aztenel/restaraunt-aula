@@ -29,6 +29,7 @@ import { PAYMENT_GATEWAYS, PaymentGatewayRegistry } from './application/payment-
 import { PaymentLinks } from './application/payment-links';
 import { CheckPaymentStatus, InitiatePayment, SchedulePaymentChecks } from './application/payment-provider.actions';
 import { ApplyGatewayStatus, CancelPayment, FailPayment, MarkCollected } from './application/payment-status.actions';
+import { PaymentProvidersQuery } from './application/payment-providers.query';
 import { PaymentQueries } from './application/payment.queries';
 import { PaymentsFacade } from './application/payments.facade';
 import { ReceivePaymentWebhook } from './application/receive-webhook.action';
@@ -111,6 +112,7 @@ import { GiftCertificates, PaymentsService } from './public';
     ReceivePaymentWebhook,
     RenderCheckoutPage,
     PaymentQueries,
+    PaymentProvidersQuery,
     // Возвраты
     CompleteRefund,
     FailRefund,

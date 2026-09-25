@@ -3,6 +3,7 @@
 #
 #   install → lint (вкл. границы модулей) ─┐
 #           → typecheck ───────────────────┼→ build → docker (api, web, admin, backup; без публикации)
+#                                          │        → e2e-web (Playwright: витрина + API + демо-сид)
 #           → unit                         │
 #           → integration (PostgreSQL 16 + Redis 7)
 #           → openapi (дрейф docs/openapi.json и клиента, openapi:lint — точные типы схем)
@@ -201,6 +202,143 @@ jobs:
       - name: pnpm build (все пакеты)
         run: pnpm build
 
+  # Браузерные e2e витрины (Playwright): заказ с онлайн-оплатой и оплатой при получении, бронь с депозитом,
+  # банкет, сертификат, SEO, переводы — против API и витрины с демо-сидом. Как поднять стек локально —
+  # apps/web/e2e/stack.md.
+  e2e-web:
+    name: E2E витрины (Playwright)
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: aula
+          POSTGRES_PASSWORD: aula
+          POSTGRES_DB: aula
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aula -d aula"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      E2E_API_URL: http://localhost:3000
+      E2E_WEB_URL: http://localhost:3401
+      E2E_OWNER_EMAIL: owner@aula.kz
+      E2E_OWNER_PASSWORD: E2e-Owner-Password-2026!
+      E2E_API_LOG: /tmp/aula-api.log
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+
+      # Окружение API — в файле: NODE_ENV=development (песочница оплат, SMS в журнал) не должен попасть в сборку витрины.
+      - name: Окружение API стенда
+        run: |
+          cat > "$RUNNER_TEMP/api.env" <<'ENV'
+          export NODE_ENV=development
+          export PORT=3000
+          export LOG_LEVEL=info
+          export TRUST_PROXY=true
+          export DATABASE_URL=postgres://aula:aula@localhost:5432/aula
+          export REDIS_URL=redis://localhost:6379
+          export QUEUE_DRIVER=inline
+          export QUEUE_INLINE_AUTODRAIN=true
+          export QUEUE_PREFIX=aula_e2e
+          export JWT_SECRET=ci-e2e-jwt-secret-0123456789abcdef0123456789abcdef
+          export APP_ENCRYPTION_KEY=ZGV2LW9ubHktZW5jcnlwdGlvbi1rZXktMzJieXRlcyE=
+          export STORAGE_DRIVER=local
+          export LOCAL_STORAGE_DIR=/tmp/aula-storage
+          export API_PUBLIC_URL=http://localhost:3000
+          export PUBLIC_WEB_URL=http://localhost:3401
+          export CORS_ORIGINS=http://localhost:3401
+          export SWAGGER_ENABLED=false
+          export SEED_DEMO=true
+          export SEED_OWNER_EMAIL="$E2E_OWNER_EMAIL"
+          export SEED_OWNER_PASSWORD="$E2E_OWNER_PASSWORD"
+          export SEED_ADMIN_EMAIL=admin@aula.kz
+          export SEED_ADMIN_PASSWORD=E2e-Admin-Password-2026!
+          ENV
+
+      - name: Миграции и демо-сид (SEED_DEMO=true)
+        run: |
+          source "$RUNNER_TEMP/api.env"
+          pnpm --filter @aula/api migrate
+          pnpm --filter @aula/api seed
+
+      - name: API в фоне (QUEUE_DRIVER=inline, порт 3000)
+        working-directory: apps/api
+        run: |
+          source "$RUNNER_TEMP/api.env"
+          nohup node -r @swc-node/register src/main.ts > "$E2E_API_LOG" 2>&1 &
+
+      - name: Ожидание API (health/ready)
+        run: |
+          for i in $(seq 1 90); do
+            curl -sf http://localhost:3000/api/v1/health/ready && exit 0
+            sleep 2
+          done
+          cat "$E2E_API_LOG"
+          exit 1
+
+      - name: Сборка витрины (браузер ходит в API на :3000)
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:3000
+          NEXT_PUBLIC_SITE_URL: http://localhost:3401
+          API_INTERNAL_URL: http://localhost:3000
+        run: pnpm --filter @aula/web build
+
+      - name: Витрина в фоне (порт 3401)
+        working-directory: apps/web
+        env:
+          API_INTERNAL_URL: http://localhost:3000
+          SITE_URL: http://localhost:3401
+        run: nohup pnpm exec next start -p 3401 > /tmp/aula-web.log 2>&1 &
+
+      - name: Ожидание витрины (/api/health)
+        run: |
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:3401/api/health && exit 0
+            sleep 2
+          done
+          cat /tmp/aula-web.log
+          exit 1
+
+      - name: Браузер Playwright (Chromium)
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+
+      - name: Playwright (desktop + mobile)
+        working-directory: apps/web
+        run: pnpm test:e2e
+
+      - name: Журналы API и витрины в отчёт
+        if: failure()
+        run: |
+          mkdir -p apps/web/test-results/logs
+          cp /tmp/aula-api.log /tmp/aula-web.log apps/web/test-results/logs/ || true
+
+      - name: Артефакт — отчёт Playwright, трассы, журналы
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-web-report
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+          retention-days: 14
+
   docker:
     name: Docker-образ ${{ matrix.image }}
     needs: build
@@ -240,7 +378,7 @@ jobs:
   ci-ok:
     name: CI OK
     if: always()
-    needs: [install, lint, typecheck, unit, integration, openapi, build, docker]
+    needs: [install, lint, typecheck, unit, integration, openapi, build, e2e-web, docker]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

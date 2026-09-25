@@ -23,6 +23,10 @@ function order(id: string, status: QueueOrder['status'], isLate = false): QueueO
     contactless: false,
     allowedTransitions: [],
     isLate,
+    canCancel: false,
+    canReject: false,
+    courier: null,
+    amountDue: { amount: 500_000, currency: 'KZT' },
   };
 }
 

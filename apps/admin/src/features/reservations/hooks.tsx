@@ -1,11 +1,14 @@
-/** Общие хуки раздела броней: часовой пояс филиала, «сейчас», дата в адресе, новые брони из ленты. */
+/**
+ * Общие хуки раздела броней: часовой пояс филиала, «сейчас», дата в адресе, новые брони из ленты.
+ * Звук о новых бронях играет лента (FeedProvider): оплаченный депозит у места с ручным подтверждением
+ * сервер тоже публикует как событие «создана» со звуком — отдельного сигнала очереди нет.
+ */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useBranch } from '@/shared/branch/BranchProvider';
 import { useAdminFeed } from '@/shared/feed/FeedProvider';
-import { playNotificationSound } from '@/shared/feed/sound';
 import { useStoredState } from '@/shared/lib/storage';
-import { announcedIds, markSeen, newlyAppeared, newReservationIds } from './feed-highlight';
+import { markSeen, newReservationIds } from './feed-highlight';
 import { DEFAULT_TZ } from './format';
 import { todayIn } from './timeline-layout';
 
@@ -56,7 +59,6 @@ export function useNewReservations() {
   seenRef.current = seen;
   const ids = useMemo(() => newReservationIds(items, new Set(seen)), [items, seen]);
   const newIds = useMemo(() => new Set(ids), [ids]);
-  const announced = useMemo(() => announcedIds(items), [items]);
   const acknowledge = useCallback(
     (id: string) => {
       if (!seenRef.current.includes(id)) setSeen(markSeen(seenRef.current, [id]));
@@ -64,27 +66,7 @@ export function useNewReservations() {
     [setSeen],
   );
   const acknowledgeAll = useCallback(() => setSeen(markSeen(seenRef.current, ids)), [ids, setSeen]);
-  return { newIds, count: ids.length, announced, acknowledge, acknowledgeAll };
-}
-
-/**
- * Звук, когда в очереди появляется бронь без события ленты «создана» (оплачен депозит, а место требует
- * ручного подтверждения). Первая загрузка и смена филиала не звучат; настройка звука — общая (шапка).
- */
-export function useQueueArrivalSound(ids: readonly string[] | undefined, scopeKey: string, announced: ReadonlySet<string>): void {
-  const { soundEnabled } = useAdminFeed();
-  const previous = useRef<{ scope: string; ids: Set<string> } | null>(null);
-  const announcedRef = useRef(announced);
-  announcedRef.current = announced;
-  const soundRef = useRef(soundEnabled);
-  soundRef.current = soundEnabled;
-  useEffect(() => {
-    if (!ids) return;
-    const prev = previous.current && previous.current.scope === scopeKey ? previous.current.ids : null;
-    const appeared = newlyAppeared(prev, ids, announcedRef.current);
-    previous.current = { scope: scopeKey, ids: new Set(ids) };
-    if (appeared.length > 0 && soundRef.current) playNotificationSound();
-  }, [ids, scopeKey]);
+  return { newIds, count: ids.length, acknowledge, acknowledgeAll };
 }
 
 // ---------------------------------------------------------------- действия страницы (открыть бронь, новая бронь)

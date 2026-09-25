@@ -12,11 +12,11 @@ import { dayjs } from '@/shared/lib/dates';
 import { ErrorAlert } from '@/shared/ui/ErrorAlert';
 import { PaginatedTable } from '@/shared/ui/PaginatedTable';
 import { StatusTag } from '@/shared/ui/StatusTag';
-import { venueKeys, venueConfigApi } from '../venues/api';
 import { reservationKeys, reservationsApi } from './api';
 import { formatInTz, formatLocalDate, venueTitle } from './format';
 import { useBranchTimezone, useReservationsUi } from './hooks';
 import { DepositTag, HoldCountdownTag, KindTag } from './parts';
+import { QuickActions } from './QuickActions';
 import { shiftDate, todayIn } from './timeline-layout';
 import {
   RESERVATION_KINDS,
@@ -61,14 +61,12 @@ export function ReservationListView() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState({ page: 1, perPage: 20 });
 
-  const halls = useApiQuery(venueKeys.halls(selectedBranchId ?? ''), () => venueConfigApi.halls(selectedBranchId!), {
+  // Залы и места для фильтров — из календаря дня (тот же запрос, что у «Дня»; отдельные /halls и /venues не нужны).
+  const structure = useApiQuery(reservationKeys.timeline(selectedBranchId ?? '', today), () => reservationsApi.timeline(selectedBranchId!, today), {
     enabled: Boolean(selectedBranchId),
     staleTime: 5 * 60_000,
   });
-  const venues = useApiQuery(venueKeys.venues(selectedBranchId ?? ''), () => venueConfigApi.venues(selectedBranchId!), {
-    enabled: Boolean(selectedBranchId),
-    staleTime: 5 * 60_000,
-  });
+  const halls = structure.data?.halls ?? [];
 
   const query: ReservationsListQuery = useMemo(
     () => ({
@@ -94,9 +92,9 @@ export function ReservationListView() {
     setPage((p) => ({ ...p, page: 1 }));
   };
 
-  const venueOptions = (venues.data ?? [])
-    .filter((v) => !filters.hallId || v.hallId === filters.hallId)
-    .map((v) => ({ value: v.id, label: venueTitle(v, i18n.language) }));
+  const venueOptions = halls
+    .filter((h) => !filters.hallId || h.id === filters.hallId)
+    .flatMap((h) => h.venues.map((v) => ({ value: v.id, label: venueTitle(v, i18n.language) })));
 
   const columns: TableColumnsType<ReservationSummary> = [
     {
@@ -164,6 +162,7 @@ export function ReservationListView() {
     },
     { title: t('reservations.fields.deposit'), key: 'deposit', render: (_, r) => <DepositTag state={r.depositState} amount={r.deposit} /> },
     { title: t('reservations.fields.source'), dataIndex: 'source', render: (source: ReservationSource) => t(`reservations.sources.${source}`) },
+    { title: t('common.actions'), key: 'actions', render: (_, r) => <QuickActions reservation={r} /> },
   ];
 
   return (
@@ -221,7 +220,7 @@ export function ReservationListView() {
               placeholder={t('reservations.list.allHalls')}
               value={filters.hallId}
               onChange={(hallId) => update({ hallId: hallId ?? null, venueId: null })}
-              options={(halls.data ?? []).map((h) => ({ value: h.id, label: translate(h.name, i18n.language) || h.code }))}
+              options={halls.map((h) => ({ value: h.id, label: translate(h.name, i18n.language) || h.code }))}
               style={{ width: 160 }}
             />
             <Select<string | null>

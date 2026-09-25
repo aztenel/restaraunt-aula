@@ -28,6 +28,8 @@ export interface ProductMappingFilter {
   provider?: string;
   dishId?: string;
   externalProductId?: string;
+  /** Часть названия или id товара POS (без учёта регистра). */
+  q?: string;
 }
 
 function toRecord(row: Selectable<ProductMappingsTable>): ProductMappingRecord {
@@ -83,6 +85,12 @@ export class ProductMappingRepository {
     return rows.map((r) => ({ dishId: r.dish_id, externalProductId: r.external_product_id, modifiers: parseModifierMappings(r.modifier_mappings) }));
   }
 
+  /** Все активные сопоставления филиала для провайдера, полные записи (экран сопоставления блюд). */
+  async recordsForBranch(branchId: string, provider: string): Promise<ProductMappingRecord[]> {
+    const rows = await this.active().selectAll().where('branch_id', '=', branchId).where('provider', '=', provider).execute();
+    return rows.map(toRecord);
+  }
+
   /** Все сопоставления филиала (для стоп-листа). */
   async listForBranch(branchId: string, provider: string): Promise<Array<{ dishId: string; externalProductId: string }>> {
     const rows = await this.active()
@@ -101,6 +109,10 @@ export class ProductMappingRepository {
     if (filter.provider) q = q.where('provider', '=', filter.provider);
     if (filter.dishId) q = q.where('dish_id', '=', filter.dishId);
     if (filter.externalProductId) q = q.where('external_product_id', '=', filter.externalProductId);
+    if (filter.q?.trim()) {
+      const pattern = `%${filter.q.trim().toLowerCase().replace(/[%_\\]/g, (c) => `\\${c}`)}%`;
+      q = q.where((eb) => eb.or([eb(eb.fn('lower', ['external_name']), 'like', pattern), eb(eb.fn('lower', ['external_product_id']), 'like', pattern)]));
+    }
     const total = await q.select((eb) => eb.fn.countAll<string>().as('n')).executeTakeFirst();
     const rows = await q.selectAll().orderBy('created_at', 'desc').orderBy('id').limit(page.perPage).offset(offsetOf(page)).execute();
     return pageOf(rows.map(toRecord), Number(total?.n ?? 0), page);

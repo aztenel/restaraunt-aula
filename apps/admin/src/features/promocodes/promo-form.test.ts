@@ -7,6 +7,7 @@ import {
   normalizePromoCode,
   percentTextToBp,
   promoToFormValues,
+  promoListParams,
   promoToInput,
   validatePromoForm,
   type PromoCode,
@@ -123,5 +124,26 @@ describe('форма промокода ⇄ API', () => {
     const network: PromoFormValues = { ...emptyPromoForm(null), code: 'ALL', kind: 'free_delivery' };
     expect(validatePromoForm(network, { canNetwork: false })).toEqual({ branchId: 'network_forbidden' });
     expect(validatePromoForm(network, { canNetwork: true })).toEqual({});
+  });
+});
+
+describe('фильтры списка промокодов → параметры API', () => {
+  const base = { search: '  ', status: 'all' as const, scope: 'all' as const, page: 1, perPage: 50 };
+
+  it('по умолчанию — все доступные, без фильтров', () => {
+    expect(promoListParams(base)).toEqual({ q: undefined, active: undefined, scope: undefined, branchId: undefined, page: 1, perPage: 50 });
+  });
+
+  it('«На всю сеть» — без филиала, даже если он выбран', () => {
+    expect(promoListParams({ ...base, scope: 'network', branchId: 'b1' })).toMatchObject({ scope: 'network', branchId: undefined });
+  });
+
+  it('«Филиальные» с выбранным филиалом, статус и поиск', () => {
+    expect(promoListParams({ ...base, scope: 'branch', branchId: 'b1', status: 'inactive', search: ' free ' })).toMatchObject({
+      scope: 'branch',
+      branchId: 'b1',
+      active: false,
+      q: 'free',
+    });
   });
 });

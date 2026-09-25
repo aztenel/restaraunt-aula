@@ -4,7 +4,7 @@
  * локальные date/time — в часовом поясе филиала. Суммы и разрешённые переходы считает сервер.
  */
 import type { Money, Translatable } from '@aula/api-client';
-import type { VenuePosition, VenueRules } from '../venues/types';
+import type { ReservationImage, VenuePosition, VenueRules } from '../venues/types';
 
 export const RESERVATION_STATUSES = ['pending', 'awaiting_deposit', 'confirmed', 'arrived', 'no_show', 'cancelled', 'expired'] as const;
 export type ReservationStatus = (typeof RESERVATION_STATUSES)[number];
@@ -80,6 +80,10 @@ export interface ReservationSummary {
   /** Требует отметки «пришли / не пришли». */
   needsMark: boolean;
   createdAt: string;
+  /** Переходы, доступные сотруднику сейчас (решает сервер) — кнопки в очереди, списке и карточке. */
+  allowedTransitions: ReservationStatus[];
+  /** Можно перенести / пересадить. */
+  canReschedule: boolean;
 }
 
 export interface DepositPayment {
@@ -102,9 +106,6 @@ export interface StatusHistoryEntry {
 }
 
 export interface ReservationDetail extends ReservationSummary {
-  /** Переходы, доступные сотруднику сейчас (решает сервер). */
-  allowedTransitions: ReservationStatus[];
-  canReschedule: boolean;
   /** Правила брони (снимок на момент брони / переноса). */
   rules: VenueRules;
   /** Дедлайн бесплатной отмены. */
@@ -144,6 +145,8 @@ export interface TimelineItem {
   banquetRequestId: string | null;
   depositState: DepositState;
   needsMark: boolean;
+  /** Бронь будет снята, если не подтвердят / не оплатят до этого момента. */
+  holdExpiresAt: string | null;
 }
 
 export interface TimelineVenue {
@@ -158,6 +161,8 @@ export interface TimelineVenue {
   position: VenuePosition;
   isActive: boolean;
   bookableOnline: boolean;
+  /** Действующие правила места: длительность, уборка, удержание, шаг сетки. */
+  rules: VenueRules;
   items: TimelineItem[];
 }
 
@@ -168,6 +173,8 @@ export interface TimelineHall {
   planWidth: number;
   planHeight: number;
   isActive: boolean;
+  /** Подложка плана зала. */
+  background: ReservationImage | null;
   venues: TimelineVenue[];
 }
 
@@ -242,4 +249,70 @@ export interface RescheduleReservationInput {
   durationMinutes?: number;
   guests?: number;
   reason?: string;
+}
+
+// ---------------------------------------------------------------- свободные места для оператора
+
+/** Параметры GET /admin/reservations/availability (бронь по телефону, перенос). */
+export interface AdminAvailabilityQuery {
+  branchId: string;
+  date: string;
+  time: string;
+  guests: number;
+  durationMinutes?: number;
+  hallId?: string;
+  typeCode?: string;
+  /** Перенос: не учитывать занятость самой брони. */
+  excludeReservationId?: string;
+}
+
+/** Почему свободных мест нет (reason ответа). */
+export type AvailabilityReason = 'no_capacity' | 'occupied' | 'past' | 'too_soon' | 'too_far' | 'closed' | 'not_accepting';
+
+/**
+ * Свободное место (включая места «только по телефону»): время брони, занятость с уборкой, правила места.
+ * Сервер учитывает часы работы, вместимость и занятость; упреждение и горизонт витрины к оператору не применяются.
+ */
+export interface AdminVenueSlot {
+  venueId: string;
+  hallId: string;
+  hallName: Translatable;
+  code: string;
+  name: Translatable;
+  typeCode: string;
+  typeName: Translatable;
+  capacityMin: number;
+  capacityMax: number;
+  /** Гостей меньше минимальной вместимости места (оператору разрешено — предупредить). */
+  belowMinimum: boolean;
+  deposit: Money | null;
+  start: string;
+  end: string;
+  /** Конец занятости места: конец брони + буфер уборки. */
+  blockedUntil: string;
+  durationMinutes: number;
+  rules: VenueRules;
+  /** false — место бронируется только через оператора. */
+  bookableOnline: boolean;
+  position: VenuePosition;
+}
+
+export interface AlternativeTime {
+  date: string;
+  time: string;
+  start: string;
+  venueIds: string[];
+}
+
+export interface AdminAvailability {
+  branchId: string;
+  date: string;
+  time: string;
+  guests: number;
+  durationMinutes: number | null;
+  available: boolean;
+  reason: AvailabilityReason | null;
+  venues: AdminVenueSlot[];
+  /** Ближайшее свободное время в тот же день, если мест нет. */
+  alternatives: AlternativeTime[];
 }

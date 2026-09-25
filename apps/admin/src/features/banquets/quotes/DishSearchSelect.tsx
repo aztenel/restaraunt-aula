@@ -1,5 +1,5 @@
 import { Select, Space, Tag, Typography } from 'antd';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatMoney, translate } from '@aula/api-client';
 import { useApiQuery } from '@/shared/api/hooks';

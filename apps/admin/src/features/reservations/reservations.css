@@ -286,3 +286,18 @@
     stroke: #ffd8bf;
   }
 }
+
+/* Удержание брони на плашке календаря: сколько осталось до автоматического снятия. */
+.rsv-hold-badge {
+  display: inline-block;
+  margin-inline-end: 6px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.7);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.rsv-tl-item.rsv-hold-critical {
+  box-shadow: 0 0 0 2px #cf1322;
+}

@@ -14,9 +14,7 @@ import { PageHeader } from '@/shared/ui/PageHeader';
 import { PaginatedTable } from '@/shared/ui/PaginatedTable';
 import { promoApi, promoKeys, type PromoListQuery } from './api';
 import { PromoCodeModal } from './PromoCodeModal';
-import { bpToPercentText, promoToInput, type PromoCode } from './promo-form';
-
-type StatusFilter = 'all' | 'active' | 'inactive';
+import { bpToPercentText, promoListParams, promoToInput, type PromoCode, type PromoScopeFilter, type PromoStatusFilter } from './promo-form';
 
 /** Срок действия для таблицы: истёк / ещё не начался — по часам сотрудника (только подсказка). */
 function validityState(promo: PromoCode, now: number): 'expired' | 'notStarted' | null {
@@ -36,7 +34,8 @@ export function PromoCodesPage() {
   const { branchesWith } = useCan();
   const { branches, branchName, selectedBranchId } = useBranch();
   const [search, setSearch] = useState('');
-  const [status, setStatus] = useState<StatusFilter>('all');
+  const [status, setStatus] = useState<PromoStatusFilter>('all');
+  const [scopeFilter, setScopeFilter] = useState<PromoScopeFilter>('all');
   const [branchFilter, setBranchFilter] = useState<string | undefined>(undefined);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(50);
@@ -48,8 +47,8 @@ export function PromoCodesPage() {
   const branchOptions = branches.filter((b) => scope === 'all' || scope.includes(b.id));
 
   const params: PromoListQuery = useMemo(
-    () => ({ q: search || undefined, active: status === 'all' ? undefined : status === 'active', branchId: branchFilter, page, perPage }),
-    [search, status, branchFilter, page, perPage],
+    () => promoListParams({ search, status, scope: scopeFilter, branchId: branchFilter, page, perPage }),
+    [search, status, scopeFilter, branchFilter, page, perPage],
   );
   const list = useApiQuery(promoKeys.list(params), () => promoApi.list(params), { keepPrevious: true });
   const refresh = () => queryClient.invalidateQueries({ queryKey: promoKeys.all });
@@ -76,7 +75,7 @@ export function PromoCodesPage() {
             setPage(1);
           }}
         />
-        <Segmented<StatusFilter>
+        <Segmented<PromoStatusFilter>
           value={status}
           onChange={(value) => {
             setStatus(value);
@@ -84,11 +83,20 @@ export function PromoCodesPage() {
           }}
           options={(['all', 'active', 'inactive'] as const).map((value) => ({ value, label: t(`promoCodes.status.${value}`) }))}
         />
+        <Segmented<PromoScopeFilter>
+          value={scopeFilter}
+          onChange={(value) => {
+            setScopeFilter(value);
+            setPage(1);
+          }}
+          options={(['all', 'network', 'branch'] as const).map((value) => ({ value, label: t(`promoCodes.scope.${value}`) }))}
+        />
         <Select<string>
           allowClear
+          disabled={scopeFilter === 'network'}
           placeholder={t('promoCodes.branchFilter')}
           style={{ width: 220 }}
-          value={branchFilter}
+          value={scopeFilter === 'network' ? undefined : branchFilter}
           onChange={(value) => {
             setBranchFilter(value);
             setPage(1);
@@ -250,7 +258,7 @@ export function PromoCodesPage() {
         key={editing?.id ?? (creating ? 'new' : 'closed')}
         open={creating || editing !== null}
         promo={editing}
-        defaultBranchId={branchFilter ?? selectedBranchId}
+        defaultBranchId={scopeFilter === 'network' ? null : (branchFilter ?? selectedBranchId)}
         onClose={() => {
           setCreating(false);
           setEditing(null);

@@ -6,6 +6,7 @@ import { useAuth } from '@/shared/auth/AuthProvider';
 import { useCan } from '@/shared/auth/useCan';
 import { useBranch } from '@/shared/branch/BranchProvider';
 import { STREAM_PATHS, useAdminFeed } from '@/shared/feed/FeedProvider';
+import { feedEntityPath } from '@/shared/feed/feed-links';
 import { FEED_STREAMS, type FeedStream } from '@/shared/feed/types';
 import { formatDateTime } from '@/shared/lib/dates';
 import { PageHeader } from '@/shared/ui/PageHeader';
@@ -90,7 +91,7 @@ export function DashboardPage() {
                 <Space wrap>
                   <Tag color={STREAM_COLORS[item.stream]}>{t(`feed.streams.${item.stream}`)}</Tag>
                   {item.kind === 'created' ? <Tag color="red">{t('feed.kinds.created')}</Tag> : null}
-                  <Link to={STREAM_PATHS[item.stream]}>{item.title}</Link>
+                  <Link to={feedEntityPath(item, { canStopList: canAny([Permission.MenuStopList]) })}>{item.title}</Link>
                   {item.branchId && !selectedBranchId ? <Typography.Text type="secondary">{branchName(item.branchId)}</Typography.Text> : null}
                 </Space>
               </List.Item>

@@ -227,3 +227,28 @@ export function promoToInput(promo: PromoCode, patch: Partial<Pick<PromoCodeInpu
     isActive: patch.isActive ?? promo.isActive,
   };
 }
+
+export type PromoStatusFilter = 'all' | 'active' | 'inactive';
+export type PromoScopeFilter = 'all' | 'network' | 'branch';
+
+/**
+ * Фильтры списка → параметры GET /admin/promo-codes. «На всю сеть» — без филиала (сетевые промокоды
+ * не относятся к филиалу), «Филиальные» — промокоды филиалов (выбранного или всех доступных).
+ */
+export function promoListParams(filters: {
+  search: string;
+  status: PromoStatusFilter;
+  scope: PromoScopeFilter;
+  branchId?: string;
+  page: number;
+  perPage: number;
+}): { q?: string; active?: boolean; scope?: 'network' | 'branch'; branchId?: string; page: number; perPage: number } {
+  return {
+    q: filters.search.trim() || undefined,
+    active: filters.status === 'all' ? undefined : filters.status === 'active',
+    scope: filters.scope === 'all' ? undefined : filters.scope,
+    branchId: filters.scope === 'network' ? undefined : filters.branchId,
+    page: filters.page,
+    perPage: filters.perPage,
+  };
+}

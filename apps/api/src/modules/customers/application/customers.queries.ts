@@ -7,6 +7,7 @@ import { Page, PageRequest } from '../../../shared/kernel/pagination';
 import { Permission } from '../../../shared/kernel/permissions';
 import { addDays, isIsoDate, startOfLocalDay } from '../../../shared/kernel/time';
 import { Locale, translate } from '../../../shared/kernel/translatable';
+import { StaffDirectory } from '../../identity/public';
 import { assertConsentKind } from '../domain/consent';
 import { CustomerFilter, mergeFilters, normalizeCustomerFilter } from '../domain/customer-filter';
 import { ActivityType, periodTotals, PeriodTotals } from '../domain/history';
@@ -30,9 +31,14 @@ export interface ActivityView {
   occurredAt: Date;
 }
 
+export interface ConsentRecordView extends ConsentRecord {
+  /** Имя сотрудника, внёсшего согласие (null — гость на витрине или сотрудник не найден). */
+  recordedByName: string | null;
+}
+
 export interface CustomerDetailView {
   customer: CustomerAdminView;
-  consents: ConsentRecord[];
+  consents: ConsentRecordView[];
   period: { from: string | null; to: string | null };
   totals: Omit<PeriodTotals, 'spent'> & { spent: MoneyJson };
   activities: Page<ActivityView>;
@@ -69,6 +75,7 @@ export class CustomerQueries {
     private readonly consents: ConsentRepository,
     private readonly activities: ActivityRepository,
     private readonly segments: SegmentRepository,
+    private readonly staff: StaffDirectory,
   ) {}
 
   async list(actor: Actor, query: CustomerListQuery, page: PageRequest): Promise<Page<CustomerAdminView>> {
@@ -98,9 +105,10 @@ export class CustomerQueries {
       this.activities.listForCustomer(customerId, period, page),
     ]);
     const totals = periodTotals(stats);
+    const names = await this.staff.names(consents.map((c) => c.recordedBy));
     return {
       customer: toAdminView(customer),
-      consents,
+      consents: consents.map((c) => ({ ...c, recordedByName: c.recordedBy ? (names.get(c.recordedBy) ?? null) : null })),
       period: { from: query.from ?? null, to: query.to ?? null },
       totals: { ...totals, spent: totals.spent.toJSON() },
       activities: {
@@ -117,7 +125,10 @@ export class CustomerQueries {
 }
 
 export interface SegmentView extends SegmentRecord {
-  customersCount?: number;
+  /** Сколько гостей сейчас в сегменте (без обезличенных). */
+  customersCount: number;
+  createdByName: string | null;
+  updatedByName: string | null;
 }
 
 @Injectable()
@@ -125,11 +136,13 @@ export class SegmentQueries {
   constructor(
     private readonly segments: SegmentRepository,
     private readonly customers: CustomerRepository,
+    private readonly staff: StaffDirectory,
   ) {}
 
-  async list(actor: Actor): Promise<SegmentRecord[]> {
+  /** Сегменты с числом гостей (один запрос на все сегменты) и именами авторов. */
+  async list(actor: Actor): Promise<SegmentView[]> {
     actor.assertCanSomewhere(Permission.CustomersView);
-    return this.segments.list();
+    return this.views(await this.segments.list());
   }
 
   /** Сегмент с текущим числом гостей (без обезличенных). */
@@ -137,8 +150,20 @@ export class SegmentQueries {
     actor.assertCanSomewhere(Permission.CustomersView);
     const segment = await this.segments.findById(segmentId);
     if (!segment) throw new NotFoundError('customer_segment', segmentId);
-    const customersCount = await this.customers.count(normalizeCustomerFilter(segment.filter));
-    return { ...segment, customersCount };
+    return (await this.views([segment]))[0]!;
+  }
+
+  private async views(segments: SegmentRecord[]): Promise<SegmentView[]> {
+    const [counts, names] = await Promise.all([
+      this.customers.countMany(segments.map((s) => normalizeCustomerFilter(s.filter))),
+      this.staff.names(segments.flatMap((s) => [s.createdBy, s.updatedBy])),
+    ]);
+    return segments.map((s, i) => ({
+      ...s,
+      customersCount: counts[i] ?? 0,
+      createdByName: s.createdBy ? (names.get(s.createdBy) ?? null) : null,
+      updatedByName: s.updatedBy ? (names.get(s.updatedBy) ?? null) : null,
+    }));
   }
 }
 
@@ -152,6 +177,7 @@ export interface PublicConsentText {
 
 export interface ConsentTextView extends ConsentTextRecord {
   isCurrent: boolean;
+  publishedByName: string | null;
 }
 
 @Injectable()
@@ -159,7 +185,14 @@ export class ConsentTextQueries {
   constructor(
     private readonly texts: ConsentTextRepository,
     private readonly clock: Clock,
+    private readonly staff: StaffDirectory,
   ) {}
+
+  /** Опубликованный текст для ответа админке (с именем опубликовавшего). */
+  async view(record: ConsentTextRecord, isCurrent: boolean): Promise<ConsentTextView> {
+    const names = await this.staff.names([record.publishedBy]);
+    return { ...record, isCurrent, publishedByName: record.publishedBy ? (names.get(record.publishedBy) ?? null) : null };
+  }
 
   /** Действующий текст согласия для форм витрины (переведённый на язык запроса). */
   async current(rawKind: string, locale: Locale): Promise<PublicConsentText> {
@@ -179,6 +212,11 @@ export class ConsentTextQueries {
       const current = await this.texts.current(kindKey, now);
       if (current) currentIds.add(current.id);
     }
-    return texts.map((t) => ({ ...t, isCurrent: currentIds.has(t.id) }));
+    const names = await this.staff.names(texts.map((t) => t.publishedBy));
+    return texts.map((t) => ({
+      ...t,
+      isCurrent: currentIds.has(t.id),
+      publishedByName: t.publishedBy ? (names.get(t.publishedBy) ?? null) : null,
+    }));
   }
 }

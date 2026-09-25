@@ -1,7 +1,8 @@
 /**
  * Лента событий админки в реальном времени: очереди новых заказов, броней и банкетных заявок
  * со звуковым уведомлением. Одно SSE-подключение на вкладку; учитывает выбранный филиал;
- * инвалидирует запросы соответствующего раздела ('orders' | 'reservations' | 'banquets' | 'system').
+ * инвалидирует запросы соответствующего раздела ('orders' | 'reservations' | 'banquets' | 'system')
+ * и меню филиала при изменении стоп-листа; клик по уведомлению ведёт на сущность (feed-links.ts).
  */
 import { useQueryClient } from '@tanstack/react-query';
 import { App } from 'antd';
@@ -15,6 +16,7 @@ import { canAnySomewhere } from '../auth/permissions';
 import { useBranch } from '../branch/BranchProvider';
 import { useStoredState } from '../lib/storage';
 import { FeedConnection } from './connection';
+import { feedEntityPath, feedQueryInvalidations } from './feed-links';
 import { INITIAL_FEED_STATE, reduceFeed, reduceFeedBatch, type FeedItem, type FeedState } from './feed-reducer';
 import { playNotificationSound, unlockAudio } from './sound';
 import type { FeedStatus, FeedStream } from './types';
@@ -22,12 +24,7 @@ import type { FeedStatus, FeedStream } from './types';
 /** Права, с которыми сервер выдаёт билет ленты (notifications/http/admin/feed.controller.ts). */
 export const FEED_PERMISSIONS = [Permission.OrdersView, Permission.ReservationsView, Permission.BanquetsView, Permission.SystemJobs];
 
-export const STREAM_PATHS: Record<FeedStream, string> = {
-  orders: '/orders',
-  reservations: '/reservations',
-  banquets: '/banquets',
-  system: '/system',
-};
+export { STREAM_PATHS } from './feed-links';
 
 export interface AdminFeedValue {
   status: FeedStatus;
@@ -58,6 +55,8 @@ export function FeedProvider({ children }: { children: ReactNode }) {
   const soundRef = useRef(soundEnabled);
   branchRef.current = selectedBranchId;
   soundRef.current = soundEnabled;
+  const canStopListRef = useRef(false);
+  canStopListRef.current = canAnySomewhere(me, [Permission.MenuStopList]);
 
   const apply = useCallback((next: FeedState) => {
     stateRef.current = next;
@@ -75,6 +74,8 @@ export function FeedProvider({ children }: { children: ReactNode }) {
       for (const stream of result.effects.invalidate) {
         void queryClient.invalidateQueries({ queryKey: [stream] });
       }
+      // Стоп-лист (entityType dish) — меню филиала, стоп-лист и меню телефонного заказа.
+      for (const queryKey of feedQueryInvalidations(events)) void queryClient.invalidateQueries({ queryKey });
       if (result.effects.sound && soundRef.current) playNotificationSound();
       if (result.effects.notify) {
         const [first] = result.created;
@@ -84,7 +85,7 @@ export function FeedProvider({ children }: { children: ReactNode }) {
             message: first.title,
             description: t(`feed.streams.${first.stream}`),
             placement: 'bottomRight',
-            onClick: () => navigate(STREAM_PATHS[first.stream]),
+            onClick: () => navigate(feedEntityPath(first, { canStopList: canStopListRef.current })),
           });
         } else {
           notification.info({

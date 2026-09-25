@@ -186,7 +186,7 @@ export function PageEditorPage() {
             noStyle
             rules={[translatableRule(t('content.pages.bodyRequired'))]}
           >
-            <HtmlBodyEditor saved={current?.body ?? null} disabled={!canEdit} />
+            <HtmlBodyEditor disabled={!canEdit} />
           </Form.Item>
           <Form.Item shouldUpdate noStyle>
             {() => {

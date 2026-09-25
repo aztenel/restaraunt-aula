@@ -17,9 +17,10 @@ import {
   MinLength,
   ValidateNested,
 } from 'class-validator';
-import { PageDtoOf, PageQueryDto, TranslatableDto } from '../../../shared/infrastructure/http/api-types';
+import { MoneyDto, PageDtoOf, PageQueryDto, TranslatableDto } from '../../../shared/infrastructure/http/api-types';
 import { BULK_MAPPINGS_MAX, ProductMappingView } from '../application/mapping.actions';
-import { MappingSuggestion, PosBranchStatus, PosProductView } from '../application/pos.queries';
+import { BULK_RETRY_MAX } from '../application/order-export.actions';
+import { MappingSuggestion, PosBranchStatus, PosDishView, PosProductView } from '../application/pos.queries';
 import { QueuedJobResult } from '../application/product-import.actions';
 import { MissingMapping, ORDER_EXPORT_MACHINE, ORDER_EXPORT_STATUSES, OrderExportStatus, POS_FAILURE_REASONS, SKIP_REASONS } from '../domain/order-export';
 import { POS_PRODUCT_KINDS, PosProductKind } from '../domain/pos-client';
@@ -110,9 +111,17 @@ export class MissingMappingDto {
   @ApiProperty() dishName: string;
   @ApiProperty({ description: 'Нет сопоставления самого блюда' }) dishMissing: boolean;
   @ApiProperty({ type: [MissingOptionDto], description: 'Опции модификаторов без сопоставления' }) options: MissingOptionDto[];
+  @ApiProperty({ type: [String], description: 'id опций без сопоставления (то же, что options[].optionId) — для перехода к сопоставлению' })
+  optionIds: string[];
 
   static from(m: MissingMapping): MissingMappingDto {
-    return { dishId: m.dishId, dishName: m.dishName, dishMissing: m.dishMissing, options: m.options.map((o) => ({ ...o })) };
+    return {
+      dishId: m.dishId,
+      dishName: m.dishName,
+      dishMissing: m.dishMissing,
+      options: m.options.map((o) => ({ ...o })),
+      optionIds: m.options.map((o) => o.optionId),
+    };
   }
 }
 
@@ -172,6 +181,12 @@ export class OrderExportDto {
 }
 
 export class OrderExportsPageDto extends PageDtoOf(OrderExportDto) {}
+
+export class RetryFailedExportsResultDto {
+  @ApiProperty({ description: 'Сколько неудачных передач поставлено на повтор' }) retried: number;
+  @ApiProperty({ type: [String], description: 'id повторённых передач' }) exportIds: string[];
+  @ApiProperty({ description: `Неудачных передач осталось сверх лимита одного запроса (${BULK_RETRY_MAX}) — повторите запрос` }) remaining: number;
+}
 
 export class OrderExportsQueryDto extends PageQueryDto {
   @ApiPropertyOptional() @IsOptional() @IsUUID() branchId?: string;
@@ -252,6 +267,11 @@ export class ProductMappingsQueryDto extends PageQueryDto {
   @ApiPropertyOptional() @IsOptional() @Matches(PROVIDER_RE) provider?: string;
   @ApiPropertyOptional() @IsOptional() @IsUUID() dishId?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(EXTERNAL_ID_MAX_LENGTH) externalProductId?: string;
+  @ApiPropertyOptional({ description: 'Поиск по части названия товара POS (externalName) или его id, без учёта регистра' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  q?: string;
 }
 
 export class BulkMappingItemDto {
@@ -354,4 +374,74 @@ export class SuggestionsQueryDto {
   @Min(1)
   @Max(100)
   perPage?: number;
+}
+
+// ---------------------------------------------------------------- Блюда филиала для сопоставления
+
+export class PosDishesQueryDto {
+  @ApiProperty() @IsUUID() branchId: string;
+  @ApiPropertyOptional({ description: 'Провайдер; по умолчанию — провайдер филиала' }) @IsOptional() @Matches(PROVIDER_RE) provider?: string;
+  @ApiPropertyOptional({ description: 'Поиск по названию блюда или артикулу (sku)' }) @IsOptional() @IsString() @MaxLength(100) q?: string;
+  @ApiPropertyOptional({ description: 'Только блюда без сопоставления' }) @IsOptional() @Transform(toBoolean) @IsBoolean() unmappedOnly?: boolean;
+}
+
+export class PosDishOptionDto {
+  @ApiProperty() optionId: string;
+  @ApiProperty({ type: TranslatableDto }) name: TranslatableDto;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Товар-модификатор POS; null — опция не сопоставлена' })
+  externalProductId: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'Группа модификаторов POS' }) externalGroupId: string | null;
+}
+
+export class PosDishGroupDto {
+  @ApiProperty() groupId: string;
+  @ApiProperty({ type: TranslatableDto }) name: TranslatableDto;
+  @ApiProperty() isRequired: boolean;
+  @ApiProperty({ type: [PosDishOptionDto] }) options: PosDishOptionDto[];
+}
+
+export class PosDishMappingRefDto {
+  @ApiProperty({ description: 'id сопоставления (PUT/DELETE /admin/pos/mappings/{id})' }) mappingId: string;
+  @ApiProperty() externalProductId: string;
+  @ApiPropertyOptional({ type: String, nullable: true }) externalName: string | null;
+}
+
+export class PosDishDto {
+  @ApiProperty() dishId: string;
+  @ApiProperty() categoryId: string;
+  @ApiProperty({ type: TranslatableDto }) name: TranslatableDto;
+  @ApiPropertyOptional({ type: String, nullable: true }) sku: string | null;
+  @ApiProperty({ type: MoneyDto }) price: MoneyDto;
+  @ApiProperty({ description: 'Блюдо в стоп-листе филиала' }) stopped: boolean;
+  @ApiPropertyOptional({ type: PosDishMappingRefDto, nullable: true, description: 'null — блюдо не сопоставлено с товаром POS' })
+  mapping: PosDishMappingRefDto | null;
+  @ApiProperty({ type: [String], description: 'Опции модификаторов без сопоставления' }) unmappedOptionIds: string[];
+  @ApiProperty({ type: [PosDishGroupDto] }) modifierGroups: PosDishGroupDto[];
+
+  static from(d: PosDishView): PosDishDto {
+    return {
+      dishId: d.dishId,
+      categoryId: d.categoryId,
+      name: d.name,
+      sku: d.sku,
+      price: MoneyDto.from(d.price),
+      stopped: d.stopped,
+      mapping: d.mapping ? { ...d.mapping } : null,
+      unmappedOptionIds: [...d.unmappedOptionIds],
+      modifierGroups: d.modifierGroups.map((g) => ({ ...g, options: g.options.map((o) => ({ ...o })) })),
+    };
+  }
+}
+
+export class PosDishCategoryDto {
+  @ApiProperty() id: string;
+  @ApiProperty() slug: string;
+  @ApiProperty({ type: TranslatableDto }) name: TranslatableDto;
+}
+
+export class PosDishesDto {
+  @ApiProperty() branchId: string;
+  @ApiProperty({ description: 'Провайдер, чьи сопоставления показаны' }) provider: string;
+  @ApiProperty({ type: [PosDishCategoryDto] }) categories: PosDishCategoryDto[];
+  @ApiProperty({ type: [PosDishDto], description: 'Все блюда меню филиала (включая стоп-лист) с модификаторами' }) dishes: PosDishDto[];
 }

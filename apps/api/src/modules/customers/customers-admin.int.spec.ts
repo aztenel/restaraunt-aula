@@ -41,7 +41,7 @@ describe('Customers: admin (integration)', () => {
   beforeEach(async () => {
     await t.reset();
     version = await publishInitialConsentTexts(t);
-    ({ auth: owner } = await tokenFor(t, [{ role: 'owner' }]));
+    ({ auth: owner } = await tokenFor(t, [{ role: 'owner' }], 'Собственник'));
   });
 
   /** Три гостя: постоянный с маркетинговым согласием, банкетный, новичок. */
@@ -205,7 +205,13 @@ describe('Customers: admin (integration)', () => {
       .set('authorization', owner)
       .send({ name: 'Постоянные с рассылкой', description: 'Для акций', filter: { tags: ['regular'], marketingConsent: true } });
     expect(created.status).toBe(201);
-    expect(created.body).toMatchObject({ name: 'Постоянные с рассылкой', filter: { tags: ['regular'], marketingConsent: true } });
+    expect(created.body).toMatchObject({
+      name: 'Постоянные с рассылкой',
+      filter: { tags: ['regular'], marketingConsent: true },
+      customersCount: 1,
+      createdByName: 'Собственник',
+      updatedByName: 'Собственник',
+    });
     const id = created.body.id;
 
     const dup = await t.http().post(SEGMENTS).set('authorization', owner).send({ name: 'постоянные с РАССЫЛКОЙ', filter: {} });
@@ -224,6 +230,16 @@ describe('Customers: admin (integration)', () => {
     expect(updated.status).toBe(200);
     expect((await t.http().get(`${SEGMENTS}/${id}`).set('authorization', owner)).body.customersCount).toBe(2);
     expect((await t.http().get(SEGMENTS).set('authorization', owner)).body).toHaveLength(1);
+    // Список: число гостей каждого сегмента (одним запросом) и имена авторов.
+    await t.http().post(SEGMENTS).set('authorization', owner).send({ name: 'Все', filter: {} }).expect(201);
+    await t.http().post(SEGMENTS).set('authorization', owner).send({ name: 'Банкетные', filter: { hasBanquet: true } }).expect(201);
+    const segments = (await t.http().get(SEGMENTS).set('authorization', owner)).body as Array<{ name: string; customersCount: number; createdByName: string }>;
+    expect(segments.map((x) => [x.name, x.customersCount]).sort()).toEqual([
+      ['Банкетные', 1],
+      ['Все без банкетов', 2],
+      ['Все', 3],
+    ]);
+    expect(segments.every((x) => x.createdByName === 'Собственник')).toBe(true);
 
     const branchId = await createBranch(t);
     const operator = await tokenFor(t, [{ role: 'branch_operator', branchId }]);
@@ -233,7 +249,9 @@ describe('Customers: admin (integration)', () => {
     expect((await t.http().delete(`${SEGMENTS}/${id}`).set('authorization', owner)).status).toBe(204);
     expect((await t.http().get(`${SEGMENTS}/${id}`).set('authorization', owner)).status).toBe(404);
     const audit = await sql<{ action: string }>`
-      select action from platform.audit_log where entity_type = 'customer_segment' order by occurred_at, id`.execute(t.database.rootConnection());
+      select action from platform.audit_log where entity_type = 'customer_segment' and entity_id = ${id} order by occurred_at, id`.execute(
+        t.database.rootConnection(),
+      );
     expect(audit.rows.map((r) => r.action)).toEqual(['customer_segment.created', 'customer_segment.updated', 'customer_segment.deleted']);
   });
 

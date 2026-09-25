@@ -5,6 +5,7 @@ import { CurrentActor, RequirePermissions } from '../../../../shared/infrastruct
 import { Actor } from '../../../../shared/kernel/actor';
 import { pageRequest } from '../../../../shared/kernel/pagination';
 import { Permission } from '../../../../shared/kernel/permissions';
+import { PaymentProvidersQuery } from '../../application/payment-providers.query';
 import { PaymentQueries } from '../../application/payment.queries';
 import { MarkCollected } from '../../application/payment-status.actions';
 import { ConfirmManualRefund, RejectManualRefund, RequestRefund } from '../../application/refund.actions';
@@ -14,6 +15,7 @@ import {
   PaymentDetailsDto,
   PaymentDto,
   PaymentListQueryDto,
+  PaymentProvidersDto,
   PaymentsPageDto,
   RefundDto,
   RefundListQueryDto,
@@ -33,6 +35,7 @@ export class AdminPaymentsController {
     private readonly confirmRefund: ConfirmManualRefund,
     private readonly rejectRefund: RejectManualRefund,
     private readonly markCollected: MarkCollected,
+    private readonly providers: PaymentProvidersQuery,
   ) {}
 
   /** Платежи с фильтрами: филиал, назначение, способ, провайдер, статус, период, объект оплаты. */
@@ -51,10 +54,19 @@ export class AdminPaymentsController {
         referenceId: q.referenceId,
         from: q.from ? new Date(q.from) : undefined,
         to: q.to ? new Date(q.to) : undefined,
+        phone: q.phone,
       },
       pageRequest(q.page, q.perPage),
     );
     return { ...page, items: page.items.map(PaymentDto.from) };
+  }
+
+  /** Подключённые провайдеры и способы оплаты (без секретов): фильтры и подписи раздела «Платежи». */
+  @RequirePermissions(Permission.PaymentsView)
+  @Get('providers')
+  @ApiOkResponse({ type: PaymentProvidersDto })
+  providerList(@CurrentActor() actor: Actor): Promise<PaymentProvidersDto> {
+    return this.providers.execute(actor);
   }
 
   /** Очередь возвратов (например, ожидающие ручного подтверждения финансистом: status=pending, mode=manual). */
@@ -62,7 +74,18 @@ export class AdminPaymentsController {
   @Get('refunds')
   @ApiOkResponse({ type: RefundsPageDto })
   async refunds(@CurrentActor() actor: Actor, @Query() q: RefundListQueryDto): Promise<RefundsPageDto> {
-    const page = await this.queries.refundQueue(actor, { branchId: q.branchId, status: q.status, mode: q.mode }, pageRequest(q.page, q.perPage));
+    const page = await this.queries.refundQueue(
+      actor,
+      {
+        branchId: q.branchId,
+        status: q.status,
+        mode: q.mode,
+        from: q.from ? new Date(q.from) : undefined,
+        to: q.to ? new Date(q.to) : undefined,
+        q: q.q,
+      },
+      pageRequest(q.page, q.perPage),
+    );
     return { ...page, items: page.items.map(RefundDto.from) };
   }
 

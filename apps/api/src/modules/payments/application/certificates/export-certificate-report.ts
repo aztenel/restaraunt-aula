@@ -17,8 +17,8 @@ export class ExportCertificateReport {
     private readonly xlsx: XlsxBuilder,
   ) {}
 
-  async execute(actor: Actor, from: string, to: string): Promise<Buffer> {
-    const { totals: t } = await this.queries.report(actor, from, to);
+  async execute(actor: Actor, from: string, to: string, branchId: string | null = null): Promise<Buffer> {
+    const { totals: t, liabilityIncluded } = await this.queries.report(actor, from, to, branchId);
     const rows: ReportRow[] = [
       { metric: 'Выпущено (номинал)', count: t.issued.count, amount: t.issued.nominal },
       { metric: 'Выпущено (выручка от продажи)', count: t.issued.count, amount: t.issued.price },
@@ -26,9 +26,13 @@ export class ExportCertificateReport {
       { metric: 'Возвращено на сертификаты', count: t.returned.operations, amount: t.returned.amount },
       { metric: 'Просрочено (сгоревший остаток)', count: t.expired.count, amount: t.expired.amount },
       { metric: 'Восстановлено продлением', count: t.reinstated.count, amount: t.reinstated.amount },
-      { metric: 'Остаток обязательств: активные', count: t.liability.active.count, amount: t.liability.active.amount },
-      { metric: 'Остаток обязательств: заблокированные', count: t.liability.blocked.count, amount: t.liability.blocked.amount },
     ];
+    if (liabilityIncluded) {
+      rows.push(
+        { metric: 'Остаток обязательств: активные', count: t.liability.active.count, amount: t.liability.active.amount },
+        { metric: 'Остаток обязательств: заблокированные', count: t.liability.blocked.count, amount: t.liability.blocked.amount },
+      );
+    }
     return this.xlsx.build([
       {
         name: `Сертификаты ${from} — ${to}`,

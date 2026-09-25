@@ -58,6 +58,19 @@ export interface CertificateSearchFilter {
   buyerPhone?: string;
   status?: CertificateStatus;
   orderId?: string;
+  /** Покупатель: имя, email или компания (корпоративная продажа), частичное совпадение без учёта регистра. */
+  buyer?: string;
+  /** Выпущен не раньше / раньше. */
+  issuedFrom?: Date;
+  issuedTo?: Date;
+}
+
+/** Показатели отчёта по филиалу (где продан/погашен сертификат; null — продажа на сайте/по счёту). */
+export interface CertificateBranchTotals {
+  branchId: string | null;
+  issued: { count: number; price: number };
+  redeemed: { operations: number; amount: number };
+  returned: { operations: number; amount: number };
 }
 
 function mapCertificate(row: Selectable<GiftCertificatesTable>): CertificateRecord {
@@ -277,6 +290,24 @@ export class CertificateRepository {
     }
     if (filter.status) q = q.where('status', '=', filter.status);
     if (filter.orderId) q = q.where('order_id', '=', filter.orderId);
+    if (filter.issuedFrom) q = q.where('issued_at', '>=', filter.issuedFrom);
+    if (filter.issuedTo) q = q.where('issued_at', '<', filter.issuedTo);
+    if (filter.buyer) {
+      const pattern = `%${filter.buyer.toLowerCase().replace(/[%_\\]/g, (c) => `\\${c}`)}%`;
+      q = q.where((eb) =>
+        eb.or([
+          eb(eb.fn('lower', ['buyer_name']), 'like', pattern),
+          eb(eb.fn('lower', ['buyer_email']), 'like', pattern),
+          eb.exists(
+            eb
+              .selectFrom('payments.certificate_orders as o')
+              .select(sql`1`.as('one'))
+              .whereRef('o.id', '=', 'payments.gift_certificates.order_id')
+              .where(sql<boolean>`lower(o.buyer_company) like ${pattern}`),
+          ),
+        ]),
+      );
+    }
     const total = await q.select((eb) => eb.fn.countAll<number>().as('n')).executeTakeFirst();
     const rows = await q.selectAll().orderBy('issued_at', 'desc').orderBy('id', 'desc').limit(page.perPage).offset(offsetOf(page)).execute();
     return pageOf(rows.map(mapCertificate), Number(total?.n ?? 0), page);
@@ -293,6 +324,78 @@ export class CertificateRepository {
       .limit(limit)
       .execute();
     return rows.map((r) => r.id);
+  }
+
+  /**
+   * Отчёт филиала за период: движения по сертификатам, привязанные к филиалу (продажа/погашение/возврат
+   * в этом филиале). Остаток обязательств по филиалу не делится — он только в сетевом отчёте.
+   */
+  async branchReport(branchId: string, from: Date, to: Date): Promise<CertificateReportTotals> {
+    const moves = await this.db()
+      .selectFrom('payments.certificate_transactions as t')
+      .innerJoin('payments.gift_certificates as g', 'g.id', 't.certificate_id')
+      .where('t.branch_id', '=', branchId)
+      .where('t.occurred_at', '>=', from)
+      .where('t.occurred_at', '<', to)
+      .select((eb) => [
+        't.kind',
+        eb.fn.countAll<number>().as('operations'),
+        sql<number>`count(distinct t.certificate_id)`.as('certificates'),
+        eb.fn.coalesce(eb.fn.sum<number>('t.change_amount'), sql<number>`0`).as('amount'),
+        eb.fn.coalesce(eb.fn.sum<number>('g.price_amount'), sql<number>`0`).as('price'),
+      ])
+      .groupBy('t.kind')
+      .execute();
+    const move = (kind: LedgerKind) => moves.find((m) => m.kind === kind);
+    return {
+      issued: { count: Number(move('issue')?.operations ?? 0), nominal: Number(move('issue')?.amount ?? 0), price: Number(move('issue')?.price ?? 0) },
+      redeemed: {
+        operations: Number(move('debit')?.operations ?? 0),
+        certificates: Number(move('debit')?.certificates ?? 0),
+        amount: Number(move('debit')?.amount ?? 0),
+      },
+      returned: { operations: Number(move('credit')?.operations ?? 0), amount: Number(move('credit')?.amount ?? 0) },
+      expired: { count: Number(move('expire')?.operations ?? 0), amount: Number(move('expire')?.amount ?? 0) },
+      reinstated: { count: Number(move('reinstate')?.operations ?? 0), amount: Number(move('reinstate')?.amount ?? 0) },
+      liability: { active: { count: 0, amount: 0 }, blocked: { count: 0, amount: 0 } },
+    };
+  }
+
+  /** Разбивка движений за период по филиалам (branches — только эти филиалы; 'all' — все, включая null). */
+  async totalsByBranch(from: Date, to: Date, branches: 'all' | string[]): Promise<CertificateBranchTotals[]> {
+    if (branches !== 'all' && branches.length === 0) return [];
+    let q = this.db()
+      .selectFrom('payments.certificate_transactions as t')
+      .innerJoin('payments.gift_certificates as g', 'g.id', 't.certificate_id')
+      .where('t.occurred_at', '>=', from)
+      .where('t.occurred_at', '<', to)
+      .where('t.kind', 'in', ['issue', 'debit', 'credit']);
+    if (branches !== 'all') q = q.where('t.branch_id', 'in', branches);
+    const rows = await q
+      .select((eb) => [
+        't.branch_id',
+        't.kind',
+        eb.fn.countAll<number>().as('operations'),
+        eb.fn.coalesce(eb.fn.sum<number>('t.change_amount'), sql<number>`0`).as('amount'),
+        eb.fn.coalesce(eb.fn.sum<number>('g.price_amount'), sql<number>`0`).as('price'),
+      ])
+      .groupBy(['t.branch_id', 't.kind'])
+      .execute();
+    const byBranch = new Map<string | null, CertificateBranchTotals>();
+    for (const r of rows) {
+      const entry = byBranch.get(r.branch_id) ?? {
+        branchId: r.branch_id,
+        issued: { count: 0, price: 0 },
+        redeemed: { operations: 0, amount: 0 },
+        returned: { operations: 0, amount: 0 },
+      };
+      if (r.kind === 'issue') entry.issued = { count: Number(r.operations), price: Number(r.price) };
+      if (r.kind === 'debit') entry.redeemed = { operations: Number(r.operations), amount: Number(r.amount) };
+      if (r.kind === 'credit') entry.returned = { operations: Number(r.operations), amount: Number(r.amount) };
+      byBranch.set(r.branch_id, entry);
+    }
+    // Филиалы по id, продажи без филиала (сайт, счёт) — последней строкой.
+    return [...byBranch.values()].sort((a, b) => (a.branchId === null ? 1 : b.branchId === null ? -1 : a.branchId.localeCompare(b.branchId)));
   }
 
   /** Отчёт: выпущено, погашено, возвращено, просрочено за период + остаток обязательств на сейчас. */

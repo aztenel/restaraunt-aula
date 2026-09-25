@@ -6,8 +6,12 @@ import { call, type Page } from '@aula/api-client';
 import { api } from '@/shared/api/client';
 import type { PromoCode, PromoCodeInput } from './promo-form';
 
+/** network — только промокоды на всю сеть, branch — только промокоды филиалов; не задан — все доступные. */
+export type PromoScope = 'network' | 'branch';
+
 export interface PromoListQuery {
   branchId?: string;
+  scope?: PromoScope;
   q?: string;
   active?: boolean;
   page?: number;
@@ -25,7 +29,8 @@ export const promoApi = {
       api.GET('/api/v1/admin/promo-codes', {
         params: {
           query: {
-            branchId: params.branchId,
+            branchId: params.scope === 'network' ? undefined : params.branchId,
+            scope: params.scope,
             q: params.q?.trim() || undefined,
             active: params.active,
             page: params.page,

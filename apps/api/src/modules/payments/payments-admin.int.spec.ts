@@ -207,6 +207,103 @@ describe('Payments admin API (integration)', () => {
     expect((await auditEntries(ctx.t, 'refund.succeeded'))[0]!.actor_kind).toBe('staff');
   });
 
+  it('payment detail: status history with timestamps and actors; refunds carry who requested and confirmed', async () => {
+    const start = ctx.t.clock.now().getTime();
+    const p = await payments.createPayment(command({ method: 'online', customer: { phone: '+77015550011', name: 'Айгерим' } }));
+    ctx.t.clock.advance(60_000);
+    await ctx.t.drain();
+    ctx.t.clock.advance(60_000);
+    await sandboxDecision(ctx, (await payments.getPayment(p.id)).paymentUrl!, 'succeeded');
+    await ctx.t.drain();
+    const finance = await tokenFor(ctx.t, [{ role: 'finance' }], 'Финансист Алия');
+    ctx.t.clock.advance(60_000);
+    const refund = await ctx.t
+      .http()
+      .post(`/api/v1/admin/payments/${p.id}/refunds`)
+      .set('authorization', finance.auth)
+      .send({ amount: { amount: 100_000 }, reason: 'Недовложение', idempotencyKey: 'history-rf-1' })
+      .expect(201);
+    await ctx.t.drain();
+
+    const detail = (await ctx.t.http().get(`/api/v1/admin/payments/${p.id}`).set('authorization', finance.auth).expect(200)).body;
+    expect(detail.history.map((h: any) => [h.type, h.fromStatus, h.toStatus])).toEqual([
+      ['status', null, 'created'],
+      ['status', 'created', 'pending'],
+      ['status', 'pending', 'succeeded'],
+      ['refund_requested', null, null],
+      ['status', 'succeeded', 'partially_refunded'],
+      ['refund_succeeded', null, null],
+    ]);
+    expect(new Date(detail.history[0].at).getTime()).toBe(start);
+    expect(new Date(detail.history[1].at).getTime()).toBeGreaterThanOrEqual(start + 60_000);
+    expect(detail.history[3]).toMatchObject({ refundId: refund.body.id, amount: { amount: 100_000 }, reason: 'Недовложение', actorName: 'Финансист Алия' });
+    expect(detail.refunds[0]).toMatchObject({ requestedBy: finance.userId, requestedByName: 'Финансист Алия', confirmedBy: null, confirmedByName: null });
+
+    // Отмена по сроку: причина в истории; ручной возврат — кто подтвердил.
+    const cancelled = await payments.createPayment(command({ method: 'online' }));
+    await payments.cancelPayment(cancelled.id, 'order auto-cancelled');
+    const cancelledDetail = (await ctx.t.http().get(`/api/v1/admin/payments/${cancelled.id}`).set('authorization', finance.auth)).body;
+    expect(cancelledDetail.history.at(-1)).toMatchObject({ type: 'status', fromStatus: 'created', toStatus: 'cancelled', reason: 'order auto-cancelled', actorName: null });
+    const cash = await payments.createPayment(command());
+    await payments.markCollected(cash.id);
+    const manual = await payments.requestRefund({ paymentId: cash.id, amount: tenge(500), reason: 'Сдача', idempotencyKey: 'history-m-1' });
+    await ctx.t.http().post(`/api/v1/admin/payments/refunds/${manual.id}/confirm`).set('authorization', finance.auth).send({ comment: 'Наличными' }).expect(200);
+    const queue = (await ctx.t.http().get('/api/v1/admin/payments/refunds?mode=manual').set('authorization', finance.auth)).body;
+    expect(queue.items[0]).toMatchObject({ requestedBy: null, requestedByName: null, confirmedBy: finance.userId, confirmedByName: 'Финансист Алия' });
+  });
+
+  it('search: payments by customer phone; refund queue by period, reference, amount and order number', async () => {
+    const aigerim = await payments.createPayment(command({ referenceId: 'order-aaa', customer: { phone: '+77015550011' }, description: 'Заказ GL-2026-000123' }));
+    await payments.createPayment(command({ referenceId: 'order-bbb', customer: { phone: '+77779998877' } }));
+    const finance = await tokenFor(ctx.t, [{ role: 'finance' }]);
+    const byPhone = async (phone: string) =>
+      (await ctx.t.http().get('/api/v1/admin/payments').query({ phone }).set('authorization', finance.auth).expect(200)).body.items.map((p: any) => p.id);
+    expect(await byPhone('8 701 555 00 11')).toEqual([aigerim.id]);
+    expect(await byPhone('0011')).toEqual([aigerim.id]);
+    expect(await byPhone('12')).toHaveLength(2); // короче 4 цифр — фильтр не применяется
+
+    await payments.markCollected(aigerim.id);
+    const r1 = await payments.requestRefund({ paymentId: aigerim.id, amount: tenge(1500), reason: 'Сдача', idempotencyKey: 'q-1' });
+    ctx.t.clock.advance(2 * 86_400_000);
+    const r2 = await payments.requestRefund({ paymentId: aigerim.id, amount: tenge(700), reason: 'Ошибка', idempotencyKey: 'q-2' });
+    const queue = async (query: Record<string, string>) =>
+      (await ctx.t.http().get('/api/v1/admin/payments/refunds').query(query).set('authorization', finance.auth).expect(200)).body.items.map((r: any) => r.id);
+    expect(await queue({ q: '1500' })).toEqual([r1.id]);
+    expect(await queue({ q: '700.00' })).toEqual([r2.id]);
+    expect(await queue({ q: 'GL-2026-000123' })).toEqual([r2.id, r1.id]);
+    expect(await queue({ q: 'order-aaa' })).toEqual([r2.id, r1.id]);
+    expect(await queue({ q: aigerim.id })).toEqual([r2.id, r1.id]);
+    expect(await queue({ q: r1.id })).toEqual([r1.id]);
+    const yesterday = new Date(ctx.t.clock.now().getTime() - 86_400_000).toISOString();
+    expect(await queue({ from: yesterday })).toEqual([r2.id]);
+    expect(await queue({ to: yesterday })).toEqual([r1.id]);
+    expect((await ctx.t.http().get('/api/v1/admin/payments/refunds?from=yesterday').set('authorization', finance.auth)).status).toBe(400);
+  });
+
+  it('providers: configured providers and payment methods without secrets (payments.view)', async () => {
+    const finance = await tokenFor(ctx.t, [{ role: 'finance' }]);
+    let res = await ctx.t.http().get('/api/v1/admin/payments/providers').set('authorization', finance.auth).expect(200);
+    // Маршрутизация не настроена: вне production — песочница по умолчанию.
+    expect(res.body).toMatchObject({ routingConfigured: false, defaultProvider: 'sandbox' });
+    expect(res.body.providers.find((p: any) => p.provider === 'sandbox')).toMatchObject({ isDefault: true, devFallback: true, enabled: true });
+    expect(res.body.methods.map((m: any) => m.method).sort()).toEqual(['bank_transfer', 'gift_certificate', 'on_receipt', 'online']);
+
+    await setIntegration(ctx, ROUTING_SETTINGS_KEY, { defaultProvider: 'halyk', branchOverrides: { [branchB]: 'kaspi' } });
+    await setIntegration(ctx, HALYK_SETTINGS_KEY, { clientId: 'aula', terminalId: 'term-1', testMode: true }, { clientSecret: 'very-secret-value' });
+    res = await ctx.t.http().get('/api/v1/admin/payments/providers').set('authorization', finance.auth).expect(200);
+    expect(res.body).toMatchObject({ routingConfigured: true, defaultProvider: 'halyk' });
+    expect(res.body.providers.find((p: any) => p.provider === 'halyk')).toMatchObject({ isDefault: true, enabled: true, title: 'Halyk ePay', branchIds: [] });
+    expect(res.body.providers.find((p: any) => p.provider === 'kaspi')).toMatchObject({ isDefault: false, enabled: false, branchIds: [branchB] });
+    expect(res.body.methods.find((m: any) => m.method === 'online')).toMatchObject({ provider: 'halyk', available: true });
+    expect(JSON.stringify(res.body)).not.toContain('very-secret-value');
+    // Управляющий филиала A не видит переопределения чужого филиала.
+    const managerA = await tokenFor(ctx.t, [{ role: 'branch_manager', branchId: branchA }]);
+    const scoped = await ctx.t.http().get('/api/v1/admin/payments/providers').set('authorization', managerA.auth).expect(200);
+    expect(scoped.body.providers.find((p: any) => p.provider === 'kaspi').branchIds).toEqual([]);
+    const content = await tokenFor(ctx.t, [{ role: 'content_manager' }]);
+    expect((await ctx.t.http().get('/api/v1/admin/payments/providers').set('authorization', content.auth)).status).toBe(403);
+  });
+
   it('confirming a gateway refund manually is refused', async () => {
     const p = await paidOnline(branchA);
     const r = await payments.requestRefund({ paymentId: p.id, reason: 'Отмена', idempotencyKey: 'gw-1' });

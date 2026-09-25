@@ -5,9 +5,9 @@ import { Actor } from '../../../../shared/kernel/actor';
 import { pageRequest } from '../../../../shared/kernel/pagination';
 import { Permission } from '../../../../shared/kernel/permissions';
 import { BulkUpsertProductMappings, CreateProductMapping, DeleteProductMapping, UpdateProductMapping } from '../../application/mapping.actions';
-import { RetryOrderExport } from '../../application/order-export.actions';
+import { RetryFailedOrderExports, RetryOrderExport } from '../../application/order-export.actions';
 import { POS_OPERATIONS_PERMISSIONS } from '../../application/pos-access';
-import { MappingSuggestionsQuery, OrderExportsQuery, PosProductsQuery, PosStatusQuery, ProductMappingsQuery } from '../../application/pos.queries';
+import { MappingSuggestionsQuery, OrderExportsQuery, PosDishesQuery, PosProductsQuery, PosStatusQuery, ProductMappingsQuery } from '../../application/pos.queries';
 import { RequestProductImport } from '../../application/product-import.actions';
 import { RequestStopListSync } from '../../application/stop-list.actions';
 import {
@@ -20,6 +20,9 @@ import {
   OrderExportsPageDto,
   OrderExportsQueryDto,
   PosBranchStatusDto,
+  PosDishDto,
+  PosDishesDto,
+  PosDishesQueryDto,
   PosProductDto,
   PosProductsPageDto,
   PosProductsQueryDto,
@@ -30,6 +33,7 @@ import {
   ProductMappingsQueryDto,
   ProductMappingUpdateDto,
   QueuedJobDto,
+  RetryFailedExportsResultDto,
   SuggestionsQueryDto,
 } from '../dto';
 
@@ -70,6 +74,7 @@ export class PosExportsController {
   constructor(
     private readonly exports: OrderExportsQuery,
     private readonly retryExport: RetryOrderExport,
+    private readonly retryFailed: RetryFailedOrderExports,
   ) {}
 
   @RequirePermissions(...POS_OPERATIONS_PERMISSIONS)
@@ -82,6 +87,15 @@ export class PosExportsController {
       pageRequest(query.page, query.perPage),
     );
     return { ...page, items: page.items.map(OrderExportDto.from) };
+  }
+
+  /** Повторить все неудачные передачи филиала (после сопоставления блюд или восстановления связи с POS). */
+  @RequirePermissions(...POS_OPERATIONS_PERMISSIONS)
+  @Post('retry-failed')
+  @HttpCode(200)
+  @ApiOkResponse({ type: RetryFailedExportsResultDto })
+  async retryAllFailed(@CurrentActor() actor: Actor, @Body() dto: BranchRefDto): Promise<RetryFailedExportsResultDto> {
+    return this.retryFailed.execute(actor, dto.branchId);
   }
 
   @RequirePermissions(...POS_OPERATIONS_PERMISSIONS)
@@ -113,7 +127,7 @@ export class PosMappingsController {
   async list(@CurrentActor() actor: Actor, @Query() query: ProductMappingsQueryDto): Promise<ProductMappingsPageDto> {
     const page = await this.mappings.execute(
       actor,
-      { branchId: query.branchId, provider: query.provider, dishId: query.dishId, externalProductId: query.externalProductId },
+      { branchId: query.branchId, provider: query.provider, dishId: query.dishId, externalProductId: query.externalProductId, q: query.q },
       pageRequest(query.page, query.perPage),
     );
     return { ...page, items: page.items.map(ProductMappingDto.from) };
@@ -200,5 +214,21 @@ export class PosProductsController {
   @ApiAcceptedResponse({ type: QueuedJobDto })
   async import(@CurrentActor() actor: Actor, @Body() dto: BranchRefDto): Promise<QueuedJobDto> {
     return QueuedJobDto.from(await this.requestImport.execute(actor, dto.branchId));
+  }
+}
+
+/** Блюда меню филиала с текущими сопоставлениями — экран сопоставления с POS (без права на меню каталога). */
+@ApiTags('admin')
+@ApiBearerAuth('staff')
+@Controller('admin/pos/dishes')
+export class PosDishesController {
+  constructor(private readonly dishes: PosDishesQuery) {}
+
+  @RequirePermissions(Permission.IntegrationsManage)
+  @Get()
+  @ApiOkResponse({ type: PosDishesDto })
+  async list(@CurrentActor() actor: Actor, @Query() query: PosDishesQueryDto): Promise<PosDishesDto> {
+    const result = await this.dishes.execute(actor, { branchId: query.branchId, provider: query.provider, q: query.q, unmappedOnly: query.unmappedOnly });
+    return { ...result, categories: result.categories.map((c) => ({ id: c.id, slug: c.slug, name: c.name })), dishes: result.dishes.map(PosDishDto.from) };
   }
 }

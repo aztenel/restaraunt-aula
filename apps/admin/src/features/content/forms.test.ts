@@ -3,6 +3,7 @@ import type { Banner, ContentPage } from '@aula/api-client';
 import { dayjs } from '@/shared/lib/dates';
 import {
   bannerToForm,
+  bodyHasText,
   formToBannerInput,
   formToPageInput,
   formToPromotionInput,
@@ -10,6 +11,7 @@ import {
   isValidWindow,
   pageToForm,
   promotionToForm,
+  previewBodyKey,
   sanitizedLocales,
 } from './forms';
 
@@ -98,5 +100,19 @@ describe('страница: HTML по языкам', () => {
   it('предупреждение, если сервер изменил разметку при очистке', () => {
     expect(sanitizedLocales({ ru: '<p>A</p><script>x</script>', kk: '<p>B</p>' }, { ru: '<p>A</p>', kk: '<p>B</p>' })).toEqual(['ru']);
     expect(sanitizedLocales({ ru: '<p>A</p>' }, { ru: '<p>A</p>' })).toEqual([]);
+  });
+});
+
+describe('предпросмотр страницы: черновик', () => {
+  it('есть ли текст хотя бы на одном языке', () => {
+    expect(bodyHasText({})).toBe(false);
+    expect(bodyHasText({ ru: '   ', kk: '' })).toBe(false);
+    expect(bodyHasText({ kk: '<p>Жеткізу</p>' })).toBe(true);
+    expect(bodyHasText(null)).toBe(false);
+  });
+
+  it('ключ кэша не зависит от порядка языков и пустых полей', () => {
+    expect(previewBodyKey({ ru: 'a', kk: 'b' })).toBe(previewBodyKey({ kk: 'b', ru: 'a', en: ' ' }));
+    expect(previewBodyKey({ ru: 'a' })).not.toBe(previewBodyKey({ ru: 'a2' }));
   });
 });

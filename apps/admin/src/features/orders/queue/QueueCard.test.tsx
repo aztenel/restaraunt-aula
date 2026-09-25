@@ -11,6 +11,7 @@ import type { QueueOrder } from '../types';
 import { QueueCard } from './QueueCard';
 
 const transition = vi.fn();
+const getOrder = vi.fn();
 
 vi.mock('@/shared/branch/BranchProvider', () => ({
   useBranch: () => ({ branchName: (id: string) => `Филиал ${id}` }),
@@ -18,7 +19,10 @@ vi.mock('@/shared/branch/BranchProvider', () => ({
 
 vi.mock('../api', async (importOriginal) => {
   const actual = await importOriginal<typeof ApiModule>();
-  return { ...actual, ordersApi: { ...actual.ordersApi, transition: (...args: unknown[]) => transition(...args) } };
+  return {
+    ...actual,
+    ordersApi: { ...actual.ordersApi, transition: (...args: unknown[]) => transition(...args), get: (...args: unknown[]) => getOrder(...args) },
+  };
 });
 
 beforeAll(async () => {
@@ -40,6 +44,7 @@ beforeAll(async () => {
 afterEach(() => {
   cleanup();
   transition.mockReset();
+  getOrder.mockReset();
 });
 
 function wrap(children: ReactNode) {
@@ -96,6 +101,10 @@ const order: QueueOrder = {
   contactless: false,
   allowedTransitions: ['accepted'],
   isLate: true,
+  canCancel: false,
+  canReject: true,
+  courier: null,
+  amountDue: { amount: 1_250_000, currency: 'KZT' },
 };
 
 const noop = () => undefined;
@@ -120,10 +129,66 @@ describe('карточка очереди', { timeout: 30_000 }, () => {
   });
 
   it('без разрешённых переходов (нет права orders.manage) кнопок действий нет', () => {
-    wrap(<QueueCard order={{ ...order, allowedTransitions: [] }} now={now} highlighted={false} showBranch onOpen={noop} onReject={noop} onCancel={noop} />);
+    wrap(<QueueCard order={{ ...order, allowedTransitions: [], canReject: false, canCancel: false }} now={now} highlighted={false} showBranch onOpen={noop} onReject={noop} onCancel={noop} />);
     expect(screen.queryByRole('button', { name: /Принять/ })).toBeNull();
     expect(screen.queryByRole('button', { name: /Отказать/ })).toBeNull();
     expect(screen.getByText('Филиал b1')).toBeTruthy();
+  });
+
+  it('отказ — только по флагу сервера canReject', () => {
+    wrap(<QueueCard order={{ ...order, canReject: false }} now={now} highlighted={false} showBranch={false} onOpen={noop} onReject={noop} onCancel={noop} />);
+    expect(screen.getByRole('button', { name: /Принять/ })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Отказать/ })).toBeNull();
+  });
+
+  it('курьер службы доставки — из ответа очереди, без запроса карточки заказа', () => {
+    wrap(
+      <QueueCard
+        order={{
+          ...order,
+          type: 'delivery',
+          status: 'delivering',
+          allowedTransitions: ['completed'],
+          canReject: false,
+          courier: { status: 'picked_up', trackingUrl: 'https://track/1', courierName: 'Ерлан' },
+        }}
+        now={now}
+        highlighted={false}
+        showBranch={false}
+        onOpen={noop}
+        onReject={noop}
+        onCancel={noop}
+      />,
+    );
+    expect(screen.getByText('Курьер забрал заказ')).toBeTruthy();
+    expect(screen.getByText(/Ерлан/)).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Отследить курьера' }).getAttribute('href')).toBe('https://track/1');
+    expect(getOrder).not.toHaveBeenCalled();
+  });
+
+  it('оплата при получении: подтверждение выдачи показывает сумму к получению', async () => {
+    wrap(
+      <QueueCard
+        order={{
+          ...order,
+          status: 'ready',
+          paymentMethod: 'on_receipt',
+          allowedTransitions: ['completed'],
+          canReject: false,
+          amountDue: { amount: 1_000_000, currency: 'KZT' },
+        }}
+        now={now}
+        highlighted={false}
+        showBranch={false}
+        onOpen={noop}
+        onReject={noop}
+        onCancel={noop}
+      />,
+    );
+    expect(screen.getByText(/к получению: 10\s000/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /Выдан/ }));
+    await waitFor(() => expect(screen.getByText(/Получите с гостя 10\s000/)).toBeTruthy());
+    expect(transition).not.toHaveBeenCalled();
   });
 
   it('«Принять» отправляет переход accepted; «Отказать» открывает диалог причины', async () => {

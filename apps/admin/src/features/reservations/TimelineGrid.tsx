@@ -9,7 +9,9 @@ import { useTranslation } from 'react-i18next';
 import { formatMoney, translate } from '@aula/api-client';
 import { tx } from '@/shared/i18n/tx';
 import { formatTimeRange, venueTitle } from './format';
+import { timelineHold } from './hold-countdown';
 import { itemSwatch } from './palette';
+import { HoldCountdownTag } from './parts';
 import {
   assignLanes,
   closedSegments,
@@ -94,6 +96,7 @@ export function TimelineGrid({ timeline, halls, now, highlightIds, onItemClick, 
                   ticks={ticks.map((tick) => tick.left)}
                   closed={closed}
                   nowLeft={nowLeft}
+                  now={now}
                   highlightIds={highlightIds}
                   onItemClick={onItemClick}
                   onSlotClick={onSlotClick}
@@ -115,6 +118,7 @@ function VenueRow({
   ticks,
   closed,
   nowLeft,
+  now,
   highlightIds,
   onItemClick,
   onSlotClick,
@@ -126,6 +130,7 @@ function VenueRow({
   ticks: number[];
   closed: ReturnType<typeof closedSegments>;
   nowLeft: number | null;
+  now: number;
   highlightIds: ReadonlySet<string>;
   onItemClick: (item: TimelineItem) => void;
   onSlotClick: ((venue: TimelineVenue, at: number) => void) | null;
@@ -144,7 +149,8 @@ function VenueRow({
     if (target.closest('.rsv-tl-item')) return;
     const rect = event.currentTarget.getBoundingClientRect();
     const fraction = (event.clientX - rect.left) / rect.width;
-    onSlotClick(venue, timeAtFraction(fraction, window, 15));
+    // Шаг сетки — по правилу места (slotStepMinutes), как предлагает время витрина.
+    onSlotClick(venue, timeAtFraction(fraction, window, venue.rules.slotStepMinutes || 15));
   };
 
   const meta = [
@@ -185,6 +191,7 @@ function VenueRow({
             lane={lanes.get(item.reservationId) ?? 0}
             window={window}
             tz={tz}
+            now={now}
             highlight={highlightIds.has(item.reservationId)}
             onClick={onItemClick}
           />
@@ -199,6 +206,7 @@ function ItemBar({
   lane,
   window,
   tz,
+  now,
   highlight,
   onClick,
 }: {
@@ -206,6 +214,7 @@ function ItemBar({
   lane: number;
   window: TimeWindow;
   tz: string;
+  now: number;
   highlight: boolean;
   onClick: (item: TimelineItem) => void;
 }) {
@@ -216,6 +225,12 @@ function ItemBar({
   const top = lane * LANE_HEIGHT + 3;
   const banquet = item.kind === 'banquet';
   const who = banquet ? t('reservations.kinds.banquet') : item.customerName || item.customerPhone || item.number;
+  const hold = timelineHold(item, now);
+  const holdText = hold
+    ? hold.urgency === 'expired'
+      ? t('reservations.queue.expired')
+      : t('reservations.day.holdLeft', { minutes: hold.minutes })
+    : null;
   const label = `${formatTimeRange(item.start, item.end, tz)} · ${t('reservations.guestsCount', { count: item.guests })} · ${who}`;
   const tooltip = (
     <div>
@@ -230,6 +245,11 @@ function ItemBar({
         </div>
       ) : null}
       {item.needsMark ? <div>{t('reservations.needsMark')}</div> : null}
+      {hold ? (
+        <div>
+          <HoldCountdownTag holdExpiresAt={item.holdExpiresAt} />
+        </div>
+      ) : null}
       {geometry.main?.clippedStart ? <div>{t('reservations.day.fromPrevDay')}</div> : null}
       {geometry.main?.clippedEnd ? <div>{t('reservations.day.toNextDay')}</div> : null}
     </div>
@@ -241,6 +261,7 @@ function ItemBar({
     geometry.main?.clippedStart ? 'rsv-clip-start' : '',
     geometry.main?.clippedEnd ? 'rsv-clip-end' : '',
     highlight ? 'rsv-new' : '',
+    hold && (hold.urgency === 'critical' || hold.urgency === 'expired') ? 'rsv-hold-critical' : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -270,9 +291,10 @@ function ItemBar({
               event.stopPropagation();
               onClick(item);
             }}
-            aria-label={`${item.number}: ${label}`}
+            aria-label={`${item.number}: ${label}${holdText ? ` · ${holdText}` : ''}`}
           >
             {item.needsMark ? <span className="rsv-mark-dot" aria-hidden /> : null}
+            {holdText ? <span className="rsv-hold-badge">⏱ {holdText}</span> : null}
             {label}
           </button>
         </Tooltip>

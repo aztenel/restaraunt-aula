@@ -321,6 +321,20 @@ export class CustomerRepository {
     return Number(row?.n ?? 0);
   }
 
+  /** Число гостей по нескольким фильтрам одним запросом (список сегментов): union all подсчётов. */
+  async countMany(filters: readonly CustomerFilter[]): Promise<number[]> {
+    if (filters.length === 0) return [];
+    const parts = filters.map((f, i) =>
+      this.applyFilter(this.base(), f).select((eb) => [sql<number>`${sql.lit(i)}::int`.as('i'), eb.fn.countAll<number>().as('n')]),
+    );
+    let query = parts[0]!;
+    for (const part of parts.slice(1)) query = query.unionAll(part);
+    const rows = await query.execute();
+    const counts = filters.map(() => 0);
+    for (const row of rows as Array<{ i: number; n: number | string }>) counts[Number(row.i)] = Number(row.n);
+    return counts;
+  }
+
   /** Строки выгрузки (обезличенные не выгружаются никогда). limit+1 — чтобы понять, что превышен лимит. */
   async listForExport(filter: CustomerFilter, limit: number): Promise<CustomerRecord[]> {
     const rows = await this.applyFilter(this.base(), filter, { includeAnonymized: false })

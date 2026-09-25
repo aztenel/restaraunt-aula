@@ -12,5 +12,7 @@ export default defineConfig({
     environment: 'node',
     include: ['src/**/*.test.{ts,tsx}'],
     restoreMocks: true,
+    // Рендер-тесты antd при параллельном прогоне всего набора бывают медленнее 5 с по умолчанию.
+    testTimeout: 20_000,
   },
 });

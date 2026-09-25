@@ -37,7 +37,7 @@ test.describe('SEO', () => {
       expect(title.trim(), `${path}: title`).not.toBe('');
       titles.set(path, title);
       await expect(page.locator('head title'), `${path}: title в <head>`).toHaveCount(1);
-      await expect(page.locator('head meta[name="description"]'), path).toHaveAttribute('content', /\S{10,}/);
+      await expect(page.locator('head meta[name="description"]'), path).toHaveAttribute('content', /\S.{15,}/);
       await expect(page.locator('meta[name="robots"][content*="noindex"]'), `${path} индексируется`).toHaveCount(0);
       const canonical = await page.locator('head link[rel="canonical"]').getAttribute('href');
       expect(canonical, `${path}: canonical`).toMatch(/^https?:\/\//);

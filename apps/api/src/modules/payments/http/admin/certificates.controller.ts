@@ -125,24 +125,28 @@ export class AdminCertificatesController {
   @Get()
   @ApiOkResponse({ type: CertificatesPageDto })
   async list(@CurrentActor() actor: Actor, @Query() q: CertificateListQueryDto): Promise<CertificatesPageDto> {
-    const page = await this.queries.search(actor, { q: q.q, phone: q.phone, status: q.status, orderId: q.orderId }, pageRequest(q.page, q.perPage));
+    const page = await this.queries.search(
+      actor,
+      { q: q.q, phone: q.phone, status: q.status, orderId: q.orderId, buyer: q.buyer, issuedFrom: q.issuedFrom, issuedTo: q.issuedTo },
+      pageRequest(q.page, q.perPage),
+    );
     return { ...page, items: page.items.map(CertificateDto.from) };
   }
 
-  /** Отчёт: выпущено, погашено, просрочено за период + остаток обязательств. */
-  @RequirePermissions(Permission.CertificatesView, Permission.ReportsConsolidated)
+  /** Отчёт: выпущено, погашено, просрочено за период + остаток обязательств; с branchId — по филиалу. */
+  @RequirePermissions(Permission.CertificatesView, Permission.ReportsConsolidated, Permission.ReportsBranch)
   @Get('report')
   @ApiOkResponse({ type: CertificateReportDto })
   async report(@CurrentActor() actor: Actor, @Query() q: CertificateReportQueryDto): Promise<CertificateReportDto> {
-    return CertificateReportDto.from(await this.queries.report(actor, q.from, q.to));
+    return CertificateReportDto.from(await this.queries.report(actor, q.from, q.to, q.branchId ?? null));
   }
 
-  @RequirePermissions(Permission.CertificatesView, Permission.ReportsConsolidated)
+  @RequirePermissions(Permission.CertificatesView, Permission.ReportsConsolidated, Permission.ReportsBranch)
   @Get('report/export')
   @ApiProduces('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
   @ApiOkResponse({ description: 'XLSX', schema: { type: 'string', format: 'binary' } })
   async export(@CurrentActor() actor: Actor, @Query() q: CertificateReportQueryDto, @Res() res: Response): Promise<void> {
-    const body = await this.exportReport.execute(actor, q.from, q.to);
+    const body = await this.exportReport.execute(actor, q.from, q.to, q.branchId ?? null);
     res.setHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('content-disposition', `attachment; filename="certificates-${q.from}-${q.to}.xlsx"`);
     res.send(body);

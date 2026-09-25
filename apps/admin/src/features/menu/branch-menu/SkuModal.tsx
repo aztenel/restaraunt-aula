@@ -4,12 +4,13 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { translate, type BranchMenuItem } from '@aula/api-client';
 import { branchMenuApi } from '@/shared/api/catalog';
+import { skuToSave } from './sku';
 import { queryKeys } from '@/shared/api/query-keys';
 import { useNotifyError } from '@/shared/api/useNotifyError';
 
 /**
  * Код POS филиала — переопределение общего кода блюда (у точки своя номенклатура POS).
- * Пусто — сбросить (в POS уйдёт общий код блюда). Цена передаётся текущая (перечитывается) — не меняется.
+ * Пусто — сбросить (в POS уйдёт общий код блюда). Цена не меняется: отдельный эндпоинт кода POS.
  */
 export function SkuModal({ item, onClose }: { item: BranchMenuItem | null; onClose: () => void }) {
   const { t, i18n } = useTranslation();
@@ -27,10 +28,8 @@ export function SkuModal({ item, onClose }: { item: BranchMenuItem | null; onClo
     if (!item) return;
     setSaving(true);
     try {
-      // API меняет код POS только вместе с ценой: берём актуальную цену прямо перед сохранением,
-      // чтобы не вернуть старую, если её только что изменили в другом окне.
-      const fresh = await branchMenuApi.item(item.branchId, item.dishId);
-      await branchMenuApi.setPrice(item.branchId, item.dishId, { price: { amount: fresh.price.amount }, sku: sku.trim() || null });
+      // Только код POS (PUT .../sku) — цена не отправляется и не может быть случайно перезаписана.
+      await branchMenuApi.setSku(item.branchId, item.dishId, skuToSave(sku));
       await queryClient.invalidateQueries({ queryKey: queryKeys.branchMenu(item.branchId) });
       void message.success(t('common.saved'));
       onClose();

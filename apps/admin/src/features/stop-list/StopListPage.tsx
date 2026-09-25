@@ -4,7 +4,7 @@ import { App, Badge, Button, Card, Col, Empty, Flex, Grid, Input, Row, Segmented
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { translate, type BranchMenuItem } from '@aula/api-client';
-import { branchMenuApi, catalogApi } from '@/shared/api/catalog';
+import { branchMenuApi, catalogApi, type BranchMenuRow } from '@/shared/api/catalog';
 import { queryKeys } from '@/shared/api/query-keys';
 import { useNotifyError } from '@/shared/api/useNotifyError';
 import { useBranch } from '@/shared/branch/BranchProvider';
@@ -12,15 +12,15 @@ import { formatDateTime, toDisplay } from '@/shared/lib/dates';
 import { CatalogThumb } from '@/shared/ui/CatalogThumb';
 import { ErrorAlert } from '@/shared/ui/ErrorAlert';
 import { MoneyText } from '@/shared/ui/MoneyText';
+import { useAdminFeed } from '@/shared/feed/FeedProvider';
 import { PageHeader } from '@/shared/ui/PageHeader';
 import { BranchRequired } from '../menu/BranchRequired';
 import { bySortOrder } from '../menu/reorder';
 import { useBranchMenuAbilities } from '../menu/useAbilities';
 import { useUntilLabel } from './AvailabilityTag';
+import { STOP_LIST_POLL_MS, stopListPollInterval } from './poll';
 import { StopDialog, type StopDialogResult } from './StopDialog';
 
-/** Обновление стоп-листа: лента событий стоп-лист не передаёт — опрос раз в 30 с (и после каждого действия). */
-export const STOP_LIST_POLL_MS = 30_000;
 
 /**
  * Стоп-лист филиала для планшета на точке (menu.stoplist в филиале): поиск, крупные кнопки
@@ -72,15 +72,17 @@ function StopListBoard({ branchId }: { branchId: string }) {
   const [dialogItem, setDialogItem] = useState<BranchMenuItem | null>(null);
   const [pending, setPending] = useState<string | null>(null);
 
+  const { status: feedStatus } = useAdminFeed();
+  const pollMs = stopListPollInterval(feedStatus);
   const stopped = useQuery({
     queryKey: queryKeys.stopList(branchId),
     queryFn: () => branchMenuApi.stopList(branchId),
-    refetchInterval: STOP_LIST_POLL_MS,
+    refetchInterval: pollMs,
   });
   const menu = useQuery({
     queryKey: queryKeys.branchMenuAll(branchId),
     queryFn: () => branchMenuApi.all(branchId),
-    refetchInterval: STOP_LIST_POLL_MS,
+    refetchInterval: pollMs,
   });
   const categories = useQuery({ queryKey: queryKeys.categories, queryFn: catalogApi.categories, staleTime: 5 * 60_000 });
 
@@ -123,7 +125,7 @@ function StopListBoard({ branchId }: { branchId: string }) {
     }
   };
 
-  const row = (item: BranchMenuItem) => {
+  const row = (item: BranchMenuRow) => {
     const isStopped = item.availability === 'stopped';
     return (
       <div key={item.dishId} className="aula-stop-row" style={isStopped ? { background: '#fff7f5' } : undefined}>
@@ -142,6 +144,7 @@ function StopListBoard({ branchId }: { branchId: string }) {
                 {item.stoppedAt ? (
                   <Typography.Text type="secondary" style={{ fontSize: 12 }}>
                     {t('stopList.since', { time: toDisplay(item.stoppedAt)?.format('DD.MM HH:mm') ?? '' })}
+                    {item.stopSource !== 'pos' && item.updatedByName ? ` · ${item.updatedByName}` : ''}
                   </Typography.Text>
                 ) : null}
               </Space>
