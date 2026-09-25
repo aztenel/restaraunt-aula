@@ -126,7 +126,7 @@ describe('POS: сопоставление блюд и номенклатура (
         { groupId: 'g-add', optionId: sauce, name: 'Соус', price: 10_000 },
       ],
     });
-    const lagman = ctx.fakes.menu.add({ name: 'Лагман', price: 200_000, availability: 'hidden' });
+    const lagman = ctx.fakes.menu.add({ name: 'Лагман', price: 200_000, availability: 'stopped_hidden' });
     ctx.fakes.menu.add({ name: 'Только в другом филиале', price: 1, branchIds: [otherBranch] });
     const admin = await tokenFor(t, [{ role: 'sysadmin' }]);
     const api = t.http();
