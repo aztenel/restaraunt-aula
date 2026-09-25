@@ -36,7 +36,6 @@ export const paymentsRu = {
       provider: 'Провайдер',
       status: 'Статус',
       reference: 'Объект оплаты: id заказа, брони или счёта',
-      invalidRange: 'Период: дата «с» позже даты «по»',
     },
     columns: {
       createdAt: 'Создан',
