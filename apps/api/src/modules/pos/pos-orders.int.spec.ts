@@ -355,7 +355,10 @@ describe('POS: передача заказов на кухню (integration)', (
     expect(list.status).toBe(200);
     expect(list.body.total).toBe(1);
     expect(list.body.items[0]).toMatchObject({ orderId: order.orderId, status: 'failed', failureReason: 'missing_mapping', canRetry: true });
-    expect(list.body.items[0].missingMappings).toHaveLength(2);
+    expect(list.body.items[0].missingMappings).toEqual([
+      { dishId: lagman, dishName: 'Лагман', dishMissing: false, options: [{ optionId: sauce, name: 'Соус острый' }], optionIds: [sauce] },
+      { dishId: manty, dishName: 'Манты', dishMissing: true, options: [], optionIds: [] },
+    ]);
 
     // Администратор интеграций сопоставляет блюдо и опцию.
     const admin = await tokenFor(t, [{ role: 'sysadmin' }]);
@@ -497,6 +500,53 @@ describe('POS: передача заказов на кухню (integration)', (
     const rows = await sql<{ n: string }>`select count(*) as n from pos.order_exports where order_id = ${order.orderId}`.execute(db());
     expect(Number(rows.rows[0]!.n)).toBe(1);
     expect(createRequests()).toHaveLength(1);
+  });
+
+  it('bulk retry of failed exports: branch-scoped, audited per export and in summary; not-failed exports untouched', async () => {
+    const branchA = await createBranch(t);
+    const branchB = await createBranch(t);
+    await routeToIiko(t, { [branchA]: {}, [branchB]: {} });
+    const manty = newId();
+    const failedA: string[] = [];
+    for (let i = 0; i < 2; i++) {
+      const order = kitchenOrder(branchA, { items: [item(manty, 'Манты')] });
+      ctx.fakes.orders.orders.set(order.orderId, order);
+      await publishAccepted(t, order);
+      failedA.push((await exportOf(order.orderId)).id);
+    }
+    const orderB = kitchenOrder(branchB, { items: [item(manty, 'Манты')] });
+    ctx.fakes.orders.orders.set(orderB.orderId, orderB);
+    await publishAccepted(t, orderB);
+    const exportB = await exportOf(orderB.orderId);
+    expect(exportB.status).toBe('failed');
+
+    const operatorA = await tokenFor(t, [{ role: 'branch_operator', branchId: branchA }]);
+    const foreign = await t.http().post('/api/v1/admin/pos/exports/retry-failed').set('authorization', operatorA.auth).send({ branchId: branchB });
+    expect(foreign.status).toBe(403);
+    expect((await t.http().post('/api/v1/admin/pos/exports/retry-failed').set('authorization', operatorA.auth).send({})).status).toBe(400);
+
+    await mapDish(branchA, manty, 'P-MANTY');
+    ctx.http.on('/api/1/access_token', 200, { token: 'tok' }).on('/api/1/deliveries/create', 200, { orderInfo: { id: 'IIKO-1' } });
+    const res = await t.http().post('/api/v1/admin/pos/exports/retry-failed').set('authorization', operatorA.auth).send({ branchId: branchA });
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ retried: 2, exportIds: failedA, remaining: 0 });
+    await t.drain();
+    for (const id of failedA) {
+      const row = (await sql<any>`select status, manual_retries from pos.order_exports where id = ${id}`.execute(db())).rows[0];
+      expect(row).toMatchObject({ status: 'sent', manual_retries: 1 });
+    }
+    expect((await exportOf(orderB.orderId)).status).toBe('failed');
+
+    const perExport = await sql<{ n: string }>`
+      select count(*) as n from platform.audit_log where action = 'pos.order_export_retried' and branch_id = ${branchA}`.execute(db());
+    expect(Number(perExport.rows[0]!.n)).toBe(2);
+    const summary = await sql<any>`select * from platform.audit_log where action = 'pos.order_exports_bulk_retried'`.execute(db());
+    expect(summary.rows).toHaveLength(1);
+    expect(summary.rows[0]).toMatchObject({ entity_type: 'branch', entity_id: branchA, branch_id: branchA });
+
+    // Повторно — нечего повторять.
+    const again = await t.http().post('/api/v1/admin/pos/exports/retry-failed').set('authorization', operatorA.auth).send({ branchId: branchA });
+    expect(again.body).toEqual({ retried: 0, exportIds: [], remaining: 0 });
   });
 
   it('exports list and retry: 401 without token, 403 without permission, branch scoping', async () => {

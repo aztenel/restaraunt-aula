@@ -111,6 +111,81 @@ describe('POS: сопоставление блюд и номенклатура (
     expect(audit.rows.map((r) => r.action)).toEqual(['pos.mapping_created', 'pos.mapping_updated', 'pos.mapping_deleted', 'pos.mapping_created']);
   });
 
+  it('branch dishes for mapping (integrations.manage, no menu permission): mapping state per dish and option; search by external name', async () => {
+    const branchId = await createBranch(t);
+    const otherBranch = await createBranch(t);
+    await routeToIiko(t, { [branchId]: {} });
+    const cheese = newId();
+    const sauce = newId();
+    const plov = ctx.fakes.menu.add({
+      name: 'Плов',
+      price: 250_000,
+      sku: 'A-100',
+      modifiers: [
+        { groupId: 'g-add', optionId: cheese, name: 'Сыр', price: 30_000 },
+        { groupId: 'g-add', optionId: sauce, name: 'Соус', price: 10_000 },
+      ],
+    });
+    const lagman = ctx.fakes.menu.add({ name: 'Лагман', price: 200_000, availability: 'hidden' });
+    ctx.fakes.menu.add({ name: 'Только в другом филиале', price: 1, branchIds: [otherBranch] });
+    const admin = await tokenFor(t, [{ role: 'sysadmin' }]);
+    const api = t.http();
+    const created = await api
+      .post('/api/v1/admin/pos/mappings')
+      .set('authorization', admin.auth)
+      .send({ branchId, dishId: plov.dishId, externalProductId: 'P-PLOV', externalName: 'Плов узбекский 350 г', modifiers: [{ optionId: cheese, externalProductId: 'M-CHEESE' }] });
+    expect(created.status).toBe(201);
+
+    // Администратор системы: integrations.manage без права на меню каталога.
+    const integrator = await tokenFor(t, [{ role: 'sysadmin' }]);
+    const res = await api.get(`/api/v1/admin/pos/dishes?branchId=${branchId}`).set('authorization', integrator.auth);
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ branchId, provider: 'iiko', categories: [{ id: 'cat-1' }] });
+    expect(res.body.dishes).toHaveLength(2);
+    const plovRow = res.body.dishes.find((d: { dishId: string }) => d.dishId === plov.dishId);
+    expect(plovRow).toMatchObject({
+      name: { ru: 'Плов' },
+      sku: 'A-100',
+      price: { amount: 250_000, currency: 'KZT' },
+      stopped: false,
+      mapping: { mappingId: created.body.id, externalProductId: 'P-PLOV', externalName: 'Плов узбекский 350 г' },
+      unmappedOptionIds: [sauce],
+      modifierGroups: [
+        {
+          groupId: 'g-add',
+          isRequired: false,
+          options: [
+            { optionId: cheese, name: { ru: 'Сыр' }, externalProductId: 'M-CHEESE', externalGroupId: null },
+            { optionId: sauce, name: { ru: 'Соус' }, externalProductId: null, externalGroupId: null },
+          ],
+        },
+      ],
+    });
+    expect(res.body.dishes.find((d: { dishId: string }) => d.dishId === lagman.dishId)).toMatchObject({ mapping: null, stopped: true, unmappedOptionIds: [] });
+
+    const unmapped = await api.get(`/api/v1/admin/pos/dishes?branchId=${branchId}&unmappedOnly=true`).set('authorization', integrator.auth);
+    expect(unmapped.body.dishes.map((d: { dishId: string }) => d.dishId)).toEqual([lagman.dishId]);
+    const bySku = await api.get(`/api/v1/admin/pos/dishes?branchId=${branchId}&q=a-10`).set('authorization', integrator.auth);
+    expect(bySku.body.dishes.map((d: { dishId: string }) => d.dishId)).toEqual([plov.dishId]);
+    const byName = await api.get(`/api/v1/admin/pos/dishes?branchId=${branchId}&q=${encodeURIComponent('лагм')}`).set('authorization', integrator.auth);
+    expect(byName.body.dishes.map((d: { dishId: string }) => d.dishId)).toEqual([lagman.dishId]);
+
+    // Доступ: оператор филиала (orders.manage) и контент-менеджер — нет; без branchId — 400.
+    const operator = await tokenFor(t, [{ role: 'branch_operator', branchId }]);
+    expect((await api.get(`/api/v1/admin/pos/dishes?branchId=${branchId}`).set('authorization', operator.auth)).status).toBe(403);
+    const content = await tokenFor(t, [{ role: 'content_manager' }]);
+    expect((await api.get(`/api/v1/admin/pos/dishes?branchId=${branchId}`).set('authorization', content.auth)).status).toBe(403);
+    expect((await api.get('/api/v1/admin/pos/dishes').set('authorization', admin.auth)).status).toBe(400);
+
+    // Поиск сопоставлений по названию товара POS (без учёта регистра) и по id товара.
+    const byExternal = await api.get(`/api/v1/admin/pos/mappings?branchId=${branchId}&q=${encodeURIComponent('УЗБЕКСК')}`).set('authorization', admin.auth);
+    expect(byExternal.status).toBe(200);
+    expect(byExternal.body.items.map((m: { id: string }) => m.id)).toEqual([created.body.id]);
+    expect((await api.get(`/api/v1/admin/pos/mappings?branchId=${branchId}&q=p-pl`).set('authorization', admin.auth)).body.total).toBe(1);
+    expect((await api.get(`/api/v1/admin/pos/mappings?branchId=${branchId}&q=${encodeURIComponent('%')}`).set('authorization', admin.auth)).body.total).toBe(0);
+    expect((await api.get(`/api/v1/admin/pos/mappings?branchId=${branchId}&q=lagman`).set('authorization', admin.auth)).body.total).toBe(0);
+  });
+
   it('mapping is not possible for a branch without an external POS (manual)', async () => {
     const branchId = await createBranch(t);
     const dish = ctx.fakes.menu.add({ name: 'Плов', price: 250_000 });
@@ -308,7 +383,9 @@ describe('POS: сопоставление блюд и номенклатура (
     const doc = buildOpenApiDocument(t.app, 'test');
     const paths = Object.keys(doc.paths).filter((p) => p.includes('/admin/pos'));
     expect(paths.sort()).toEqual([
+      '/api/v1/admin/pos/dishes',
       '/api/v1/admin/pos/exports',
+      '/api/v1/admin/pos/exports/retry-failed',
       '/api/v1/admin/pos/exports/{id}/retry',
       '/api/v1/admin/pos/mappings',
       '/api/v1/admin/pos/mappings/bulk',
