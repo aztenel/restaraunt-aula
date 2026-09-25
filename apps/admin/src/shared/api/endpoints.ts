@@ -176,11 +176,12 @@ export const systemApi = {
 };
 
 /**
- * Лента событий (модуль Notifications). Эндпоинтов пока нет в OpenAPI — запросы через api.raw;
- * 404 означает, что модуль ещё не развёрнут (лента отключается без ошибок).
+ * Лента событий (модуль Notifications). 404 — модуль ещё не развёрнут на стенде,
+ * 403 — у роли нет очередей: лента отключается без ошибок (см. feed/connection.ts).
  */
 export const feedApi = {
-  ticket: () => api.raw<FeedTicket>('POST', '/api/v1/admin/feed/ticket'),
-  recent: (since: string) => api.raw<unknown>('GET', '/api/v1/admin/feed/recent', { query: { since } }),
+  ticket: async () => (await call(api.POST('/api/v1/admin/feed/ticket'))) as FeedTicket,
+  recent: async (since: string) =>
+    (await call(api.GET('/api/v1/admin/feed/recent', { params: { query: { since, limit: 200 } } }))) as unknown,
   streamUrl: (ticket: string) => `${API_BASE_URL}/api/v1/admin/feed/stream?ticket=${encodeURIComponent(ticket)}`,
 };

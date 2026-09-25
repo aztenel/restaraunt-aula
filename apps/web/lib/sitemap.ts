@@ -3,7 +3,7 @@
  * категории, блюда и текстовые страницы из GET /api/v1/public/catalog/sitemap (модуль Catalog).
  */
 import type { MetadataRoute } from 'next';
-import { ApiError, type PublicBranch } from '@aula/api-client';
+import { ApiError, call, type PublicBranch } from '@aula/api-client';
 import { routing } from '@/i18n/routing';
 import { createServerApi } from './api';
 import { routes } from './routes';
@@ -26,7 +26,7 @@ export interface SitemapData {
   promotions?: Array<{ slug: string; updatedAt?: string | null }>;
 }
 
-export const SITEMAP_DATA_PATH = '/api/v1/public/catalog/sitemap';
+export const SITEMAP_DATA_PATH = '/api/v1/public/catalog/sitemap' as const;
 
 const STATIC_PAGES: Array<{ path: string; changeFrequency: ChangeFrequency; priority: number }> = [
   { path: routes.home(), changeFrequency: 'daily', priority: 1 },
@@ -110,12 +110,12 @@ export function buildSitemapEntries(input: {
 /**
  * Данные каталога для карты сайта. Если эндпоинт не развёрнут (404) или API недоступен —
  * null, и карта сайта строится без каталога (статические разделы + филиалы).
- * TODO(api-client): после попадания эндпоинта в docs/openapi.json — перейти на типизированный api.GET.
  */
 export async function fetchSitemapData(): Promise<SitemapData | null> {
   try {
     const api = createServerApi({ revalidate: 3600, tags: ['sitemap'] });
-    return await api.raw<SitemapData>('GET', SITEMAP_DATA_PATH);
+    // Nullable-даты в OpenAPI описаны без type — приводим к уточнённому SitemapData.
+    return (await call(api.GET(SITEMAP_DATA_PATH))) as unknown as SitemapData;
   } catch (error) {
     if (!(error instanceof ApiError) || !error.isNotFound) {
       console.warn('[sitemap] sitemap-data unavailable:', error instanceof Error ? error.message : error);

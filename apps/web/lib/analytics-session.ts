@@ -61,7 +61,10 @@ export function trackStorefrontEvent(type: StorefrontEventType, input: { path: s
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
       credentials: 'omit',
-    }).catch(() => undefined);
+    })
+      // Тело ответа не нужно: освобождаем поток, иначе соединение остаётся занятым.
+      .then((response) => response.body?.cancel())
+      .catch(() => undefined);
   } catch {
     // no-op
   }

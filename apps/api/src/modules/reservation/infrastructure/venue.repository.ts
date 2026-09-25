@@ -47,6 +47,8 @@ export interface VenueFilter {
   /** Только активные места в активных залах, активного типа. */
   activeOnly?: boolean;
   ids?: string[];
+  /** Включая удалённые из справочника (для истории броней). */
+  includeDeleted?: boolean;
 }
 
 function mapVenue(row: Selectable<VenuesTable>): VenueRecord {
@@ -119,8 +121,8 @@ export class VenueRepository {
     return row ? mapVenue(row) : null;
   }
 
-  async findDetailed(id: string): Promise<VenueDetails | null> {
-    const [venue] = await this.listDetailed({ branchIds: 'all', ids: [id] });
+  async findDetailed(id: string, options: { includeDeleted?: boolean } = {}): Promise<VenueDetails | null> {
+    const [venue] = await this.listDetailed({ branchIds: 'all', ids: [id], includeDeleted: options.includeDeleted });
     return venue ?? null;
   }
 
@@ -150,8 +152,8 @@ export class VenueRepository {
         't.cleanup_minutes',
         't.slot_step_minutes',
         't.bookable_online',
-      ])
-      .where('v.deleted_at', 'is', null);
+      ]);
+    if (!filter.includeDeleted) q = q.where('v.deleted_at', 'is', null);
     if (filter.branchIds !== 'all') q = q.where('v.branch_id', 'in', filter.branchIds);
     if (filter.ids) q = q.where('v.id', 'in', filter.ids);
     if (filter.hallId) q = q.where('v.hall_id', '=', filter.hallId);

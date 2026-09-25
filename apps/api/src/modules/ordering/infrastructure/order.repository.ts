@@ -357,6 +357,15 @@ export class OrderRepository {
     return rows.map((r) => r.id);
   }
 
+  /** Позиции нескольких заказов (очередь оператора). */
+  async itemsForOrders(orderIds: string[]): Promise<Map<string, OrderItemSnapshot[]>> {
+    const result = new Map<string, OrderItemSnapshot[]>(orderIds.map((id) => [id, []]));
+    if (orderIds.length === 0) return result;
+    const rows = await this.db().selectFrom('ordering.order_items').selectAll().where('order_id', 'in', orderIds).orderBy('position').execute();
+    for (const row of rows) result.get(row.order_id)?.push(mapItem(row));
+    return result;
+  }
+
   async idsByCustomer(customerId: string): Promise<string[]> {
     const rows = await this.db().selectFrom('ordering.orders').select('id').where('customer_id', '=', customerId).execute();
     return rows.map((r) => r.id);

@@ -71,6 +71,8 @@ export interface CourierClaimRef {
   externalId: string;
   branchId: string;
   orderId: string;
+  /** Уже известные данные заявки: адаптер не запрашивает их у службы повторно при каждом опросе. */
+  known?: { trackingUrl: string | null; courierPhone: string | null };
 }
 
 export interface CourierClaimInfo {

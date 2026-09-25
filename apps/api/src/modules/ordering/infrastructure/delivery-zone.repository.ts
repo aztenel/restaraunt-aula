@@ -48,13 +48,11 @@ export class DeliveryZoneRepository {
     return this.database.db<OrderingTables>();
   }
 
-  async findById(id: string): Promise<DeliveryZoneState | null> {
-    const row = await this.db()
-      .selectFrom('ordering.delivery_zones')
-      .selectAll()
-      .where('id', '=', id)
-      .where('deleted_at', 'is', null)
-      .executeTakeFirst();
+  /** includeDeleted — для карточки прошлого заказа (зона могла быть удалена позже). */
+  async findById(id: string, options: { includeDeleted?: boolean } = {}): Promise<DeliveryZoneState | null> {
+    let q = this.db().selectFrom('ordering.delivery_zones').selectAll().where('id', '=', id);
+    if (!options.includeDeleted) q = q.where('deleted_at', 'is', null);
+    const row = await q.executeTakeFirst();
     return row ? mapZone(row) : null;
   }
 

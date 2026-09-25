@@ -38,7 +38,12 @@ function isRetryable(err: unknown): boolean {
 }
 
 function refOf(d: CourierDispatchRecord): CourierClaimRef {
-  return { externalId: d.externalId ?? '', branchId: d.branchId, orderId: d.orderId };
+  return {
+    externalId: d.externalId ?? '',
+    branchId: d.branchId,
+    orderId: d.orderId,
+    known: { trackingUrl: d.trackingUrl, courierPhone: d.courierPhone },
+  };
 }
 
 function infoPatch(info: CourierClaimInfo) {
