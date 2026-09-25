@@ -5,6 +5,8 @@ import { Money } from '../../shared/kernel/money';
 import { ROUTING_SETTINGS_KEY } from './application/payment-gateway.registry';
 import { HALYK_SETTINGS_KEY } from './infrastructure/adapters/halyk/halyk.gateway';
 import { CreatePaymentCommand, PaymentsEvents, PaymentsService } from './public';
+import { EventBus } from '../../shared/infrastructure/events/event-bus';
+import { CustomerAnonymizedPayload, CustomersEvents } from '../customers/public';
 import {
   apiPath,
   auditActions,
@@ -480,6 +482,35 @@ describe('Payments (integration)', () => {
     }
     expect(calls).toBe(1);
     expect((await payments.getPayment(p.id)).status).toBe('refunded');
+  });
+
+  describe('customer anonymization (CustomersEvents.CustomerAnonymized)', () => {
+    it('erases customer contacts on payments and certificates by the phone/email from the event; amounts stay', async () => {
+      const p = await payments.createPayment(command({ method: 'on_receipt', customer: { phone: '+77771234567', name: 'Айгерим', email: 'a@mail.kz' } }));
+      const other = await payments.createPayment(command({ method: 'on_receipt', referenceId: 'order-2', customer: { phone: '+77770000000', name: 'Другой' } }));
+      const [cert] = await issueCertificate(ctx, { nominal: 5000 }); // покупатель +77011234567, hr@romashka.kz
+      await ctx.t.get(EventBus).publish(CustomersEvents.CustomerAnonymized, {
+        customerId: 'c-1',
+        phone: '+77771234567',
+        email: 'HR@romashka.kz',
+        occurredAt: ctx.t.clock.now().toISOString(),
+      } satisfies CustomerAnonymizedPayload);
+      await ctx.t.drain();
+      const rows = await sql<{ id: string; customer_phone: string | null; customer_name: string | null; customer_email: string | null; payment_amount: number }>`
+        select id, customer_phone, customer_name, customer_email, payment_amount from payments.payments where id in (${p.id}, ${other.id})`.execute(ctx.t.database.rootConnection());
+      const byId = new Map(rows.rows.map((r) => [r.id, r]));
+      expect(byId.get(p.id)).toMatchObject({ customer_phone: null, customer_name: null, customer_email: null, payment_amount: 500_000 });
+      expect(byId.get(other.id)).toMatchObject({ customer_phone: '+77770000000', customer_name: 'Другой' });
+      // Покупатель сертификата найден по почте из события.
+      const certRow = await sql<{ buyer_name: string; buyer_phone: string | null; buyer_email: string | null }>`
+        select buyer_name, buyer_phone, buyer_email from payments.gift_certificates where id = ${cert!.id}`.execute(ctx.t.database.rootConnection());
+      expect(certRow.rows[0]).toEqual({ buyer_name: 'anonymized', buyer_phone: null, buyer_email: null });
+      expect(await auditActions(ctx.t, 'c-1')).toEqual(['payments.customer_anonymized']);
+      // Событие без контактов (опубликованное до добавления полей) ничего не ломает.
+      await ctx.t.get(EventBus).publish(CustomersEvents.CustomerAnonymized, { customerId: 'c-2', occurredAt: ctx.t.clock.now().toISOString() });
+      await ctx.t.drain();
+      expect(await auditActions(ctx.t, 'c-2')).toEqual([]);
+    });
   });
 
   describe('database invariants', () => {
