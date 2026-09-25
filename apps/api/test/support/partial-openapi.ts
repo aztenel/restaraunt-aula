@@ -9,7 +9,7 @@ import { CatalogModule } from '../../src/modules/catalog/catalog.module';
 import { CustomersModule } from '../../src/modules/customers/customers.module';
 import { IdentityModule } from '../../src/modules/identity/identity.module';
 import { NotificationsModule } from '../../src/modules/notifications/notifications.module';
-import { OrderQuery } from '../../src/modules/ordering/public';
+import { OrderingModule } from '../../src/modules/ordering/ordering.module';
 import { PaymentsModule } from '../../src/modules/payments/payments.module';
 import { PosModule } from '../../src/modules/pos/pos.module';
 import { ReportingModule } from '../../src/modules/reporting/reporting.module';
@@ -32,10 +32,9 @@ async function main(): Promise<void> {
   @Global()
   @Module({
     providers: [
-      { provide: OrderQuery, useValue: fakes.orders },
       { provide: VenueAvailability, useValue: fakes.venues },
     ],
-    exports: [OrderQuery, VenueAvailability],
+    exports: [VenueAvailability],
   })
   class MissingContractsModule {}
 
@@ -48,6 +47,7 @@ async function main(): Promise<void> {
       CustomersModule,
       CatalogModule,
       PaymentsModule,
+      OrderingModule,
       ReportingModule,
       PosModule,
     ],

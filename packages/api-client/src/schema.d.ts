@@ -1880,6 +1880,342 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/public/orders/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublicOrders_quoteOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublicOrders_checkout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/orders/{publicToken}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicOrders_track"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/orders/{publicToken}/pay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublicOrders_pay"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/delivery/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublicDelivery_resolve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/branches/{branchId}/delivery-zones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicDelivery_zones"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/branches/{branchId}/order-slots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicDelivery_slots"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminOrders_list"];
+        put?: never;
+        post: operations["AdminOrders_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminOrders_queue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminOrders_quoteOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminOrders_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/transition": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminOrders_transition"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminOrders_reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminOrders_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/refund": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminOrders_refund"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/courier/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminOrders_courierRetry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/courier/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminOrders_courierCancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/delivery-zones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminDeliveryZones_list"];
+        put?: never;
+        post: operations["AdminDeliveryZones_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/delivery-zones/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminDeliveryZones_get"];
+        put: operations["AdminDeliveryZones_update"];
+        post?: never;
+        delete: operations["AdminDeliveryZones_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/promo-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminPromoCodes_list"];
+        put?: never;
+        post: operations["AdminPromoCodes_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/promo-codes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminPromoCodes_get"];
+        put: operations["AdminPromoCodes_update"];
+        post?: never;
+        delete: operations["AdminPromoCodes_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/reports/revenue": {
         parameters: {
             query?: never;
@@ -4806,6 +5142,753 @@ export interface components {
             sig: string;
             /** @enum {string} */
             result: "succeeded" | "failed";
+        };
+        OrderLineInputDto: {
+            /** @description Блюдо меню филиала */
+            dishId: string;
+            /** @example 2 */
+            quantity: number;
+            /**
+             * @description Выбранные опции модификаторов (id опций)
+             * @default []
+             */
+            modifierOptionIds: string[];
+        };
+        QuoteOrderDto: {
+            branchId: string;
+            /** @enum {string} */
+            type: "delivery" | "pickup";
+            items: components["schemas"]["OrderLineInputDto"][];
+            /** @description Точка доставки (геокодирование — на витрине) */
+            point?: components["schemas"]["GeoPointDto"] | null;
+            promoCode?: Record<string, never> | null;
+            certificateCode?: Record<string, never> | null;
+            /** @description Телефон гостя — для лимита промокода на один телефон */
+            phone?: Record<string, never> | null;
+        };
+        OrderModifierViewDto: {
+            groupId: string;
+            /** @description Название группы модификаторов на языке запроса */
+            groupName: string;
+            optionId: string;
+            /** @description Название опции на языке запроса */
+            name: string;
+            price: components["schemas"]["MoneyDto"];
+        };
+        OrderQuoteLineDto: {
+            /** @description Номер позиции в запросе */
+            index: number;
+            dishId: string;
+            /** @description Название на языке запроса (null — блюдо не найдено) */
+            name?: Record<string, never> | null;
+            photoUrl?: Record<string, never> | null;
+            quantity: number;
+            unitPrice?: components["schemas"]["MoneyDto"] | null;
+            lineTotal?: components["schemas"]["MoneyDto"] | null;
+            modifiers: components["schemas"]["OrderModifierViewDto"][];
+            available: boolean;
+            /**
+             * @description Машинный код проблемы позиции
+             * @example catalog.dish_unavailable
+             */
+            problem?: Record<string, never> | null;
+        };
+        OrderQuoteDeliveryDto: {
+            pointProvided: boolean;
+            deliverable: boolean;
+            zoneId?: Record<string, never> | null;
+            zoneName?: Record<string, never> | null;
+            etaMinutes?: Record<string, never> | null;
+            minOrderAmount?: components["schemas"]["MoneyDto"] | null;
+            minOrderReached: boolean;
+            /** @description Сколько не хватает до минимальной суммы */
+            minOrderShortfall: components["schemas"]["MoneyDto"];
+            /** @description Стоимость доставки зоны до льгот */
+            baseDeliveryFee: components["schemas"]["MoneyDto"];
+            freeDeliveryFrom?: components["schemas"]["MoneyDto"] | null;
+            /** @description Сколько добавить до бесплатной доставки */
+            amountToFreeDelivery?: components["schemas"]["MoneyDto"] | null;
+            /** @enum {string|null} */
+            freeDeliveryReason?: "threshold" | "promo" | null;
+        };
+        OrderQuotePromoDto: {
+            code: string;
+            applied: boolean;
+            /** @example promo.min_subtotal */
+            reason?: Record<string, never> | null;
+            details?: Record<string, never> | null;
+            discount: components["schemas"]["MoneyDto"];
+            freeDelivery: boolean;
+        };
+        OrderQuoteCertificateDto: {
+            applied: boolean;
+            /** @example order.certificate_not_found */
+            reason?: Record<string, never> | null;
+            /** @example ****-****-AB12 */
+            maskedCode?: Record<string, never> | null;
+            balance?: components["schemas"]["MoneyDto"] | null;
+            expiresAt?: Record<string, never> | null;
+            /** @description Будет списано с сертификата */
+            amount: components["schemas"]["MoneyDto"];
+        };
+        OrderQuoteDto: {
+            branchId: string;
+            /** @enum {string} */
+            type: "delivery" | "pickup";
+            lines: components["schemas"]["OrderQuoteLineDto"][];
+            subtotal: components["schemas"]["MoneyDto"];
+            discount: components["schemas"]["MoneyDto"];
+            deliveryFee: components["schemas"]["MoneyDto"];
+            total: components["schemas"]["MoneyDto"];
+            /** @description К оплате (итог минус сертификат) */
+            amountDue: components["schemas"]["MoneyDto"];
+            delivery?: components["schemas"]["OrderQuoteDeliveryDto"] | null;
+            promo?: components["schemas"]["OrderQuotePromoDto"] | null;
+            certificate?: components["schemas"]["OrderQuoteCertificateDto"] | null;
+            /** @description Что мешает оформить (машинные коды) */
+            problems: string[];
+            canCheckout: boolean;
+        };
+        OrderCheckoutDeliveryDto: {
+            point: components["schemas"]["GeoPointDto"];
+            /** @example Астана, пр. Кабанбай батыра, 56 */
+            addressText: string;
+            apartment?: Record<string, never> | null;
+            entrance?: Record<string, never> | null;
+            floor?: Record<string, never> | null;
+            intercom?: Record<string, never> | null;
+            courierComment?: Record<string, never> | null;
+        };
+        OrderCheckoutCustomerDto: {
+            /** @example Айгерим */
+            name: string;
+            /** @example +77771234567 */
+            phone: string;
+            email?: Record<string, never> | null;
+        };
+        OrderCheckoutConsentDto: {
+            /** @description Согласие на обработку персональных данных (обязательно true) */
+            personalData: boolean;
+            /** @description Согласие на маркетинговые рассылки (необязательно) */
+            marketing?: Record<string, never> | null;
+        };
+        OrderCheckoutDto: {
+            branchId: string;
+            /** @enum {string} */
+            type: "delivery" | "pickup";
+            items: components["schemas"]["OrderLineInputDto"][];
+            /** @description Обязательно для доставки */
+            delivery?: components["schemas"]["OrderCheckoutDeliveryDto"] | null;
+            /**
+             * @description Бесконтактная доставка
+             * @default false
+             */
+            contactless: boolean;
+            /** @description К определённому времени (ISO); null — как можно скорее */
+            scheduledFor?: Record<string, never> | null;
+            customer: components["schemas"]["OrderCheckoutCustomerDto"];
+            comment?: Record<string, never> | null;
+            promoCode?: Record<string, never> | null;
+            certificateCode?: Record<string, never> | null;
+            /** @enum {string} */
+            paymentMethod: "online" | "on_receipt";
+            /** @description Токен подтверждения телефона (оплата при получении) */
+            phoneVerificationToken?: Record<string, never> | null;
+            consent: components["schemas"]["OrderCheckoutConsentDto"];
+            /**
+             * @description Язык уведомлений гостю
+             * @enum {string}
+             */
+            locale: "kk" | "ru" | "en";
+            analyticsSessionId?: Record<string, never> | null;
+            /** @description Ключ идемпотентности (UUID, генерирует витрина): повтор возвращает тот же заказ */
+            idempotencyKey: string;
+        };
+        OrderPaymentStateDto: {
+            id: string;
+            /** @enum {string} */
+            method: "online" | "on_receipt" | "gift_certificate" | "bank_transfer";
+            /** @enum {string} */
+            status: "created" | "pending" | "succeeded" | "failed" | "cancelled" | "partially_refunded" | "refunded";
+            amount: components["schemas"]["MoneyDto"];
+            /** @description Ссылка на оплату (появляется асинхронно — опрашивайте статус заказа) */
+            paymentUrl?: Record<string, never> | null;
+        };
+        OrderCheckoutResultDto: {
+            orderId: string;
+            /** @example GL-2026-000123 */
+            number: string;
+            /** @description Токен страницы статуса заказа */
+            publicToken: string;
+            /** @enum {string} */
+            status: "draft" | "awaiting_payment" | "paid" | "accepted" | "cooking" | "ready" | "delivering" | "completed" | "cancelled" | "refunded";
+            total: components["schemas"]["MoneyDto"];
+            /** @description Платёж остатка (null — оплачено сертификатом) */
+            payment?: components["schemas"]["OrderPaymentStateDto"] | null;
+            /** @description Повтор запроса с тем же ключом идемпотентности */
+            replayed: boolean;
+        };
+        OrderItemViewDto: {
+            dishId: string;
+            /** @description Название на языке запроса (снимок на момент заказа) */
+            name: string;
+            photoUrl?: Record<string, never> | null;
+            quantity: number;
+            unitPrice: components["schemas"]["MoneyDto"];
+            lineTotal: components["schemas"]["MoneyDto"];
+            modifiers: components["schemas"]["OrderModifierViewDto"][];
+        };
+        OrderBranchDto: {
+            id: string;
+            slug: string;
+            /** @description Название на языке запроса */
+            name: string;
+            /** @description Адрес на языке запроса */
+            address: string;
+            phone: string;
+            location: components["schemas"]["GeoPointDto"];
+        };
+        OrderTrackingDeliveryDto: {
+            addressText: string;
+            apartment?: Record<string, never> | null;
+            entrance?: Record<string, never> | null;
+            floor?: Record<string, never> | null;
+            intercom?: Record<string, never> | null;
+            courierComment?: Record<string, never> | null;
+            point: components["schemas"]["GeoPointDto"];
+            contactless: boolean;
+        };
+        OrderTrackingPaymentDto: {
+            /** @enum {string} */
+            method: "online" | "on_receipt";
+            /** @description Заказ оплачен (или оплата обеспечена — при получении) */
+            isPaid: boolean;
+            /** @description Списано с подарочного сертификата */
+            certificateAmount: components["schemas"]["MoneyDto"];
+            /** @description К оплате онлайн или при получении */
+            amountDue: components["schemas"]["MoneyDto"];
+            current?: components["schemas"]["OrderPaymentStateDto"] | null;
+            /** @description Можно повторить онлайн-оплату (POST /public/orders/:token/pay) */
+            canRetry: boolean;
+            /** @description Срок оплаты онлайн-заказа */
+            payUntil?: Record<string, never> | null;
+        };
+        OrderTrackingCourierDto: {
+            /** @enum {string} */
+            status: "requested" | "estimating" | "awaiting_confirmation" | "searching" | "courier_assigned" | "picked_up" | "delivered" | "cancelled" | "failed";
+            trackingUrl?: Record<string, never> | null;
+            courierName?: Record<string, never> | null;
+        };
+        OrderTrackingCancellationDto: {
+            /** @enum {string} */
+            reasonCode: "guest_request" | "not_paid_in_time" | "out_of_stock" | "cannot_deliver" | "duplicate" | "other";
+            /** @description Причина на языке запроса */
+            reason: string;
+        };
+        OrderTimelineEntryDto: {
+            /** @enum {string} */
+            status: "draft" | "awaiting_payment" | "paid" | "accepted" | "cooking" | "ready" | "delivering" | "completed" | "cancelled" | "refunded";
+            /** Format: date-time */
+            at: string;
+        };
+        OrderTrackingDto: {
+            orderId: string;
+            number: string;
+            /** @enum {string} */
+            status: "draft" | "awaiting_payment" | "paid" | "accepted" | "cooking" | "ready" | "delivering" | "completed" | "cancelled" | "refunded";
+            /** @enum {string} */
+            type: "delivery" | "pickup";
+            /** Format: date-time */
+            placedAt: string;
+            /** @description Заказ ко времени */
+            scheduledFor?: Record<string, never> | null;
+            /**
+             * Format: date-time
+             * @description Обещанное время выдачи/доставки
+             */
+            promisedAt: string;
+            items: components["schemas"]["OrderItemViewDto"][];
+            subtotal: components["schemas"]["MoneyDto"];
+            discount: components["schemas"]["MoneyDto"];
+            deliveryFee: components["schemas"]["MoneyDto"];
+            total: components["schemas"]["MoneyDto"];
+            promoCode?: Record<string, never> | null;
+            comment?: Record<string, never> | null;
+            branch: components["schemas"]["OrderBranchDto"];
+            delivery?: components["schemas"]["OrderTrackingDeliveryDto"] | null;
+            payment: components["schemas"]["OrderTrackingPaymentDto"];
+            courier?: components["schemas"]["OrderTrackingCourierDto"] | null;
+            cancellation?: components["schemas"]["OrderTrackingCancellationDto"] | null;
+            timeline: components["schemas"]["OrderTimelineEntryDto"][];
+        };
+        ResolveDeliveryDto: {
+            /** @description Точка на карте (геокодирование адреса — в браузере витрины) */
+            point: components["schemas"]["GeoPointDto"];
+            /** @description Адрес текстом (для отображения) */
+            address?: Record<string, never> | null;
+        };
+        PublicDeliveryZoneDto: {
+            id: string;
+            branchId: string;
+            /** @description Название на языке запроса */
+            name: string;
+            polygon: components["schemas"]["GeoPointDto"][];
+            minOrderAmount: components["schemas"]["MoneyDto"];
+            deliveryFee: components["schemas"]["MoneyDto"];
+            freeDeliveryFrom?: components["schemas"]["MoneyDto"] | null;
+            etaMinutes: number;
+        };
+        DeliveryOptionDto: {
+            branch: components["schemas"]["OrderBranchDto"];
+            zone: components["schemas"]["PublicDeliveryZoneDto"];
+            /** @description Расстояние от филиала до точки, м */
+            distanceMeters: number;
+        };
+        DeliveryResolutionDto: {
+            /** @description Доставляем ли в эту точку */
+            deliverable: boolean;
+            address?: Record<string, never> | null;
+            /** @description Выбранный филиал: меньшая стоимость, затем ближайший */
+            best?: components["schemas"]["DeliveryOptionDto"] | null;
+            alternatives: components["schemas"]["DeliveryOptionDto"][];
+        };
+        OrderAsapAvailabilityDto: {
+            available: boolean;
+            /** @enum {string|null} */
+            reason?: "closed" | "closing_soon" | null;
+            /** @description Когда заказ будет готов при оформлении сейчас */
+            readyAt?: Record<string, never> | null;
+        };
+        OrderSlotDto: {
+            /**
+             * Format: date-time
+             * @description Момент (UTC, ISO) — передаётся в scheduledFor
+             */
+            at: string;
+            /**
+             * @description Локальное время филиала
+             * @example 19:30
+             */
+            time: string;
+        };
+        OrderSlotsDto: {
+            branchId: string;
+            /** @enum {string} */
+            type: "delivery" | "pickup";
+            /** @example 2026-10-01 */
+            date: string;
+            /** @example Asia/Almaty */
+            timezone: string;
+            leadMinutes: number;
+            asap: components["schemas"]["OrderAsapAvailabilityDto"];
+            /** @description Слоты с шагом 15 минут в часы работы */
+            slots: components["schemas"]["OrderSlotDto"][];
+            /** @description Даты, доступные для заказа ко времени */
+            dates: string[];
+        };
+        OrderCustomerDto: {
+            customerId?: Record<string, never> | null;
+            name?: Record<string, never> | null;
+            /** @example +77771234567 */
+            phone: string;
+            email?: Record<string, never> | null;
+        };
+        AdminOrderListItemDto: {
+            id: string;
+            number: string;
+            branchId: string;
+            /** @enum {string} */
+            type: "delivery" | "pickup";
+            /** @enum {string} */
+            channel: "web" | "admin";
+            /** @enum {string} */
+            status: "draft" | "awaiting_payment" | "paid" | "accepted" | "cooking" | "ready" | "delivering" | "completed" | "cancelled" | "refunded";
+            customer: components["schemas"]["OrderCustomerDto"];
+            total: components["schemas"]["MoneyDto"];
+            /** @enum {string} */
+            paymentMethod: "online" | "on_receipt";
+            promoCode?: Record<string, never> | null;
+            /** Format: date-time */
+            placedAt: string;
+            scheduledFor?: Record<string, never> | null;
+            /** Format: date-time */
+            promisedAt: string;
+        };
+        AdminOrdersPageDto: {
+            items: components["schemas"]["AdminOrderListItemDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+        };
+        AdminOrderModifierDto: {
+            groupId: string;
+            groupName: components["schemas"]["TranslatableDto"];
+            optionId: string;
+            optionName: components["schemas"]["TranslatableDto"];
+            price: components["schemas"]["MoneyDto"];
+        };
+        AdminOrderItemDto: {
+            id: string;
+            position: number;
+            dishId: string;
+            sku?: Record<string, never> | null;
+            /** @description Снимок названия на момент заказа */
+            name: components["schemas"]["TranslatableDto"];
+            photoUrl?: Record<string, never> | null;
+            weightGrams?: Record<string, never> | null;
+            quantity: number;
+            basePrice: components["schemas"]["MoneyDto"];
+            unitPrice: components["schemas"]["MoneyDto"];
+            lineTotal: components["schemas"]["MoneyDto"];
+            modifiers: components["schemas"]["AdminOrderModifierDto"][];
+        };
+        AdminQueueOrderDto: {
+            id: string;
+            number: string;
+            branchId: string;
+            /** @enum {string} */
+            type: "delivery" | "pickup";
+            /** @enum {string} */
+            channel: "web" | "admin";
+            /** @enum {string} */
+            status: "draft" | "awaiting_payment" | "paid" | "accepted" | "cooking" | "ready" | "delivering" | "completed" | "cancelled" | "refunded";
+            customer: components["schemas"]["OrderCustomerDto"];
+            total: components["schemas"]["MoneyDto"];
+            /** @enum {string} */
+            paymentMethod: "online" | "on_receipt";
+            promoCode?: Record<string, never> | null;
+            /** Format: date-time */
+            placedAt: string;
+            scheduledFor?: Record<string, never> | null;
+            /** Format: date-time */
+            promisedAt: string;
+            items: components["schemas"]["AdminOrderItemDto"][];
+            comment?: Record<string, never> | null;
+            /** @description Адрес доставки одной строкой */
+            deliveryAddress?: Record<string, never> | null;
+            contactless: boolean;
+            /** @description Доступные сотруднику переходы */
+            allowedTransitions: ("draft" | "awaiting_payment" | "paid" | "accepted" | "cooking" | "ready" | "delivering" | "completed" | "cancelled" | "refunded")[];
+            /** @description Обещанное время прошло */
+            isLate: boolean;
+        };
+        AdminQueueGroupDto: {
+            /** @enum {string} */
+            status: "draft" | "awaiting_payment" | "paid" | "accepted" | "cooking" | "ready" | "delivering" | "completed" | "cancelled" | "refunded";
+            count: number;
+            orders: components["schemas"]["AdminQueueOrderDto"][];
+        };
+        AdminOrderQueueDto: {
+            /** Format: date-time */
+            generatedAt: string;
+            groups: components["schemas"]["AdminQueueGroupDto"][];
+        };
+        AdminCreateOrderDto: {
+            branchId: string;
+            /** @enum {string} */
+            type: "delivery" | "pickup";
+            items: components["schemas"]["OrderLineInputDto"][];
+            /** @description Обязательно для доставки */
+            delivery?: components["schemas"]["OrderCheckoutDeliveryDto"] | null;
+            /**
+             * @description Бесконтактная доставка
+             * @default false
+             */
+            contactless: boolean;
+            /** @description К определённому времени (ISO); null — как можно скорее */
+            scheduledFor?: Record<string, never> | null;
+            customer: components["schemas"]["OrderCheckoutCustomerDto"];
+            comment?: Record<string, never> | null;
+            promoCode?: Record<string, never> | null;
+            certificateCode?: Record<string, never> | null;
+            /** @enum {string} */
+            paymentMethod: "online" | "on_receipt";
+            consent: components["schemas"]["OrderCheckoutConsentDto"];
+            /**
+             * @description Язык уведомлений гостю
+             * @enum {string}
+             */
+            locale: "kk" | "ru" | "en";
+            /** @description Ключ идемпотентности (UUID, генерирует витрина): повтор возвращает тот же заказ */
+            idempotencyKey: string;
+        };
+        AdminOrderDeliveryDto: {
+            point: components["schemas"]["GeoPointDto"];
+            addressText: string;
+            apartment?: Record<string, never> | null;
+            entrance?: Record<string, never> | null;
+            floor?: Record<string, never> | null;
+            intercom?: Record<string, never> | null;
+            courierComment?: Record<string, never> | null;
+            zoneId?: Record<string, never> | null;
+            zoneName?: components["schemas"]["TranslatableDto"] | null;
+            contactless: boolean;
+        };
+        AdminOrderCancellationDto: {
+            /** @enum {string} */
+            reasonCode: "guest_request" | "not_paid_in_time" | "out_of_stock" | "cannot_deliver" | "duplicate" | "other";
+            reason?: Record<string, never> | null;
+        };
+        AdminOrderTimestampsDto: {
+            /** Format: date-time */
+            placedAt: string;
+            paidAt?: Record<string, never> | null;
+            acceptedAt?: Record<string, never> | null;
+            cookingAt?: Record<string, never> | null;
+            readyAt?: Record<string, never> | null;
+            deliveringAt?: Record<string, never> | null;
+            completedAt?: Record<string, never> | null;
+            cancelledAt?: Record<string, never> | null;
+            refundedAt?: Record<string, never> | null;
+        };
+        AdminOrderPaymentDto: {
+            id: string;
+            /**
+             * @description Назначение платежа в заказе
+             * @enum {string|null}
+             */
+            kind?: "certificate" | "online" | "on_receipt" | null;
+            /** @description Номер попытки онлайн-оплаты */
+            attempt?: Record<string, never> | null;
+            /** @enum {string} */
+            method: "online" | "on_receipt" | "gift_certificate" | "bank_transfer";
+            provider: string;
+            /** @enum {string} */
+            status: "created" | "pending" | "succeeded" | "failed" | "cancelled" | "partially_refunded" | "refunded";
+            amount: components["schemas"]["MoneyDto"];
+            refundedAmount: components["schemas"]["MoneyDto"];
+            paymentUrl?: Record<string, never> | null;
+            /** Format: date-time */
+            createdAt: string;
+            paidAt?: Record<string, never> | null;
+        };
+        AdminOrderRefundDto: {
+            refundId: string;
+            paymentId: string;
+            /** @enum {string} */
+            kind: "cancellation" | "partial" | "late_payment" | "duplicate_payment" | "external";
+            /** @enum {string} */
+            status: "pending" | "succeeded" | "failed";
+            amount: components["schemas"]["MoneyDto"];
+            reason: string;
+            requestedBy?: Record<string, never> | null;
+            /** Format: date-time */
+            createdAt: string;
+            completedAt?: Record<string, never> | null;
+        };
+        AdminCourierDispatchDto: {
+            id: string;
+            /** @description Служба курьеров */
+            provider: string;
+            /** @enum {string} */
+            status: "requested" | "estimating" | "awaiting_confirmation" | "searching" | "courier_assigned" | "picked_up" | "delivered" | "cancelled" | "failed";
+            /** @description Статус в терминах службы */
+            providerStatus?: Record<string, never> | null;
+            externalId?: Record<string, never> | null;
+            trackingUrl?: Record<string, never> | null;
+            courierName?: Record<string, never> | null;
+            courierPhone?: Record<string, never> | null;
+            price?: components["schemas"]["MoneyDto"] | null;
+            attempts: number;
+            lastError?: Record<string, never> | null;
+            /** Format: date-time */
+            requestedAt: string;
+            finishedAt?: Record<string, never> | null;
+        };
+        OrderStatusHistoryDto: {
+            /** @enum {string|null} */
+            from?: "draft" | "awaiting_payment" | "paid" | "accepted" | "cooking" | "ready" | "delivering" | "completed" | "cancelled" | "refunded" | null;
+            /** @enum {string} */
+            to: "draft" | "awaiting_payment" | "paid" | "accepted" | "cooking" | "ready" | "delivering" | "completed" | "cancelled" | "refunded";
+            /** Format: date-time */
+            at: string;
+            /** @enum {string} */
+            actorKind: "staff" | "system" | "guest";
+            actorName: string;
+            actorUserId?: Record<string, never> | null;
+            reasonCode?: Record<string, never> | null;
+            reason?: Record<string, never> | null;
+        };
+        AdminOrderDetailsDto: {
+            id: string;
+            number: string;
+            branchId: string;
+            /** @enum {string} */
+            type: "delivery" | "pickup";
+            /** @enum {string} */
+            channel: "web" | "admin";
+            /** @enum {string} */
+            status: "draft" | "awaiting_payment" | "paid" | "accepted" | "cooking" | "ready" | "delivering" | "completed" | "cancelled" | "refunded";
+            customer: components["schemas"]["OrderCustomerDto"];
+            total: components["schemas"]["MoneyDto"];
+            /** @enum {string} */
+            paymentMethod: "online" | "on_receipt";
+            promoCode?: Record<string, never> | null;
+            /** Format: date-time */
+            placedAt: string;
+            scheduledFor?: Record<string, never> | null;
+            /** Format: date-time */
+            promisedAt: string;
+            publicToken: string;
+            /** @enum {string} */
+            locale: "kk" | "ru" | "en";
+            items: components["schemas"]["AdminOrderItemDto"][];
+            subtotal: components["schemas"]["MoneyDto"];
+            discount: components["schemas"]["MoneyDto"];
+            deliveryFee: components["schemas"]["MoneyDto"];
+            /** @enum {string|null} */
+            promoKind?: "percent" | "fixed" | "free_delivery" | null;
+            certificateMaskedCode?: Record<string, never> | null;
+            certificateAmount: components["schemas"]["MoneyDto"];
+            /** @description К оплате онлайн/при получении */
+            amountDue: components["schemas"]["MoneyDto"];
+            delivery?: components["schemas"]["AdminOrderDeliveryDto"] | null;
+            comment?: Record<string, never> | null;
+            etaMinutes: number;
+            analyticsSessionId?: Record<string, never> | null;
+            /** @description Сотрудник, оформивший телефонный заказ */
+            createdBy?: Record<string, never> | null;
+            wasPaid: boolean;
+            cancellation?: components["schemas"]["AdminOrderCancellationDto"] | null;
+            timestamps: components["schemas"]["AdminOrderTimestampsDto"];
+            payments: components["schemas"]["AdminOrderPaymentDto"][];
+            refunds: components["schemas"]["AdminOrderRefundDto"][];
+            courierDispatch?: components["schemas"]["AdminCourierDispatchDto"] | null;
+            history: components["schemas"]["OrderStatusHistoryDto"][];
+            /** @description Переходы, доступные сотруднику */
+            allowedTransitions: ("draft" | "awaiting_payment" | "paid" | "accepted" | "cooking" | "ready" | "delivering" | "completed" | "cancelled" | "refunded")[];
+            canCancel: boolean;
+            /** @description Отказ от оплаченного заказа (paid → accepted → cancelled) */
+            canReject: boolean;
+            /** @description Частичный возврат (право orders.refund, статус от принятия до выполнения) */
+            canRefund: boolean;
+            /** @description Сколько ещё можно вернуть */
+            refundable: components["schemas"]["MoneyDto"];
+            /** @description Ссылка на страницу статуса для гостя */
+            trackingUrl: string;
+        };
+        TransitionOrderDto: {
+            /**
+             * @description Новый статус (отмена — отдельными действиями cancel/reject)
+             * @enum {string}
+             */
+            to: "accepted" | "cooking" | "ready" | "delivering" | "completed";
+        };
+        CancelOrderDto: {
+            /** @enum {string} */
+            reasonCode: "guest_request" | "not_paid_in_time" | "out_of_stock" | "cannot_deliver" | "duplicate" | "other";
+            reason?: Record<string, never> | null;
+            /** @description Сумма возврата оплаченного заказа (частичный возврат — право orders.refund). Не задана — полный возврат */
+            refundAmount?: components["schemas"]["MoneyInputDto"] | null;
+        };
+        RefundOrderDto: {
+            amount: components["schemas"]["MoneyInputDto"];
+            /** @example Недовложение: не положили соус */
+            reason: string;
+        };
+        DeliveryZoneDto: {
+            id: string;
+            branchId: string;
+            name: components["schemas"]["TranslatableDto"];
+            polygon: components["schemas"]["GeoPointDto"][];
+            minOrderAmount: components["schemas"]["MoneyDto"];
+            deliveryFee: components["schemas"]["MoneyDto"];
+            freeDeliveryFrom?: components["schemas"]["MoneyDto"] | null;
+            etaMinutes: number;
+            isActive: boolean;
+            sortOrder: number;
+        };
+        CreateDeliveryZoneDto: {
+            name: components["schemas"]["TranslatableDto"];
+            /** @description Кольцо полигона (от 3 точек, без самопересечений) */
+            polygon: components["schemas"]["GeoPointDto"][];
+            /** @description Минимальная сумма заказа (сумма блюд) */
+            minOrderAmount: components["schemas"]["MoneyInputDto"];
+            deliveryFee: components["schemas"]["MoneyInputDto"];
+            /** @description Бесплатная доставка от суммы блюд; null — нет */
+            freeDeliveryFrom?: components["schemas"]["MoneyInputDto"] | null;
+            /** @description Ориентировочное время доставки, минут */
+            etaMinutes: number;
+            /** @default true */
+            isActive: boolean;
+            /** @default 0 */
+            sortOrder: number;
+            branchId: string;
+        };
+        DeliveryZoneInputDto: {
+            name: components["schemas"]["TranslatableDto"];
+            /** @description Кольцо полигона (от 3 точек, без самопересечений) */
+            polygon: components["schemas"]["GeoPointDto"][];
+            /** @description Минимальная сумма заказа (сумма блюд) */
+            minOrderAmount: components["schemas"]["MoneyInputDto"];
+            deliveryFee: components["schemas"]["MoneyInputDto"];
+            /** @description Бесплатная доставка от суммы блюд; null — нет */
+            freeDeliveryFrom?: components["schemas"]["MoneyInputDto"] | null;
+            /** @description Ориентировочное время доставки, минут */
+            etaMinutes: number;
+            /** @default true */
+            isActive: boolean;
+            /** @default 0 */
+            sortOrder: number;
+        };
+        PromoUsageDto: {
+            /** @description Зарезервировано неоплаченными заказами */
+            reserved: number;
+            /** @description Использовано оплаченными заказами */
+            used: number;
+            /** @description Освобождено отменой до оплаты */
+            released: number;
+        };
+        PromoCodeDto: {
+            id: string;
+            code: string;
+            description?: Record<string, never> | null;
+            /** @enum {string} */
+            kind: "percent" | "fixed" | "free_delivery";
+            percentBp?: Record<string, never> | null;
+            fixedAmount?: components["schemas"]["MoneyDto"] | null;
+            minSubtotal?: components["schemas"]["MoneyDto"] | null;
+            validFrom?: Record<string, never> | null;
+            validTo?: Record<string, never> | null;
+            totalLimit?: Record<string, never> | null;
+            perPhoneLimit?: Record<string, never> | null;
+            branchId?: Record<string, never> | null;
+            isActive: boolean;
+            usage: components["schemas"]["PromoUsageDto"];
+            /** @description Сотрудник может изменить промокод */
+            editable: boolean;
+        };
+        PromoCodesPageDto: {
+            items: components["schemas"]["PromoCodeDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+        };
+        PromoCodeInputDto: {
+            /**
+             * @description 3-32 символа: латиница, цифры, "-", "_" (регистр не важен)
+             * @example WELCOME10
+             */
+            code: string;
+            description?: Record<string, never> | null;
+            /** @enum {string} */
+            kind: "percent" | "fixed" | "free_delivery";
+            /** @description Для percent: базисные пункты (10% = 1000) */
+            percentBp?: Record<string, never> | null;
+            /** @description Для fixed: сумма скидки */
+            fixedAmount?: components["schemas"]["MoneyInputDto"] | null;
+            /** @description Минимальная сумма блюд */
+            minSubtotal?: components["schemas"]["MoneyInputDto"] | null;
+            validFrom?: Record<string, never> | null;
+            validTo?: Record<string, never> | null;
+            /** @description Лимит использований всего */
+            totalLimit?: Record<string, never> | null;
+            /** @description Лимит использований на один телефон */
+            perPhoneLimit?: Record<string, never> | null;
+            /** @description Филиал; null — вся сеть (нужно глобальное право) */
+            branchId?: Record<string, never> | null;
+            /** @default true */
+            isActive: boolean;
         };
         RevenueDayDto: {
             /** @description Доставка (нетто с возвратами) */
@@ -9169,6 +10252,657 @@ export interface operations {
                         [key: string]: unknown;
                     };
                 };
+            };
+        };
+    };
+    PublicOrders_quoteOrder: {
+        parameters: {
+            query?: {
+                locale?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuoteOrderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderQuoteDto"];
+                };
+            };
+        };
+    };
+    PublicOrders_checkout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderCheckoutDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderCheckoutResultDto"];
+                };
+            };
+        };
+    };
+    PublicOrders_track: {
+        parameters: {
+            query?: {
+                locale?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path: {
+                publicToken: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderTrackingDto"];
+                };
+            };
+        };
+    };
+    PublicOrders_pay: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                publicToken: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderPaymentStateDto"];
+                };
+            };
+        };
+    };
+    PublicDelivery_resolve: {
+        parameters: {
+            query?: {
+                locale?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResolveDeliveryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeliveryResolutionDto"];
+                };
+            };
+        };
+    };
+    PublicDelivery_zones: {
+        parameters: {
+            query?: {
+                locale?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path: {
+                branchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicDeliveryZoneDto"][];
+                };
+            };
+        };
+    };
+    PublicDelivery_slots: {
+        parameters: {
+            query: {
+                locale?: "kk" | "ru" | "en";
+                type: "delivery" | "pickup";
+                /** @description Локальная дата филиала YYYY-MM-DD, по умолчанию — сегодня */
+                date?: string;
+            };
+            header?: never;
+            path: {
+                branchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderSlotsDto"];
+                };
+            };
+        };
+    };
+    AdminOrders_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                perPage?: number;
+                branchId?: string;
+                /** @description ?status=paid&status=accepted или ?status=paid,accepted */
+                status?: ("draft" | "awaiting_payment" | "paid" | "accepted" | "cooking" | "ready" | "delivering" | "completed" | "cancelled" | "refunded")[];
+                type?: "delivery" | "pickup";
+                /** @description С даты оформления (включительно), YYYY-MM-DD по времени Asia/Almaty */
+                dateFrom?: string;
+                /** @description По дату оформления (включительно), YYYY-MM-DD */
+                dateTo?: string;
+                /** @description Поиск по номеру заказа или телефону гостя */
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrdersPageDto"];
+                };
+            };
+        };
+    };
+    AdminOrders_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCreateOrderDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderDetailsDto"];
+                };
+            };
+        };
+    };
+    AdminOrders_queue: {
+        parameters: {
+            query?: {
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderQueueDto"];
+                };
+            };
+        };
+    };
+    AdminOrders_quoteOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuoteOrderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderQuoteDto"];
+                };
+            };
+        };
+    };
+    AdminOrders_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderDetailsDto"];
+                };
+            };
+        };
+    };
+    AdminOrders_transition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransitionOrderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderDetailsDto"];
+                };
+            };
+        };
+    };
+    AdminOrders_reject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelOrderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderDetailsDto"];
+                };
+            };
+        };
+    };
+    AdminOrders_cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelOrderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderDetailsDto"];
+                };
+            };
+        };
+    };
+    AdminOrders_refund: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefundOrderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderDetailsDto"];
+                };
+            };
+        };
+    };
+    AdminOrders_courierRetry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderDetailsDto"];
+                };
+            };
+        };
+    };
+    AdminOrders_courierCancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderDetailsDto"];
+                };
+            };
+        };
+    };
+    AdminDeliveryZones_list: {
+        parameters: {
+            query?: {
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeliveryZoneDto"][];
+                };
+            };
+        };
+    };
+    AdminDeliveryZones_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateDeliveryZoneDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeliveryZoneDto"];
+                };
+            };
+        };
+    };
+    AdminDeliveryZones_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeliveryZoneDto"];
+                };
+            };
+        };
+    };
+    AdminDeliveryZones_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeliveryZoneInputDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeliveryZoneDto"];
+                };
+            };
+        };
+    };
+    AdminDeliveryZones_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminPromoCodes_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                perPage?: number;
+                branchId?: string;
+                /** @description Поиск по коду */
+                q?: string;
+                active?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromoCodesPageDto"];
+                };
+            };
+        };
+    };
+    AdminPromoCodes_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromoCodeInputDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromoCodeDto"];
+                };
+            };
+        };
+    };
+    AdminPromoCodes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromoCodeDto"];
+                };
+            };
+        };
+    };
+    AdminPromoCodes_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromoCodeInputDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromoCodeDto"];
+                };
+            };
+        };
+    };
+    AdminPromoCodes_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
