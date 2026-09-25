@@ -51,8 +51,11 @@ export const ACTIVE_ORDER_STATUSES = ['awaiting_payment', 'paid', 'accepted', 'c
 /** Статусы, из которых возможна отмена (по схеме ТЗ). */
 export const CANCELLABLE_STATUSES: readonly OrderStatus[] = ['awaiting_payment', 'accepted'];
 
-/** Статусы, в которых допустим частичный возврат без смены статуса (недовложение и т.п.). */
-export const PARTIAL_REFUND_STATUSES: readonly OrderStatus[] = ['accepted', 'cooking', 'ready', 'delivering', 'completed', 'cancelled'];
+/**
+ * Статусы, в которых допустим частичный возврат без смены статуса (недовложение и т.п.): от принятия до
+ * выполнения. Возвраты по отменённому заказу запрашиваются при отмене (и переводят его в refunded).
+ */
+export const PARTIAL_REFUND_STATUSES: readonly OrderStatus[] = ['accepted', 'cooking', 'ready', 'delivering', 'completed'];
 
 /** Порядок статусов для отображения таймлайна и группировки очереди. */
 export const ORDER_STATUS_ORDER: readonly OrderStatus[] = [

@@ -110,6 +110,8 @@ create table reservation.reservations (
   banquet_request_id uuid,
   note text,
   requires_confirmation boolean not null default false,
+  -- Действующие правила места на момент брони (или последнего переноса): дедлайн отмены, удержание...
+  rules jsonb not null default '{}'::jsonb,
   hold_expires_at timestamptz,
   deposit_amount bigint check (deposit_amount is null or deposit_amount > 0),
   deposit_currency char(3) not null default 'KZT',
@@ -162,7 +164,7 @@ create table reservation.status_history (
   from_status text,
   to_status text not null,
   reason text,
-  deposit_outcome text not null default 'none',
+  deposit_outcome text not null default 'none' check (deposit_outcome in ('none', 'refunded', 'retained')),
   actor_kind text not null,
   actor_user_id uuid,
   actor_name text not null,

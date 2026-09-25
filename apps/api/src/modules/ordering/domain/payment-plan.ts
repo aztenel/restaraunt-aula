@@ -104,3 +104,26 @@ export function allocateRefund(amount: Money | null, payments: readonly OrderPay
   }
   return result;
 }
+
+/** Запрошенный по заказу возврат (для решения «все возвраты прошли»). */
+export interface RequestedRefund {
+  paymentId: string;
+  status: 'pending' | 'succeeded' | 'failed';
+  createdAt: Date;
+}
+
+/**
+ * Все запрошенные возвраты отменённого заказа прошли (cancelled → refunded): нет ожидающих, хотя бы один
+ * прошёл, а каждый неудавшийся перекрыт более поздним успешным возвратом по тому же платежу
+ * (финансист повторил возврат). Пока неудача не перекрыта — заказ остаётся «Отменён».
+ */
+export function refundsSettled(refunds: readonly RequestedRefund[]): boolean {
+  if (refunds.length === 0) return false;
+  if (refunds.some((r) => r.status === 'pending')) return false;
+  if (!refunds.some((r) => r.status === 'succeeded')) return false;
+  return refunds
+    .filter((r) => r.status === 'failed')
+    .every((failed) =>
+      refunds.some((r) => r.status === 'succeeded' && r.paymentId === failed.paymentId && r.createdAt.getTime() >= failed.createdAt.getTime()),
+    );
+}

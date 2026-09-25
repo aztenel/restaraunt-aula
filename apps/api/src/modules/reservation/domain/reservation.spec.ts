@@ -2,10 +2,22 @@ import { describe, expect, it } from 'vitest';
 import { ConflictError, InvalidStateTransitionError, ValidationError } from '../../../shared/kernel/errors';
 import { Money } from '../../../shared/kernel/money';
 import { NewReservationInput, Reservation } from './reservation';
+import { VenueRules } from './venue-rules';
 
 const now = new Date('2026-10-25T08:00:00Z');
 const start = new Date('2026-10-25T14:00:00Z');
 const end = new Date('2026-10-25T16:00:00Z');
+const minutes = (m: number) => m * 60_000;
+
+const RULES: VenueRules = {
+  durationMinutes: 120,
+  holdMinutes: 30,
+  cancellationDeadlineHours: 3,
+  requiresManualConfirmation: false,
+  cleanupMinutes: 15,
+  slotStepMinutes: 30,
+  bookableOnline: true,
+};
 
 function input(overrides: Partial<NewReservationInput> = {}): NewReservationInput {
   return {
@@ -17,21 +29,19 @@ function input(overrides: Partial<NewReservationInput> = {}): NewReservationInpu
     source: 'web',
     start,
     end,
-    cleanupMinutes: 15,
+    rules: RULES,
     guests: 4,
     customer: { id: 'c1', name: 'Айгерим', phone: '+77011234567', email: null },
     locale: 'ru',
     publicToken: 'tok',
     idempotencyKey: 'idem',
     requiresConfirmation: false,
-    holdMinutes: 30,
     deposit: null,
     createdByUserId: null,
     ...overrides,
   };
 }
 
-const minutes = (m: number) => m * 60_000;
 
 describe('Reservation.create', () => {
   it('without deposit and manual confirmation is confirmed immediately', () => {
@@ -82,17 +92,17 @@ describe('Reservation deposit flow', () => {
   it('paid deposit confirms the reservation (or makes it pending with a new hold)', () => {
     const r = Reservation.create(input({ deposit: Money.tenge(50_000) }), now);
     r.attachDepositPayment('p1');
-    const change = r.applyDepositPayment('p1', new Date(now.getTime() + minutes(5)), 30);
+    const change = r.applyDepositPayment('p1', new Date(now.getTime() + minutes(5)));
     expect(change).toMatchObject({ from: 'awaiting_deposit', to: 'confirmed' });
     expect(r.depositState).toBe('paid');
     expect(r.holdExpiresAt).toBeNull();
 
-    const m = Reservation.create(input({ deposit: Money.tenge(50_000), requiresConfirmation: true }), now);
+    const m = Reservation.create(input({ deposit: Money.tenge(50_000), requiresConfirmation: true, rules: { ...RULES, holdMinutes: 60 } }), now);
     m.attachDepositPayment('p2');
     const paidAt = new Date(now.getTime() + minutes(10));
-    expect(m.applyDepositPayment('p2', paidAt, 60).to).toBe('pending');
+    expect(m.applyDepositPayment('p2', paidAt).to).toBe('pending');
     expect(m.holdExpiresAt?.toISOString()).toBe(new Date(paidAt.getTime() + minutes(60)).toISOString());
-    expect(() => m.applyDepositPayment('p3', paidAt, 60)).toThrow(ConflictError);
+    expect(() => m.applyDepositPayment('p3', paidAt)).toThrow(ConflictError);
   });
 
   it('counts payment attempts', () => {
@@ -117,13 +127,13 @@ describe('Reservation cancel', () => {
   function paid(): Reservation {
     const r = Reservation.create(input({ deposit: Money.tenge(50_000) }), now);
     r.attachDepositPayment('p1');
-    r.applyDepositPayment('p1', now, 30);
+    r.applyDepositPayment('p1', now);
     return r;
   }
 
   it('guest cancel before the deadline refunds the paid deposit', () => {
     const r = paid();
-    const { change, resolution } = r.cancel({ now, by: 'guest', reason: 'Планы изменились', cancellationDeadlineHours: 3 });
+    const { change, resolution } = r.cancel({ now, by: 'guest', reason: 'Планы изменились' });
     expect(change).toMatchObject({ from: 'confirmed', to: 'cancelled', depositOutcome: 'refunded' });
     expect(resolution.action).toBe('refund');
     expect(r.depositState).toBe('refund_pending');
@@ -133,7 +143,7 @@ describe('Reservation cancel', () => {
   it('guest cancel after the deadline retains the deposit', () => {
     const r = paid();
     const late = new Date(start.getTime() - minutes(60));
-    const { change } = r.cancel({ now: late, by: 'guest', reason: null, cancellationDeadlineHours: 3 });
+    const { change } = r.cancel({ now: late, by: 'guest', reason: null });
     expect(change.depositOutcome).toBe('retained');
     expect(r.depositState).toBe('retained');
     expect(r.snapshot().depositOutcome).toBe('retained');
@@ -143,15 +153,15 @@ describe('Reservation cancel', () => {
     const r = paid();
     const afterStart = new Date(start.getTime() + minutes(1));
     expect(r.guestCanCancel(afterStart)).toBe(false);
-    expect(() => r.cancel({ now: afterStart, by: 'guest', reason: null, cancellationDeadlineHours: 3 })).toThrow(ConflictError);
-    const { change } = r.cancel({ now: afterStart, by: 'staff', reason: 'Закрыты', cancellationDeadlineHours: 3, staffDecision: 'refund' });
+    expect(() => r.cancel({ now: afterStart, by: 'guest', reason: null })).toThrow(ConflictError);
+    const { change } = r.cancel({ now: afterStart, by: 'staff', reason: 'Закрыты', staffDecision: 'refund' });
     expect(change.depositOutcome).toBe('refunded');
   });
 
   it('cancelled is final', () => {
     const r = paid();
-    r.cancel({ now, by: 'staff', reason: 'x', cancellationDeadlineHours: 3 });
-    expect(() => r.cancel({ now, by: 'staff', reason: 'x', cancellationDeadlineHours: 3 })).toThrow(InvalidStateTransitionError);
+    r.cancel({ now, by: 'staff', reason: 'x' });
+    expect(() => r.cancel({ now, by: 'staff', reason: 'x' })).toThrow(InvalidStateTransitionError);
     expect(() => r.markArrived(start)).toThrow(InvalidStateTransitionError);
     expect(r.allowedTransitions(start)).toEqual([]);
   });
@@ -177,7 +187,7 @@ describe('Reservation expire / arrival / no-show', () => {
   it('arrival not earlier than 3 hours before start; applies the deposit', () => {
     const r = Reservation.create(input({ deposit: Money.tenge(50_000) }), now);
     r.attachDepositPayment('p1');
-    r.applyDepositPayment('p1', now, 30);
+    r.applyDepositPayment('p1', now);
     expect(() => r.markArrived(new Date(start.getTime() - minutes(181)))).toThrow(ConflictError);
     r.markArrived(new Date(start.getTime() - minutes(10)));
     expect(r.status).toBe('arrived');
@@ -187,7 +197,7 @@ describe('Reservation expire / arrival / no-show', () => {
   it('no-show only after the start; retains the deposit', () => {
     const r = Reservation.create(input({ deposit: Money.tenge(50_000) }), now);
     r.attachDepositPayment('p1');
-    r.applyDepositPayment('p1', now, 30);
+    r.applyDepositPayment('p1', now);
     expect(() => r.markNoShow(new Date(start.getTime() - 1))).toThrow(ConflictError);
     const { change } = r.markNoShow(start);
     expect(change.depositOutcome).toBe('retained');
@@ -226,27 +236,29 @@ describe('Reservation.reschedule', () => {
   it('moves the slot and recomputes the cleanup buffer, keeps status', () => {
     const r = Reservation.create(input(), now);
     const change = r.reschedule(
-      { venueId: 'v2', start: new Date('2026-10-26T14:00:00Z'), end: new Date('2026-10-26T17:00:00Z'), cleanupMinutes: 30, guests: 6 },
+      { venueId: 'v2', start: new Date('2026-10-26T14:00:00Z'), end: new Date('2026-10-26T17:00:00Z'), rules: { ...RULES, cleanupMinutes: 30, cancellationDeadlineHours: 24 }, guests: 6 },
       now,
     );
     expect(change.before).toMatchObject({ venueId: 'v1', guests: 4 });
     expect(change.after).toMatchObject({ venueId: 'v2', guests: 6 });
     expect(r.status).toBe('confirmed');
     expect(r.blockedUntil.toISOString()).toBe('2026-10-26T17:30:00.000Z');
+    expect(r.rules.cancellationDeadlineHours).toBe(24);
+    expect(r.cancellationDeadline().toISOString()).toBe('2026-10-25T14:00:00.000Z');
   });
 
   it('final reservations cannot be moved', () => {
     const r = Reservation.create(input(), now);
-    r.cancel({ now, by: 'staff', reason: 'x', cancellationDeadlineHours: 1 });
-    expect(() => r.reschedule({ venueId: 'v1', start, end, cleanupMinutes: 0, guests: 2 }, now)).toThrow(ConflictError);
+    r.cancel({ now, by: 'staff', reason: 'x' });
+    expect(() => r.reschedule({ venueId: 'v1', start, end, rules: RULES, guests: 2 }, now)).toThrow(ConflictError);
   });
 
   it('refund result updates the deposit state only while a refund is pending', () => {
     const r = Reservation.create(input({ deposit: Money.tenge(50_000) }), now);
     expect(r.markDepositRefund(true)).toBe(false);
     r.attachDepositPayment('p1');
-    r.applyDepositPayment('p1', now, 30);
-    r.cancel({ now, by: 'guest', reason: null, cancellationDeadlineHours: 1 });
+    r.applyDepositPayment('p1', now);
+    r.cancel({ now, by: 'guest', reason: null });
     expect(r.markDepositRefund(false)).toBe(true);
     expect(r.depositState).toBe('refund_failed');
     expect(r.markDepositRefund(true)).toBe(true);

@@ -36,6 +36,7 @@ export class NotificationTemplatesController {
   }
 
   @Get(':key')
+  @ApiOperation({ summary: 'Шаблон уведомления: параметры, пример, тексты по каналам и языкам' })
   @ApiOkResponse({ type: NotificationTemplateDto })
   get(@CurrentActor() actor: Actor, @Param() params: TemplateKeyParamDto): Promise<NotificationTemplateDto> {
     return this.queries.getTemplate(actor, params.key);

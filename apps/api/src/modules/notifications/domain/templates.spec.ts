@@ -16,6 +16,34 @@ describe('notification templates', () => {
     expect(templateInfo('otp.code')!.sensitive).toEqual(['code']);
     expect(templateInfo('certificate.issued')!.sensitive).toEqual(['code']);
     expect(templateInfo('otp.code')!.ttlMinutes).toBeLessThanOrEqual(15);
+    for (const info of allTemplates()) for (const o of info.optional) expect(info.params, info.key).toContain(o);
+    expect(templateInfo('certificate.issued')!.optional).toEqual(['pdfUrl']);
+  });
+
+  it('optional parameters: a text line with an empty optional parameter and only its label disappears', () => {
+    for (const info of allTemplates()) {
+      const withoutOptional = Object.fromEntries(Object.entries(info.sample).filter(([k]) => !info.optional.includes(k)));
+      for (const channel of info.channels) {
+        for (const locale of REQUIRED_TEMPLATE_LOCALES) {
+          const text = renderText(defaultTemplateText(info.key, channel, locale)!.body, withoutOptional);
+          expect(text, `${info.key}/${channel}/${locale}`).not.toMatch(/\{\{|:\s*$|:\n/);
+        }
+      }
+    }
+  });
+
+  it('certificate.issued: WhatsApp carries the PDF link when it is given (email has the PDF attached)', () => {
+    const info = templateInfo('certificate.issued')!;
+    for (const locale of REQUIRED_TEMPLATE_LOCALES) {
+      const body = defaultTemplateText('certificate.issued', 'whatsapp', locale)!.body;
+      const withLink = renderText(body, info.sample);
+      expect(withLink.split('\n').at(-1)).toBe('Сертификат (PDF): https://files.aula.kz/c/K7PQ.pdf');
+      const { pdfUrl: _omit, ...rest } = info.sample;
+      const withoutLink = renderText(body, rest);
+      expect(withoutLink).not.toContain('PDF');
+      expect(withoutLink).toContain('K7PQ-4MXZ-9TWA');
+    }
+    expect(usedVariables(defaultTemplateText('certificate.issued', 'email', 'ru')!.body)).not.toContain('pdfUrl');
   });
 
   it('every key x channel x locale (ru, kk) has a default text; email has a subject', () => {

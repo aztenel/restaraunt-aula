@@ -10,6 +10,7 @@ import { ChannelRegistry } from './application/channel-registry';
 import { SmtpMail, SmtpTransportFactory } from './infrastructure/adapters/smtp/smtp-email.adapter';
 import { TemplateRepository } from './infrastructure/template.repository';
 import { NotificationsModule } from './notifications.module';
+import { SwitchableHttpTransport } from './testing/adapter-stubs';
 import { AdminFeed, Notifier } from './public';
 
 type Row = Record<string, any>;
@@ -24,10 +25,12 @@ describe('Notifications delivery (integration)', () => {
     t = await createTestApp({
       imports: [NotificationsModule],
       migrateModules: ['notifications'],
-      providers: fakeProviders(fakes, { except: [Notifier, AdminFeed] }),
+      providers: [
+        ...fakeProviders(fakes, { except: [Notifier, AdminFeed] }),
+        // Сеть подменяется: транспорт платформы делегирует в FakeHttpTransport текущего теста.
+        { provide: HttpTransport, useValue: new SwitchableHttpTransport(() => http) },
+      ],
     });
-    // Сеть подменяется: транспорт платформы делегирует в FakeHttpTransport текущего теста.
-    vi.spyOn(t.get(HttpTransport), 'send').mockImplementation((input) => http.send(input));
     vi.spyOn(t.get(SmtpTransportFactory), 'create').mockImplementation(() => ({
       sendMail: async (mail: SmtpMail) => {
         mails.push(mail);
@@ -352,6 +355,53 @@ describe('Notifications delivery (integration)', () => {
     });
     await t.drain();
     expect((await deliveries()).slice(2).map((d) => d.channel)).toEqual(['whatsapp']);
+  });
+
+  it('gift certificate by WhatsApp carries the PDF link (optional parameter); without it the line is omitted', async () => {
+    await configureWhatsApp({ 'certificate.issued': { name: 'aula_certificate', languages: ['ru'] } });
+    http.on('graph.facebook.com', 200, { messages: [{ id: 'wamid.CERT' }] });
+    const params = {
+      code: 'K7PQ-4MXZ-9TWA',
+      nominal: '30 000 ₸',
+      expiresAt: '25.10.2027',
+      recipientName: 'Айгерим',
+      message: '',
+      pdfUrl: 'https://files.aula.kz/private/c1.pdf?sig=abc',
+    };
+    await notifier().notifyGuest({
+      recipient: { phone: '+77011234567' },
+      template: 'certificate.issued',
+      params,
+      locale: 'kk',
+      channels: ['whatsapp', 'sms'],
+      related: { type: 'gift_certificate', id: 'c1' },
+    });
+    await t.drain();
+    const body = JSON.parse(http.requests[0]!.body!);
+    expect(body.template).toMatchObject({ name: 'aula_certificate', language: { code: 'ru' } });
+    expect(body.template.components[0].parameters.map((p: { text: string }) => p.text)).toEqual([
+      'K7PQ-4MXZ-9TWA',
+      '30 000 ₸',
+      '25.10.2027',
+      'Айгерим',
+      '—',
+      'https://files.aula.kz/private/c1.pdf?sig=abc',
+    ]);
+    const [delivery] = await deliveries();
+    expect(delivery).toMatchObject({ status: 'sent', channel: 'whatsapp', external_id: 'wamid.CERT' });
+    expect(delivery!.rendered_text).toContain('Коды: ***');
+    expect(delivery!.rendered_text).not.toContain('K7PQ-4MXZ-9TWA');
+    expect(delivery!.rendered_text!.split('\n').at(-1)).toBe('Сертификат (PDF): https://files.aula.kz/private/c1.pdf?sig=abc');
+
+    // Без ссылки (WhatsApp выключен — в тестовой среде сообщение уходит в служебный канал с текстом WhatsApp).
+    const { pdfUrl: _omit, ...withoutLink } = params;
+    await t.get(IntegrationSettings).set('notifications.whatsapp', { enabled: false, config: {} }, null);
+    await notifier().notifyGuest({ recipient: { phone: '+77011234567' }, template: 'certificate.issued', params: withoutLink, locale: 'ru' });
+    await t.drain();
+    const second = (await deliveries())[1]!;
+    expect(second).toMatchObject({ status: 'sent', channel: 'whatsapp', provider: 'log' });
+    expect(second.rendered_text).toContain('Код: ***');
+    expect(second.rendered_text).not.toContain('PDF');
   });
 
   it('WhatsApp document header carries a signed link to the attachment', async () => {

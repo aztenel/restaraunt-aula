@@ -147,7 +147,9 @@ create table ordering.order_refunds (
   refund_id uuid primary key,
   order_id uuid not null references ordering.orders (id),
   payment_id uuid not null,
-  kind text not null check (kind in ('cancellation', 'partial', 'late_payment', 'duplicate_payment')),
+  -- cancellation — при отмене; partial — частичный (недовложение); late_payment — оплата пришла после отмены;
+  -- duplicate_payment — лишний платёж; external — возврат запрошен вне заказа (раздел платежей админки).
+  kind text not null check (kind in ('cancellation', 'partial', 'late_payment', 'duplicate_payment', 'external')),
   status text not null check (status in ('pending', 'succeeded', 'failed')),
   amount_amount bigint not null check (amount_amount > 0),
   amount_currency char(3) not null default 'KZT',

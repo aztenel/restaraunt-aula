@@ -10,7 +10,7 @@ import { DELIVER_JOB, DeliverJobPayload } from '../application/queue-notificatio
  * всю цепочку каналов, поэтому задача не уходит в очередь неудач при обычных сбоях провайдеров.
  */
 @Injectable()
-export class DeliverNotificationJob {
+export class NotificationsDeliveryJob {
   constructor(private readonly deliver: DeliverMessage) {}
 
   @JobHandler(DELIVER_JOB, { attempts: DELIVER_JOB_ATTEMPTS, backoffMs: 5_000, maxBackoffMs: 10 * 60_000 })

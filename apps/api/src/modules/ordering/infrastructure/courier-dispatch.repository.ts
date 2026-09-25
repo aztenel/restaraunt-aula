@@ -78,6 +78,7 @@ export class CourierDispatchRepository {
         courier_name: null,
         courier_phone: null,
         price_amount: null,
+        price_currency: 'KZT',
         attempts: 0,
         polls: 0,
         last_error: null,

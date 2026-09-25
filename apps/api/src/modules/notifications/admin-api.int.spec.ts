@@ -3,6 +3,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createFakes, fakeProviders } from '../../../test/fakes';
 import { tokenFor } from '../../../test/support/fixtures';
 import { createTestApp, TestApp } from '../../../test/support/test-app';
+import { buildOpenApiDocument } from '../../shared/infrastructure/http/swagger';
 import { IntegrationCatalog } from '../../shared/infrastructure/settings/integration-catalog';
 import { IntegrationSettings } from '../../shared/infrastructure/settings/integration-settings';
 import { allDefaultTemplateTexts, defaultTemplateText } from './domain/default-templates';
@@ -303,6 +304,39 @@ describe('Notifications admin API (integration)', () => {
       await t.get(IntegrationSettings).set('notifications.mobizon', { enabled: true, config: {}, secrets: { apiKey: 'mobizon-key-123' } }, null);
       const after = await t.http().get(api('/channels')).set('authorization', auth);
       expect(after.body[1]).toEqual({ channel: 'sms', configured: true, providers: ['mobizon', 'smsc'], logFallback: true });
+    });
+
+    it('documents every route of the module in OpenAPI with tags, auth and typed responses', () => {
+      const doc = buildOpenApiDocument(t.app, 'test');
+      const expected: Array<[string, string, string, 'admin' | 'webhooks', boolean]> = [
+        ['/api/v1/admin/notifications/templates', 'get', 'NotificationTemplateDto', 'admin', true],
+        ['/api/v1/admin/notifications/templates/{key}', 'get', 'NotificationTemplateDto', 'admin', true],
+        ['/api/v1/admin/notifications/templates/{key}/{channel}/{locale}', 'put', 'ResolvedTemplateTextDto', 'admin', true],
+        ['/api/v1/admin/notifications/templates/{key}/{channel}/{locale}/reset', 'post', 'ResolvedTemplateTextDto', 'admin', true],
+        ['/api/v1/admin/notifications/templates/{key}/preview', 'post', 'TemplatePreviewDto', 'admin', true],
+        ['/api/v1/admin/notifications/deliveries', 'get', 'DeliveryLogPageDto', 'admin', true],
+        ['/api/v1/admin/notifications/deliveries/{id}', 'get', 'DeliveryDetailDto', 'admin', true],
+        ['/api/v1/admin/notifications/deliveries/{id}/resend', 'post', 'QueuedDeliveryDto', 'admin', true],
+        ['/api/v1/admin/notifications/test-send', 'post', 'QueuedDeliveryDto', 'admin', true],
+        ['/api/v1/admin/notifications/channels', 'get', 'ChannelStatusDto', 'admin', true],
+        ['/api/v1/admin/feed/ticket', 'post', 'FeedTicketDto', 'admin', true],
+        ['/api/v1/admin/feed/recent', 'get', 'FeedItemDto', 'admin', true],
+        ['/api/v1/admin/feed/stream', 'get', '', 'admin', false],
+        ['/api/v1/webhooks/whatsapp', 'get', '', 'webhooks', false],
+        ['/api/v1/webhooks/whatsapp', 'post', 'WebhookAckDto', 'webhooks', false],
+      ];
+      for (const [path, method, schema, tag, bearer] of expected) {
+        const op = (doc.paths[path] as Record<string, { tags?: string[]; responses: Record<string, unknown>; security?: unknown }>)?.[method];
+        expect(op, `${method} ${path}`).toBeTruthy();
+        expect(op!.tags).toContain(tag);
+        if (bearer) expect(op!.security, `${method} ${path}`).toEqual([{ staff: [] }]);
+        else expect(op!.security, `${method} ${path}`).toBeUndefined();
+        if (schema) expect(JSON.stringify(op!.responses), `${method} ${path}`).toContain(`#/components/schemas/${schema}`);
+      }
+      const stream = (doc.paths['/api/v1/admin/feed/stream'] as Record<string, { responses: Record<string, unknown> }>).get;
+      expect(JSON.stringify(stream!.responses)).toContain('text/event-stream');
+      const template = doc.components!.schemas!.NotificationTemplateDto as { properties: Record<string, unknown> };
+      expect(Object.keys(template.properties)).toEqual(expect.arrayContaining(['params', 'sensitiveParams', 'optionalParams', 'texts']));
     });
 
     it('registers integration descriptors of all channels in the catalog', () => {

@@ -70,6 +70,8 @@ export class NotificationTemplateDto {
   @ApiProperty({ type: TemplateTitleDto }) title: TemplateTitleDto;
   @ApiProperty({ type: [String], description: 'Параметры шаблона (контракт модуля)' }) params: string[];
   @ApiProperty({ type: [String], description: 'Параметры, скрываемые в журнале (коды)' }) sensitiveParams: string[];
+  @ApiProperty({ type: [String], description: 'Необязательные параметры (строка с пустым параметром и меткой не выводится)' })
+  optionalParams: string[];
   @ApiProperty({ type: [String], enum: CHANNELS }) channels: string[];
   @ApiProperty({ type: 'object', additionalProperties: { type: 'string' }, description: 'Пример параметров для предпросмотра' })
   sample: Record<string, string>;

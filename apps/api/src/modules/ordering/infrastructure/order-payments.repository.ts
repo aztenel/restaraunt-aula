@@ -14,7 +14,7 @@ export interface OrderPaymentLink {
   createdAt: Date;
 }
 
-export type OrderRefundKind = 'cancellation' | 'partial' | 'late_payment' | 'duplicate_payment';
+export type OrderRefundKind = 'cancellation' | 'partial' | 'late_payment' | 'duplicate_payment' | 'external';
 export type OrderRefundStatus = 'pending' | 'succeeded' | 'failed';
 
 export interface OrderRefundRecord {

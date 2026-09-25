@@ -36,6 +36,11 @@ interface TemplateDefinition<P> {
   sample: P;
   /** Параметры, которые не показываются в журнале и хранятся зашифрованными (коды). */
   sensitive?: ReadonlyArray<Extract<keyof P, string>>;
+  /**
+   * Необязательные параметры контракта (могут не передаваться). Строка текста, в которой такой параметр
+   * пуст и осталась только метка («PDF:»), при отрисовке убирается целиком.
+   */
+  optional?: ReadonlyArray<Extract<keyof P, string>>;
   /** Через сколько минут неотправленное сообщение теряет смысл (например, код подтверждения). */
   ttlMinutes?: number;
 }
@@ -169,8 +174,10 @@ const GUEST_TEMPLATES: { [K in GuestTemplate]: TemplateDefinition<GuestTemplateP
       expiresAt: '25.10.2027',
       recipientName: 'Айгерим',
       message: 'С днём рождения!',
+      pdfUrl: 'https://files.aula.kz/c/K7PQ.pdf',
     },
     sensitive: ['code'],
+    optional: ['pdfUrl'],
   },
   'certificate.redeemed': {
     title: { ru: 'Списание с сертификата', kk: 'Сертификаттан есептен шығару' },
@@ -254,6 +261,8 @@ export interface TemplateInfo {
   params: string[];
   sample: Record<string, string>;
   sensitive: string[];
+  /** Необязательные параметры (может не быть в вызове). */
+  optional: string[];
   ttlMinutes: number;
   channels: readonly NotificationChannel[];
 }
@@ -267,6 +276,7 @@ function toInfo(key: TemplateKey, audience: TemplateAudience, def: TemplateDefin
     params: Object.keys(sample),
     sample: { ...sample },
     sensitive: [...((def.sensitive as string[] | undefined) ?? [])],
+    optional: [...((def.optional as string[] | undefined) ?? [])],
     ttlMinutes: def.ttlMinutes ?? DEFAULT_TTL_MINUTES,
     channels: AUDIENCE_CHANNELS[audience],
   };

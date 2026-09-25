@@ -4,6 +4,7 @@ import { addMinutes, TimeRange } from '../../../shared/kernel/time';
 import { Locale } from '../../../shared/kernel/translatable';
 import { ReservationKind, ReservationSource, ReservationStatus } from '../public';
 import {
+  cancellationDeadline,
   CancelDepositResolution,
   decideDepositOnArrival,
   decideDepositOnCancel,
@@ -18,6 +19,7 @@ import {
   statusAfterDepositPaid,
 } from './deposit-policy';
 import { HOLD_STATUSES, RESERVATION_FSM, UPCOMING_STATUSES } from './reservation-status';
+import { VenueRules } from './venue-rules';
 
 /** Отметку «пришли» можно ставить не раньше чем за 3 часа до начала (защита от ошибочной отметки). */
 export const ARRIVAL_WINDOW_MINUTES = 180;
@@ -54,6 +56,8 @@ export interface ReservationProps {
   note: string | null;
   /** После оплаты депозита бронь ждёт подтверждения персоналом. */
   requiresConfirmation: boolean;
+  /** Правила места на момент брони (или последнего переноса): удержание, дедлайн отмены, уборка. */
+  rules: VenueRules;
   holdExpiresAt: Date | null;
   /** Требуемый депозит (снимок на момент брони). */
   deposit: Money | null;
@@ -101,7 +105,8 @@ export interface NewReservationInput {
   source: ReservationSource;
   start: Date;
   end: Date;
-  cleanupMinutes: number;
+  /** Действующие правила места (снимок хранится в брони). */
+  rules: VenueRules;
   guests: number;
   customer: ReservationCustomer;
   comment?: string | null;
@@ -112,7 +117,6 @@ export interface NewReservationInput {
   banquetRequestId?: string | null;
   note?: string | null;
   requiresConfirmation: boolean;
-  holdMinutes: number;
   /** Депозит места; null — депозит не требуется. */
   deposit: Money | null;
   /** Сотрудник отказался от депозита (причина обязательна). */
@@ -135,7 +139,7 @@ export class Reservation {
   private constructor(private props: ReservationProps) {}
 
   static restore(props: ReservationProps): Reservation {
-    return new Reservation({ ...props, customer: { ...props.customer } });
+    return new Reservation({ ...props, customer: { ...props.customer }, rules: { ...props.rules } });
   }
 
   static create(input: NewReservationInput, now: Date): Reservation {
@@ -162,7 +166,7 @@ export class Reservation {
       source: input.source,
       start: range.start,
       end: range.end,
-      blockedUntil: blockedUntilOf(range.end, input.cleanupMinutes),
+      blockedUntil: blockedUntilOf(range.end, input.rules.cleanupMinutes),
       guests: input.guests,
       customer: { ...input.customer },
       comment: input.comment?.trim() || null,
@@ -173,7 +177,8 @@ export class Reservation {
       banquetRequestId: isBanquet ? input.banquetRequestId! : null,
       note: input.note?.trim() || null,
       requiresConfirmation: input.requiresConfirmation,
-      holdExpiresAt: HOLD_STATUSES.includes(status) ? holdExpiry(now, input.holdMinutes, range.start) : null,
+      rules: { ...input.rules },
+      holdExpiresAt: HOLD_STATUSES.includes(status) ? holdExpiry(now, input.rules.holdMinutes, range.start) : null,
       deposit: isBanquet ? null : input.deposit,
       depositState: isBanquet || input.deposit === null ? 'none' : waived ? 'waived' : 'pending',
       depositPaymentId: null,
@@ -249,9 +254,39 @@ export class Reservation {
   get publicToken(): string | null {
     return this.props.publicToken;
   }
+  get locale(): Locale {
+    return this.props.locale;
+  }
+  get rules(): VenueRules {
+    return this.props.rules;
+  }
+  get banquetRequestId(): string | null {
+    return this.props.banquetRequestId;
+  }
+  get source(): ReservationSource {
+    return this.props.source;
+  }
+  get reminderSentAt(): Date | null {
+    return this.props.reminderSentAt;
+  }
 
   snapshot(): ReservationProps {
-    return { ...this.props, customer: { ...this.props.customer } };
+    return { ...this.props, customer: { ...this.props.customer }, rules: { ...this.props.rules } };
+  }
+
+  /** Дедлайн бесплатной отмены по правилам брони. */
+  cancellationDeadline(): Date {
+    return cancellationDeadline(this.props.start, this.props.rules.cancellationDeadlineHours);
+  }
+
+  /** Что будет с депозитом, если гость отменит бронь сейчас (для витрины). */
+  depositOutcomeIfCancelled(now: Date): DepositOutcome {
+    return decideDepositOnCancel({
+      depositState: this.props.depositState,
+      now,
+      start: this.props.start,
+      cancellationDeadlineHours: this.props.rules.cancellationDeadlineHours,
+    }).outcome;
   }
 
   blockedRange(): TimeRange {
@@ -347,7 +382,7 @@ export class Reservation {
   }
 
   /** Депозит оплачен: confirmed, либо pending (ждёт подтверждения персоналом, новое удержание). */
-  applyDepositPayment(paymentId: string, now: Date, holdMinutes: number): StatusChange {
+  applyDepositPayment(paymentId: string, now: Date): StatusChange {
     if (this.props.status !== 'awaiting_deposit' || this.props.depositState !== 'pending') {
       throw new ConflictError('reservation.deposit_not_expected', 'Reservation is not awaiting a deposit payment');
     }
@@ -358,7 +393,7 @@ export class Reservation {
     this.props.depositPaymentId = paymentId;
     this.props.depositPaidAt = now;
     if (to === 'pending') {
-      this.props.holdExpiresAt = holdExpiry(now, holdMinutes, this.props.start);
+      this.props.holdExpiresAt = holdExpiry(now, this.props.rules.holdMinutes, this.props.start);
     } else {
       this.props.holdExpiresAt = null;
       this.props.confirmedAt = now;
@@ -390,14 +425,14 @@ export class Reservation {
     return { change, resolution };
   }
 
-  /** Отмена гостем, сотрудником, системой или банкетным модулем. Депозит — по правилу или решению сотрудника. */
-  cancel(input: {
-    now: Date;
-    by: CancelledBy;
-    reason: string | null;
-    cancellationDeadlineHours: number;
-    staffDecision?: DepositDecision | null;
-  }): { change: StatusChange; resolution: CancelDepositResolution } {
+  /**
+   * Отмена гостем, сотрудником, системой или банкетным модулем. Депозит — по правилу брони
+   * (дедлайн отмены из снимка правил) или по решению сотрудника.
+   */
+  cancel(input: { now: Date; by: CancelledBy; reason: string | null; staffDecision?: DepositDecision | null }): {
+    change: StatusChange;
+    resolution: CancelDepositResolution;
+  } {
     if (input.by === 'guest' && !this.guestCanCancel(input.now)) {
       if (this.isUpcoming()) {
         throw new ConflictError('reservation.cancel_after_start', 'Reservation has already started and cannot be cancelled online');
@@ -408,7 +443,7 @@ export class Reservation {
       depositState: this.props.depositState,
       now: input.now,
       start: this.props.start,
-      cancellationDeadlineHours: input.cancellationDeadlineHours,
+      cancellationDeadlineHours: this.props.rules.cancellationDeadlineHours,
       staffDecision: input.by === 'staff' ? (input.staffDecision ?? null) : null,
     });
     const change = this.move('cancelled', input.now, input.reason, resolution.outcome);
@@ -463,8 +498,11 @@ export class Reservation {
     return { change, resolution };
   }
 
-  /** Перенос: другое место, время, число гостей. Статус и депозит не меняются. */
-  reschedule(input: { venueId: string; start: Date; end: Date; cleanupMinutes: number; guests: number }, now: Date): SlotChange {
+  /**
+   * Перенос: другое место, время, число гостей. Статус и депозит не меняются; правила брони
+   * (дедлайн отмены, буфер уборки) — правила нового места.
+   */
+  reschedule(input: { venueId: string; start: Date; end: Date; rules: VenueRules; guests: number }, now: Date): SlotChange {
     const allowed = this.props.kind === 'banquet' ? this.props.status === 'confirmed' : this.isUpcoming();
     if (!allowed) {
       throw new ConflictError('reservation.cannot_reschedule', `Reservation in status ${this.props.status} cannot be moved`, {
@@ -479,8 +517,9 @@ export class Reservation {
     this.props.venueId = input.venueId;
     this.props.start = range.start;
     this.props.end = range.end;
-    this.props.blockedUntil = blockedUntilOf(range.end, input.cleanupMinutes);
+    this.props.blockedUntil = blockedUntilOf(range.end, input.rules.cleanupMinutes);
     this.props.guests = input.guests;
+    this.props.rules = { ...input.rules };
     if (this.props.holdExpiresAt && this.props.holdExpiresAt.getTime() > range.start.getTime()) {
       this.props.holdExpiresAt = new Date(Math.max(range.start.getTime(), now.getTime()));
     }

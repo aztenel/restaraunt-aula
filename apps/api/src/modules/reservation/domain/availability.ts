@@ -45,6 +45,37 @@ export interface BookingWindow {
   enforceOpeningHours: boolean;
 }
 
+/** Канал брони: витрина (ограничения по времени упреждения и горизонту) или оператор в админке. */
+export type BookingChannel = 'web' | 'admin';
+
+/** Оператор может оформить бронь с началом чуть в прошлом (гости уже пришли, «живая» посадка). */
+export const STAFF_BACKDATE_GRACE_MINUTES = 15;
+
+/** Окно брони для канала: витрина — lead time и горизонт из настроек филиала; оператор — без них. */
+export function bookingWindow(
+  channel: BookingChannel,
+  input: { now: Date; timezone: string; openingHours: OpeningHours; minLeadMinutes: number; maxDaysAhead: number },
+): BookingWindow {
+  if (channel === 'web') {
+    return {
+      now: input.now,
+      timezone: input.timezone,
+      openingHours: input.openingHours,
+      minLeadMinutes: input.minLeadMinutes,
+      maxDaysAhead: input.maxDaysAhead,
+      enforceOpeningHours: true,
+    };
+  }
+  return {
+    now: addMinutes(input.now, -STAFF_BACKDATE_GRACE_MINUTES),
+    timezone: input.timezone,
+    openingHours: input.openingHours,
+    minLeadMinutes: null,
+    maxDaysAhead: null,
+    enforceOpeningHours: true,
+  };
+}
+
 /** Причина, по которой время недоступно (витрина показывает соответствующий текст). */
 export type SlotRejection = 'past' | 'too_soon' | 'too_far' | 'closed';
 

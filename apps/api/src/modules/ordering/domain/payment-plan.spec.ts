@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { Money } from '../../../shared/kernel/money';
-import { allocateRefund, confirmedAmount, isFullyPaid, OrderPaymentPosition, planCheckoutPayments, refundableAmount, totalRefundable } from './payment-plan';
+import {
+  allocateRefund,
+  confirmedAmount,
+  isFullyPaid,
+  OrderPaymentPosition,
+  planCheckoutPayments,
+  refundableAmount,
+  refundsSettled,
+  totalRefundable,
+} from './payment-plan';
 
 function pos(overrides: Partial<OrderPaymentPosition>): OrderPaymentPosition {
   return {
@@ -71,5 +80,29 @@ describe('refund allocation', () => {
   it('cannot refund more than was paid', () => {
     expect(() => allocateRefund(Money.tenge(4501), payments)).toThrow(expect.objectContaining({ code: 'order.refund_exceeds_paid' }));
     expect(() => allocateRefund(Money.of(-1), payments)).toThrow(expect.objectContaining({ code: 'order.refund_invalid_amount' }));
+  });
+});
+
+describe('refunds settled (cancelled -> refunded)', () => {
+  const at = (m: number) => new Date(Date.UTC(2026, 9, 1, 8, m));
+
+  it('requires at least one succeeded refund and no pending ones', () => {
+    expect(refundsSettled([])).toBe(false);
+    expect(refundsSettled([{ paymentId: 'a', status: 'pending', createdAt: at(0) }])).toBe(false);
+    expect(refundsSettled([{ paymentId: 'a', status: 'succeeded', createdAt: at(0) }])).toBe(true);
+    expect(
+      refundsSettled([
+        { paymentId: 'a', status: 'succeeded', createdAt: at(0) },
+        { paymentId: 'b', status: 'pending', createdAt: at(0) },
+      ]),
+    ).toBe(false);
+  });
+
+  it('a failed refund blocks until a later successful refund of the same payment', () => {
+    const failed = { paymentId: 'a', status: 'failed' as const, createdAt: at(1) };
+    expect(refundsSettled([failed])).toBe(false);
+    expect(refundsSettled([failed, { paymentId: 'b', status: 'succeeded', createdAt: at(2) }])).toBe(false);
+    expect(refundsSettled([failed, { paymentId: 'a', status: 'succeeded', createdAt: at(0) }])).toBe(false);
+    expect(refundsSettled([failed, { paymentId: 'a', status: 'succeeded', createdAt: at(3) }])).toBe(true);
   });
 });

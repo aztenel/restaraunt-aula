@@ -6,7 +6,7 @@ import { AlertJobFailure } from '../application/alert-job-failure.action';
 
 /** Очередь неудач пополнилась -> оповещение администратора системы и системная лента админки. */
 @Injectable()
-export class JobFailedAlertHandler {
+export class NotificationsJobFailedHandler {
   constructor(private readonly alert: AlertJobFailure) {}
 
   @OnEvent(PLATFORM_JOB_FAILED_EVENT)

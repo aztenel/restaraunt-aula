@@ -390,6 +390,2168 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/notifications/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Шаблоны уведомлений с текстами по каналам и языкам */
+        get: operations["NotificationTemplates_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/templates/{key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Шаблон уведомления: параметры, пример, тексты по каналам и языкам */
+        get: operations["NotificationTemplates_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/templates/{key}/{channel}/{locale}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Изменить текст шаблона (переменные — только параметры шаблона) */
+        put: operations["NotificationTemplates_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/templates/{key}/{channel}/{locale}/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Вернуть стартовый текст шаблона */
+        post: operations["NotificationTemplates_reset"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/templates/{key}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Предпросмотр текста (сохранённого или черновика) с примером параметров */
+        post: operations["NotificationTemplates_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/deliveries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Журнал доставки: фильтры по статусу, каналу, шаблону, дате и адресату (адресат — маской) */
+        get: operations["NotificationDeliveries_log"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/deliveries/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Доставка: цепочка каналов, попытки, отправленный текст */
+        get: operations["NotificationDeliveries_detail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/deliveries/{id}/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Отправить повторно (новое сообщение тому же адресату) */
+        post: operations["NotificationDeliveries_resendDelivery"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/test-send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Тестовая отправка в канал (проверка настроек интеграции) */
+        post: operations["NotificationDeliveries_send"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/channels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Каналы уведомлений: настроены ли, какие провайдеры */
+        get: operations["NotificationDeliveries_channels"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/feed/ticket": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Короткоживущий билет для подключения к потоку SSE (EventSource не передаёт Authorization) */
+        post: operations["AdminFeed_ticket"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/feed/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Поток событий ленты (text/event-stream)
+         * @description События: 'event: feed' — data: FeedItemDto (JSON), id — идентификатор события; 'event: ping' — каждые 25 секунд. События фильтруются по правам сотрудника: orders -> orders.view, reservations -> reservations.view, banquets -> banquets.view, system -> system.jobs, с учётом филиала. Сервер закрывает поток раз в 30 минут — переподключитесь с новым билетом. Заголовок Last-Event-ID догружает пропущенные события.
+         */
+        get: operations["AdminFeed_stream"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/feed/recent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Недавние события ленты (догрузка после переподключения), по возрастанию времени */
+        get: operations["AdminFeed_recent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/whatsapp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Подтверждение подписки на вебхук (hub.mode, hub.verify_token, hub.challenge) */
+        get: operations["WhatsAppWebhook_verify"];
+        put?: never;
+        /** Статусы сообщений WhatsApp (подпись X-Hub-Signature-256) */
+        post: operations["WhatsAppWebhook_receive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/customers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminCustomers_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/customers/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminCustomers_tags"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/customers/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminCustomers_export"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/customers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminCustomers_detail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AdminCustomers_update"];
+        trace?: never;
+    };
+    "/api/v1/admin/customers/{id}/consents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminCustomers_consent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/customers/{id}/anonymize": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminCustomers_anonymize"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/customer-segments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminCustomerSegments_list"];
+        put?: never;
+        post: operations["AdminCustomerSegments_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/customer-segments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminCustomerSegments_get"];
+        put?: never;
+        post?: never;
+        delete: operations["AdminCustomerSegments_remove"];
+        options?: never;
+        head?: never;
+        patch: operations["AdminCustomerSegments_update"];
+        trace?: never;
+    };
+    "/api/v1/admin/consent-texts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminConsentTexts_list"];
+        put?: never;
+        post: operations["AdminConsentTexts_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/consents/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicConsents_current"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/phone-verifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublicPhoneVerifications_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/phone-verifications/{id}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublicPhoneVerifications_check"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminCategories_list"];
+        put?: never;
+        post: operations["AdminCategories_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/categories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminCategories_get"];
+        put: operations["AdminCategories_update"];
+        post?: never;
+        delete: operations["AdminCategories_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/categories/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["AdminCategories_reorder"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/categories/{id}/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminCategories_uploadImage"];
+        delete: operations["AdminCategories_deleteImage"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/dishes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminDishes_list"];
+        put?: never;
+        post: operations["AdminDishes_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/dishes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminDishes_get"];
+        put: operations["AdminDishes_update"];
+        post?: never;
+        delete: operations["AdminDishes_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/dishes/{id}/photos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminDishes_uploadPhotos"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/dishes/{id}/photos/{photoId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["AdminDishes_removePhoto"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/dishes/{id}/photos/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["AdminDishes_orderPhotos"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/modifier-groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminModifierGroups_list"];
+        put?: never;
+        post: operations["AdminModifierGroups_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/modifier-groups/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminModifierGroups_get"];
+        put: operations["AdminModifierGroups_update"];
+        post?: never;
+        delete: operations["AdminModifierGroups_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/allergens": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminCatalogReference_allergens"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/translations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminCatalogReference_translations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/branches/{branchId}/menu": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBranchMenu_list"];
+        put?: never;
+        post: operations["AdminBranchMenu_add"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/branches/{branchId}/menu/bulk-prices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminBranchMenu_bulk"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/branches/{branchId}/menu/copy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminBranchMenu_copy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/branches/{branchId}/menu/{dishId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBranchMenu_get"];
+        put?: never;
+        post?: never;
+        delete: operations["AdminBranchMenu_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/branches/{branchId}/menu/{dishId}/price": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["AdminBranchMenu_price"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/branches/{branchId}/menu/{dishId}/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["AdminBranchMenu_availability"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/branches/{branchId}/stop-list": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBranchMenu_stopList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/content/banners": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBanners_list"];
+        put?: never;
+        post: operations["AdminBanners_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/content/banners/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBanners_get"];
+        put: operations["AdminBanners_update"];
+        post?: never;
+        delete: operations["AdminBanners_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/content/banners/{id}/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminBanners_uploadImage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/content/promotions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminPromotions_list"];
+        put?: never;
+        post: operations["AdminPromotions_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/content/promotions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminPromotions_get"];
+        put: operations["AdminPromotions_update"];
+        post?: never;
+        delete: operations["AdminPromotions_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/content/promotions/{id}/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminPromotions_uploadImage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/content/pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminPages_list"];
+        put?: never;
+        post: operations["AdminPages_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/content/pages/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminPages_get"];
+        put: operations["AdminPages_update"];
+        post?: never;
+        delete: operations["AdminPages_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/catalog/branches/{branchSlug}/menu": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicMenu_menu"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/catalog/branches/{branchSlug}/categories/{categorySlug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicMenu_category"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/catalog/branches/{branchSlug}/dishes/{dishSlug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicMenu_dish"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/catalog/branches/{branchSlug}/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicMenu_search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/catalog/sitemap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicMenu_sitemap"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/content/banners": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicContent_banners"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/content/promotions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicContent_promotions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/content/promotions/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicContent_promotion"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/content/pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicContent_pages"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/content/pages/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicContent_page"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminPayments_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payments/refunds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminPayments_refunds"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payments/refunds/{refundId}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminPayments_confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payments/refunds/{refundId}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminPayments_reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminPayments_details"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payments/{id}/refunds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminPayments_refund"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payments/{id}/collect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminPayments_collect"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/certificates/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminCertificates_products"];
+        put?: never;
+        post: operations["AdminCertificates_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/certificates/products/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["AdminCertificates_update"];
+        post?: never;
+        delete: operations["AdminCertificates_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/certificates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminCertificates_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/certificates/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminCertificates_report"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/certificates/report/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminCertificates_export"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/certificates/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminCertificates_check"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/certificates/redeem": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminCertificates_redeem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/certificates/issue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminCertificates_issue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/certificates/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminCertificates_details"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/certificates/{id}/pdf-link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminCertificates_pdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/certificates/{id}/block": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminCertificates_block"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/certificates/{id}/unblock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminCertificates_unblock"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/certificates/{id}/extend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminCertificates_extend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/certificates/{id}/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminCertificates_resend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/certificates/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicCertificates_products"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/certificates/purchase": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublicCertificates_buy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/certificates/orders/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicCertificates_order"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/certificates/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublicCertificates_check"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/payments/sandbox/{paymentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PaymentPages_sandbox"];
+        put?: never;
+        post: operations["PaymentPages_sandboxAction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/payments/{paymentId}/checkout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PaymentPages_checkoutPage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/payments/{provider}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PaymentsWebhook_handle"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/revenue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_revenueReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/revenue/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_revenueExport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/average-check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_averageCheckReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/average-check/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_averageCheckExport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/conversion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_conversionReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/conversion/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_conversionExport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/top-dishes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_topDishesReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/top-dishes/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_topDishesExport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/hall-load": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_hallLoadReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/hall-load/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_hallLoadExport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/banquet-funnel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_banquetFunnelReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/banquet-funnel/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_banquetFunnelExport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/cancelled-orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_cancelledOrdersReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/cancelled-orders/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_cancelledOrdersExport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_cashFlowReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/payments/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_cashFlowExport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/certificates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_certificatesReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/certificates/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_certificatesExport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_dashboardReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/dashboard/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_dashboardExport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/own-channel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_ownChannelReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/own-channel/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_ownChannelExport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/goals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_goalsReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/goals/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Reports_goalsExport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/daily": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DailyReports_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/daily/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DailyReports_export"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/daily/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DailyReports_history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/aggregator-volumes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AggregatorVolumes_list"];
+        put: operations["AggregatorVolumes_upsert"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/accounting-exports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AccountingExports_list"];
+        put?: never;
+        post: operations["AccountingExports_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/accounting-exports/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AccountingExports_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/accounting-exports/{id}/push": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AccountingExports_push"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/analytics/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublicAnalytics_event"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/pos/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PosStatus_getStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/pos/stop-list/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PosStatus_syncStopList"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/pos/exports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PosExports_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/pos/exports/{id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PosExports_retry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/pos/mappings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PosMappings_list"];
+        put?: never;
+        post: operations["PosMappings_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/pos/mappings/suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PosMappings_suggest"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/pos/mappings/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PosMappings_bulk"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/pos/mappings/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["PosMappings_update"];
+        post?: never;
+        delete: operations["PosMappings_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/pos/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PosProducts_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/pos/products/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PosProducts_import"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -657,6 +2819,2717 @@ export interface components {
             acceptsReservations: boolean;
             paymentMethods: string[];
             stopListMode: string;
+        };
+        TemplateTitleDto: {
+            ru: string;
+            kk: string;
+        };
+        TemplateTextDto: {
+            /** @enum {string} */
+            channel: "whatsapp" | "sms" | "email" | "telegram";
+            /** @enum {string} */
+            locale: "kk" | "ru" | "en";
+            /** @description Тема (только email) */
+            subject?: string | null;
+            /** @description Текст с переменными {{param}} */
+            body: string;
+            /** @description Текст отличается от стартового */
+            customized: boolean;
+            /** @description Текст сохранён в БД (иначе действует стартовый) */
+            stored: boolean;
+            /** Format: date-time */
+            updatedAt?: string | null;
+            /** @description Переменные, использованные в тексте */
+            variables: string[];
+        };
+        NotificationTemplateDto: {
+            /** @enum {string} */
+            key: "otp.code" | "order.created" | "order.paid" | "order.accepted" | "order.ready" | "order.delivering" | "order.completed" | "order.cancelled" | "order.refunded" | "reservation.pending" | "reservation.awaiting_deposit" | "reservation.confirmed" | "reservation.reminder" | "reservation.cancelled" | "reservation.expired" | "banquet.request_received" | "banquet.quote_sent" | "banquet.invoice_issued" | "banquet.payment_received" | "certificate.issued" | "certificate.redeemed" | "staff.order_new" | "staff.order_paid" | "staff.reservation_new" | "staff.reservation_cancelled" | "staff.banquet_new" | "staff.banquet_assigned" | "staff.banquet_sla_breach" | "staff.daily_report" | "staff.system_alert" | "staff.refund_failed";
+            /** @enum {string} */
+            audience: "guest" | "staff";
+            title: components["schemas"]["TemplateTitleDto"];
+            /** @description Параметры шаблона (контракт модуля) */
+            params: string[];
+            /** @description Параметры, скрываемые в журнале (коды) */
+            sensitiveParams: string[];
+            /** @description Необязательные параметры (строка с пустым параметром и меткой не выводится) */
+            optionalParams: string[];
+            channels: ("whatsapp" | "sms" | "email" | "telegram")[];
+            /** @description Пример параметров для предпросмотра */
+            sample: {
+                [key: string]: string;
+            };
+            texts: components["schemas"]["TemplateTextDto"][];
+        };
+        UpdateTemplateTextDto: {
+            /** @description Тема письма (обязательна для email, для других каналов игнорируется) */
+            subject?: string | null;
+            /** @description Текст с переменными {{param}} */
+            body: string;
+        };
+        ResolvedTemplateTextDto: {
+            /** @enum {string} */
+            channel: "whatsapp" | "sms" | "email" | "telegram";
+            /** @enum {string} */
+            locale: "kk" | "ru" | "en";
+            subject?: string | null;
+            body: string;
+            /** @enum {string} */
+            source: "db" | "default";
+            /** Format: date-time */
+            updatedAt?: string | null;
+        };
+        PreviewTemplateDto: {
+            /** @enum {string} */
+            channel: "whatsapp" | "sms" | "email" | "telegram";
+            /** @enum {string} */
+            locale: "kk" | "ru" | "en";
+            /** @description Черновик темы (email) */
+            subject?: string | null;
+            /** @description Черновик текста; не задан — сохранённый текст */
+            body?: string | null;
+            /** @description Значения параметров; по умолчанию — пример */
+            params?: {
+                [key: string]: string;
+            };
+        };
+        SmsInfoDto: {
+            /** @enum {string} */
+            encoding: "gsm7" | "ucs2";
+            /** @description Длина в символах кодировки */
+            length: number;
+            /** @description Сколько SMS (частей) займёт текст */
+            segments: number;
+        };
+        TemplatePreviewDto: {
+            /**
+             * @description Канал, чей текст использован
+             * @enum {string}
+             */
+            channel: "whatsapp" | "sms" | "email" | "telegram";
+            /** @enum {string} */
+            locale: "kk" | "ru" | "en";
+            subject?: string | null;
+            text: string;
+            /** @description HTML-версия письма (email) */
+            html?: string | null;
+            /** @description Переменные, которых нет среди параметров шаблона */
+            unknownVariables: string[];
+            length: number;
+            sms?: components["schemas"]["SmsInfoDto"] | null;
+        };
+        RelatedEntityDto: {
+            type: string;
+            id: string;
+        };
+        DeliveryLogItemDto: {
+            id: string;
+            messageId: string;
+            /** @enum {string} */
+            template: "otp.code" | "order.created" | "order.paid" | "order.accepted" | "order.ready" | "order.delivering" | "order.completed" | "order.cancelled" | "order.refunded" | "reservation.pending" | "reservation.awaiting_deposit" | "reservation.confirmed" | "reservation.reminder" | "reservation.cancelled" | "reservation.expired" | "banquet.request_received" | "banquet.quote_sent" | "banquet.invoice_issued" | "banquet.payment_received" | "certificate.issued" | "certificate.redeemed" | "staff.order_new" | "staff.order_paid" | "staff.reservation_new" | "staff.reservation_cancelled" | "staff.banquet_new" | "staff.banquet_assigned" | "staff.banquet_sla_breach" | "staff.daily_report" | "staff.system_alert" | "staff.refund_failed";
+            /** @enum {string} */
+            audience: "guest" | "staff";
+            /** @enum {string} */
+            locale: "kk" | "ru" | "en";
+            /**
+             * @description Текущий (итоговый) канал доставки
+             * @enum {string}
+             */
+            channel: "whatsapp" | "sms" | "email" | "telegram";
+            /** @description Провайдер, отправивший сообщение (log — журнал вне продакшена) */
+            provider?: string | null;
+            /**
+             * @description Адресат (маска)
+             * @example +7 701 *** ** 67
+             */
+            recipient: string;
+            recipientName?: string | null;
+            /** @enum {string} */
+            status: "pending" | "sent" | "failed";
+            /** @enum {string} */
+            messageStatus: "queued" | "sent" | "partial" | "failed" | "skipped";
+            attempts: number;
+            lastError?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            sentAt?: string | null;
+            /** Format: date-time */
+            deliveredAt?: string | null;
+            /** Format: date-time */
+            readAt?: string | null;
+            related?: components["schemas"]["RelatedEntityDto"] | null;
+            /** @description Исходное сообщение (для повторной отправки) */
+            resentFromId?: string | null;
+            branchId?: string | null;
+        };
+        DeliveryLogPageDto: {
+            items: components["schemas"]["DeliveryLogItemDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+        };
+        DeliveryChainStepDto: {
+            /** @enum {string} */
+            channel: "whatsapp" | "sms" | "email" | "telegram";
+            /** @description Адресат (маска) */
+            recipient: string;
+        };
+        DeliveryAttemptDto: {
+            attemptNo: number;
+            /** @enum {string} */
+            channel: "whatsapp" | "sms" | "email" | "telegram";
+            provider?: string | null;
+            /** @description Адресат (маска) */
+            recipient: string;
+            /** @enum {string} */
+            status: "sent" | "failed" | "skipped";
+            /** @description Временная ошибка (будет повтор) */
+            retryable: boolean;
+            errorCode?: string | null;
+            error?: string | null;
+            /** @description Идентификатор сообщения у провайдера */
+            externalId?: string | null;
+            durationMs?: number | null;
+            /** Format: date-time */
+            occurredAt: string;
+        };
+        DeliveryDetailDto: {
+            id: string;
+            messageId: string;
+            /** @enum {string} */
+            template: "otp.code" | "order.created" | "order.paid" | "order.accepted" | "order.ready" | "order.delivering" | "order.completed" | "order.cancelled" | "order.refunded" | "reservation.pending" | "reservation.awaiting_deposit" | "reservation.confirmed" | "reservation.reminder" | "reservation.cancelled" | "reservation.expired" | "banquet.request_received" | "banquet.quote_sent" | "banquet.invoice_issued" | "banquet.payment_received" | "certificate.issued" | "certificate.redeemed" | "staff.order_new" | "staff.order_paid" | "staff.reservation_new" | "staff.reservation_cancelled" | "staff.banquet_new" | "staff.banquet_assigned" | "staff.banquet_sla_breach" | "staff.daily_report" | "staff.system_alert" | "staff.refund_failed";
+            /** @enum {string} */
+            audience: "guest" | "staff";
+            /** @enum {string} */
+            locale: "kk" | "ru" | "en";
+            /**
+             * @description Текущий (итоговый) канал доставки
+             * @enum {string}
+             */
+            channel: "whatsapp" | "sms" | "email" | "telegram";
+            /** @description Провайдер, отправивший сообщение (log — журнал вне продакшена) */
+            provider?: string | null;
+            /**
+             * @description Адресат (маска)
+             * @example +7 701 *** ** 67
+             */
+            recipient: string;
+            recipientName?: string | null;
+            /** @enum {string} */
+            status: "pending" | "sent" | "failed";
+            /** @enum {string} */
+            messageStatus: "queued" | "sent" | "partial" | "failed" | "skipped";
+            attempts: number;
+            lastError?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            sentAt?: string | null;
+            /** Format: date-time */
+            deliveredAt?: string | null;
+            /** Format: date-time */
+            readAt?: string | null;
+            related?: components["schemas"]["RelatedEntityDto"] | null;
+            /** @description Исходное сообщение (для повторной отправки) */
+            resentFromId?: string | null;
+            branchId?: string | null;
+            /** @description Цепочка каналов с резервом */
+            chain: components["schemas"]["DeliveryChainStepDto"][];
+            /** @description Текущий шаг цепочки */
+            stepIndex: number;
+            /** @description Параметры (коды скрыты) */
+            params: {
+                [key: string]: string;
+            };
+            renderedSubject?: string | null;
+            /** @description Отправленный текст (коды скрыты) */
+            renderedText?: string | null;
+            attemptLog: components["schemas"]["DeliveryAttemptDto"][];
+        };
+        QueuedDeliveryDto: {
+            messageId: string;
+            deliveryId: string;
+        };
+        TestSendDto: {
+            /** @enum {string} */
+            channel: "whatsapp" | "sms" | "email" | "telegram";
+            /**
+             * @description Телефон (+7...), email или id чата Telegram
+             * @example +77011234567
+             */
+            to: string;
+            /**
+             * @description Шаблон (по умолчанию staff.system_alert), параметры — пример
+             * @enum {string}
+             */
+            template?: "otp.code" | "order.created" | "order.paid" | "order.accepted" | "order.ready" | "order.delivering" | "order.completed" | "order.cancelled" | "order.refunded" | "reservation.pending" | "reservation.awaiting_deposit" | "reservation.confirmed" | "reservation.reminder" | "reservation.cancelled" | "reservation.expired" | "banquet.request_received" | "banquet.quote_sent" | "banquet.invoice_issued" | "banquet.payment_received" | "certificate.issued" | "certificate.redeemed" | "staff.order_new" | "staff.order_paid" | "staff.reservation_new" | "staff.reservation_cancelled" | "staff.banquet_new" | "staff.banquet_assigned" | "staff.banquet_sla_breach" | "staff.daily_report" | "staff.system_alert" | "staff.refund_failed";
+            /**
+             * @default ru
+             * @enum {string}
+             */
+            locale: "kk" | "ru" | "en";
+        };
+        ChannelStatusDto: {
+            /** @enum {string} */
+            channel: "whatsapp" | "sms" | "email" | "telegram";
+            configured: boolean;
+            /** @description Настроенные провайдеры канала */
+            providers: string[];
+            /** @description Вне продакшена ненастроенный канал пишет сообщения в журнал приложения */
+            logFallback: boolean;
+        };
+        FeedItemDto: {
+            /** @description Идентификатор события (для Last-Event-ID и since) */
+            id: string;
+            /** Format: date-time */
+            occurredAt: string;
+            branchId?: string | null;
+            /**
+             * @description Очередь: orders, reservations, banquets, system
+             * @enum {string}
+             */
+            stream: "orders" | "reservations" | "banquets" | "system";
+            /**
+             * @description created — новый элемент очереди, updated — изменение
+             * @enum {string}
+             */
+            kind: "created" | "updated";
+            entityId: string;
+            title: string;
+            /** @description Проиграть звук */
+            sound: boolean;
+        };
+        FeedTicketDto: {
+            /** @description Билет для GET /admin/feed/stream?ticket=... (EventSource не передаёт заголовок Authorization) */
+            ticket: string;
+            /** @description Срок действия билета, секунд. После обрыва и истечения — получить новый билет */
+            expiresIn: number;
+        };
+        WebhookAckDto: {
+            received: boolean;
+            /** @description Применено статусов */
+            applied: number;
+            /** @description Пропущено (повтор, неизвестное сообщение) */
+            ignored: number;
+        };
+        MoneyDto: {
+            /**
+             * @description Сумма в минимальных единицах (тиыны), целое число
+             * @example 250000
+             */
+            amount: number;
+            /**
+             * @example KZT
+             * @enum {string}
+             */
+            currency: "KZT";
+        };
+        CustomerDto: {
+            id: string;
+            /**
+             * @description null у обезличенного гостя
+             * @example +77011234567
+             */
+            phone?: Record<string, never> | null;
+            name?: Record<string, never> | null;
+            email?: Record<string, never> | null;
+            /** @enum {string} */
+            locale: "kk" | "ru" | "en";
+            /** @example 1990-05-17 */
+            birthday?: Record<string, never> | null;
+            /**
+             * @example [
+             *       "regular",
+             *       "vip"
+             *     ]
+             */
+            tags: string[];
+            allergies?: Record<string, never> | null;
+            preferences?: Record<string, never> | null;
+            notes?: Record<string, never> | null;
+            personalDataConsent: boolean;
+            personalDataConsentVersion?: Record<string, never> | null;
+            personalDataConsentAt?: Record<string, never> | null;
+            marketingConsent: boolean;
+            marketingConsentVersion?: Record<string, never> | null;
+            marketingConsentAt?: Record<string, never> | null;
+            ordersCount: number;
+            completedOrdersCount: number;
+            /** @description Сумма покупок за всё время: выполненные заказы, проведённые банкеты, сертификаты */
+            totalSpent: components["schemas"]["MoneyDto"];
+            reservationsCount: number;
+            noShowCount: number;
+            banquetsCount: number;
+            /** Format: date-time */
+            firstSeenAt: string;
+            lastActivityAt?: Record<string, never> | null;
+            anonymizedAt?: Record<string, never> | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        CustomersPageDto: {
+            items: components["schemas"]["CustomerDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+        };
+        TagStatDto: {
+            tag: string;
+            count: number;
+        };
+        CustomerFilterDto: {
+            /** @description Поиск по телефону, имени или email */
+            q?: string;
+            /** @description Все теги должны быть у гостя */
+            tags?: string[];
+            /** @description Сумма покупок от, тиыны */
+            spentMin?: number;
+            /** @description Сумма покупок до, тиыны */
+            spentMax?: number;
+            /** @example 2026-09-01 */
+            lastActivityFrom?: string;
+            /** @example 2026-09-30 */
+            lastActivityTo?: string;
+            /** @description Была активность в филиале */
+            branchId?: string;
+            hasBanquet?: boolean;
+            marketingConsent?: boolean;
+        };
+        ExportCustomersDto: {
+            /** @enum {string} */
+            format: "xlsx" | "csv";
+            /**
+             * @description marketing — только гости с маркетинговым согласием; service — сервисная выгрузка (цель фиксируется в журнале)
+             * @enum {string}
+             */
+            purpose: "marketing" | "service";
+            /** @description Сегмент (фильтр ниже уточняет его) */
+            segmentId?: string;
+            filter?: components["schemas"]["CustomerFilterDto"];
+        };
+        ConsentRecordDto: {
+            id: string;
+            /** @enum {string} */
+            kind: "personal_data" | "marketing";
+            granted: boolean;
+            textVersion: string;
+            /** @enum {string} */
+            source: "web" | "admin" | "phone";
+            ip?: Record<string, never> | null;
+            /** @description Сотрудник, внёсший согласие */
+            recordedBy?: Record<string, never> | null;
+            /** Format: date-time */
+            recordedAt: string;
+        };
+        PeriodDto: {
+            from?: Record<string, never> | null;
+            to?: Record<string, never> | null;
+        };
+        PeriodTotalsDto: {
+            /** @description Сумма покупок за период */
+            spent: components["schemas"]["MoneyDto"];
+            ordersPlaced: number;
+            ordersCompleted: number;
+            ordersCancelled: number;
+            /** @description Возвраты по выполненным заказам */
+            ordersRefunded: number;
+            reservations: number;
+            noShows: number;
+            banquetRequests: number;
+            banquetsHeld: number;
+            certificatesPurchased: number;
+            activities: number;
+        };
+        ActivityDto: {
+            id: string;
+            /** @enum {string} */
+            type: "order_placed" | "order_completed" | "order_cancelled" | "order_refunded" | "reservation_created" | "reservation_arrived" | "reservation_no_show" | "reservation_cancelled" | "reservation_expired" | "reservation_status_changed" | "banquet_requested" | "banquet_status_changed" | "banquet_held" | "banquet_cancelled" | "banquet_invoice_issued" | "certificate_purchased";
+            /** @enum {string} */
+            entityType: "order" | "reservation" | "banquet_request" | "banquet_invoice" | "gift_certificate";
+            entityId: string;
+            branchId?: Record<string, never> | null;
+            amount?: components["schemas"]["MoneyDto"] | null;
+            /** @description Учитывается в сумме покупок (возврат — отрицательная сумма) */
+            countsAsSpent: boolean;
+            summary: string;
+            meta: {
+                [key: string]: unknown;
+            };
+            /** Format: date-time */
+            occurredAt: string;
+        };
+        ActivitiesPageDto: {
+            items: components["schemas"]["ActivityDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+        };
+        CustomerDetailDto: {
+            customer: components["schemas"]["CustomerDto"];
+            /** @description История согласий, новые сверху */
+            consents: components["schemas"]["ConsentRecordDto"][];
+            period: components["schemas"]["PeriodDto"];
+            totals: components["schemas"]["PeriodTotalsDto"];
+            /** @description История за период, новые сверху */
+            activities: components["schemas"]["ActivitiesPageDto"];
+        };
+        UpdateCustomerDto: {
+            name?: Record<string, never> | null;
+            email?: Record<string, never> | null;
+            /** @example 1990-05-17 */
+            birthday?: Record<string, never> | null;
+            /** @enum {string} */
+            locale?: "kk" | "ru" | "en";
+            /** @description Полный набор тегов (заменяет текущий) */
+            tags?: string[];
+            allergies?: Record<string, never> | null;
+            preferences?: Record<string, never> | null;
+            notes?: Record<string, never> | null;
+        };
+        RecordConsentDto: {
+            /** @enum {string} */
+            kind: "personal_data" | "marketing";
+            /** @description true — согласие, false — отзыв */
+            granted: boolean;
+            /** @description Версия текста; по умолчанию — действующая */
+            textVersion?: string;
+            /**
+             * @description Получено лично (admin) или по телефону (phone)
+             * @enum {string}
+             */
+            source: "admin" | "phone";
+        };
+        AnonymizeCustomerDto: {
+            /** @description Основание (например, заявление гостя) */
+            reason?: string;
+        };
+        SegmentDto: {
+            id: string;
+            name: string;
+            description?: Record<string, never> | null;
+            filter: components["schemas"]["CustomerFilterDto"];
+            createdBy?: Record<string, never> | null;
+            updatedBy?: Record<string, never> | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        SegmentDetailDto: {
+            id: string;
+            name: string;
+            description?: Record<string, never> | null;
+            filter: components["schemas"]["CustomerFilterDto"];
+            createdBy?: Record<string, never> | null;
+            updatedBy?: Record<string, never> | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            /** @description Сколько гостей сейчас в сегменте */
+            customersCount: number;
+        };
+        SaveSegmentDto: {
+            /** @example Постоянные гости GreenLine */
+            name: string;
+            description?: Record<string, never> | null;
+            filter: components["schemas"]["CustomerFilterDto"];
+        };
+        ConsentTextDto: {
+            id: string;
+            /** @enum {string} */
+            kind: "personal_data" | "marketing";
+            version: string;
+            text: components["schemas"]["TranslatableDto"];
+            /** Format: date-time */
+            publishedAt: string;
+            publishedBy?: Record<string, never> | null;
+            /** @description Действующая версия (показывается на формах) */
+            isCurrent: boolean;
+        };
+        PublishConsentTextDto: {
+            /** @enum {string} */
+            kind: "personal_data" | "marketing";
+            /**
+             * @description Версия: латиница, цифры, ".", "_", "-"
+             * @example 2026-10-15
+             */
+            version: string;
+            /** @description Текст на kk и ru (обязательно), en — опционально */
+            text: components["schemas"]["TranslatableDto"];
+        };
+        PublicConsentTextDto: {
+            /** @enum {string} */
+            kind: "personal_data" | "marketing";
+            /**
+             * @description Версия текста — передаётся обратно вместе с согласием
+             * @example 2026-09-25
+             */
+            version: string;
+            /** @enum {string} */
+            locale: "kk" | "ru" | "en";
+            /** @description Текст согласия на языке запроса */
+            text: string;
+            /** Format: date-time */
+            publishedAt: string;
+        };
+        StartPhoneVerificationDto: {
+            /** @example +7 701 123 45 67 */
+            phone: string;
+            /**
+             * @description Язык SMS
+             * @default ru
+             * @enum {string}
+             */
+            locale: "kk" | "ru" | "en";
+        };
+        PhoneVerificationStartedDto: {
+            verificationId: string;
+            /**
+             * Format: date-time
+             * @description Срок действия кода
+             */
+            expiresAt: string;
+            /**
+             * @description Через сколько секунд можно запросить код повторно
+             * @example 60
+             */
+            resendAfterSeconds: number;
+        };
+        VerifyPhoneCodeDto: {
+            /**
+             * @description Код из SMS (4 цифры)
+             * @example 1234
+             */
+            code: string;
+        };
+        PhoneVerifiedDto: {
+            /** @description Токен подтверждения телефона (передаётся при оформлении заказа/брони), действует 30 минут */
+            token: string;
+            /** @example +77011234567 */
+            phone: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        ImageVariantDto: {
+            /** @example 600 */
+            width: number;
+            /** @example 400 */
+            height: number;
+            /** @example https://cdn.aula.kz/public/catalog/dishes/…-600.webp */
+            url: string;
+        };
+        ImageDto: {
+            id: string;
+            url: string;
+            width: number;
+            height: number;
+            variants: components["schemas"]["ImageVariantDto"][];
+        };
+        MissingTranslationDto: {
+            /** @example description */
+            field: string;
+            /**
+             * @example [
+             *       "kk"
+             *     ]
+             */
+            missing: ("kk" | "ru" | "en")[];
+        };
+        CategoryDto: {
+            id: string;
+            slug: string;
+            name: components["schemas"]["TranslatableDto"];
+            description: components["schemas"]["TranslatableDto"];
+            seoTitle: components["schemas"]["TranslatableDto"];
+            seoDescription: components["schemas"]["TranslatableDto"];
+            image?: components["schemas"]["ImageDto"] | null;
+            sortOrder: number;
+            isActive: boolean;
+            /** @description Число блюд в категории */
+            dishCount: number;
+            /** @description Недостающие переводы (kk/ru) */
+            missingTranslations: components["schemas"]["MissingTranslationDto"][];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        CategoryInputDto: {
+            /**
+             * @description Человекочитаемый URL; не задан — транслитерация из названия
+             * @example salaty
+             */
+            slug?: Record<string, never> | null;
+            /**
+             * @example {
+             *       "ru": "Салаты",
+             *       "kk": "Салаттар"
+             *     }
+             */
+            name: components["schemas"]["TranslatableDto"];
+            description?: components["schemas"]["TranslatableDto"] | null;
+            /** @description SEO title (по умолчанию — название + филиал) */
+            seoTitle?: components["schemas"]["TranslatableDto"] | null;
+            seoDescription?: components["schemas"]["TranslatableDto"] | null;
+            /** @description Порядок в меню (по возрастанию) */
+            sortOrder?: Record<string, never>;
+            /** @default true */
+            isActive: Record<string, never>;
+        };
+        ReorderDto: {
+            /** @description id в нужном порядке */
+            ids: string[];
+        };
+        PhotoDto: {
+            id: string;
+            url: string;
+            width: number;
+            height: number;
+            variants: components["schemas"]["ImageVariantDto"][];
+            sortOrder: number;
+        };
+        BranchPriceDto: {
+            branchId: string;
+            price: components["schemas"]["MoneyDto"];
+            /** @enum {string} */
+            availability: "available" | "stopped";
+            stoppedUntil?: Record<string, never> | null;
+            sku?: Record<string, never> | null;
+        };
+        DishDto: {
+            id: string;
+            slug: string;
+            categoryId: string;
+            name: components["schemas"]["TranslatableDto"];
+            description: components["schemas"]["TranslatableDto"];
+            composition: components["schemas"]["TranslatableDto"];
+            seoTitle: components["schemas"]["TranslatableDto"];
+            seoDescription: components["schemas"]["TranslatableDto"];
+            weightGrams?: Record<string, never> | null;
+            calories?: Record<string, never> | null;
+            isVegetarian: boolean;
+            spicyLevel: number;
+            isHalal: boolean;
+            allergens: ("gluten" | "milk" | "eggs" | "nuts" | "peanuts" | "soy" | "fish" | "crustaceans" | "molluscs" | "sesame" | "celery" | "mustard" | "sulphites" | "lupin")[];
+            sku?: Record<string, never> | null;
+            sortOrder: number;
+            isActive: boolean;
+            photos: components["schemas"]["PhotoDto"][];
+            modifierGroupIds: string[];
+            missingTranslations: components["schemas"]["MissingTranslationDto"][];
+            /** @description Цены по доступным филиалам (в карточке блюда) */
+            branchPrices?: components["schemas"]["BranchPriceDto"][];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        DishesPageDto: {
+            items: components["schemas"]["DishDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+        };
+        DishInputDto: {
+            /**
+             * @description Не задан — транслитерация из названия
+             * @example beshbarmak
+             */
+            slug?: Record<string, never> | null;
+            categoryId: string;
+            /**
+             * @example {
+             *       "ru": "Бешбармак",
+             *       "kk": "Ет"
+             *     }
+             */
+            name: components["schemas"]["TranslatableDto"];
+            description?: components["schemas"]["TranslatableDto"] | null;
+            /** @description Состав */
+            composition?: components["schemas"]["TranslatableDto"] | null;
+            seoTitle?: components["schemas"]["TranslatableDto"] | null;
+            seoDescription?: components["schemas"]["TranslatableDto"] | null;
+            /** @description Вес порции, г */
+            weightGrams?: Record<string, never> | null;
+            /** @description Калорийность порции, ккал */
+            calories?: Record<string, never> | null;
+            /** @default false */
+            isVegetarian: Record<string, never>;
+            /**
+             * @description Острота 0..3
+             * @default 0
+             */
+            spicyLevel: Record<string, never>;
+            /** @default true */
+            isHalal: Record<string, never>;
+            allergens?: ("gluten" | "milk" | "eggs" | "nuts" | "peanuts" | "soy" | "fish" | "crustaceans" | "molluscs" | "sesame" | "celery" | "mustard" | "sulphites" | "lupin")[];
+            /** @description Общий код блюда в POS сети */
+            sku?: Record<string, never> | null;
+            sortOrder?: Record<string, never>;
+            /** @default true */
+            isActive: Record<string, never>;
+            /** @description Группы модификаторов в порядке показа; не задано — без изменений */
+            modifierGroupIds?: string[];
+        };
+        PhotoOrderDto: {
+            /** @description Все id фото блюда в нужном порядке; первое — обложка */
+            photoIds: string[];
+        };
+        ModifierOptionDto: {
+            id: string;
+            name: components["schemas"]["TranslatableDto"];
+            price: components["schemas"]["MoneyDto"];
+            isDefault: boolean;
+            sortOrder: number;
+            isActive: boolean;
+        };
+        ModifierGroupDto: {
+            id: string;
+            code: string;
+            name: components["schemas"]["TranslatableDto"];
+            description: components["schemas"]["TranslatableDto"];
+            minSelect: number;
+            maxSelect: number;
+            /** @description Обязательная группа (minSelect >= 1) */
+            isRequired: boolean;
+            sortOrder: number;
+            isActive: boolean;
+            options: components["schemas"]["ModifierOptionDto"][];
+            /** @description Число блюд с этой группой */
+            dishCount: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        MoneyInputDto: {
+            /**
+             * @description Сумма в тиынах, целое неотрицательное
+             * @example 250000
+             */
+            amount: number;
+            /**
+             * @default KZT
+             * @enum {string}
+             */
+            currency: "KZT";
+        };
+        ModifierOptionInputDto: {
+            /** @description id существующей опции; не задан — новая опция */
+            id?: Record<string, never>;
+            /**
+             * @example {
+             *       "ru": "Большая порция",
+             *       "kk": "Үлкен порция"
+             *     }
+             */
+            name: components["schemas"]["TranslatableDto"];
+            /** @description Доплата за опцию, тиыны (может быть 0) */
+            price: components["schemas"]["MoneyInputDto"];
+            /** @default false */
+            isDefault: Record<string, never>;
+            sortOrder?: Record<string, never>;
+            /** @default true */
+            isActive: Record<string, never>;
+        };
+        ModifierGroupInputDto: {
+            /**
+             * @description Код группы; не задан — из названия
+             * @example portion-size
+             */
+            code?: Record<string, never> | null;
+            /**
+             * @example {
+             *       "ru": "Размер порции",
+             *       "kk": "Порция көлемі"
+             *     }
+             */
+            name: components["schemas"]["TranslatableDto"];
+            description?: components["schemas"]["TranslatableDto"] | null;
+            /** @description Минимум выбора; >= 1 — группа обязательная */
+            minSelect: number;
+            maxSelect: number;
+            sortOrder?: Record<string, never>;
+            /** @default true */
+            isActive: Record<string, never>;
+            /** @description Полный список опций: отсутствующие удаляются */
+            options: components["schemas"]["ModifierOptionInputDto"][];
+        };
+        AllergenRefDto: {
+            /** @enum {string} */
+            code: "gluten" | "milk" | "eggs" | "nuts" | "peanuts" | "soy" | "fish" | "crustaceans" | "molluscs" | "sesame" | "celery" | "mustard" | "sulphites" | "lupin";
+            name: components["schemas"]["TranslatableDto"];
+        };
+        TranslationSummaryDto: {
+            entityType: string;
+            total: number;
+            incomplete: number;
+        };
+        TranslationGapDto: {
+            /** @enum {string} */
+            entityType: "category" | "dish" | "modifier_group" | "modifier_option" | "banner" | "promotion" | "page";
+            entityId: string;
+            label: string;
+            field: string;
+            missing: ("kk" | "ru" | "en")[];
+        };
+        TranslationReportDto: {
+            locales: ("kk" | "ru" | "en")[];
+            summary: components["schemas"]["TranslationSummaryDto"][];
+            items: components["schemas"]["TranslationGapDto"][];
+        };
+        BranchMenuItemDto: {
+            branchId: string;
+            dishId: string;
+            dishSlug: string;
+            dishName: components["schemas"]["TranslatableDto"];
+            categoryId: string;
+            dishIsActive: boolean;
+            photo?: components["schemas"]["ImageDto"] | null;
+            price: components["schemas"]["MoneyDto"];
+            /** @enum {string} */
+            availability: "available" | "stopped";
+            /**
+             * @description Как видно на витрине с учётом настройки филиала
+             * @enum {string}
+             */
+            displayAvailability: "available" | "stopped_shown" | "stopped_hidden";
+            stoppedUntil?: Record<string, never> | null;
+            stopReason?: Record<string, never> | null;
+            /** @enum {string|null} */
+            stopSource?: "manual" | "pos" | null;
+            stoppedAt?: Record<string, never> | null;
+            /** @description Код POS филиала */
+            sku?: Record<string, never> | null;
+            /** @description Код, который уходит в POS */
+            effectiveSku?: Record<string, never> | null;
+            updatedBy?: Record<string, never> | null;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        BranchMenuPageDto: {
+            items: components["schemas"]["BranchMenuItemDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+        };
+        AddMenuItemDto: {
+            dishId: string;
+            /** @description Цена блюда в филиале, тиыны */
+            price: components["schemas"]["MoneyInputDto"];
+            /** @description Код POS филиала (если отличается от общего кода блюда) */
+            sku?: Record<string, never> | null;
+        };
+        BulkPriceItemDto: {
+            dishId: string;
+            price: components["schemas"]["MoneyInputDto"];
+        };
+        BulkPricesDto: {
+            items: components["schemas"]["BulkPriceItemDto"][];
+        };
+        BulkPricesResultDto: {
+            updated: number;
+            unchanged: number;
+        };
+        CopyMenuDto: {
+            /** @description Филиал-источник */
+            fromBranchId: string;
+            /**
+             * @description Перезаписать цены блюд, которые уже есть в меню филиала
+             * @default false
+             */
+            overwritePrices: boolean;
+        };
+        CopyMenuResultDto: {
+            added: number;
+            updated: number;
+            unchanged: number;
+        };
+        SetPriceDto: {
+            price: components["schemas"]["MoneyInputDto"];
+            /** @description Код POS филиала; не передан — без изменений, null — сбросить */
+            sku?: Record<string, never> | null;
+        };
+        SetAvailabilityDto: {
+            /** @description true — вернуть в продажу, false — поставить в стоп-лист */
+            available: boolean;
+            /** @description Стоп до момента (ISO 8601), затем автоматический возврат; не задан — до ручного возврата */
+            until?: Record<string, never> | null;
+            /** @description Стоп до конца дня (полночь по времени филиала) */
+            untilEndOfDay?: boolean;
+            /** @example Закончилась конина */
+            reason?: Record<string, never> | null;
+        };
+        AvailabilityResultDto: {
+            changed: boolean;
+            item: components["schemas"]["BranchMenuItemDto"];
+        };
+        BannerDto: {
+            id: string;
+            /** @enum {string} */
+            placement: "home_hero" | "home_secondary" | "menu_top";
+            branchId?: Record<string, never> | null;
+            title: components["schemas"]["TranslatableDto"];
+            subtitle: components["schemas"]["TranslatableDto"];
+            ctaLabel: components["schemas"]["TranslatableDto"];
+            linkUrl?: Record<string, never> | null;
+            image?: components["schemas"]["ImageDto"] | null;
+            activeFrom?: Record<string, never> | null;
+            activeTo?: Record<string, never> | null;
+            sortOrder: number;
+            isActive: boolean;
+            missingTranslations: components["schemas"]["MissingTranslationDto"][];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        BannerInputDto: {
+            /** @enum {string} */
+            placement: "home_hero" | "home_secondary" | "menu_top";
+            /** @description Филиал; null — для всех филиалов */
+            branchId?: Record<string, never> | null;
+            title: components["schemas"]["TranslatableDto"];
+            subtitle?: components["schemas"]["TranslatableDto"] | null;
+            /** @description Текст кнопки */
+            ctaLabel?: components["schemas"]["TranslatableDto"] | null;
+            /**
+             * @description Путь на сайте или http(s) URL
+             * @example /greenline/menu
+             */
+            linkUrl?: Record<string, never> | null;
+            /** @description Показывать с (ISO 8601) */
+            activeFrom?: Record<string, never> | null;
+            /** @description Показывать до (ISO 8601, не включая) */
+            activeTo?: Record<string, never> | null;
+            sortOrder?: Record<string, never>;
+            /** @default true */
+            isActive: Record<string, never>;
+        };
+        PromotionDto: {
+            id: string;
+            slug: string;
+            title: components["schemas"]["TranslatableDto"];
+            description: components["schemas"]["TranslatableDto"];
+            terms: components["schemas"]["TranslatableDto"];
+            seoTitle: components["schemas"]["TranslatableDto"];
+            seoDescription: components["schemas"]["TranslatableDto"];
+            image?: components["schemas"]["ImageDto"] | null;
+            validFrom?: Record<string, never> | null;
+            validTo?: Record<string, never> | null;
+            branchIds: string[];
+            sortOrder: number;
+            isActive: boolean;
+            missingTranslations: components["schemas"]["MissingTranslationDto"][];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        PromotionInputDto: {
+            /**
+             * @description Не задан — из заголовка
+             * @example kombo-obed
+             */
+            slug?: Record<string, never> | null;
+            title: components["schemas"]["TranslatableDto"];
+            description?: components["schemas"]["TranslatableDto"] | null;
+            /** @description Условия акции */
+            terms?: components["schemas"]["TranslatableDto"] | null;
+            seoTitle?: components["schemas"]["TranslatableDto"] | null;
+            seoDescription?: components["schemas"]["TranslatableDto"] | null;
+            validFrom?: Record<string, never> | null;
+            validTo?: Record<string, never> | null;
+            /** @description Филиалы акции; пусто — во всех филиалах */
+            branchIds?: string[];
+            sortOrder?: Record<string, never>;
+            /** @default true */
+            isActive: Record<string, never>;
+        };
+        PageBodyDto: {
+            /** @description Қазақша (HTML) */
+            kk?: string;
+            /** @description Русский (HTML) */
+            ru?: string;
+            /** @description English (HTML) */
+            en?: string;
+        };
+        PageDto: {
+            id: string;
+            slug: string;
+            title: components["schemas"]["TranslatableDto"];
+            body: components["schemas"]["PageBodyDto"];
+            seoTitle: components["schemas"]["TranslatableDto"];
+            seoDescription: components["schemas"]["TranslatableDto"];
+            isPublished: boolean;
+            /** @description Юридическая страница (оферта, политика): нельзя удалить или снять с публикации */
+            isProtected: boolean;
+            sortOrder: number;
+            missingTranslations: components["schemas"]["MissingTranslationDto"][];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        PageInputDto: {
+            /**
+             * @description Не задан — из заголовка
+             * @example delivery
+             */
+            slug?: Record<string, never> | null;
+            title: components["schemas"]["TranslatableDto"];
+            body: components["schemas"]["PageBodyDto"];
+            seoTitle?: components["schemas"]["TranslatableDto"] | null;
+            seoDescription?: components["schemas"]["TranslatableDto"] | null;
+            /** @default true */
+            isPublished: Record<string, never>;
+            sortOrder?: Record<string, never>;
+        };
+        PublicBranchRefDto: {
+            id: string;
+            slug: string;
+            name: string;
+        };
+        SeoDto: {
+            /** @description title страницы (уникальный) */
+            title: string;
+            /** @description meta description */
+            description: string;
+        };
+        AllergenDto: {
+            /** @enum {string} */
+            code: "gluten" | "milk" | "eggs" | "nuts" | "peanuts" | "soy" | "fish" | "crustaceans" | "molluscs" | "sesame" | "celery" | "mustard" | "sulphites" | "lupin";
+            name: string;
+        };
+        PublicDishCardDto: {
+            id: string;
+            slug: string;
+            categoryId: string;
+            categorySlug: string;
+            name: string;
+            description: string;
+            /** @description Цена в этом филиале (без модификаторов) */
+            price: components["schemas"]["MoneyDto"];
+            /** @description Можно заказать сейчас */
+            available: boolean;
+            /** @enum {string} */
+            availability: "available" | "stopped_shown" | "stopped_hidden";
+            /** @description Вес порции, г */
+            weightGrams?: Record<string, never> | null;
+            /** @description ккал на порцию */
+            calories?: Record<string, never> | null;
+            isVegetarian: boolean;
+            spicyLevel: number;
+            isHalal: boolean;
+            allergens: components["schemas"]["AllergenDto"][];
+            /** @description Обложка (первое фото) */
+            photo?: components["schemas"]["ImageDto"] | null;
+            /** @description Есть модификаторы — открыть карточку перед добавлением в корзину */
+            hasModifiers: boolean;
+            hasRequiredModifiers: boolean;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        PublicMenuCategoryDto: {
+            id: string;
+            slug: string;
+            name: string;
+            description: string;
+            image?: components["schemas"]["ImageDto"] | null;
+            seo: components["schemas"]["SeoDto"];
+            /** @description Число блюд категории в меню филиала */
+            dishCount: number;
+            /** Format: date-time */
+            updatedAt: string;
+            dishes: components["schemas"]["PublicDishCardDto"][];
+        };
+        PublicMenuDto: {
+            branch: components["schemas"]["PublicBranchRefDto"];
+            /** @enum {string} */
+            locale: "kk" | "ru" | "en";
+            seo: components["schemas"]["SeoDto"];
+            categories: components["schemas"]["PublicMenuCategoryDto"][];
+            /** @description JSON-LD schema.org Menu */
+            structuredData: {
+                [key: string]: unknown;
+            };
+            /** @description JSON-LD schema.org Restaurant (адрес, часы, кухня, hasMenu) */
+            restaurantStructuredData: {
+                [key: string]: unknown;
+            };
+        };
+        PublicCategoryDto: {
+            id: string;
+            slug: string;
+            name: string;
+            description: string;
+            image?: components["schemas"]["ImageDto"] | null;
+            seo: components["schemas"]["SeoDto"];
+            /** @description Число блюд категории в меню филиала */
+            dishCount: number;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        PublicCategoryPageDto: {
+            branch: components["schemas"]["PublicBranchRefDto"];
+            /** @enum {string} */
+            locale: "kk" | "ru" | "en";
+            category: components["schemas"]["PublicCategoryDto"];
+            /** @description Навигация по категориям меню филиала */
+            categories: components["schemas"]["PublicCategoryDto"][];
+            dishes: components["schemas"]["PublicDishCardDto"][];
+            /** @description JSON-LD schema.org Menu (раздел) */
+            structuredData: {
+                [key: string]: unknown;
+            };
+        };
+        PublicModifierOptionDto: {
+            id: string;
+            name: string;
+            /** @description Доплата */
+            price: components["schemas"]["MoneyDto"];
+            isDefault: boolean;
+        };
+        PublicModifierGroupDto: {
+            id: string;
+            name: string;
+            description: string;
+            minSelect: number;
+            maxSelect: number;
+            isRequired: boolean;
+            options: components["schemas"]["PublicModifierOptionDto"][];
+        };
+        PublicCategoryRefDto: {
+            id: string;
+            slug: string;
+            name: string;
+        };
+        PublicDishDetailDto: {
+            id: string;
+            slug: string;
+            categoryId: string;
+            categorySlug: string;
+            name: string;
+            description: string;
+            /** @description Цена в этом филиале (без модификаторов) */
+            price: components["schemas"]["MoneyDto"];
+            /** @description Можно заказать сейчас */
+            available: boolean;
+            /** @enum {string} */
+            availability: "available" | "stopped_shown" | "stopped_hidden";
+            /** @description Вес порции, г */
+            weightGrams?: Record<string, never> | null;
+            /** @description ккал на порцию */
+            calories?: Record<string, never> | null;
+            isVegetarian: boolean;
+            spicyLevel: number;
+            isHalal: boolean;
+            allergens: components["schemas"]["AllergenDto"][];
+            /** @description Обложка (первое фото) */
+            photo?: components["schemas"]["ImageDto"] | null;
+            /** @description Есть модификаторы — открыть карточку перед добавлением в корзину */
+            hasModifiers: boolean;
+            hasRequiredModifiers: boolean;
+            /** Format: date-time */
+            updatedAt: string;
+            /** @description Состав */
+            composition: string;
+            photos: components["schemas"]["ImageDto"][];
+            modifierGroups: components["schemas"]["PublicModifierGroupDto"][];
+            category: components["schemas"]["PublicCategoryRefDto"];
+            branch: components["schemas"]["PublicBranchRefDto"];
+            seo: components["schemas"]["SeoDto"];
+            /** @description JSON-LD schema.org MenuItem */
+            structuredData: {
+                [key: string]: unknown;
+            };
+        };
+        PublicDishPageDto: {
+            items: components["schemas"]["PublicDishCardDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+        };
+        SitemapBranchDto: {
+            slug: string;
+            updatedAt?: Record<string, never> | null;
+        };
+        SitemapCategoryDto: {
+            branchSlug: string;
+            slug: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        SitemapDishDto: {
+            branchSlug: string;
+            categorySlug: string;
+            slug: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        SitemapEntryDto: {
+            slug: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        SitemapDto: {
+            branches: components["schemas"]["SitemapBranchDto"][];
+            categories: components["schemas"]["SitemapCategoryDto"][];
+            dishes: components["schemas"]["SitemapDishDto"][];
+            pages: components["schemas"]["SitemapEntryDto"][];
+            promotions: components["schemas"]["SitemapEntryDto"][];
+        };
+        PublicBannerDto: {
+            id: string;
+            /** @enum {string} */
+            placement: "home_hero" | "home_secondary" | "menu_top";
+            title: string;
+            subtitle: string;
+            ctaLabel: string;
+            linkUrl?: Record<string, never> | null;
+            image?: components["schemas"]["ImageDto"] | null;
+        };
+        PublicPromotionDto: {
+            id: string;
+            slug: string;
+            title: string;
+            description: string;
+            /** @description Условия акции */
+            terms: string;
+            image?: components["schemas"]["ImageDto"] | null;
+            validFrom?: Record<string, never> | null;
+            validTo?: Record<string, never> | null;
+            /** @description Филиалы акции; пусто — все филиалы */
+            branchIds: string[];
+            seo: components["schemas"]["SeoDto"];
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        PublicPageSummaryDto: {
+            slug: string;
+            title: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        PublicPageDto: {
+            slug: string;
+            title: string;
+            /** Format: date-time */
+            updatedAt: string;
+            /** @description Санитизированный HTML */
+            bodyHtml: string;
+            seo: components["schemas"]["SeoDto"];
+        };
+        PaymentCustomerDto: {
+            name?: Record<string, never> | null;
+            /** @example +77771234567 */
+            phone?: Record<string, never> | null;
+            email?: Record<string, never> | null;
+        };
+        PaymentDto: {
+            id: string;
+            /** @enum {string} */
+            purpose: "order" | "reservation_deposit" | "banquet_invoice" | "gift_certificate";
+            /** @description Объект оплаты: заказ, бронь, счёт банкета, заказ сертификатов */
+            referenceId: string;
+            branchId?: Record<string, never> | null;
+            /** @enum {string} */
+            method: "online" | "on_receipt" | "gift_certificate" | "bank_transfer";
+            /** @description Провайдер (для online) или способ оплаты */
+            provider: string;
+            /** @enum {string} */
+            status: "created" | "pending" | "succeeded" | "failed" | "cancelled" | "partially_refunded" | "refunded";
+            amount: components["schemas"]["MoneyDto"];
+            refundedAmount: components["schemas"]["MoneyDto"];
+            /** @description Сколько ещё можно вернуть (с учётом ожидающих возвратов) */
+            refundableAmount: components["schemas"]["MoneyDto"];
+            paymentUrl?: Record<string, never> | null;
+            externalId?: Record<string, never> | null;
+            /** @description Номер счёта для провайдера */
+            invoiceNo: number;
+            description: string;
+            customer: components["schemas"]["PaymentCustomerDto"];
+            /** Format: date-time */
+            createdAt: string;
+            paidAt?: Record<string, never> | null;
+            expiresAt?: Record<string, never> | null;
+            failureReason?: Record<string, never> | null;
+            cancelReason?: Record<string, never> | null;
+            /** @description Провайдер сообщил сумму, отличную от суммы платежа */
+            amountMismatch: boolean;
+            /** @description Можно запросить возврат (есть остаток и право) */
+            canRefund: boolean;
+            /** @description Можно отметить получение денег (оплата при получении) */
+            canCollect: boolean;
+            allowedTransitions: ("created" | "pending" | "succeeded" | "failed" | "cancelled" | "partially_refunded" | "refunded")[];
+        };
+        PaymentsPageDto: {
+            items: components["schemas"]["PaymentDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+        };
+        RefundPaymentRefDto: {
+            /** @enum {string} */
+            purpose: "order" | "reservation_deposit" | "banquet_invoice" | "gift_certificate";
+            referenceId: string;
+            branchId?: Record<string, never> | null;
+            /** @enum {string} */
+            method: "online" | "on_receipt" | "gift_certificate" | "bank_transfer";
+        };
+        RefundDto: {
+            id: string;
+            paymentId: string;
+            amount: components["schemas"]["MoneyDto"];
+            /** @enum {string} */
+            status: "pending" | "succeeded" | "failed";
+            /**
+             * @description gateway — через провайдера, certificate — на сертификат, manual — подтверждает финансист
+             * @enum {string}
+             */
+            mode: "gateway" | "certificate" | "manual";
+            reason: string;
+            attempts: number;
+            failureReason?: Record<string, never> | null;
+            comment?: Record<string, never> | null;
+            /** Format: date-time */
+            createdAt: string;
+            completedAt?: Record<string, never> | null;
+            /** @description Ожидает ручного подтверждения финансистом */
+            awaitingManualConfirmation: boolean;
+            payment: components["schemas"]["RefundPaymentRefDto"];
+        };
+        RefundsPageDto: {
+            items: components["schemas"]["RefundDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+        };
+        ConfirmRefundDto: {
+            /** @description Как вернули деньги: наличными на кассе, переводом №… */
+            comment?: string;
+        };
+        RefundResultDto: {
+            id: string;
+            paymentId: string;
+            amount: components["schemas"]["MoneyDto"];
+            /** @enum {string} */
+            status: "pending" | "succeeded" | "failed";
+            reason: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        RejectRefundDto: {
+            reason: string;
+        };
+        WebhookEventDto: {
+            id: string;
+            /** @description Идентификатор события у провайдера */
+            eventId: string;
+            status: string;
+            /** @enum {string} */
+            outcome: "applied" | "ignored" | "unknown_payment" | "amount_mismatch";
+            reportedAmount?: components["schemas"]["MoneyDto"] | null;
+            /** Format: date-time */
+            receivedAt: string;
+        };
+        ProviderLogEntryDto: {
+            id: string;
+            /** Format: date-time */
+            occurredAt: string;
+            integration: string;
+            /** @enum {string} */
+            direction: "outbound" | "inbound";
+            operation: string;
+            statusCode?: Record<string, never> | null;
+            success: boolean;
+            durationMs?: Record<string, never> | null;
+            error?: Record<string, never> | null;
+            /** @description Запрос (платёжные данные замаскированы) */
+            request?: {
+                [key: string]: unknown;
+            } | null;
+            /** @description Ответ (платёжные данные замаскированы) */
+            response?: {
+                [key: string]: unknown;
+            } | null;
+        };
+        PaymentDetailsDto: {
+            payment: components["schemas"]["PaymentDto"];
+            refunds: components["schemas"]["RefundDto"][];
+            webhookEvents: components["schemas"]["WebhookEventDto"][];
+            /** @description Обмен с провайдером (журнал интеграций, с маскированием) */
+            providerLog: components["schemas"]["ProviderLogEntryDto"][];
+        };
+        CreateRefundDto: {
+            /** @description Сумма возврата; не задана — весь невозвращённый остаток */
+            amount?: components["schemas"]["MoneyInputDto"];
+            /** @example Гость отказался от заказа */
+            reason: string;
+            /**
+             * @description Ключ идемпотентности (повтор запроса не создаёт второй возврат)
+             * @example refund-2026-10-01-001
+             */
+            idempotencyKey: string;
+        };
+        CertificateDesignDto: {
+            /** @example #7a4b2a */
+            color: string;
+            /** @example classic */
+            theme: string;
+            imageUrl?: Record<string, never> | null;
+        };
+        CertificateProductDto: {
+            id: string;
+            slug: string;
+            /** @enum {string} */
+            kind: "amount" | "set";
+            name: components["schemas"]["TranslatableDto"];
+            description: components["schemas"]["TranslatableDto"];
+            nominal: components["schemas"]["MoneyDto"];
+            price: components["schemas"]["MoneyDto"];
+            validityMonths: number;
+            design: components["schemas"]["CertificateDesignDto"];
+            isActive: boolean;
+            sortOrder: number;
+            /** @description Непереведённые поля подсвечиваются в админке */
+            missingLocales: ("kk" | "ru")[];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        CertificateDesignInputDto: {
+            /** @example #7a4b2a */
+            color?: string;
+            /** @example festive */
+            theme?: string;
+            imageUrl?: Record<string, never> | null;
+        };
+        CertificateProductInputDto: {
+            /** @example nominal-10000 */
+            slug: string;
+            /** @enum {string} */
+            kind: "amount" | "set";
+            name: components["schemas"]["TranslatableDto"];
+            /** @description Описание; для набора обязательно (состав набора) */
+            description?: components["schemas"]["TranslatableDto"];
+            /** @description Номинал (для набора — для учёта) */
+            nominal: components["schemas"]["MoneyInputDto"];
+            /** @description Цена продажи */
+            price: components["schemas"]["MoneyInputDto"];
+            /** @default 12 */
+            validityMonths: number;
+            design?: components["schemas"]["CertificateDesignInputDto"];
+            isActive?: boolean;
+            sortOrder?: number;
+        };
+        CertificatePersonDto: {
+            name?: Record<string, never> | null;
+            phone?: Record<string, never> | null;
+            email?: Record<string, never> | null;
+        };
+        CertificateDto: {
+            id: string;
+            /** @example ****-****-AB12 */
+            maskedCode: string;
+            /** @enum {string} */
+            kind: "amount" | "set";
+            /** @enum {string} */
+            status: "active" | "redeemed" | "expired" | "blocked";
+            statusReason?: Record<string, never> | null;
+            name: components["schemas"]["TranslatableDto"];
+            setDescription?: components["schemas"]["TranslatableDto"] | null;
+            nominal: components["schemas"]["MoneyDto"];
+            balance: components["schemas"]["MoneyDto"];
+            /** @description Цена продажи */
+            price: components["schemas"]["MoneyDto"];
+            /** Format: date-time */
+            issuedAt: string;
+            /** Format: date-time */
+            expiresAt: string;
+            /** @description Последний день действия (Asia/Almaty) */
+            validUntil: string;
+            buyer: components["schemas"]["CertificatePersonDto"];
+            recipient: components["schemas"]["CertificatePersonDto"];
+            message?: Record<string, never> | null;
+            /** @enum {string} */
+            deliveryChannel: "email" | "whatsapp" | "none";
+            /** @enum {string} */
+            locale: "kk" | "ru" | "en";
+            orderId: string;
+            deliveryCount: number;
+            lastDeliveredAt?: Record<string, never> | null;
+            hasPdf: boolean;
+        };
+        CertificatesPageDto: {
+            items: components["schemas"]["CertificateDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+        };
+        ReportIssuedDto: {
+            count: number;
+            /** @description Сумма номиналов */
+            nominal: components["schemas"]["MoneyDto"];
+            /** @description Выручка от продажи */
+            price: components["schemas"]["MoneyDto"];
+        };
+        ReportRedeemedDto: {
+            /** @description Операций списания */
+            operations: number;
+            /** @description Сертификатов, по которым были списания */
+            certificates: number;
+            amount: components["schemas"]["MoneyDto"];
+        };
+        ReportCountAmountDto: {
+            count: number;
+            amount: components["schemas"]["MoneyDto"];
+        };
+        ReportLiabilityDto: {
+            /** @description Активные сертификаты: остаток обязательств */
+            active: components["schemas"]["ReportCountAmountDto"];
+            /** @description Заблокированные (остаток, не доступный к списанию) */
+            blocked: components["schemas"]["ReportCountAmountDto"];
+        };
+        CertificateReportDto: {
+            from: string;
+            to: string;
+            issued: components["schemas"]["ReportIssuedDto"];
+            redeemed: components["schemas"]["ReportRedeemedDto"];
+            /** @description Возвращено на сертификаты (отмена заказов) */
+            returned: components["schemas"]["ReportCountAmountDto"];
+            /** @description Просрочено (сгоревший остаток) */
+            expired: components["schemas"]["ReportCountAmountDto"];
+            /** @description Восстановлено продлением срока */
+            reinstated: components["schemas"]["ReportCountAmountDto"];
+            /** @description Остаток обязательств на момент запроса */
+            liability: components["schemas"]["ReportLiabilityDto"];
+        };
+        CheckCertificateDto: {
+            /** @example ABCD-EFGH-JKMN */
+            code: string;
+        };
+        AdminCertificateBalanceDto: {
+            /** @example ****-****-AB12 */
+            maskedCode: string;
+            /** @enum {string} */
+            kind: "amount" | "set";
+            /** @enum {string} */
+            status: "active" | "redeemed" | "expired" | "blocked";
+            nominal: components["schemas"]["MoneyDto"];
+            balance: components["schemas"]["MoneyDto"];
+            /** Format: date-time */
+            expiresAt: string;
+            /** @description Последний день действия (Asia/Almaty), YYYY-MM-DD */
+            validUntil: string;
+            /** @description Состав набора */
+            setDescription?: Record<string, never> | null;
+            id: string;
+        };
+        RedeemCertificateDto: {
+            /** @example ABCD-EFGH-JKMN */
+            code: string;
+            /** @description Сумма списания; для набора не задаётся (погашается целиком) */
+            amount?: components["schemas"]["MoneyInputDto"];
+            /** @description Филиал, где погашается сертификат */
+            branchId: string;
+            /** @description Комментарий (номер чека POS) */
+            comment?: string;
+        };
+        CertificateLedgerEntryDto: {
+            id: string;
+            /** @enum {string} */
+            kind: "issue" | "debit" | "credit" | "expire" | "reinstate";
+            amount: components["schemas"]["MoneyDto"];
+            balanceAfter: components["schemas"]["MoneyDto"];
+            /** @enum {string} */
+            channel: "order" | "point" | "refund" | "sale" | "system" | "admin";
+            paymentId?: Record<string, never> | null;
+            refundId?: Record<string, never> | null;
+            referenceType?: Record<string, never> | null;
+            referenceId?: Record<string, never> | null;
+            branchId?: Record<string, never> | null;
+            actorUserId?: Record<string, never> | null;
+            actorName: string;
+            comment?: Record<string, never> | null;
+            /** Format: date-time */
+            occurredAt: string;
+        };
+        RedeemResultDto: {
+            certificate: components["schemas"]["AdminCertificateBalanceDto"];
+            transaction: components["schemas"]["CertificateLedgerEntryDto"];
+        };
+        ManualBuyerDto: {
+            /** @description Контактное лицо */
+            name: string;
+            /** @description Компания-покупатель */
+            company?: string;
+            phone?: string;
+            email?: string;
+        };
+        PurchaseRecipientDto: {
+            /** @example Данияр */
+            name: string;
+            email?: string;
+            phone?: string;
+        };
+        ManualIssueDto: {
+            productId: string;
+            quantity: number;
+            /** @description Итог по договору; по умолчанию цена × количество */
+            total?: components["schemas"]["MoneyInputDto"];
+            buyer: components["schemas"]["ManualBuyerDto"];
+            /** @description По умолчанию — покупатель */
+            recipient?: components["schemas"]["PurchaseRecipientDto"];
+            message?: string;
+            /**
+             * @description none — PDF скачиваются из админки
+             * @enum {string}
+             */
+            deliveryChannel: "email" | "whatsapp" | "none";
+            /** @enum {string} */
+            locale: "kk" | "ru" | "en";
+            /** @description Номер платёжного поручения */
+            documentNumber: string;
+            /** @description Дата поступления (ISO 8601) */
+            paidAt: string;
+            idempotencyKey: string;
+        };
+        CertificateOrderSummaryDto: {
+            id: string;
+            /** @enum {string} */
+            source: "online" | "manual";
+            /** @enum {string} */
+            status: "awaiting_payment" | "issued" | "payment_failed";
+            quantity: number;
+            total: components["schemas"]["MoneyDto"];
+            paymentId?: Record<string, never> | null;
+            buyerCompany?: Record<string, never> | null;
+            /** Format: date-time */
+            createdAt: string;
+            issuedAt?: Record<string, never> | null;
+        };
+        PaymentLinkDto: {
+            id: string;
+            /** @enum {string} */
+            status: "created" | "pending" | "succeeded" | "failed" | "cancelled" | "partially_refunded" | "refunded";
+            /** @description Появляется после инициирования у провайдера */
+            paymentUrl?: Record<string, never> | null;
+            amount: components["schemas"]["MoneyDto"];
+            expiresAt?: Record<string, never> | null;
+        };
+        ManualIssueResultDto: {
+            order: components["schemas"]["CertificateOrderSummaryDto"];
+            payment: components["schemas"]["PaymentLinkDto"];
+            certificates: components["schemas"]["CertificateDto"][];
+        };
+        CertificateDetailsDto: {
+            certificate: components["schemas"]["CertificateDto"];
+            /** @description Движения: выпуск, списания, возвраты, сгорание */
+            ledger: components["schemas"]["CertificateLedgerEntryDto"][];
+            order?: components["schemas"]["CertificateOrderSummaryDto"] | null;
+        };
+        PdfLinkDto: {
+            /** @description Подписанная ссылка на PDF (содержит полный код) */
+            url: string;
+            expiresInSeconds: number;
+        };
+        BlockCertificateDto: {
+            /** @example Утерян владельцем */
+            reason: string;
+        };
+        UnblockCertificateDto: {
+            reason?: string;
+        };
+        ExtendCertificateDto: {
+            /**
+             * @description Новый последний день действия (включительно), YYYY-MM-DD
+             * @example 2027-12-31
+             */
+            validUntil: string;
+            reason: string;
+        };
+        ResendCertificateDto: {
+            /** @enum {string} */
+            channel?: "email" | "whatsapp";
+            /** @description Другой email получателя */
+            email?: string;
+            /** @description Другой телефон получателя */
+            phone?: string;
+        };
+        PublicCertificateProductDto: {
+            id: string;
+            slug: string;
+            /** @enum {string} */
+            kind: "amount" | "set";
+            /** @description Название на языке запроса */
+            name: string;
+            /** @description Описание; для набора — состав */
+            description: string;
+            nominal: components["schemas"]["MoneyDto"];
+            price: components["schemas"]["MoneyDto"];
+            validityMonths: number;
+            design: components["schemas"]["CertificateDesignDto"];
+        };
+        PurchaseBuyerDto: {
+            /** @example Айгерим */
+            name: string;
+            /** @example +77771234567 */
+            phone: string;
+            /**
+             * @description Для чека и связи по заказу
+             * @example buyer@example.kz
+             */
+            email: string;
+        };
+        PurchaseConsentDto: {
+            /** @description Согласие на обработку персональных данных (обязательно true) */
+            personalData: boolean;
+            /** @description Согласие на рекламные рассылки (необязательно) */
+            marketing?: boolean;
+        };
+        PurchaseCertificateDto: {
+            productId: string;
+            quantity: number;
+            buyer: components["schemas"]["PurchaseBuyerDto"];
+            recipient: components["schemas"]["PurchaseRecipientDto"];
+            /** @description Пожелание получателю (печатается в сертификате) */
+            message?: string;
+            /** @enum {string} */
+            deliveryChannel: "email" | "whatsapp";
+            consent: components["schemas"]["PurchaseConsentDto"];
+            /** @enum {string} */
+            locale: "kk" | "ru" | "en";
+            /** @description Ключ идемпотентности (генерирует витрина на одну попытку оформления) */
+            idempotencyKey: string;
+        };
+        PurchaseResultDto: {
+            /** @description Токен заказа для страницы статуса */
+            orderToken: string;
+            orderId: string;
+            /** @enum {string} */
+            status: "awaiting_payment" | "issued" | "payment_failed";
+            total: components["schemas"]["MoneyDto"];
+            payment: components["schemas"]["PaymentLinkDto"];
+        };
+        MaskedCertificateDto: {
+            /** @example ****-****-AB12 */
+            maskedCode: string;
+            /** @enum {string} */
+            status: "active" | "redeemed" | "expired" | "blocked";
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        CertificateOrderStatusDto: {
+            /** @enum {string} */
+            status: "awaiting_payment" | "issued" | "payment_failed";
+            productName: string;
+            /** @enum {string} */
+            kind: "amount" | "set";
+            quantity: number;
+            total: components["schemas"]["MoneyDto"];
+            recipientName: string;
+            /** @enum {string} */
+            deliveryChannel: "email" | "whatsapp" | "none";
+            payment?: components["schemas"]["PaymentLinkDto"] | null;
+            /** @description Выпущенные сертификаты (коды — только в PDF и сообщении) */
+            certificates: components["schemas"]["MaskedCertificateDto"][];
+            issuedAt?: Record<string, never> | null;
+        };
+        CertificateBalanceDto: {
+            /** @example ****-****-AB12 */
+            maskedCode: string;
+            /** @enum {string} */
+            kind: "amount" | "set";
+            /** @enum {string} */
+            status: "active" | "redeemed" | "expired" | "blocked";
+            nominal: components["schemas"]["MoneyDto"];
+            balance: components["schemas"]["MoneyDto"];
+            /** Format: date-time */
+            expiresAt: string;
+            /** @description Последний день действия (Asia/Almaty), YYYY-MM-DD */
+            validUntil: string;
+            /** @description Состав набора */
+            setDescription?: Record<string, never> | null;
+        };
+        SandboxActionDto: {
+            /** @description Подпись ссылки на страницу оплаты */
+            sig: string;
+            /** @enum {string} */
+            result: "succeeded" | "failed";
+        };
+        RevenueDayDto: {
+            /** @description Доставка (нетто с возвратами) */
+            delivery: components["schemas"]["MoneyDto"];
+            /** @description Самовывоз */
+            pickup: components["schemas"]["MoneyDto"];
+            /** @description Банкеты (при проведении, итог сметы) */
+            banquet: components["schemas"]["MoneyDto"];
+            /** @description Сертификаты (при продаже) */
+            certificate: components["schemas"]["MoneyDto"];
+            /** @description Возвраты признанной выручки (≤ 0), уже учтены в каналах */
+            refunds: components["schemas"]["MoneyDto"];
+            /** @description Итого нетто */
+            total: components["schemas"]["MoneyDto"];
+            /** @example 2026-09-15 */
+            date: string;
+        };
+        ChannelAmountsDto: {
+            /** @description Доставка (нетто с возвратами) */
+            delivery: components["schemas"]["MoneyDto"];
+            /** @description Самовывоз */
+            pickup: components["schemas"]["MoneyDto"];
+            /** @description Банкеты (при проведении, итог сметы) */
+            banquet: components["schemas"]["MoneyDto"];
+            /** @description Сертификаты (при продаже) */
+            certificate: components["schemas"]["MoneyDto"];
+            /** @description Возвраты признанной выручки (≤ 0), уже учтены в каналах */
+            refunds: components["schemas"]["MoneyDto"];
+            /** @description Итого нетто */
+            total: components["schemas"]["MoneyDto"];
+        };
+        SalesCountsDto: {
+            delivery: number;
+            pickup: number;
+            banquet: number;
+            certificate: number;
+        };
+        RevenueBranchDto: {
+            /** @description Доставка (нетто с возвратами) */
+            delivery: components["schemas"]["MoneyDto"];
+            /** @description Самовывоз */
+            pickup: components["schemas"]["MoneyDto"];
+            /** @description Банкеты (при проведении, итог сметы) */
+            banquet: components["schemas"]["MoneyDto"];
+            /** @description Сертификаты (при продаже) */
+            certificate: components["schemas"]["MoneyDto"];
+            /** @description Возвраты признанной выручки (≤ 0), уже учтены в каналах */
+            refunds: components["schemas"]["MoneyDto"];
+            /** @description Итого нетто */
+            total: components["schemas"]["MoneyDto"];
+            /** @description null — без филиала (онлайн-сертификаты, выездные банкеты) */
+            branchId: string | null;
+        };
+        RevenueReportDto: {
+            /** @example 2026-09-01 */
+            from: string;
+            /** @example 2026-09-30 */
+            to: string;
+            /** @description null — сводный отчёт по сети */
+            branchId: string | null;
+            /** @description Каждый день периода (нули, если продаж не было) */
+            days: components["schemas"]["RevenueDayDto"][];
+            totals: components["schemas"]["ChannelAmountsDto"];
+            /** @description Количество продаж по каналам */
+            counts: components["schemas"]["SalesCountsDto"];
+            byBranch: components["schemas"]["RevenueBranchDto"][];
+        };
+        AverageCheckRowDto: {
+            /** @enum {string} */
+            channel: "delivery" | "pickup" | "banquet" | "certificate";
+            count: number;
+            /** @description Продажи без возвратов */
+            revenue: components["schemas"]["MoneyDto"];
+            average: components["schemas"]["MoneyDto"];
+        };
+        AverageCheckTotalDto: {
+            count: number;
+            revenue: components["schemas"]["MoneyDto"];
+            average: components["schemas"]["MoneyDto"];
+        };
+        AverageCheckReportDto: {
+            /** @example 2026-09-01 */
+            from: string;
+            /** @example 2026-09-30 */
+            to: string;
+            /** @description null — сводный отчёт по сети */
+            branchId: string | null;
+            channels: components["schemas"]["AverageCheckRowDto"][];
+            /** @description Заказы (доставка + самовывоз) */
+            orders: components["schemas"]["AverageCheckTotalDto"];
+        };
+        ConversionDayDto: {
+            date: string;
+            sessions: number;
+            orderedSessions: number;
+            /** @description Доля 0..1 с точностью 4 знака (0.1234 = 12.34%); null — не определена (знаменатель 0) */
+            conversion: number | null;
+        };
+        ConversionReportDto: {
+            /** @example 2026-09-01 */
+            from: string;
+            /** @example 2026-09-30 */
+            to: string;
+            /** @description null — сводный отчёт по сети */
+            branchId: string | null;
+            /** @description Уникальные сессии витрины */
+            sessions: number;
+            menuViewSessions: number;
+            dishViewSessions: number;
+            addToCartSessions: number;
+            checkoutSessions: number;
+            /** @description Сессии, из которых оформлен заказ */
+            orderedSessions: number;
+            /** @description Заказы, оформленные на сайте */
+            webOrders: number;
+            /** @description orderedSessions / sessions. Доля 0..1 с точностью 4 знака (0.1234 = 12.34%); null — не определена (знаменатель 0) */
+            conversion: number | null;
+            days: components["schemas"]["ConversionDayDto"][];
+        };
+        TopDishDto: {
+            rank: number;
+            dishId: string;
+            /** @description Название из последнего выполненного заказа */
+            name: components["schemas"]["TranslatableDto"];
+            quantity: number;
+            orders: number;
+            revenue: components["schemas"]["MoneyDto"];
+            /** @description Доля 0..1 с точностью 4 знака (0.1234 = 12.34%); null — не определена (знаменатель 0) */
+            revenueShare: number | null;
+        };
+        TopDishesReportDto: {
+            /** @example 2026-09-01 */
+            from: string;
+            /** @example 2026-09-30 */
+            to: string;
+            /** @description null — сводный отчёт по сети */
+            branchId: string | null;
+            /** @enum {string} */
+            sort: "revenue" | "quantity";
+            items: components["schemas"]["TopDishDto"][];
+            totalQuantity: number;
+            totalRevenue: components["schemas"]["MoneyDto"];
+        };
+        HallLoadRowDto: {
+            /** @enum {string} */
+            weekday: "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+            /** @example vip */
+            venueTypeCode: string;
+            venueTypeName: components["schemas"]["TranslatableDto"];
+            /** @description Активных мест этого типа */
+            venues: number;
+            /** @description Доступно: часы работы × места, минут */
+            openMinutes: number;
+            /** @description Занято бронями, минут */
+            bookedMinutes: number;
+            /** @description Доступно, часов (1 знак после запятой) */
+            openHours: number;
+            /** @description Занято, часов (1 знак после запятой) */
+            bookedHours: number;
+            /** @description bookedMinutes / openMinutes. Доля 0..1 с точностью 4 знака (0.1234 = 12.34%); null — не определена (знаменатель 0) */
+            load: number | null;
+            reservations: number;
+            guests: number;
+        };
+        HallLoadWeekdayDto: {
+            /** @enum {string} */
+            weekday: "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+            openMinutes: number;
+            bookedMinutes: number;
+            openHours: number;
+            bookedHours: number;
+            /** @description Доля 0..1 с точностью 4 знака (0.1234 = 12.34%); null — не определена (знаменатель 0) */
+            load: number | null;
+            reservations: number;
+            guests: number;
+        };
+        OverbookingReservationDto: {
+            reservationId: string;
+            number: string;
+            status: string;
+            /** Format: date-time */
+            start: string;
+            /** Format: date-time */
+            end: string;
+        };
+        OverbookingDto: {
+            venueId: string;
+            branchId: string;
+            venueTypeCode: string;
+            first: components["schemas"]["OverbookingReservationDto"];
+            second: components["schemas"]["OverbookingReservationDto"];
+        };
+        HallLoadReportDto: {
+            /** @example 2026-09-01 */
+            from: string;
+            /** @example 2026-09-30 */
+            to: string;
+            /** @description null — сводный отчёт по сети */
+            branchId: string | null;
+            rows: components["schemas"]["HallLoadRowDto"][];
+            weekdays: components["schemas"]["HallLoadWeekdayDto"][];
+            /** @description Накладки: пересечения действующих броней одного места (цель — 0) */
+            overbookingCount: number;
+            overbookings: components["schemas"]["OverbookingDto"][];
+        };
+        BanquetStageDto: {
+            /** @enum {string} */
+            status: "new" | "in_progress" | "quote_sent" | "agreed" | "prepaid" | "held";
+            /** @description Заявок, дошедших до стадии */
+            reached: number;
+            /** @description Заявок на стадии сейчас */
+            current: number;
+        };
+        BanquetCancelReasonDto: {
+            reason: string;
+            count: number;
+        };
+        BanquetFunnelReportDto: {
+            /** @example 2026-09-01 */
+            from: string;
+            /** @example 2026-09-30 */
+            to: string;
+            /** @description null — сводный отчёт по сети */
+            branchId: string | null;
+            /** @description Заявок создано в периоде */
+            total: number;
+            stages: components["schemas"]["BanquetStageDto"][];
+            held: number;
+            heldTotal: components["schemas"]["MoneyDto"];
+            /** @description held / total. Доля 0..1 с точностью 4 знака (0.1234 = 12.34%); null — не определена (знаменатель 0) */
+            conversion: number | null;
+            /** @description Заявок, ответ на которые уже должен был быть */
+            answerDue: number;
+            answeredWithinSla: number;
+            /** @description Доля ответов за 30 минут (цель 95%). Доля 0..1 с точностью 4 знака (0.1234 = 12.34%); null — не определена (знаменатель 0) */
+            answeredWithinSlaShare: number | null;
+            averageFirstResponseMinutes: number | null;
+            medianFirstResponseMinutes: number | null;
+            /** @description Без ответа дольше SLA */
+            unansweredOverdue: number;
+            cancelled: number;
+            cancelledBeforeAgreement: number;
+            /** @description Потерянные: отменены до согласования + без ответа дольше SLA (цель — 0) */
+            lost: number;
+            cancelReasons: components["schemas"]["BanquetCancelReasonDto"][];
+            /** @example 30 */
+            slaMinutes: number;
+        };
+        CancelReasonDto: {
+            /**
+             * @description guest_request, not_paid_in_time, out_of_stock, cannot_deliver, duplicate, other
+             * @example guest_request
+             */
+            reasonCode: string;
+            count: number;
+            /** @description Из них были оплачены (потребовали возврата) */
+            paidCount: number;
+            total: components["schemas"]["MoneyDto"];
+        };
+        CancelledOrderDto: {
+            orderId: string;
+            number: string;
+            branchId: string;
+            /** @enum {string} */
+            type: "delivery" | "pickup";
+            /** @enum {string} */
+            channel: "web" | "admin";
+            total: components["schemas"]["MoneyDto"];
+            reasonCode: string;
+            reason: string | null;
+            wasPaid: boolean;
+            /** Format: date-time */
+            placedAt: string | null;
+            /** Format: date-time */
+            cancelledAt: string;
+        };
+        CancelledOrdersPageDto: {
+            items: components["schemas"]["CancelledOrderDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+        };
+        CancelledOrdersReportDto: {
+            /** @example 2026-09-01 */
+            from: string;
+            /** @example 2026-09-30 */
+            to: string;
+            /** @description null — сводный отчёт по сети */
+            branchId: string | null;
+            /** @description Оформлено заказов за период */
+            placed: number;
+            cancelled: number;
+            /** @description cancelled / placed. Доля 0..1 с точностью 4 знака (0.1234 = 12.34%); null — не определена (знаменатель 0) */
+            cancelledShare: number | null;
+            cancelledTotal: components["schemas"]["MoneyDto"];
+            reasons: components["schemas"]["CancelReasonDto"][];
+            orders: components["schemas"]["CancelledOrdersPageDto"];
+        };
+        CashFlowMethodDto: {
+            received: components["schemas"]["MoneyDto"];
+            refunded: components["schemas"]["MoneyDto"];
+            net: components["schemas"]["MoneyDto"];
+            /** @enum {string} */
+            method: "online" | "on_receipt" | "gift_certificate" | "bank_transfer" | "unknown";
+            /** @description Провайдер (для online) или способ */
+            provider: string;
+            receivedCount: number;
+            refundedCount: number;
+        };
+        CashFlowPurposeDto: {
+            received: components["schemas"]["MoneyDto"];
+            refunded: components["schemas"]["MoneyDto"];
+            net: components["schemas"]["MoneyDto"];
+            /** @enum {string} */
+            purpose: "order" | "reservation_deposit" | "banquet_invoice" | "gift_certificate";
+        };
+        CashFlowDayDto: {
+            received: components["schemas"]["MoneyDto"];
+            refunded: components["schemas"]["MoneyDto"];
+            net: components["schemas"]["MoneyDto"];
+            date: string;
+        };
+        CashFlowTotalsDto: {
+            received: components["schemas"]["MoneyDto"];
+            refunded: components["schemas"]["MoneyDto"];
+            net: components["schemas"]["MoneyDto"];
+            /** @description Оплаты сертификатами (погашение, не деньги) */
+            certificateRedemptions: components["schemas"]["MoneyDto"];
+            /** @description Поступления деньгами */
+            moneyReceived: components["schemas"]["MoneyDto"];
+        };
+        CashFlowReportDto: {
+            /** @example 2026-09-01 */
+            from: string;
+            /** @example 2026-09-30 */
+            to: string;
+            /** @description null — сводный отчёт по сети */
+            branchId: string | null;
+            methods: components["schemas"]["CashFlowMethodDto"][];
+            purposes: components["schemas"]["CashFlowPurposeDto"][];
+            days: components["schemas"]["CashFlowDayDto"][];
+            totals: components["schemas"]["CashFlowTotalsDto"];
+        };
+        CertificateIssuedDto: {
+            count: number;
+            nominal: components["schemas"]["MoneyDto"];
+            /** @description Цена продажи */
+            price: components["schemas"]["MoneyDto"];
+        };
+        CertificateIssuedByKindDto: {
+            count: number;
+            nominal: components["schemas"]["MoneyDto"];
+            /** @description Цена продажи */
+            price: components["schemas"]["MoneyDto"];
+            /** @enum {string} */
+            kind: "amount" | "set";
+        };
+        CertificateAmountDto: {
+            count: number;
+            amount: components["schemas"]["MoneyDto"];
+        };
+        CertificateRedeemedByChannelDto: {
+            count: number;
+            amount: components["schemas"]["MoneyDto"];
+            /** @enum {string} */
+            channel: "order" | "point";
+        };
+        CertificateOutstandingDto: {
+            count: number;
+            balance: components["schemas"]["MoneyDto"];
+            asOf: string;
+        };
+        CertificatesReportDto: {
+            /** @example 2026-09-01 */
+            from: string;
+            /** @example 2026-09-30 */
+            to: string;
+            /** @description null — сводный отчёт по сети */
+            branchId: string | null;
+            issued: components["schemas"]["CertificateIssuedDto"];
+            issuedByKind: components["schemas"]["CertificateIssuedByKindDto"][];
+            redeemed: components["schemas"]["CertificateAmountDto"];
+            redeemedByChannel: components["schemas"]["CertificateRedeemedByChannelDto"][];
+            /** @description Только сводный отчёт */
+            expired: components["schemas"]["CertificateBalanceDto"] | null;
+            /** @description Остаток обязательств (только сводный) */
+            outstanding: components["schemas"]["CertificateOutstandingDto"] | null;
+        };
+        PeriodKpisDto: {
+            from: string;
+            to: string;
+            /** @description Выручка нетто по всем каналам */
+            revenue: components["schemas"]["MoneyDto"];
+            completedOrders: number;
+            averageCheck: components["schemas"]["MoneyDto"];
+            placedOrders: number;
+            cancelledOrders: number;
+            /** @description Новые брони гостей */
+            reservations: number;
+            guests: number;
+            banquetRequests: number;
+            /** @description Доля 0..1 с точностью 4 знака (0.1234 = 12.34%); null — не определена (знаменатель 0) */
+            banquetAnsweredWithinSlaShare: number | null;
+            sessions: number;
+            /** @description Доля 0..1 с точностью 4 знака (0.1234 = 12.34%); null — не определена (знаменатель 0) */
+            conversion: number | null;
+        };
+        DashboardDto: {
+            branchId: string | null;
+            /** Format: date-time */
+            generatedAt: string;
+            today: components["schemas"]["PeriodKpisDto"];
+            yesterday: components["schemas"]["PeriodKpisDto"];
+            /** @description Последние 7 дней, включая сегодня */
+            last7Days: components["schemas"]["PeriodKpisDto"];
+        };
+        OwnChannelMonthDto: {
+            /** @description Выполненные заказы с сайта */
+            webOrders: number;
+            /** @description Выполненные заказы оператора (телефон) */
+            adminOrders: number;
+            ownOrders: number;
+            ownRevenue: components["schemas"]["MoneyDto"];
+            /** @description Заказы агрегаторов (ручной ввод); null — нет данных */
+            aggregatorOrders: number | null;
+            aggregatorRevenue: components["schemas"]["MoneyDto"] | null;
+            /** @description Доля заказов мимо агрегаторов. Доля 0..1 с точностью 4 знака (0.1234 = 12.34%); null — не определена (знаменатель 0) */
+            ownShare: number | null;
+            /** @example 2026-09 */
+            month: string;
+        };
+        OwnChannelTotalsDto: {
+            /** @description Выполненные заказы с сайта */
+            webOrders: number;
+            /** @description Выполненные заказы оператора (телефон) */
+            adminOrders: number;
+            ownOrders: number;
+            ownRevenue: components["schemas"]["MoneyDto"];
+            /** @description Заказы агрегаторов (ручной ввод); null — нет данных */
+            aggregatorOrders: number | null;
+            aggregatorRevenue: components["schemas"]["MoneyDto"] | null;
+            /** @description Доля заказов мимо агрегаторов. Доля 0..1 с точностью 4 знака (0.1234 = 12.34%); null — не определена (знаменатель 0) */
+            ownShare: number | null;
+        };
+        OwnChannelReportDto: {
+            /** @example 2026-09-01 */
+            from: string;
+            /** @example 2026-09-30 */
+            to: string;
+            /** @description null — сводный отчёт по сети */
+            branchId: string | null;
+            months: components["schemas"]["OwnChannelMonthDto"][];
+            totals: components["schemas"]["OwnChannelTotalsDto"];
+        };
+        GoalsReportDto: {
+            /** @example 2026-09-01 */
+            from: string;
+            /** @example 2026-09-30 */
+            to: string;
+            /** @description null — сводный отчёт по сети */
+            branchId: string | null;
+            /** @description Доля заказов мимо агрегаторов. Доля 0..1 с точностью 4 знака (0.1234 = 12.34%); null — не определена (знаменатель 0) */
+            ownChannelShare: number | null;
+            ownOrders: number;
+            aggregatorOrders: number | null;
+            /** @description Ответ на банкетную заявку за 30 минут. Доля 0..1 с точностью 4 знака (0.1234 = 12.34%); null — не определена (знаменатель 0) */
+            banquetAnsweredWithinSlaShare: number | null;
+            banquetRequests: number;
+            lostBanquetRequests: number;
+            overbookings: number;
+            dailyReportsExpected: number;
+            dailyReportsGenerated: number;
+        };
+        DailyOrdersDto: {
+            placed: number;
+            completed: number;
+            cancelled: number;
+            averageCheck: components["schemas"]["MoneyDto"];
+        };
+        DailyReservationsDto: {
+            created: number;
+            guests: number;
+            /** @description Броней с началом в этот день */
+            starting: number;
+        };
+        DailyBanquetsDto: {
+            newRequests: number;
+            answeredWithinSla: number;
+            unansweredOverdue: number;
+            held: number;
+            heldTotal: components["schemas"]["MoneyDto"];
+        };
+        DailyPaymentsDto: {
+            received: components["schemas"]["MoneyDto"];
+            refunded: components["schemas"]["MoneyDto"];
+        };
+        DailyStorefrontDto: {
+            sessions: number;
+            orderedSessions: number;
+            /** @description Доля 0..1 с точностью 4 знака (0.1234 = 12.34%); null — не определена (знаменатель 0) */
+            conversion: number | null;
+        };
+        DailyTopDishDto: {
+            dishId: string;
+            name: components["schemas"]["TranslatableDto"];
+            quantity: number;
+            revenue: components["schemas"]["MoneyDto"];
+        };
+        DailySummaryDto: {
+            date: string;
+            branchId: string | null;
+            revenue: components["schemas"]["ChannelAmountsDto"];
+            orders: components["schemas"]["DailyOrdersDto"];
+            reservations: components["schemas"]["DailyReservationsDto"];
+            banquets: components["schemas"]["DailyBanquetsDto"];
+            payments: components["schemas"]["DailyPaymentsDto"];
+            storefront: components["schemas"]["DailyStorefrontDto"];
+            topDishes: components["schemas"]["DailyTopDishDto"][];
+        };
+        DailyReportDto: {
+            /** @description null — отчёт ещё не сформирован (текущие данные) */
+            id: string | null;
+            date: string;
+            branchId: string | null;
+            /** @description Сформирован автоматически и сохранён */
+            isFinal: boolean;
+            /** Format: date-time */
+            generatedAt: string | null;
+            /** Format: date-time */
+            notifiedAt: string | null;
+            /** @description Подписанная ссылка на XLSX (1 час) */
+            fileUrl: string | null;
+            summary: components["schemas"]["DailySummaryDto"];
+        };
+        DailyReportsPageDto: {
+            items: components["schemas"]["DailyReportDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+        };
+        AggregatorVolumeDto: {
+            id: string;
+            branchId: string;
+            /** @example 2026-09 */
+            month: string;
+            source: string;
+            sourceName: string;
+            orders: number;
+            revenue: components["schemas"]["MoneyDto"];
+            updatedBy: string | null;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        AggregatorVolumeInputDto: {
+            branchId: string;
+            /** @example 2026-09 */
+            month: string;
+            /**
+             * @description Код источника: латиница, цифры, _ (2-32)
+             * @example aggregator_a
+             */
+            source: string;
+            /**
+             * @description Название для отчёта
+             * @example Агрегатор A
+             */
+            sourceName: string;
+            orders: number;
+            /** @description Выручка агрегатора за месяц (если известна) */
+            revenue?: components["schemas"]["MoneyInputDto"];
+        };
+        CreateAccountingExportDto: {
+            /** @example 2026-09-01 */
+            from: string;
+            /** @example 2026-09-30 */
+            to: string;
+            /**
+             * @description onec_xml — XML, близкий к EnterpriseData (1С); xlsx — таблица
+             * @enum {string}
+             */
+            format: "onec_xml" | "xlsx";
+            /** @description Филиал; без филиала — по всей сети (глобальное право reports.export) */
+            branchId?: string;
+            /**
+             * @description Отправить XML в HTTP-сервис 1С, если интеграция настроена
+             * @default true
+             */
+            push: boolean;
+        };
+        AccountingExportTotalsDto: {
+            retailSales: components["schemas"]["MoneyDto"];
+            refunds: components["schemas"]["MoneyDto"];
+            certificateSales: components["schemas"]["MoneyDto"];
+            invoices: components["schemas"]["MoneyDto"];
+            acts: components["schemas"]["MoneyDto"];
+            retailDocuments: number;
+            invoiceCount: number;
+            actCount: number;
+        };
+        AccountingExportDto: {
+            id: string;
+            /** @enum {string} */
+            format: "onec_xml" | "xlsx";
+            from: string;
+            to: string;
+            branchId: string | null;
+            /** @enum {string} */
+            status: "pending" | "ready" | "failed";
+            error: string | null;
+            fileName: string | null;
+            sizeBytes: number | null;
+            /** @description Подписанная ссылка на файл (1 час), когда status=ready */
+            fileUrl: string | null;
+            totals: components["schemas"]["AccountingExportTotalsDto"] | null;
+            pushRequested: boolean;
+            /** @enum {string} */
+            pushStatus: "not_required" | "pending" | "pushed" | "failed";
+            pushAttempts: number;
+            /** Format: date-time */
+            pushedAt: string | null;
+            pushError: string | null;
+            requestedBy: string | null;
+            /** Format: date-time */
+            requestedAt: string;
+            /** Format: date-time */
+            completedAt: string | null;
+        };
+        AccountingExportsPageDto: {
+            items: components["schemas"]["AccountingExportDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+        };
+        StorefrontEventDto: {
+            /** @description Анонимный идентификатор сессии витрины (UUID, генерирует браузер) */
+            sessionId: string;
+            /** @enum {string} */
+            type: "page_view" | "menu_view" | "dish_view" | "add_to_cart" | "checkout_start";
+            /** @description Филиал, выбранный на витрине */
+            branchId?: string;
+            /**
+             * @description Путь страницы; параметры и идентификаторы отбрасываются
+             * @example /greenline/menu
+             */
+            path: string;
+        };
+        PosCapabilitiesDto: {
+            /** @description Передаёт заказы на кухню во внешнюю систему */
+            pushOrders: boolean;
+            /** @description Отдаёт стоп-лист для синхронизации */
+            stopList: boolean;
+            /** @description Отдаёт номенклатуру для сопоставления */
+            nomenclature: boolean;
+        };
+        PosStopListStatusDto: {
+            /** @description Последняя успешная синхронизация */
+            syncedAt?: Record<string, never> | null;
+            /** @description Последняя попытка */
+            attemptedAt?: Record<string, never> | null;
+            /** @description Неудач подряд */
+            failures: number;
+            error?: Record<string, never> | null;
+            /** @description Изменений стоп-листа при последней синхронизации */
+            lastChanges: number;
+        };
+        PosProductsStatusDto: {
+            requestedAt?: Record<string, never> | null;
+            importedAt?: Record<string, never> | null;
+            /** @description Товаров в импортированной номенклатуре */
+            count: number;
+            error?: Record<string, never> | null;
+        };
+        OrderExportCountsDto: {
+            pending: number;
+            sent: number;
+            failed: number;
+            skipped: number;
+        };
+        PosBranchStatusDto: {
+            branchId: string;
+            branchCode: string;
+            branchName: components["schemas"]["TranslatableDto"];
+            isActive: boolean;
+            /** @description POS филиала по маршрутизации (manual — без внешней системы) */
+            provider: string;
+            /** @description Для провайдера есть адаптер */
+            providerKnown: boolean;
+            /** @description Интеграция настроена для филиала */
+            configured: boolean;
+            capabilities: components["schemas"]["PosCapabilitiesDto"];
+            /** @description Ошибка настройки pos.routing */
+            routingError?: Record<string, never> | null;
+            stopList: components["schemas"]["PosStopListStatusDto"];
+            products: components["schemas"]["PosProductsStatusDto"];
+            mappingsCount: number;
+            /** @description Передачи заказов по статусам (failed — не переданные) */
+            exports: components["schemas"]["OrderExportCountsDto"];
+        };
+        BranchRefDto: {
+            branchId: string;
+        };
+        QueuedJobDto: {
+            queued: boolean;
+            /** @description Задача уже стояла в очереди — новая не ставилась */
+            alreadyQueued: boolean;
+            /** Format: date-time */
+            requestedAt: string;
+        };
+        MissingOptionDto: {
+            optionId: string;
+            name: string;
+        };
+        MissingMappingDto: {
+            dishId: string;
+            dishName: string;
+            /** @description Нет сопоставления самого блюда */
+            dishMissing: boolean;
+            /** @description Опции модификаторов без сопоставления */
+            options: components["schemas"]["MissingOptionDto"][];
+        };
+        OrderExportDto: {
+            id: string;
+            orderId: string;
+            orderNumber: string;
+            branchId: string;
+            provider: string;
+            /** @enum {string} */
+            status: "pending" | "sent" | "failed" | "skipped";
+            /** @description Номер/идентификатор заказа в POS */
+            posOrderId?: Record<string, never> | null;
+            /** @description Попыток в текущем цикле передачи */
+            attempts: number;
+            /** @description Ручных повторов */
+            manualRetries: number;
+            lastError?: Record<string, never> | null;
+            /** @enum {string|null} */
+            failureReason?: "missing_mapping" | "not_configured" | "rejected" | "retries_exhausted" | "order_unavailable" | null;
+            /** @enum {string|null} */
+            skipReason?: "manual_provider" | "order_cancelled" | "order_not_accepted" | null;
+            /** @description Блюда и опции без сопоставления (при failureReason=missing_mapping) */
+            missingMappings: components["schemas"]["MissingMappingDto"][];
+            lastAttemptAt?: Record<string, never> | null;
+            sentAt?: Record<string, never> | null;
+            /** @description POS подтвердила создание заказа. null при status=sent — заказ принят POS в обработку, подтверждение ожидается */
+            confirmedAt?: Record<string, never> | null;
+            failedAt?: Record<string, never> | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            /** @description Можно повторить передачу вручную */
+            canRetry: boolean;
+        };
+        OrderExportsPageDto: {
+            items: components["schemas"]["OrderExportDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+        };
+        ModifierMappingDto: {
+            /** @description Опция модификатора витрины */
+            optionId: string;
+            /** @description Товар-модификатор POS */
+            externalProductId: string;
+            /** @description Группа модификаторов POS (для групповых модификаторов) */
+            externalGroupId?: Record<string, never> | null;
+        };
+        ProductMappingDto: {
+            id: string;
+            branchId: string;
+            dishId: string;
+            /** @description null — блюда больше нет в меню филиала */
+            dishName?: components["schemas"]["TranslatableDto"] | null;
+            provider: string;
+            externalProductId: string;
+            externalName?: Record<string, never> | null;
+            modifiers: components["schemas"]["ModifierMappingDto"][];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        ProductMappingsPageDto: {
+            items: components["schemas"]["ProductMappingDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+        };
+        PosProductDto: {
+            id: string;
+            externalProductId: string;
+            name: string;
+            /** @description Код/артикул товара в POS */
+            sku?: Record<string, never> | null;
+            /** @enum {string} */
+            kind: "dish" | "good" | "modifier" | "service" | "other";
+            groupName?: Record<string, never> | null;
+            /** Format: date-time */
+            importedAt: string;
+            /** @description Товар пропал из номенклатуры POS при последнем импорте */
+            removed: boolean;
+            /** @description Сопоставленные блюда */
+            mappedDishIds: string[];
+        };
+        SuggestionCandidateDto: {
+            dishId: string;
+            dishName?: components["schemas"]["TranslatableDto"] | null;
+            /** @description Похожесть 0..1 */
+            score: number;
+            /**
+             * @description sku — совпал код; name — похожее название
+             * @enum {string}
+             */
+            method: "sku" | "name";
+        };
+        MappingSuggestionDto: {
+            product: components["schemas"]["PosProductDto"];
+            candidates: components["schemas"]["SuggestionCandidateDto"][];
+        };
+        MappingSuggestionsPageDto: {
+            items: components["schemas"]["MappingSuggestionDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+            provider: string;
+        };
+        ProductMappingInputDto: {
+            /** @description Товар POS (id в номенклатуре POS) */
+            externalProductId: string;
+            /** @description Название товара в POS (по умолчанию — из импортированной номенклатуры) */
+            externalName?: Record<string, never> | null;
+            modifiers?: components["schemas"]["ModifierMappingDto"][];
+            branchId: string;
+            /** @description Блюдо витрины */
+            dishId: string;
+            /** @description Провайдер POS; по умолчанию — POS филиала по маршрутизации */
+            provider?: string;
+        };
+        BulkMappingItemDto: {
+            dishId: string;
+            externalProductId: string;
+            externalName?: Record<string, never> | null;
+        };
+        BulkMappingsDto: {
+            branchId: string;
+            provider?: string;
+            items: components["schemas"]["BulkMappingItemDto"][];
+        };
+        BulkMappingsResultDto: {
+            created: number;
+            updated: number;
+            unchanged: number;
+            items: components["schemas"]["ProductMappingDto"][];
+        };
+        ProductMappingUpdateDto: {
+            /** @description Товар POS (id в номенклатуре POS) */
+            externalProductId: string;
+            /** @description Название товара в POS (по умолчанию — из импортированной номенклатуры) */
+            externalName?: Record<string, never> | null;
+            modifiers?: components["schemas"]["ModifierMappingDto"][];
+        };
+        PosProductsPageDto: {
+            items: components["schemas"]["PosProductDto"][];
+            total: number;
+            page: number;
+            perPage: number;
+            /** @description Провайдер, чья номенклатура показана */
+            provider: string;
         };
     };
     responses: never;
@@ -1282,6 +6155,4021 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PublicBranchDto"];
+                };
+            };
+        };
+    };
+    NotificationTemplates_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationTemplateDto"][];
+                };
+            };
+        };
+    };
+    NotificationTemplates_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: "otp.code" | "order.created" | "order.paid" | "order.accepted" | "order.ready" | "order.delivering" | "order.completed" | "order.cancelled" | "order.refunded" | "reservation.pending" | "reservation.awaiting_deposit" | "reservation.confirmed" | "reservation.reminder" | "reservation.cancelled" | "reservation.expired" | "banquet.request_received" | "banquet.quote_sent" | "banquet.invoice_issued" | "banquet.payment_received" | "certificate.issued" | "certificate.redeemed" | "staff.order_new" | "staff.order_paid" | "staff.reservation_new" | "staff.reservation_cancelled" | "staff.banquet_new" | "staff.banquet_assigned" | "staff.banquet_sla_breach" | "staff.daily_report" | "staff.system_alert" | "staff.refund_failed";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationTemplateDto"];
+                };
+            };
+        };
+    };
+    NotificationTemplates_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: "otp.code" | "order.created" | "order.paid" | "order.accepted" | "order.ready" | "order.delivering" | "order.completed" | "order.cancelled" | "order.refunded" | "reservation.pending" | "reservation.awaiting_deposit" | "reservation.confirmed" | "reservation.reminder" | "reservation.cancelled" | "reservation.expired" | "banquet.request_received" | "banquet.quote_sent" | "banquet.invoice_issued" | "banquet.payment_received" | "certificate.issued" | "certificate.redeemed" | "staff.order_new" | "staff.order_paid" | "staff.reservation_new" | "staff.reservation_cancelled" | "staff.banquet_new" | "staff.banquet_assigned" | "staff.banquet_sla_breach" | "staff.daily_report" | "staff.system_alert" | "staff.refund_failed";
+                channel: "whatsapp" | "sms" | "email" | "telegram";
+                locale: "kk" | "ru" | "en";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTemplateTextDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResolvedTemplateTextDto"];
+                };
+            };
+        };
+    };
+    NotificationTemplates_reset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: "otp.code" | "order.created" | "order.paid" | "order.accepted" | "order.ready" | "order.delivering" | "order.completed" | "order.cancelled" | "order.refunded" | "reservation.pending" | "reservation.awaiting_deposit" | "reservation.confirmed" | "reservation.reminder" | "reservation.cancelled" | "reservation.expired" | "banquet.request_received" | "banquet.quote_sent" | "banquet.invoice_issued" | "banquet.payment_received" | "certificate.issued" | "certificate.redeemed" | "staff.order_new" | "staff.order_paid" | "staff.reservation_new" | "staff.reservation_cancelled" | "staff.banquet_new" | "staff.banquet_assigned" | "staff.banquet_sla_breach" | "staff.daily_report" | "staff.system_alert" | "staff.refund_failed";
+                channel: "whatsapp" | "sms" | "email" | "telegram";
+                locale: "kk" | "ru" | "en";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResolvedTemplateTextDto"];
+                };
+            };
+        };
+    };
+    NotificationTemplates_preview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: "otp.code" | "order.created" | "order.paid" | "order.accepted" | "order.ready" | "order.delivering" | "order.completed" | "order.cancelled" | "order.refunded" | "reservation.pending" | "reservation.awaiting_deposit" | "reservation.confirmed" | "reservation.reminder" | "reservation.cancelled" | "reservation.expired" | "banquet.request_received" | "banquet.quote_sent" | "banquet.invoice_issued" | "banquet.payment_received" | "certificate.issued" | "certificate.redeemed" | "staff.order_new" | "staff.order_paid" | "staff.reservation_new" | "staff.reservation_cancelled" | "staff.banquet_new" | "staff.banquet_assigned" | "staff.banquet_sla_breach" | "staff.daily_report" | "staff.system_alert" | "staff.refund_failed";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreviewTemplateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplatePreviewDto"];
+                };
+            };
+        };
+    };
+    NotificationDeliveries_log: {
+        parameters: {
+            query?: {
+                page?: number;
+                perPage?: number;
+                status?: "pending" | "sent" | "failed";
+                channel?: "whatsapp" | "sms" | "email" | "telegram";
+                template?: "otp.code" | "order.created" | "order.paid" | "order.accepted" | "order.ready" | "order.delivering" | "order.completed" | "order.cancelled" | "order.refunded" | "reservation.pending" | "reservation.awaiting_deposit" | "reservation.confirmed" | "reservation.reminder" | "reservation.cancelled" | "reservation.expired" | "banquet.request_received" | "banquet.quote_sent" | "banquet.invoice_issued" | "banquet.payment_received" | "certificate.issued" | "certificate.redeemed" | "staff.order_new" | "staff.order_paid" | "staff.reservation_new" | "staff.reservation_cancelled" | "staff.banquet_new" | "staff.banquet_assigned" | "staff.banquet_sla_breach" | "staff.daily_report" | "staff.system_alert" | "staff.refund_failed";
+                audience?: "guest" | "staff";
+                /** @description С момента (ISO 8601) */
+                from?: string;
+                /** @description До момента (ISO 8601, не включая) */
+                to?: string;
+                /** @description Адресат: телефон, email или id чата (точное совпадение; в ответе — маска) */
+                recipient?: string;
+                /** @description Тип связанного объекта: order, reservation, banquet_request, gift_certificate... */
+                relatedType?: string;
+                relatedId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeliveryLogPageDto"];
+                };
+            };
+        };
+    };
+    NotificationDeliveries_detail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeliveryDetailDto"];
+                };
+            };
+        };
+    };
+    NotificationDeliveries_resendDelivery: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QueuedDeliveryDto"];
+                };
+            };
+        };
+    };
+    NotificationDeliveries_send: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TestSendDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QueuedDeliveryDto"];
+                };
+            };
+        };
+    };
+    NotificationDeliveries_channels: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChannelStatusDto"][];
+                };
+            };
+        };
+    };
+    AdminFeed_ticket: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedTicketDto"];
+                };
+            };
+        };
+    };
+    AdminFeed_stream: {
+        parameters: {
+            query: {
+                /** @description Билет из POST /admin/feed/ticket */
+                ticket: string;
+            };
+            header?: {
+                /** @description Последнее полученное событие (догрузка при переподключении) */
+                "Last-Event-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Поток SSE */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": string;
+                };
+            };
+        };
+    };
+    AdminFeed_recent: {
+        parameters: {
+            query?: {
+                /** @description После момента (ISO 8601) или после события с этим id (последний полученный) */
+                since?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedItemDto"][];
+                };
+            };
+        };
+    };
+    WhatsAppWebhook_verify: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description hub.challenge */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    WhatsAppWebhook_receive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    [key: string]: unknown;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookAckDto"];
+                };
+            };
+        };
+    };
+    AdminCustomers_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                perPage?: number;
+                /** @description Поиск по телефону (цифры), имени или email */
+                q?: string;
+                /** @description Тег (несколько — через запятую, нужны все) */
+                tag?: string;
+                /** @description Сумма покупок от, тиыны */
+                spentMin?: number;
+                /** @description Сумма покупок до, тиыны */
+                spentMax?: number;
+                /** @description Последняя активность с (локальная дата) */
+                lastActivityFrom?: string;
+                /** @description Последняя активность по (включительно) */
+                lastActivityTo?: string;
+                /** @description Была активность в филиале */
+                branchId?: string;
+                hasBanquet?: boolean;
+                marketingConsent?: boolean;
+                /** @description Применить сохранённый сегмент (фильтры запроса уточняют его) */
+                segmentId?: string;
+                /** @description Показывать обезличенных */
+                includeAnonymized?: boolean;
+                sort?: "lastActivity" | "totalSpent" | "name" | "firstSeen";
+                order?: "asc" | "desc";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomersPageDto"];
+                };
+            };
+        };
+    };
+    AdminCustomers_tags: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagStatDto"][];
+                };
+            };
+        };
+    };
+    AdminCustomers_export: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExportCustomersDto"];
+            };
+        };
+        responses: {
+            /** @description Файл выгрузки; число строк — в заголовке X-Export-Count */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                    "text/csv": string;
+                };
+            };
+        };
+    };
+    AdminCustomers_detail: {
+        parameters: {
+            query?: {
+                page?: number;
+                perPage?: number;
+                /** @description Период истории и итогов: с (локальная дата) */
+                from?: string;
+                /** @description Период: по (включительно) */
+                to?: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerDetailDto"];
+                };
+            };
+        };
+    };
+    AdminCustomers_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateCustomerDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerDto"];
+                };
+            };
+        };
+    };
+    AdminCustomers_consent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordConsentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerDto"];
+                };
+            };
+        };
+    };
+    AdminCustomers_anonymize: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnonymizeCustomerDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerDto"];
+                };
+            };
+        };
+    };
+    AdminCustomerSegments_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SegmentDto"][];
+                };
+            };
+        };
+    };
+    AdminCustomerSegments_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveSegmentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SegmentDto"];
+                };
+            };
+        };
+    };
+    AdminCustomerSegments_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SegmentDetailDto"];
+                };
+            };
+        };
+    };
+    AdminCustomerSegments_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminCustomerSegments_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveSegmentDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SegmentDto"];
+                };
+            };
+        };
+    };
+    AdminConsentTexts_list: {
+        parameters: {
+            query?: {
+                kind?: "personal_data" | "marketing";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsentTextDto"][];
+                };
+            };
+        };
+    };
+    AdminConsentTexts_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublishConsentTextDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsentTextDto"];
+                };
+            };
+        };
+    };
+    PublicConsents_current: {
+        parameters: {
+            query?: {
+                locale?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path: {
+                kind: "personal_data" | "marketing";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicConsentTextDto"];
+                };
+            };
+        };
+    };
+    PublicPhoneVerifications_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartPhoneVerificationDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhoneVerificationStartedDto"];
+                };
+            };
+        };
+    };
+    PublicPhoneVerifications_check: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyPhoneCodeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhoneVerifiedDto"];
+                };
+            };
+        };
+    };
+    AdminCategories_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryDto"][];
+                };
+            };
+        };
+    };
+    AdminCategories_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CategoryInputDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryDto"];
+                };
+            };
+        };
+    };
+    AdminCategories_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryDto"];
+                };
+            };
+        };
+    };
+    AdminCategories_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CategoryInputDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryDto"];
+                };
+            };
+        };
+    };
+    AdminCategories_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminCategories_reorder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReorderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryDto"][];
+                };
+            };
+        };
+    };
+    AdminCategories_uploadImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryDto"];
+                };
+            };
+        };
+    };
+    AdminCategories_deleteImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryDto"];
+                };
+            };
+        };
+    };
+    AdminDishes_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                perPage?: number;
+                /** @description Поиск по названию, slug, коду POS */
+                q?: string;
+                categoryId?: string;
+                isActive?: boolean;
+                /** @description Только блюда, которых нет в меню филиала (выбор «добавить в меню») */
+                notInBranchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DishesPageDto"];
+                };
+            };
+        };
+    };
+    AdminDishes_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DishInputDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DishDto"];
+                };
+            };
+        };
+    };
+    AdminDishes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DishDto"];
+                };
+            };
+        };
+    };
+    AdminDishes_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DishInputDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DishDto"];
+                };
+            };
+        };
+    };
+    AdminDishes_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminDishes_uploadPhotos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    files: string[];
+                };
+            };
+        };
+        responses: {
+            /** @description JPEG/PNG/WebP до 10 МБ, от 300 px по ширине; сохраняются webp 1200/600/300 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DishDto"];
+                };
+            };
+        };
+    };
+    AdminDishes_removePhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                photoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DishDto"];
+                };
+            };
+        };
+    };
+    AdminDishes_orderPhotos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhotoOrderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DishDto"];
+                };
+            };
+        };
+    };
+    AdminModifierGroups_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModifierGroupDto"][];
+                };
+            };
+        };
+    };
+    AdminModifierGroups_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModifierGroupInputDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModifierGroupDto"];
+                };
+            };
+        };
+    };
+    AdminModifierGroups_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModifierGroupDto"];
+                };
+            };
+        };
+    };
+    AdminModifierGroups_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModifierGroupInputDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModifierGroupDto"];
+                };
+            };
+        };
+    };
+    AdminModifierGroups_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminCatalogReference_allergens: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AllergenRefDto"][];
+                };
+            };
+        };
+    };
+    AdminCatalogReference_translations: {
+        parameters: {
+            query?: {
+                /** @description Языки через запятую, по умолчанию kk,ru */
+                locales?: string;
+                entityType?: "category" | "dish" | "modifier_group" | "modifier_option" | "banner" | "promotion" | "page";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TranslationReportDto"];
+                };
+            };
+        };
+    };
+    AdminBranchMenu_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                perPage?: number;
+                q?: string;
+                categoryId?: string;
+                availability?: "available" | "stopped";
+            };
+            header?: never;
+            path: {
+                branchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchMenuPageDto"];
+                };
+            };
+        };
+    };
+    AdminBranchMenu_add: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                branchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddMenuItemDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchMenuItemDto"];
+                };
+            };
+        };
+    };
+    AdminBranchMenu_bulk: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                branchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkPricesDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkPricesResultDto"];
+                };
+            };
+        };
+    };
+    AdminBranchMenu_copy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                branchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CopyMenuDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CopyMenuResultDto"];
+                };
+            };
+        };
+    };
+    AdminBranchMenu_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                branchId: string;
+                dishId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchMenuItemDto"];
+                };
+            };
+        };
+    };
+    AdminBranchMenu_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                branchId: string;
+                dishId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminBranchMenu_price: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                branchId: string;
+                dishId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetPriceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchMenuItemDto"];
+                };
+            };
+        };
+    };
+    AdminBranchMenu_availability: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                branchId: string;
+                dishId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetAvailabilityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailabilityResultDto"];
+                };
+            };
+        };
+    };
+    AdminBranchMenu_stopList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                branchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchMenuItemDto"][];
+                };
+            };
+        };
+    };
+    AdminBanners_list: {
+        parameters: {
+            query?: {
+                placement?: "home_hero" | "home_secondary" | "menu_top";
+                /** @description Баннеры филиала и общие */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BannerDto"][];
+                };
+            };
+        };
+    };
+    AdminBanners_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BannerInputDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BannerDto"];
+                };
+            };
+        };
+    };
+    AdminBanners_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BannerDto"];
+                };
+            };
+        };
+    };
+    AdminBanners_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BannerInputDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BannerDto"];
+                };
+            };
+        };
+    };
+    AdminBanners_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminBanners_uploadImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description webp 1920/1200/600 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BannerDto"];
+                };
+            };
+        };
+    };
+    AdminPromotions_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromotionDto"][];
+                };
+            };
+        };
+    };
+    AdminPromotions_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromotionInputDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromotionDto"];
+                };
+            };
+        };
+    };
+    AdminPromotions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromotionDto"];
+                };
+            };
+        };
+    };
+    AdminPromotions_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromotionInputDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromotionDto"];
+                };
+            };
+        };
+    };
+    AdminPromotions_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminPromotions_uploadImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromotionDto"];
+                };
+            };
+        };
+    };
+    AdminPages_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageDto"][];
+                };
+            };
+        };
+    };
+    AdminPages_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PageInputDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageDto"];
+                };
+            };
+        };
+    };
+    AdminPages_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageDto"];
+                };
+            };
+        };
+    };
+    AdminPages_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PageInputDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageDto"];
+                };
+            };
+        };
+    };
+    AdminPages_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PublicMenu_menu: {
+        parameters: {
+            query?: {
+                locale?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path: {
+                branchSlug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Категории -> блюда с ценами филиала, доступностью, фото, признаками */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicMenuDto"];
+                };
+            };
+        };
+    };
+    PublicMenu_category: {
+        parameters: {
+            query?: {
+                locale?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path: {
+                branchSlug: string;
+                categorySlug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicCategoryPageDto"];
+                };
+            };
+        };
+    };
+    PublicMenu_dish: {
+        parameters: {
+            query?: {
+                locale?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path: {
+                branchSlug: string;
+                dishSlug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Карточка блюда: фото, состав, вес, цена филиала, модификаторы */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicDishDetailDto"];
+                };
+            };
+        };
+    };
+    PublicMenu_search: {
+        parameters: {
+            query?: {
+                /** @description Поиск по названию, составу, описанию (ru/kk/en), частичные совпадения */
+                q?: string;
+                vegetarian?: boolean;
+                /** @description true — только острые, false — только неострые */
+                spicy?: boolean;
+                maxSpicyLevel?: number;
+                halal?: boolean;
+                /** @description Цена в филиале не выше, тиыны («до N тенге» = N × 100) */
+                maxPrice?: number;
+                /** @description slug категории */
+                category?: string;
+                page?: number;
+                perPage?: number;
+                locale?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path: {
+                branchSlug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicDishPageDto"];
+                };
+            };
+        };
+    };
+    PublicMenu_sitemap: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SitemapDto"];
+                };
+            };
+        };
+    };
+    PublicContent_banners: {
+        parameters: {
+            query?: {
+                placement?: "home_hero" | "home_secondary" | "menu_top";
+                /** @description slug филиала: общие баннеры + баннеры филиала */
+                branch?: string;
+                locale?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicBannerDto"][];
+                };
+            };
+        };
+    };
+    PublicContent_promotions: {
+        parameters: {
+            query?: {
+                /** @description slug филиала: акции сети + акции филиала */
+                branch?: string;
+                locale?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicPromotionDto"][];
+                };
+            };
+        };
+    };
+    PublicContent_promotion: {
+        parameters: {
+            query?: {
+                locale?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicPromotionDto"];
+                };
+            };
+        };
+    };
+    PublicContent_pages: {
+        parameters: {
+            query?: {
+                locale?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicPageSummaryDto"][];
+                };
+            };
+        };
+    };
+    PublicContent_page: {
+        parameters: {
+            query?: {
+                locale?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicPageDto"];
+                };
+            };
+        };
+    };
+    AdminPayments_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                perPage?: number;
+                branchId?: string;
+                purpose?: "order" | "reservation_deposit" | "banquet_invoice" | "gift_certificate";
+                method?: "online" | "on_receipt" | "gift_certificate" | "bank_transfer";
+                provider?: string;
+                status?: "created" | "pending" | "succeeded" | "failed" | "cancelled" | "partially_refunded" | "refunded";
+                /** @description Объект оплаты (id заказа, брони, счёта) */
+                referenceId?: string;
+                /** @description Создан не раньше (ISO 8601) */
+                from?: string;
+                /** @description Создан раньше (ISO 8601) */
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentsPageDto"];
+                };
+            };
+        };
+    };
+    AdminPayments_refunds: {
+        parameters: {
+            query?: {
+                page?: number;
+                perPage?: number;
+                branchId?: string;
+                status?: "pending" | "succeeded" | "failed";
+                mode?: "gateway" | "certificate" | "manual";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundsPageDto"];
+                };
+            };
+        };
+    };
+    AdminPayments_confirm: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                refundId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmRefundDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundResultDto"];
+                };
+            };
+        };
+    };
+    AdminPayments_reject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                refundId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectRefundDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundResultDto"];
+                };
+            };
+        };
+    };
+    AdminPayments_details: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentDetailsDto"];
+                };
+            };
+        };
+    };
+    AdminPayments_refund: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRefundDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundResultDto"];
+                };
+            };
+        };
+    };
+    AdminPayments_collect: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentDto"];
+                };
+            };
+        };
+    };
+    AdminCertificates_products: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CertificateProductDto"][];
+                };
+            };
+        };
+    };
+    AdminCertificates_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CertificateProductInputDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CertificateProductDto"];
+                };
+            };
+        };
+    };
+    AdminCertificates_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CertificateProductInputDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CertificateProductDto"];
+                };
+            };
+        };
+    };
+    AdminCertificates_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminCertificates_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                perPage?: number;
+                /** @description Последние 4 символа кода */
+                q?: string;
+                /** @description Телефон покупателя или получателя */
+                phone?: string;
+                status?: "active" | "redeemed" | "expired" | "blocked";
+                orderId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CertificatesPageDto"];
+                };
+            };
+        };
+    };
+    AdminCertificates_report: {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CertificateReportDto"];
+                };
+            };
+        };
+    };
+    AdminCertificates_export: {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description XLSX */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+        };
+    };
+    AdminCertificates_check: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckCertificateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCertificateBalanceDto"];
+                };
+            };
+        };
+    };
+    AdminCertificates_redeem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RedeemCertificateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RedeemResultDto"];
+                };
+            };
+        };
+    };
+    AdminCertificates_issue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManualIssueDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManualIssueResultDto"];
+                };
+            };
+        };
+    };
+    AdminCertificates_details: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CertificateDetailsDto"];
+                };
+            };
+        };
+    };
+    AdminCertificates_pdf: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PdfLinkDto"];
+                };
+            };
+        };
+    };
+    AdminCertificates_block: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BlockCertificateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CertificateDto"];
+                };
+            };
+        };
+    };
+    AdminCertificates_unblock: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UnblockCertificateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CertificateDto"];
+                };
+            };
+        };
+    };
+    AdminCertificates_extend: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExtendCertificateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CertificateDto"];
+                };
+            };
+        };
+    };
+    AdminCertificates_resend: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResendCertificateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CertificateDto"];
+                };
+            };
+        };
+    };
+    PublicCertificates_products: {
+        parameters: {
+            query?: {
+                locale?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicCertificateProductDto"][];
+                };
+            };
+        };
+    };
+    PublicCertificates_buy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PurchaseCertificateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseResultDto"];
+                };
+            };
+        };
+    };
+    PublicCertificates_order: {
+        parameters: {
+            query?: {
+                locale?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CertificateOrderStatusDto"];
+                };
+            };
+        };
+    };
+    PublicCertificates_check: {
+        parameters: {
+            query?: {
+                locale?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckCertificateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CertificateBalanceDto"];
+                };
+            };
+        };
+    };
+    PaymentPages_sandbox: {
+        parameters: {
+            query: {
+                sig: unknown;
+            };
+            header?: never;
+            path: {
+                paymentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description HTML-страница тестовой оплаты */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/html": string;
+                };
+            };
+        };
+    };
+    PaymentPages_sandboxAction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                paymentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SandboxActionDto"];
+            };
+        };
+        responses: {
+            /** @description Перенаправление на страницу возврата (returnUrl) */
+            303: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PaymentPages_checkoutPage: {
+        parameters: {
+            query: {
+                sig: unknown;
+            };
+            header?: never;
+            path: {
+                paymentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description HTML-страница с платёжным виджетом провайдера */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/html": string;
+                };
+            };
+        };
+    };
+    PaymentsWebhook_handle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Имя провайдера из настроек платежей */
+                provider: string;
+            };
+            cookie?: never;
+        };
+        /** @description Уведомление в формате провайдера */
+        requestBody: {
+            content: {
+                "application/json": {
+                    [key: string]: unknown;
+                };
+            };
+        };
+        responses: {
+            /** @description Уведомление принято */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    Reports_revenueReport: {
+        parameters: {
+            query?: {
+                /** @description Начало периода (локальная дата Asia/Almaty). По умолчанию — 30 дней до to */
+                from?: string;
+                /** @description Конец периода включительно. По умолчанию — сегодня */
+                to?: string;
+                /** @description Филиал (право reports.branch). Без филиала — сводный отчёт (право reports.consolidated) */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevenueReportDto"];
+                };
+            };
+        };
+    };
+    Reports_revenueExport: {
+        parameters: {
+            query?: {
+                /** @description Начало периода (локальная дата Asia/Almaty). По умолчанию — 30 дней до to */
+                from?: string;
+                /** @description Конец периода включительно. По умолчанию — сегодня */
+                to?: string;
+                /** @description Филиал (право reports.branch). Без филиала — сводный отчёт (право reports.consolidated) */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Файл XLSX */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+        };
+    };
+    Reports_averageCheckReport: {
+        parameters: {
+            query?: {
+                /** @description Начало периода (локальная дата Asia/Almaty). По умолчанию — 30 дней до to */
+                from?: string;
+                /** @description Конец периода включительно. По умолчанию — сегодня */
+                to?: string;
+                /** @description Филиал (право reports.branch). Без филиала — сводный отчёт (право reports.consolidated) */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AverageCheckReportDto"];
+                };
+            };
+        };
+    };
+    Reports_averageCheckExport: {
+        parameters: {
+            query?: {
+                /** @description Начало периода (локальная дата Asia/Almaty). По умолчанию — 30 дней до to */
+                from?: string;
+                /** @description Конец периода включительно. По умолчанию — сегодня */
+                to?: string;
+                /** @description Филиал (право reports.branch). Без филиала — сводный отчёт (право reports.consolidated) */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Файл XLSX */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+        };
+    };
+    Reports_conversionReport: {
+        parameters: {
+            query?: {
+                /** @description Начало периода (локальная дата Asia/Almaty). По умолчанию — 30 дней до to */
+                from?: string;
+                /** @description Конец периода включительно. По умолчанию — сегодня */
+                to?: string;
+                /** @description Филиал (право reports.branch). Без филиала — сводный отчёт (право reports.consolidated) */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversionReportDto"];
+                };
+            };
+        };
+    };
+    Reports_conversionExport: {
+        parameters: {
+            query?: {
+                /** @description Начало периода (локальная дата Asia/Almaty). По умолчанию — 30 дней до to */
+                from?: string;
+                /** @description Конец периода включительно. По умолчанию — сегодня */
+                to?: string;
+                /** @description Филиал (право reports.branch). Без филиала — сводный отчёт (право reports.consolidated) */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Файл XLSX */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+        };
+    };
+    Reports_topDishesReport: {
+        parameters: {
+            query?: {
+                /** @description Начало периода (локальная дата Asia/Almaty). По умолчанию — 30 дней до to */
+                from?: string;
+                /** @description Конец периода включительно. По умолчанию — сегодня */
+                to?: string;
+                /** @description Филиал (право reports.branch). Без филиала — сводный отчёт (право reports.consolidated) */
+                branchId?: string;
+                sort?: "revenue" | "quantity";
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TopDishesReportDto"];
+                };
+            };
+        };
+    };
+    Reports_topDishesExport: {
+        parameters: {
+            query?: {
+                /** @description Начало периода (локальная дата Asia/Almaty). По умолчанию — 30 дней до to */
+                from?: string;
+                /** @description Конец периода включительно. По умолчанию — сегодня */
+                to?: string;
+                /** @description Филиал (право reports.branch). Без филиала — сводный отчёт (право reports.consolidated) */
+                branchId?: string;
+                sort?: "revenue" | "quantity";
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Файл XLSX */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+        };
+    };
+    Reports_hallLoadReport: {
+        parameters: {
+            query?: {
+                /** @description Начало периода (локальная дата Asia/Almaty). По умолчанию — 30 дней до to */
+                from?: string;
+                /** @description Конец периода включительно. По умолчанию — сегодня */
+                to?: string;
+                /** @description Филиал (право reports.branch). Без филиала — сводный отчёт (право reports.consolidated) */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HallLoadReportDto"];
+                };
+            };
+        };
+    };
+    Reports_hallLoadExport: {
+        parameters: {
+            query?: {
+                /** @description Начало периода (локальная дата Asia/Almaty). По умолчанию — 30 дней до to */
+                from?: string;
+                /** @description Конец периода включительно. По умолчанию — сегодня */
+                to?: string;
+                /** @description Филиал (право reports.branch). Без филиала — сводный отчёт (право reports.consolidated) */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Файл XLSX */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+        };
+    };
+    Reports_banquetFunnelReport: {
+        parameters: {
+            query?: {
+                /** @description Начало периода (локальная дата Asia/Almaty). По умолчанию — 30 дней до to */
+                from?: string;
+                /** @description Конец периода включительно. По умолчанию — сегодня */
+                to?: string;
+                /** @description Филиал (право reports.branch). Без филиала — сводный отчёт (право reports.consolidated) */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetFunnelReportDto"];
+                };
+            };
+        };
+    };
+    Reports_banquetFunnelExport: {
+        parameters: {
+            query?: {
+                /** @description Начало периода (локальная дата Asia/Almaty). По умолчанию — 30 дней до to */
+                from?: string;
+                /** @description Конец периода включительно. По умолчанию — сегодня */
+                to?: string;
+                /** @description Филиал (право reports.branch). Без филиала — сводный отчёт (право reports.consolidated) */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Файл XLSX */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+        };
+    };
+    Reports_cancelledOrdersReport: {
+        parameters: {
+            query?: {
+                /** @description Начало периода (локальная дата Asia/Almaty). По умолчанию — 30 дней до to */
+                from?: string;
+                /** @description Конец периода включительно. По умолчанию — сегодня */
+                to?: string;
+                /** @description Филиал (право reports.branch). Без филиала — сводный отчёт (право reports.consolidated) */
+                branchId?: string;
+                page?: number;
+                perPage?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CancelledOrdersReportDto"];
+                };
+            };
+        };
+    };
+    Reports_cancelledOrdersExport: {
+        parameters: {
+            query?: {
+                /** @description Начало периода (локальная дата Asia/Almaty). По умолчанию — 30 дней до to */
+                from?: string;
+                /** @description Конец периода включительно. По умолчанию — сегодня */
+                to?: string;
+                /** @description Филиал (право reports.branch). Без филиала — сводный отчёт (право reports.consolidated) */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Файл XLSX */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+        };
+    };
+    Reports_cashFlowReport: {
+        parameters: {
+            query?: {
+                /** @description Начало периода (локальная дата Asia/Almaty). По умолчанию — 30 дней до to */
+                from?: string;
+                /** @description Конец периода включительно. По умолчанию — сегодня */
+                to?: string;
+                /** @description Филиал (право reports.branch). Без филиала — сводный отчёт (право reports.consolidated) */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashFlowReportDto"];
+                };
+            };
+        };
+    };
+    Reports_cashFlowExport: {
+        parameters: {
+            query?: {
+                /** @description Начало периода (локальная дата Asia/Almaty). По умолчанию — 30 дней до to */
+                from?: string;
+                /** @description Конец периода включительно. По умолчанию — сегодня */
+                to?: string;
+                /** @description Филиал (право reports.branch). Без филиала — сводный отчёт (право reports.consolidated) */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Файл XLSX */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+        };
+    };
+    Reports_certificatesReport: {
+        parameters: {
+            query?: {
+                /** @description Начало периода (локальная дата Asia/Almaty). По умолчанию — 30 дней до to */
+                from?: string;
+                /** @description Конец периода включительно. По умолчанию — сегодня */
+                to?: string;
+                /** @description Филиал (право reports.branch). Без филиала — сводный отчёт (право reports.consolidated) */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CertificatesReportDto"];
+                };
+            };
+        };
+    };
+    Reports_certificatesExport: {
+        parameters: {
+            query?: {
+                /** @description Начало периода (локальная дата Asia/Almaty). По умолчанию — 30 дней до to */
+                from?: string;
+                /** @description Конец периода включительно. По умолчанию — сегодня */
+                to?: string;
+                /** @description Филиал (право reports.branch). Без филиала — сводный отчёт (право reports.consolidated) */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Файл XLSX */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+        };
+    };
+    Reports_dashboardReport: {
+        parameters: {
+            query?: {
+                /** @description Филиал (право reports.branch). Без филиала — сводный (reports.consolidated) */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardDto"];
+                };
+            };
+        };
+    };
+    Reports_dashboardExport: {
+        parameters: {
+            query?: {
+                /** @description Филиал (право reports.branch). Без филиала — сводный (reports.consolidated) */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Файл XLSX */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+        };
+    };
+    Reports_ownChannelReport: {
+        parameters: {
+            query?: {
+                /** @description Начало периода (локальная дата Asia/Almaty). По умолчанию — 30 дней до to */
+                from?: string;
+                /** @description Конец периода включительно. По умолчанию — сегодня */
+                to?: string;
+                /** @description Филиал (право reports.branch). Без филиала — сводный отчёт (право reports.consolidated) */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OwnChannelReportDto"];
+                };
+            };
+        };
+    };
+    Reports_ownChannelExport: {
+        parameters: {
+            query?: {
+                /** @description Начало периода (локальная дата Asia/Almaty). По умолчанию — 30 дней до to */
+                from?: string;
+                /** @description Конец периода включительно. По умолчанию — сегодня */
+                to?: string;
+                /** @description Филиал (право reports.branch). Без филиала — сводный отчёт (право reports.consolidated) */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Файл XLSX */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+        };
+    };
+    Reports_goalsReport: {
+        parameters: {
+            query?: {
+                /** @description Начало периода (локальная дата Asia/Almaty). По умолчанию — 30 дней до to */
+                from?: string;
+                /** @description Конец периода включительно. По умолчанию — сегодня */
+                to?: string;
+                /** @description Филиал (право reports.branch). Без филиала — сводный отчёт (право reports.consolidated) */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoalsReportDto"];
+                };
+            };
+        };
+    };
+    Reports_goalsExport: {
+        parameters: {
+            query?: {
+                /** @description Начало периода (локальная дата Asia/Almaty). По умолчанию — 30 дней до to */
+                from?: string;
+                /** @description Конец периода включительно. По умолчанию — сегодня */
+                to?: string;
+                /** @description Филиал (право reports.branch). Без филиала — сводный отчёт (право reports.consolidated) */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Файл XLSX */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+        };
+    };
+    DailyReports_get: {
+        parameters: {
+            query?: {
+                /** @description Дата отчёта (Asia/Almaty). По умолчанию — сегодня */
+                date?: string;
+                /** @description Филиал; без филиала — сводный отчёт по сети */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DailyReportDto"];
+                };
+            };
+        };
+    };
+    DailyReports_export: {
+        parameters: {
+            query?: {
+                /** @description Дата отчёта (Asia/Almaty). По умолчанию — сегодня */
+                date?: string;
+                /** @description Филиал; без филиала — сводный отчёт по сети */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Файл XLSX */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+        };
+    };
+    DailyReports_history: {
+        parameters: {
+            query?: {
+                /** @description Начало периода (локальная дата Asia/Almaty). По умолчанию — 30 дней до to */
+                from?: string;
+                /** @description Конец периода включительно. По умолчанию — сегодня */
+                to?: string;
+                /** @description Филиал (право reports.branch). Без филиала — сводный отчёт (право reports.consolidated) */
+                branchId?: string;
+                page?: number;
+                perPage?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DailyReportsPageDto"];
+                };
+            };
+        };
+    };
+    AggregatorVolumes_list: {
+        parameters: {
+            query?: {
+                /** @description Месяц с (YYYY-MM). По умолчанию — toMonth */
+                fromMonth?: string;
+                /** @description Месяц по (YYYY-MM). По умолчанию — текущий */
+                toMonth?: string;
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AggregatorVolumeDto"][];
+                };
+            };
+        };
+    };
+    AggregatorVolumes_upsert: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AggregatorVolumeInputDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AggregatorVolumeDto"];
+                };
+            };
+        };
+    };
+    AccountingExports_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                perPage?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountingExportsPageDto"];
+                };
+            };
+        };
+    };
+    AccountingExports_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAccountingExportDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountingExportDto"];
+                };
+            };
+        };
+    };
+    AccountingExports_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountingExportDto"];
+                };
+            };
+        };
+    };
+    AccountingExports_push: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountingExportDto"];
+                };
+            };
+        };
+    };
+    PublicAnalytics_event: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StorefrontEventDto"];
+            };
+        };
+        responses: {
+            /** @description Событие принято */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PosStatus_getStatus: {
+        parameters: {
+            query?: {
+                /** @description Филиал; без него — все доступные */
+                branchId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PosBranchStatusDto"][];
+                };
+            };
+        };
+    };
+    PosStatus_syncStopList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BranchRefDto"];
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QueuedJobDto"];
+                };
+            };
+        };
+    };
+    PosExports_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                perPage?: number;
+                branchId?: string;
+                status?: "pending" | "sent" | "failed" | "skipped";
+                orderId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderExportsPageDto"];
+                };
+            };
+        };
+    };
+    PosExports_retry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderExportDto"];
+                };
+            };
+        };
+    };
+    PosMappings_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                perPage?: number;
+                branchId?: string;
+                provider?: string;
+                dishId?: string;
+                externalProductId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductMappingsPageDto"];
+                };
+            };
+        };
+    };
+    PosMappings_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductMappingInputDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductMappingDto"];
+                };
+            };
+        };
+    };
+    PosMappings_suggest: {
+        parameters: {
+            query: {
+                branchId: string;
+                provider?: string;
+                page?: number;
+                /** @description Товаров на страницу (поиск по меню для каждого) */
+                perPage?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MappingSuggestionsPageDto"];
+                };
+            };
+        };
+    };
+    PosMappings_bulk: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkMappingsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkMappingsResultDto"];
+                };
+            };
+        };
+    };
+    PosMappings_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductMappingUpdateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductMappingDto"];
+                };
+            };
+        };
+    };
+    PosMappings_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PosProducts_list: {
+        parameters: {
+            query: {
+                page?: number;
+                perPage?: number;
+                branchId: string;
+                provider?: string;
+                /** @description Поиск по названию, коду, id */
+                q?: string;
+                kind?: "dish" | "good" | "modifier" | "service" | "other";
+                /** @description Только несопоставленные */
+                unmappedOnly?: boolean;
+                /** @description Показать пропавшие из POS */
+                includeRemoved?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PosProductsPageDto"];
+                };
+            };
+        };
+    };
+    PosProducts_import: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BranchRefDto"];
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QueuedJobDto"];
                 };
             };
         };

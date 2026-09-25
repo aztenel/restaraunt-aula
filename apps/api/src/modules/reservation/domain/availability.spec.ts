@@ -3,6 +3,7 @@ import { ValidationError } from '../../../shared/kernel/errors';
 import { OpeningHours, TimeRange, WEEKDAYS, zonedTimeToUtc } from '../../../shared/kernel/time';
 import {
   blockedRange,
+  bookingWindow,
   BookingWindow,
   BusyInterval,
   checkBookingWindow,
@@ -144,8 +145,9 @@ describe('suggestAlternatives', () => {
   it('nearest free times on the same day, sorted chronologically', () => {
     const busy: BusyInterval[] = [{ reservationId: 'r1', venueId: 't4', start: local('2026-10-25', '18:00'), blockedUntil: local('2026-10-25', '22:15') }];
     const alts = suggestAlternatives({ candidates: [t4], busy, guests: 3, date: '2026-10-25', time: '19:00', window: window(), limit: 4 });
-    // До 18:00 нужно 2 часа + 15 минут уборки: последний старт 15:30 (занятость до 17:45); после — 22:15 нельзя (закрытие в 00:00, 22:15+2ч > 00:00)?
-    expect(alts.map((a) => a.time)).toEqual(['14:30', '15:00', '15:30', '22:00'].filter((t) => t !== '22:00').concat([]).length ? alts.map((a) => a.time) : []);
+    // До 18:00 нужно 2 часа + 15 минут уборки: последний старт 15:30 (занятость до 17:45).
+    // После занятости (до 22:15) двухчасовая бронь уже не помещается до закрытия в 00:00.
+    expect(alts.map((a) => a.time)).toEqual(['14:00', '14:30', '15:00', '15:30']);
     for (const a of alts) {
       const range = slotRange('2026-10-25', a.time, TZ, 120);
       expect(isVenueFree('t4', blockedRange(range, 15), busy)).toBe(true);
@@ -165,5 +167,23 @@ describe('suggestAlternatives', () => {
 
   it('time range helper sanity', () => {
     expect(new TimeRange(local('2026-10-25', '10:00'), local('2026-10-25', '11:00')).durationMinutes()).toBe(60);
+  });
+});
+
+describe('bookingWindow', () => {
+  const base = { now: local('2026-10-25', '19:05'), timezone: TZ, openingHours: DAILY_10_TO_MIDNIGHT, minLeadMinutes: 60, maxDaysAhead: 30 };
+
+  it('storefront: lead time, horizon and opening hours', () => {
+    const w = bookingWindow('web', base);
+    expect(checkBookingWindow(slotRange('2026-10-25', '19:30', TZ, 120), w)).toBe('too_soon');
+    expect(checkBookingWindow(slotRange('2026-12-01', '19:30', TZ, 120), w)).toBe('too_far');
+  });
+
+  it('staff: no lead time and horizon, small backdate grace for walk-ins, opening hours still apply', () => {
+    const w = bookingWindow('admin', base);
+    expect(checkBookingWindow(slotRange('2026-10-25', '19:00', TZ, 120), w)).toBeNull();
+    expect(checkBookingWindow(slotRange('2026-10-25', '18:45', TZ, 120), w)).toBe('past');
+    expect(checkBookingWindow(slotRange('2026-12-01', '19:30', TZ, 120), w)).toBeNull();
+    expect(checkBookingWindow(slotRange('2026-10-25', '23:00', TZ, 120), w)).toBe('closed');
   });
 });

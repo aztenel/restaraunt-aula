@@ -35,6 +35,7 @@ export interface TemplateView {
   title: { ru: string; kk: string };
   params: string[];
   sensitiveParams: string[];
+  optionalParams: string[];
   channels: NotificationChannel[];
   sample: Record<string, string>;
   texts: TemplateTextView[];
@@ -166,6 +167,7 @@ export class NotificationQueries {
       title: info.title,
       params: info.params,
       sensitiveParams: info.sensitive,
+      optionalParams: info.optional,
       channels: [...info.channels],
       sample: info.sample,
       texts,

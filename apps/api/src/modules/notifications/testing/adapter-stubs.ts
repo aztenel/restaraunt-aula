@@ -6,9 +6,25 @@ import { ValidationError } from '../../../shared/kernel/errors';
 import { ChannelSendRequest } from '../application/channel-adapter';
 
 /**
- * Заглушки платформы для unit-тестов адаптеров каналов (без Nest и БД):
- * настройки интеграций из объекта, журнал интеграций в память, файловое хранилище в память.
+ * Заглушки платформы для тестов адаптеров каналов: настройки интеграций из объекта, журнал интеграций
+ * в память, файловое хранилище в память (unit-тесты без Nest и БД), подменяемый HTTP-транспорт
+ * (интеграционные тесты).
  */
+
+/**
+ * Транспорт платформы для интеграционных тестов ({ provide: HttpTransport, useValue: ... }):
+ * делегирует текущему FakeHttpTransport теста, который создаётся заново в beforeEach.
+ */
+export class SwitchableHttpTransport extends HttpTransport {
+  constructor(private readonly current: () => HttpTransport) {
+    super();
+  }
+
+  send(input: Parameters<HttpTransport['send']>[0]): ReturnType<HttpTransport['send']> {
+    return this.current().send(input);
+  }
+}
+
 export function settingsStub(values: Record<string, Record<string, unknown> | null | undefined>): IntegrationSettings {
   return {
     get: async (key: string, schema: { safeParse: (v: unknown) => { success: boolean; data?: unknown } }) => {

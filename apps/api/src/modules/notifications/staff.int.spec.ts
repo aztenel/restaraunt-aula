@@ -1,5 +1,5 @@
 import { sql } from 'kysely';
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createFakes, FakeHttpTransport, fakeProviders } from '../../../test/fakes';
 import { createBranch, createStaff } from '../../../test/support/fixtures';
 import { createTestApp, TestApp } from '../../../test/support/test-app';
@@ -9,6 +9,7 @@ import { IntegrationSettings } from '../../shared/infrastructure/settings/integr
 import { Permission } from '../../shared/kernel/permissions';
 import { UserRepository } from '../identity/infrastructure/user.repository';
 import { NotificationsModule } from './notifications.module';
+import { SwitchableHttpTransport } from './testing/adapter-stubs';
 import { AdminFeed, Notifier } from './public';
 
 type Row = Record<string, any>;
@@ -22,9 +23,12 @@ describe('Notifications to staff and system alerts (integration)', () => {
     t = await createTestApp({
       imports: [NotificationsModule],
       migrateModules: ['notifications'],
-      providers: fakeProviders(fakes, { except: [Notifier, AdminFeed] }),
+      providers: [
+        ...fakeProviders(fakes, { except: [Notifier, AdminFeed] }),
+        // Сеть подменяется: транспорт платформы делегирует в FakeHttpTransport текущего теста.
+        { provide: HttpTransport, useValue: new SwitchableHttpTransport(() => http) },
+      ],
     });
-    vi.spyOn(t.get(HttpTransport), 'send').mockImplementation((input) => http.send(input));
   });
   afterAll(async () => t.close());
   beforeEach(async () => {
@@ -113,6 +117,12 @@ describe('Notifications to staff and system alerts (integration)', () => {
       template: 'staff.banquet_sla_breach',
       params: { number: 'BQ-1', minutes: '45', managerName: 'Менеджер', adminUrl: 'https://admin.aula.kz/b/1' },
     });
+    // Как у дневного отчёта филиала: явные адресаты в филиале — только они, без каналов точки.
+    await t.get(Notifier).notifyStaff({
+      audience: { branchId: branch, userIds: [manager] },
+      template: 'staff.daily_report',
+      params: { date: '25.10.2026', summary: 'выручка 1 250 000 ₸', adminUrl: 'https://admin.aula.kz/reports/daily' },
+    });
     await t.drain();
 
     const byTemplate = await rows(sql`
@@ -122,6 +132,7 @@ describe('Notifications to staff and system alerts (integration)', () => {
       'staff.banquet_assigned:sent:staff_user:+77010000005',
       'staff.reservation_cancelled:sent:branch:+77010000009',
       'staff.banquet_sla_breach:sent:staff_user:+77010000005',
+      'staff.daily_report:sent:staff_user:+77010000005',
     ]);
   });
 
@@ -191,7 +202,7 @@ describe('Notifications to staff and system alerts (integration)', () => {
     await t.get(HandlerExecutor).recordFailure({
       kind: 'job',
       topic: 'notifications.deliver',
-      handler: 'DeliverNotificationJob.handle',
+      handler: 'NotificationsDeliveryJob.handle',
       payload: { messageId: 'm1' },
       error: new Error('db down'),
       attempts: 15,

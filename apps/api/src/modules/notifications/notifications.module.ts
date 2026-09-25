@@ -19,8 +19,8 @@ import { QueueNotification } from './application/queue-notification.action';
 import { StaffAudienceResolver } from './application/staff-audience';
 import { PreviewTemplate, ResetTemplateText, UpdateTemplateText } from './application/template.actions';
 import { TemplateRenderer } from './application/template-renderer';
-import { DeliverNotificationJob } from './handlers/deliver.job';
-import { JobFailedAlertHandler } from './handlers/job-failed.handler';
+import { NotificationsDeliveryJob } from './handlers/deliver.job';
+import { NotificationsJobFailedHandler } from './handlers/job-failed.handler';
 import { NotificationsMaintenance } from './handlers/maintenance.schedule';
 import { NotificationDeliveriesController } from './http/admin/deliveries.controller';
 import { AdminFeedController } from './http/admin/feed.controller';
@@ -101,8 +101,8 @@ import { AdminFeed, Notifier } from './public';
     PurgeMessageSecrets,
     FeedSseConnections,
     // Обработчики
-    DeliverNotificationJob,
-    JobFailedAlertHandler,
+    NotificationsDeliveryJob,
+    NotificationsJobFailedHandler,
     NotificationsMaintenance,
     // Публичный контракт
     { provide: Notifier, useClass: NotifierService },
