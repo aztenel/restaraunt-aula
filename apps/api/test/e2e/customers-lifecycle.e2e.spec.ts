@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { createE2eApp, deliveries, E2E_TODAY, E2eContext, idem, pendingOutbox, sandboxPay } from './support/e2e-app';
-import { adminOrder, advanceOrder, customerByPhone, placeOrder, report, storefrontMenu, tracking } from './support/ordering';
+import { auditLog, createE2eApp, deliveries, deliveryDetail, E2E_TODAY, E2eContext, idem, pendingOutbox, sandboxPay } from './support/e2e-app';
+import { adminOrder, advanceOrder, customerByPhone, paymentsOf, placeOrder, report, storefrontMenu, tracking } from './support/ordering';
 
 const PHONE = '+77074443322';
 
@@ -82,6 +82,29 @@ describe('E2E extra: customer lifecycle across modules', () => {
     const dailyReport = await ctx.api().get('/api/v1/admin/reports/daily').query({ date: E2E_TODAY }).set('Authorization', owner.auth).expect(200);
     expect(JSON.stringify(dailyReport.body)).toContain('1470000'); // выручка 3 × 4 900 ₸
 
+    // Корпоративный сертификат, где гость — получатель (контакты хранит модуль платежей, без customerId).
+    const products = await ctx.api().get('/api/v1/admin/certificates/products').set('Authorization', owner.auth).expect(200);
+    const product = (products.body.items ?? products.body).find((p: any) => p.slug === 'nominal-5000');
+    const issued = await ctx
+      .api()
+      .post('/api/v1/admin/certificates/issue')
+      .set('Authorization', owner.auth)
+      .send({
+        productId: product.id,
+        quantity: 1,
+        buyer: { name: 'ТОО «Ромашка»', phone: '+77013330000' },
+        recipient: { name: 'Ержан', phone: PHONE, email: 'erzhan@example.kz' },
+        deliveryChannel: 'none',
+        locale: 'ru',
+        documentNumber: 'PP-1',
+        paidAt: '2026-10-01T23:00:00+05:00',
+        idempotencyKey: idem('corp'),
+      })
+      .expect(201);
+    const certificateId = issued.body.certificates[0].id;
+    expect((await deliveries(ctx, { recipient: PHONE })).length).toBeGreaterThan(0);
+    expect((await paymentsOf(ctx, orderIds[0]!))[0].customer.phone).toBe(PHONE);
+
     // ---------------------------------------------------------------- Обезличивание по требованию гостя
     const anonymized = await ctx.api().post(`/api/v1/admin/customers/${guest.customer.id}/anonymize`).set('Authorization', owner.auth).send({ reason: 'Заявление гостя' }).expect(200);
     expect(anonymized.body).toMatchObject({ phone: null, name: null, anonymizedAt: expect.any(String), completedOrdersCount: 3 });
@@ -99,6 +122,27 @@ describe('E2E extra: customer lifecycle across modules', () => {
     expect(reservation.body.status).toBe('no_show');
     const request = await ctx.api().get(`/api/v1/admin/banquets/requests/${requestId}`).set('Authorization', manager.auth).expect(200);
     expect(JSON.stringify(request.body)).not.toContain(PHONE);
+    // Платежи, сертификаты и журнал уведомлений (без customerId) стирают копии контактов по телефону из события.
+    for (const orderId of orderIds) {
+      const [p] = await paymentsOf(ctx, orderId);
+      expect(p.customer).toEqual({ name: null, phone: null, email: null });
+      expect(p.amount).toEqual({ amount: 490_000, currency: 'KZT' });
+    }
+    const cert = await ctx.api().get(`/api/v1/admin/certificates/${certificateId}`).set('Authorization', owner.auth).expect(200);
+    expect(JSON.stringify(cert.body)).not.toContain(PHONE);
+    expect(JSON.stringify(cert.body)).not.toContain('erzhan@example.kz');
+    expect(JSON.stringify(cert.body)).toContain('+77013330000'); // покупатель — другой человек, его контакт остаётся
+    const byPhone = await ctx.api().get('/api/v1/admin/certificates').query({ phone: PHONE }).set('Authorization', owner.auth).expect(200);
+    expect(byPhone.body.items).toEqual([]);
+    expect(await deliveries(ctx, { recipient: PHONE })).toEqual([]);
+    const guestLog = await deliveries(ctx, { relatedId: orderIds[0], audience: 'guest' });
+    expect(guestLog.length).toBeGreaterThan(0);
+    expect(JSON.stringify(guestLog)).not.toContain('701 ***');
+    const detail = await deliveryDetail(ctx, guestLog[0]!.id);
+    expect(JSON.stringify(detail)).not.toContain('Ержан');
+    expect(detail.params).toEqual({});
+    const actions = (await auditLog(ctx, { entityId: anonymized.body.id })).map((a) => a.action);
+    expect(actions).toEqual(expect.arrayContaining(['customer.anonymized', 'order.customer_anonymized', 'payments.customer_anonymized', 'notifications.customer_anonymized']));
     // Отчёты не пострадали.
     const revenue = await report(ctx, 'revenue', { from: E2E_TODAY, to: E2E_TODAY, branchId: greenline });
     expect(revenue.totals.pickup).toEqual({ amount: 1_470_000, currency: 'KZT' });
