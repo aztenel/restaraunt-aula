@@ -1,10 +1,12 @@
 import { catalogKk } from './catalog.kk';
 import { orderingKk } from './ordering.kk';
+import { paymentsKk } from './payments.kk';
 import { reservationKk } from './reservation.kk';
 import type { AdminMessages } from './ru';
 
 /** Қазақ тілі — ru.ts-тегі барлық кілттерді қайталайды (типпен тексеріледі). */
 export const kk: AdminMessages = {
+  ...paymentsKk,
   ...orderingKk,
   ...catalogKk,
   ...reservationKk,
