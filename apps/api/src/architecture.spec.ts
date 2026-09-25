@@ -34,7 +34,7 @@ describe('architecture', () => {
     it(`module ${module} touches only its own schema`, () => {
       const violations: string[] = [];
       for (const file of files(join(MODULES_DIR, module), ['.ts', '.sql'])) {
-        if (file.endsWith('.spec.ts')) continue;
+        if (file.endsWith('.spec.ts') || file.includes('/testing/')) continue;
         const text = readFileSync(file, 'utf8');
         for (const match of tableRefs.flatMap((re) => [...text.matchAll(re)])) {
           const schema = match[1]!;

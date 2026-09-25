@@ -62,12 +62,20 @@ export class HandlerRegistry implements OnModuleInit {
         const key = `${className}.${method}`;
         const eventTypes: string[] | undefined = Reflect.getMetadata(ON_EVENT_METADATA, fn);
         for (const type of eventTypes ?? []) {
-          const handler: RegisteredEventHandler = {
+          const handler: RegisteredEventHandler & { instance?: unknown } = {
             key,
             type,
+            instance,
             invoke: (event) => (fn as (e: EventEnvelope) => Promise<void>).call(instance, event),
           };
-          if (this.eventsByKey.has(`${type}|${key}`)) continue;
+          const existing = this.eventsByKey.get(`${type}|${key}`);
+          if (existing) {
+            // Ключ обработчика = Класс.метод: он используется в идемпотентности и не должен совпадать у разных модулей.
+            if ((existing as RegisteredEventHandler & { instance?: unknown }).instance !== instance) {
+              throw new Error(`Duplicate event handler key ${key} for ${type}: rename the handler class (must be unique across modules)`);
+            }
+            continue;
+          }
           this.eventsByKey.set(`${type}|${key}`, handler);
           this.events.set(type, [...(this.events.get(type) ?? []), handler]);
         }

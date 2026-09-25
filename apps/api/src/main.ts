@@ -22,8 +22,15 @@ export function configureHttpApp(app: NestExpressApplication, config: Config): v
       contentSecurityPolicy: false,
     }),
   );
+  // Юридические страницы (ru+kk HTML) и сметы больше лимита express по умолчанию (100 КБ).
+  app.useBodyParser('json', { limit: '2mb' });
+  app.useBodyParser('urlencoded', { limit: '2mb', extended: true });
   app.use(cookieParser());
-  app.enableCors({ origin: config.app.corsOrigins, credentials: true });
+  app.enableCors({
+    origin: config.app.corsOrigins,
+    credentials: true,
+    exposedHeaders: ['Content-Disposition', 'X-Export-Count', 'X-Request-Id', 'Retry-After'],
+  });
   app.useGlobalPipes(buildValidationPipe());
   app.enableShutdownHooks();
 }
@@ -32,7 +39,11 @@ async function bootstrap(): Promise<void> {
   loadEnvFileIfPresent();
   const config = new Config();
   initSentry(config, 'api');
-  const app = await NestFactory.create<NestExpressApplication>(AppModule.forRoot(config), { bufferLogs: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule.forRoot(config), {
+    bufferLogs: true,
+    // Подписи вебхуков провайдеров проверяются по исходным байтам тела.
+    rawBody: true,
+  });
   app.useLogger(app.get(Logger));
   configureHttpApp(app, config);
   if (config.app.swaggerEnabled) setupSwagger(app, config.app.release);

@@ -85,6 +85,7 @@ export class ExternalHttp {
         headers['content-type'] ??= 'application/json';
       }
     }
+    const loggedBody = req.body instanceof URLSearchParams ? Object.fromEntries(req.body) : (req.body ?? null);
     const started = Date.now();
     let status: number | null = null;
     let rawText = '';
@@ -106,7 +107,7 @@ export class ExternalHttp {
         direction: 'outbound',
         operation: req.operation,
         correlationId: req.correlationId ?? null,
-        request: { method: req.method, url: req.url, headers, body: req.body ?? null },
+        request: { method: req.method, url: req.url, headers, body: loggedBody },
         response: { status: res.status, headers: res.headers, body: parsed },
         statusCode: res.status,
         success,
@@ -126,7 +127,7 @@ export class ExternalHttp {
         direction: 'outbound',
         operation: req.operation,
         correlationId: req.correlationId ?? null,
-        request: { method: req.method, url: req.url, headers, body: req.body ?? null },
+        request: { method: req.method, url: req.url, headers, body: loggedBody },
         response: null,
         statusCode: status,
         success: false,

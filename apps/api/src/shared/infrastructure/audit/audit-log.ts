@@ -97,7 +97,7 @@ export class AuditLog {
     if (filter.from) q = q.where('occurred_at', '>=', filter.from);
     if (filter.to) q = q.where('occurred_at', '<', filter.to);
     const total = await q.select((eb) => eb.fn.countAll<number>().as('n')).executeTakeFirst();
-    const rows = await q.selectAll().orderBy('occurred_at', 'desc').limit(page.perPage).offset(offsetOf(page)).execute();
+    const rows = await q.selectAll().orderBy('occurred_at', 'desc').orderBy('id', 'desc').limit(page.perPage).offset(offsetOf(page)).execute();
     return pageOf(
       rows.map((r: any) => ({
         id: r.id,

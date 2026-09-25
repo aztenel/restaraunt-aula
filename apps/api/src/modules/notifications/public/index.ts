@@ -57,7 +57,15 @@ export interface GuestTemplateParams {
   'banquet.quote_sent': { number: string; quoteUrl: string; total: string; managerName: string };
   'banquet.invoice_issued': { number: string; invoiceNumber: string; amount: string; dueDate: string; paymentUrl: string };
   'banquet.payment_received': { number: string; amount: string; remaining: string };
-  'certificate.issued': { code: string; nominal: string; expiresAt: string; recipientName: string; message: string };
+  'certificate.issued': {
+    code: string;
+    nominal: string;
+    expiresAt: string;
+    recipientName: string;
+    message: string;
+    /** Ссылка на PDF (для WhatsApp; в email PDF идёт вложением). */
+    pdfUrl?: string;
+  };
   'certificate.redeemed': { amount: string; balance: string };
 }
 export type GuestTemplate = keyof GuestTemplateParams;

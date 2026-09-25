@@ -14,7 +14,7 @@ async function main(): Promise<void> {
   process.env.QUEUE_INLINE_AUTODRAIN = 'false';
   process.env.LOG_LEVEL = 'silent';
   const config = new Config();
-  const app = await NestFactory.create<NestExpressApplication>(AppModule.forRoot(config), { logger: false });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule.forRoot(config), { logger: false, rawBody: true });
   configureHttpApp(app, config);
   const document = buildOpenApiDocument(app, process.env.RELEASE ?? '1.0.0');
   const target = resolve(__dirname, '..', '..', '..', '..', 'docs', 'openapi.json');

@@ -8,11 +8,22 @@ import { HandlerExecutor } from './handler-executor';
 import { HandlerRegistry } from './handler-registry';
 import { OutboxProcessor } from './outbox-processor';
 import { OutboxSignal } from './outbox-signal';
+import { PlatformMaintenance } from './platform-maintenance';
 
 @Global()
 @Module({
   imports: [DiscoveryModule],
-  providers: [EventBus, JobQueue, OutboxSignal, HandlerRegistry, HandlerExecutor, OutboxProcessor, FailedJobsService, BullmqRuntime],
+  providers: [
+    EventBus,
+    JobQueue,
+    OutboxSignal,
+    HandlerRegistry,
+    HandlerExecutor,
+    OutboxProcessor,
+    FailedJobsService,
+    BullmqRuntime,
+    PlatformMaintenance,
+  ],
   exports: [EventBus, JobQueue, OutboxSignal, HandlerRegistry, HandlerExecutor, OutboxProcessor, FailedJobsService, BullmqRuntime],
 })
 export class EventsModule implements OnApplicationBootstrap {

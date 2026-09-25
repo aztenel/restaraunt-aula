@@ -3,7 +3,7 @@
  * Ответы внешних систем логируются целиком, но через эту функцию.
  */
 const SENSITIVE_KEY_RE =
-  /(pan|card_?number|cardnumber|cvv|cvc|cvv2|expiry|exp_?date|password|passwd|secret|token|authorization|api[_-]?key|signature|private[_-]?key|client_secret|access_token|refresh_token)/i;
+  /(pan|card_?number|cardnumber|cvv|cvc|cvv2|expiry|exp_?date|password|passwd|secret|token|authorization|api[_-]?key|signature|private[_-]?key|client_secret|access_token|refresh_token|api[_-]?login|login_?password|psw)/i;
 const PAN_RE = /\b(\d{6})\d{3,9}(\d{4})\b/g;
 
 export function maskString(value: string): string {
