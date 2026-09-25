@@ -197,6 +197,36 @@ export class SetBannerImage {
   }
 }
 
+/** Убрать изображение баннера (файлы остаются в хранилище: на них ссылается журнал действий). */
+@Injectable()
+export class RemoveBannerImage {
+  constructor(
+    private readonly banners: BannerRepository,
+    private readonly database: Database,
+    private readonly audit: AuditLog,
+    private readonly events: CatalogEventPublisher,
+  ) {}
+
+  async execute(actor: Actor, id: string): Promise<void> {
+    await this.database.transaction(async () => {
+      const current = await this.banners.findById(id);
+      if (!current) throw new NotFoundError('banner', id);
+      assertCanForBranches(actor, [current.branchId]);
+      if (!current.image) return;
+      await this.banners.setImage(id, null);
+      await this.audit.record({
+        action: 'content.banner_image_removed',
+        entityType: 'banner',
+        entityId: id,
+        branchId: current.branchId,
+        before: current.image,
+        after: null,
+      });
+      await this.events.contentChanged({ kind: 'banner', id, branchId: current.branchId });
+    });
+  }
+}
+
 // ---------------------------------------------------------------- Акции
 
 export interface PromotionInput {
@@ -368,6 +398,35 @@ export class SetPromotionImage {
   }
 }
 
+/** Убрать изображение акции (файлы остаются в хранилище: на них ссылается журнал действий). */
+@Injectable()
+export class RemovePromotionImage {
+  constructor(
+    private readonly promotions: PromotionRepository,
+    private readonly database: Database,
+    private readonly audit: AuditLog,
+    private readonly events: CatalogEventPublisher,
+  ) {}
+
+  async execute(actor: Actor, id: string): Promise<void> {
+    await this.database.transaction(async () => {
+      const current = await this.promotions.findById(id);
+      if (!current) throw new NotFoundError('promotion', id);
+      assertCanForBranches(actor, scopeOf(current.branchIds));
+      if (!current.image) return;
+      await this.promotions.setImage(id, null);
+      await this.audit.record({
+        action: 'content.promotion_image_removed',
+        entityType: 'promotion',
+        entityId: id,
+        before: current.image,
+        after: null,
+      });
+      await this.events.contentChanged({ kind: 'promotion', id, slug: current.slug, branchId: null });
+    });
+  }
+}
+
 // ---------------------------------------------------------------- Страницы
 
 export interface PageInput {
@@ -408,6 +467,20 @@ async function pageWrite(input: PageInput, current: PageRecord | null, repo: Pag
     isPublished,
     sortOrder: input.sortOrder ?? current?.sortOrder ?? 0,
   };
+}
+
+/**
+ * Предпросмотр текста страницы: тот же санитайзер, что при сохранении (что останется после очистки),
+ * без записи в БД.
+ */
+@Injectable()
+export class PreviewPageHtml {
+  execute(actor: Actor, body: Translatable): { body: Translatable; changed: boolean } {
+    actor.assertCan(Permission.ContentManage);
+    const clean = sanitizeTranslatableHtml(body ?? {});
+    const changed = Object.entries(body ?? {}).some(([locale, text]) => (text ?? '').trim() !== (clean[locale as keyof Translatable] ?? ''));
+    return { body: clean, changed };
+  }
 }
 
 @Injectable()

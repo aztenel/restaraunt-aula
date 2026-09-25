@@ -128,6 +128,10 @@ describe('E2E 8: banquet full cycle with real payments', () => {
     const invoiceToken = tokenOf(individual.body.publicUrl);
     let publicInvoice = await ctx.api().get(`/api/v1/public/banquets/invoices/${invoiceToken}`).expect(200);
     expect(publicInvoice.body).toMatchObject({ status: 'issued', amount: money(152_350), remaining: money(152_350), paymentStatus: 'pending' });
+    // Админка видит ту же ссылку на оплату и может отправить её гостю ещё раз.
+    const adminInvoice = await ctx.api().get(`/api/v1/admin/banquets/invoices/${individual.body.id}`).set('Authorization', manager.auth).expect(200);
+    expect(adminInvoice.body).toMatchObject({ paymentUrl: publicInvoice.body.paymentUrl, paymentStatus: 'pending', canResendPaymentLink: true, refunds: [] });
+    await ctx.api().post(`/api/v1/admin/banquets/invoices/${individual.body.id}/payment-link`).set('Authorization', manager.auth).send({}).expect(200);
     await sandboxPay(ctx, publicInvoice.body.paymentUrl);
     await ctx.drain();
     publicInvoice = await ctx.api().get(`/api/v1/public/banquets/invoices/${invoiceToken}`).expect(200);
@@ -138,6 +142,10 @@ describe('E2E 8: banquet full cycle with real payments', () => {
     expect((await deliveries(ctx, { relatedId: requestId, template: 'banquet.payment_received' })).length).toBe(1);
     const [onlinePayment] = await paymentsOf(ctx, individual.body.id);
     expect(onlinePayment).toMatchObject({ purpose: 'banquet_invoice', method: 'online', status: 'succeeded', amount: money(152_350) });
+    const paidInvoice = detail.invoices.find((i: { id: string }) => i.id === individual.body.id);
+    expect(paidInvoice).toMatchObject({ paymentUrl: null, paymentStatus: 'succeeded', canResendPaymentLink: false });
+    expect(paidInvoice.payments[0]).toMatchObject({ method: 'online', refundable: money(152_350) });
+    expect(detail).toMatchObject({ canIssueInvoice: true, canIssueAct: false, canEditQuote: false });
 
     // ---------------------------------------------------------------- Остаток — юрлицу: счёт с реквизитами и перевод
     const company = await ctx

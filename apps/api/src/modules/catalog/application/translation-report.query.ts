@@ -19,6 +19,8 @@ export interface TranslationGap {
   label: string;
   field: string;
   missing: Locale[];
+  /** Для опции модификатора — её группа (ссылка на редактор группы); иначе null. */
+  groupId: string | null;
 }
 
 export interface TranslationSummary {
@@ -51,7 +53,13 @@ export class TranslationReportQuery {
   async execute(actor: Actor, options: { locales?: Locale[] | null; entityType?: TranslationEntityType | null } = {}): Promise<TranslationReport> {
     assertAnySomewhere(actor, [Permission.MenuContent, Permission.ContentManage]);
     const locales = options.locales && options.locales.length > 0 ? [...new Set(options.locales)] : [...REQUIRED_LOCALES];
-    const entities: Array<{ entityType: TranslationEntityType; entityId: string; name: Translatable; fields: TranslatableField[] }> = [];
+    const entities: Array<{
+      entityType: TranslationEntityType;
+      entityId: string;
+      name: Translatable;
+      fields: TranslatableField[];
+      groupId?: string;
+    }> = [];
     const want = (t: TranslationEntityType) => !options.entityType || options.entityType === t;
 
     if (want('category')) {
@@ -100,7 +108,13 @@ export class TranslationReportQuery {
         }
         if (want('modifier_option')) {
           for (const o of g.options) {
-            entities.push({ entityType: 'modifier_option', entityId: o.id, name: o.name, fields: [{ field: 'name', value: o.name, required: true }] });
+            entities.push({
+              entityType: 'modifier_option',
+              entityId: o.id,
+              name: o.name,
+              fields: [{ field: 'name', value: o.name, required: true }],
+              groupId: g.id,
+            });
           }
         }
       }
@@ -160,7 +174,9 @@ export class TranslationReportQuery {
       if (gaps.length > 0) s.incomplete++;
       summary.set(e.entityType, s);
       const label = translate(e.name, 'ru');
-      for (const gap of gaps) items.push({ entityType: e.entityType, entityId: e.entityId, label, field: gap.field, missing: gap.missing });
+      for (const gap of gaps) {
+        items.push({ entityType: e.entityType, entityId: e.entityId, label, field: gap.field, missing: gap.missing, groupId: e.groupId ?? null });
+      }
     }
     return {
       locales,

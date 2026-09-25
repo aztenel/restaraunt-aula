@@ -28,6 +28,9 @@ import {
   DeletePromotion,
   SetBannerImage,
   SetPromotionImage,
+  RemoveBannerImage,
+  RemovePromotionImage,
+  PreviewPageHtml,
   UpdateBanner,
   UpdatePage,
   UpdatePromotion,
@@ -41,6 +44,7 @@ import { CreateModifierGroup, DeleteModifierGroup, UpdateModifierGroup } from '.
 import { RestoreExpiredStops, SetDishAvailability } from './application/stop-list.actions';
 import { StorefrontQueries } from './application/storefront.queries';
 import { TranslationReportQuery } from './application/translation-report.query';
+import { StopListFeedHandler } from './handlers/stop-list-feed.handler';
 import { StopListScheduler } from './handlers/stop-list.scheduler';
 import { AdminBranchMenuController } from './http/admin/branch-menu.controller';
 import { AdminBannersController, AdminPagesController, AdminPromotionsController } from './http/admin/content.controller';
@@ -124,6 +128,9 @@ import { MenuPricing, MenuQuery, StopListControl } from './public';
     UpdateBanner,
     DeleteBanner,
     SetBannerImage,
+    RemoveBannerImage,
+    RemovePromotionImage,
+    PreviewPageHtml,
     CreatePromotion,
     UpdatePromotion,
     DeletePromotion,
@@ -139,6 +146,7 @@ import { MenuPricing, MenuQuery, StopListControl } from './public';
     TranslationReportQuery,
     // Расписания
     StopListScheduler,
+    StopListFeedHandler,
     // Публичный контракт
     { provide: MenuPricing, useClass: MenuPricingService },
     { provide: MenuQuery, useClass: MenuQueryService },

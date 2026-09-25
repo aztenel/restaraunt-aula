@@ -8,6 +8,7 @@ import {
   InvalidStateTransitionError,
   InvariantViolationError,
   NotFoundError,
+  PayloadTooLargeError,
   TooManyRequestsError,
   UnauthenticatedError,
   ValidationError,
@@ -26,6 +27,7 @@ function statusOf(err: DomainError): number {
   if (err instanceof ConflictError || err instanceof InvalidStateTransitionError) return HttpStatus.CONFLICT;
   if (err instanceof TooManyRequestsError) return HttpStatus.TOO_MANY_REQUESTS;
   if (err instanceof InvariantViolationError) return HttpStatus.INTERNAL_SERVER_ERROR;
+  if (err instanceof PayloadTooLargeError) return HttpStatus.PAYLOAD_TOO_LARGE;
   if (err instanceof ValidationError) return HttpStatus.UNPROCESSABLE_ENTITY;
   return HttpStatus.UNPROCESSABLE_ENTITY;
 }

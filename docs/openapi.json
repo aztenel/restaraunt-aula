@@ -3792,6 +3792,51 @@
         ]
       }
     },
+    "/api/v1/admin/catalog/branches/{branchId}/menu/bulk-add": {
+      "post": {
+        "operationId": "AdminBranchMenu_bulkAddItems",
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkAddMenuItemsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkAddMenuItemsResultDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/v1/admin/catalog/branches/{branchId}/menu/bulk-prices": {
       "post": {
         "operationId": "AdminBranchMenu_bulk",
@@ -3986,6 +4031,59 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/SetPriceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BranchMenuItemDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/catalog/branches/{branchId}/menu/{dishId}/sku": {
+      "put": {
+        "operationId": "AdminBranchMenu_sku",
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dishId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetSkuDto"
               }
             }
           }
@@ -4345,6 +4443,39 @@
         "tags": [
           "admin"
         ]
+      },
+      "delete": {
+        "operationId": "AdminBanners_deleteImage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BannerDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
       }
     },
     "/api/v1/admin/content/promotions": {
@@ -4566,6 +4697,39 @@
         "tags": [
           "admin"
         ]
+      },
+      "delete": {
+        "operationId": "AdminPromotions_deleteImage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromotionDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
       }
     },
     "/api/v1/admin/content/pages": {
@@ -4616,6 +4780,42 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/content/pages/preview": {
+      "post": {
+        "operationId": "AdminPages_preview",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PagePreviewInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagePreviewDto"
                 }
               }
             }
@@ -6468,6 +6668,49 @@
         ]
       }
     },
+    "/api/v1/public/certificates/orders/{token}/pay": {
+      "post": {
+        "operationId": "PublicCertificates_pay",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "kk",
+                "ru",
+                "en"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateOrderStatusDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "public"
+        ]
+      }
+    },
     "/api/v1/public/certificates/check": {
       "post": {
         "operationId": "PublicCertificates_check",
@@ -7163,6 +7406,43 @@
         ]
       }
     },
+    "/api/v1/admin/orders/menu": {
+      "get": {
+        "operationId": "AdminOrders_orderMenu",
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": true,
+            "in": "query",
+            "description": "Филиал телефонного заказа (право orders.manage в филиале)",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderMenuDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/v1/admin/orders/quote": {
       "post": {
         "operationId": "AdminOrders_quoteOrder",
@@ -7691,6 +7971,19 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "scope",
+            "required": false,
+            "in": "query",
+            "description": "network — только промокоды на всю сеть (branchId не учитывается), branch — только промокоды филиалов",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "network",
+                "branch"
+              ]
             }
           },
           {
@@ -8892,6 +9185,113 @@
         ]
       }
     },
+    "/api/v1/admin/reservations/availability": {
+      "get": {
+        "operationId": "AdminReservations_adminAvailability",
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": true,
+            "in": "query",
+            "description": "Локальная дата филиала",
+            "schema": {
+              "example": "2026-10-25",
+              "type": "string"
+            }
+          },
+          {
+            "name": "time",
+            "required": true,
+            "in": "query",
+            "description": "Локальное время начала",
+            "schema": {
+              "example": "19:30",
+              "type": "string"
+            }
+          },
+          {
+            "name": "guests",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 1000,
+              "type": "number"
+            }
+          },
+          {
+            "name": "durationMinutes",
+            "required": false,
+            "in": "query",
+            "description": "Длительность, минут (по умолчанию — правило места)",
+            "schema": {
+              "minimum": 15,
+              "maximum": 1440,
+              "type": "number"
+            }
+          },
+          {
+            "name": "typeCode",
+            "required": false,
+            "in": "query",
+            "description": "Тип места",
+            "schema": {
+              "example": "vip_hall",
+              "type": "string"
+            }
+          },
+          {
+            "name": "hallId",
+            "required": false,
+            "in": "query",
+            "description": "Только места зала",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "excludeReservationId",
+            "required": false,
+            "in": "query",
+            "description": "Не учитывать занятость этой брони (перенос / пересадка)",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAvailabilityDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/v1/admin/reservations/{id}": {
       "get": {
         "operationId": "AdminReservations_detail",
@@ -9670,6 +10070,33 @@
               "example": "2026-12-31",
               "type": "string"
             }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Номер, имя или телефон",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offsite",
+            "required": false,
+            "in": "query",
+            "description": "Только выездные (true) / только в залах (false)",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "slaBreached",
+            "required": false,
+            "in": "query",
+            "description": "Нарушен SLA первого ответа",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -9732,8 +10159,9 @@
         "parameters": [
           {
             "name": "branchId",
-            "required": true,
+            "required": false,
             "in": "query",
+            "description": "Филиал; не задан — все филиалы, доступные сотруднику, и выездные заявки",
             "schema": {
               "type": "string"
             }
@@ -10294,6 +10722,51 @@
         ]
       }
     },
+    "/api/v1/admin/banquets/requests/{id}/quotes/preview": {
+      "post": {
+        "operationId": "AdminBanquetQuotes_preview",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanquetSaveQuoteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetQuotePreviewDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/v1/admin/banquets/quotes/{quoteId}": {
       "get": {
         "operationId": "AdminBanquetQuotes_get",
@@ -10675,6 +11148,51 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/BanquetBankTransferResultDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "staff": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/banquets/invoices/{invoiceId}/payment-link": {
+      "post": {
+        "operationId": "AdminBanquetInvoices_paymentLink",
+        "parameters": [
+          {
+            "name": "invoiceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BanquetResendPaymentLinkDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanquetInvoiceListItemDto"
                 }
               }
             }
@@ -16331,6 +16849,19 @@
           "entityId": {
             "type": "string"
           },
+          "entityType": {
+            "type": "string",
+            "enum": [
+              "order",
+              "reservation",
+              "banquet_request",
+              "failed_job",
+              "branch",
+              "dish"
+            ],
+            "nullable": true,
+            "description": "Что за сущность в entityId (куда вести по клику): order, reservation, banquet_request, failed_job, branch, dish"
+          },
           "title": {
             "type": "string"
           },
@@ -18228,6 +18759,12 @@
                 "en"
               ]
             }
+          },
+          "groupId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Для modifier_option — группа модификаторов опции"
           }
         },
         "required": [
@@ -18357,6 +18894,11 @@
             "format": "uuid",
             "nullable": true
           },
+          "updatedByName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Имя сотрудника, последним менявшего позицию"
+          },
           "updatedAt": {
             "format": "date-time",
             "type": "string"
@@ -18424,6 +18966,40 @@
         "required": [
           "dishId",
           "price"
+        ]
+      },
+      "BulkAddMenuItemsDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Блюда с ценами филиала (всё или ничего), до 500",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddMenuItemDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "BulkAddMenuItemsResultDto": {
+        "type": "object",
+        "properties": {
+          "added": {
+            "type": "number"
+          },
+          "dishIds": {
+            "description": "Добавленные блюда (в порядке запроса)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "added",
+          "dishIds"
         ]
       },
       "BulkPriceItemDto": {
@@ -18520,6 +19096,19 @@
         },
         "required": [
           "price"
+        ]
+      },
+      "SetSkuDto": {
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string",
+            "nullable": true,
+            "description": "Код POS филиала; null — сбросить (уходит общий код блюда)"
+          }
+        },
+        "required": [
+          "sku"
         ]
       },
       "SetAvailabilityDto": {
@@ -18959,6 +19548,43 @@
           "missingTranslations",
           "createdAt",
           "updatedAt"
+        ]
+      },
+      "PagePreviewInputDto": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "description": "HTML по языкам — как в теле страницы",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PageBodyDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "PagePreviewDto": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "description": "HTML после санитизации (так он будет сохранён); пустые языки убраны",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PageBodyDto"
+              }
+            ]
+          },
+          "changed": {
+            "type": "boolean",
+            "description": "Санитайзер что-то убрал или изменил"
+          }
+        },
+        "required": [
+          "body",
+          "changed"
         ]
       },
       "PageInputDto": {
@@ -21741,6 +22367,10 @@
             "type": "string",
             "format": "date-time",
             "nullable": true
+          },
+          "canPay": {
+            "type": "boolean",
+            "description": "Можно повторить оплату (POST /public/certificates/orders/:token/pay)"
           }
         },
         "required": [
@@ -21751,7 +22381,8 @@
           "total",
           "recipientName",
           "deliveryChannel",
-          "certificates"
+          "certificates",
+          "canPay"
         ]
       },
       "CertificateBalanceDto": {
@@ -21945,7 +22576,7 @@
           "name": {
             "type": "string",
             "nullable": true,
-            "description": "Название на языке запроса (null — блюдо не найдено)"
+            "description": "Название на языке запроса; есть и у недоступной позиции (стоп-лист, нет в меню филиала). null — блюдо не найдено/удалено"
           },
           "photoUrl": {
             "type": "string",
@@ -23347,6 +23978,36 @@
           "modifiers"
         ]
       },
+      "AdminQueueCourierDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "requested",
+              "estimating",
+              "awaiting_confirmation",
+              "searching",
+              "courier_assigned",
+              "picked_up",
+              "delivered",
+              "cancelled",
+              "failed"
+            ]
+          },
+          "trackingUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "courierName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
       "AdminQueueOrderDto": {
         "type": "object",
         "properties": {
@@ -23458,6 +24119,32 @@
           "isLate": {
             "type": "boolean",
             "description": "Обещанное время прошло"
+          },
+          "canCancel": {
+            "type": "boolean",
+            "description": "Отмена доступна (awaiting_payment / accepted, право orders.manage)"
+          },
+          "canReject": {
+            "type": "boolean",
+            "description": "Отказ от оплаченного заказа доступен (paid → accepted → cancelled)"
+          },
+          "courier": {
+            "nullable": true,
+            "description": "Заявка службы доставки (null — свои курьеры или заявки нет)",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminQueueCourierDto"
+              }
+            ]
+          },
+          "amountDue": {
+            "description": "Получить с гостя при получении (0 — оплачено онлайн и/или сертификатом)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
           }
         },
         "required": [
@@ -23475,7 +24162,10 @@
           "items",
           "contactless",
           "allowedTransitions",
-          "isLate"
+          "isLate",
+          "canCancel",
+          "canReject",
+          "amountDue"
         ]
       },
       "AdminQueueGroupDto": {
@@ -23529,6 +24219,185 @@
         "required": [
           "generatedAt",
           "groups"
+        ]
+      },
+      "AdminOrderMenuCategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name"
+        ]
+      },
+      "AdminOrderMenuOptionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "price": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "price",
+          "isDefault"
+        ]
+      },
+      "AdminOrderMenuModifierGroupDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "minSelect": {
+            "type": "number"
+          },
+          "maxSelect": {
+            "type": "number"
+          },
+          "isRequired": {
+            "type": "boolean"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminOrderMenuOptionDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "minSelect",
+          "maxSelect",
+          "isRequired",
+          "options"
+        ]
+      },
+      "AdminOrderMenuDishDto": {
+        "type": "object",
+        "properties": {
+          "dishId": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "price": {
+            "description": "Цена в филиале без модификаторов",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          },
+          "availability": {
+            "type": "string",
+            "enum": [
+              "available",
+              "stopped_shown",
+              "stopped_hidden"
+            ],
+            "description": "Как блюдо видно на витрине (режим стоп-листа филиала)"
+          },
+          "stopped": {
+            "type": "boolean",
+            "description": "В стоп-листе — к заказу недоступно"
+          },
+          "stoppedUntil": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Стоп до (null — до ручного возврата)"
+          },
+          "stopReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "photoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "weightGrams": {
+            "type": "number",
+            "nullable": true
+          },
+          "sku": {
+            "type": "string",
+            "nullable": true
+          },
+          "modifierGroups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminOrderMenuModifierGroupDto"
+            }
+          }
+        },
+        "required": [
+          "dishId",
+          "slug",
+          "categoryId",
+          "name",
+          "price",
+          "availability",
+          "stopped",
+          "modifierGroups"
+        ]
+      },
+      "AdminOrderMenuDto": {
+        "type": "object",
+        "properties": {
+          "branchId": {
+            "type": "string"
+          },
+          "categories": {
+            "description": "Категории, в которых есть блюда меню филиала (в порядке меню)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminOrderMenuCategoryDto"
+            }
+          },
+          "dishes": {
+            "description": "Все блюда меню филиала, включая стоп-лист (stopped = true)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminOrderMenuDishDto"
+            }
+          }
+        },
+        "required": [
+          "branchId",
+          "categories",
+          "dishes"
         ]
       },
       "AdminCreateOrderDto": {
@@ -24261,6 +25130,19 @@
           "trackingUrl": {
             "type": "string",
             "description": "Ссылка на страницу статуса для гостя"
+          },
+          "canRetryCourier": {
+            "type": "boolean",
+            "description": "Можно повторно вызвать курьера службы доставки (POST :id/courier/retry)"
+          },
+          "canCancelCourier": {
+            "type": "boolean",
+            "description": "Можно отменить активную заявку службы доставки (POST :id/courier/cancel)"
+          },
+          "createdByName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Имя сотрудника, оформившего телефонный заказ"
           }
         },
         "required": [
@@ -24294,7 +25176,9 @@
           "canReject",
           "canRefund",
           "refundable",
-          "trackingUrl"
+          "trackingUrl",
+          "canRetryCourier",
+          "canCancelCourier"
         ]
       },
       "TransitionOrderDto": {
@@ -25817,6 +26701,26 @@
           "createdAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "allowedTransitions": {
+            "type": "array",
+            "description": "Переходы, доступные сотруднику сейчас",
+            "items": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "awaiting_deposit",
+                "confirmed",
+                "arrived",
+                "no_show",
+                "cancelled",
+                "expired"
+              ]
+            }
+          },
+          "canReschedule": {
+            "type": "boolean",
+            "description": "Можно перенести / пересадить"
           }
         },
         "required": [
@@ -25838,7 +26742,9 @@
           "depositState",
           "depositOutcome",
           "needsMark",
-          "createdAt"
+          "createdAt",
+          "allowedTransitions",
+          "canReschedule"
         ]
       },
       "ReservationsPageDto": {
@@ -25961,6 +26867,12 @@
           },
           "needsMark": {
             "type": "boolean"
+          },
+          "holdExpiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Бронь будет снята, если не подтвердят / не оплатят до этого момента"
           }
         },
         "required": [
@@ -26019,6 +26931,14 @@
           "bookableOnline": {
             "type": "boolean"
           },
+          "rules": {
+            "description": "Действующие правила места: длительность, уборка, удержание, шаг сетки",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VenueRulesDto"
+              }
+            ]
+          },
           "items": {
             "type": "array",
             "items": {
@@ -26037,6 +26957,7 @@
           "position",
           "isActive",
           "bookableOnline",
+          "rules",
           "items"
         ]
       },
@@ -26060,6 +26981,16 @@
           },
           "isActive": {
             "type": "boolean"
+          },
+          "background": {
+            "nullable": true,
+            "description": "Подложка плана зала",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VenueImageDto"
+              }
+            ]
           },
           "venues": {
             "type": "array",
@@ -26124,6 +27055,193 @@
           "to",
           "openingRanges",
           "halls"
+        ]
+      },
+      "AdminVenueSlotDto": {
+        "type": "object",
+        "properties": {
+          "venueId": {
+            "type": "string"
+          },
+          "hallId": {
+            "type": "string"
+          },
+          "hallName": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "typeCode": {
+            "type": "string"
+          },
+          "typeName": {
+            "$ref": "#/components/schemas/TranslatableDto"
+          },
+          "capacityMin": {
+            "type": "number"
+          },
+          "capacityMax": {
+            "type": "number"
+          },
+          "belowMinimum": {
+            "type": "boolean",
+            "description": "Гостей меньше минимальной вместимости места (оператору разрешено)"
+          },
+          "deposit": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          },
+          "start": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "end": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "blockedUntil": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Конец занятости места: конец брони + буфер уборки"
+          },
+          "durationMinutes": {
+            "type": "number"
+          },
+          "rules": {
+            "description": "Действующие правила места",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VenueRulesDto"
+              }
+            ]
+          },
+          "bookableOnline": {
+            "type": "boolean",
+            "description": "Можно бронировать на витрине (false — только через оператора)"
+          },
+          "position": {
+            "$ref": "#/components/schemas/VenuePositionDto"
+          }
+        },
+        "required": [
+          "venueId",
+          "hallId",
+          "hallName",
+          "code",
+          "name",
+          "typeCode",
+          "typeName",
+          "capacityMin",
+          "capacityMax",
+          "belowMinimum",
+          "start",
+          "end",
+          "blockedUntil",
+          "durationMinutes",
+          "rules",
+          "bookableOnline",
+          "position"
+        ]
+      },
+      "AlternativeTimeDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "2026-10-25"
+          },
+          "time": {
+            "type": "string",
+            "example": "18:30"
+          },
+          "start": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "venueIds": {
+            "description": "Свободные места на это время",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "date",
+          "time",
+          "start",
+          "venueIds"
+        ]
+      },
+      "AdminAvailabilityDto": {
+        "type": "object",
+        "properties": {
+          "branchId": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "time": {
+            "type": "string"
+          },
+          "guests": {
+            "type": "number"
+          },
+          "durationMinutes": {
+            "type": "number",
+            "nullable": true
+          },
+          "available": {
+            "type": "boolean",
+            "description": "Есть хотя бы одно свободное место"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "no_capacity",
+              "occupied",
+              "past",
+              "too_soon",
+              "too_far",
+              "closed",
+              "not_accepting"
+            ],
+            "nullable": true,
+            "description": "Почему мест нет (past / closed / occupied / no_capacity)"
+          },
+          "venues": {
+            "description": "Свободные места, включая места только для брони через оператора",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminVenueSlotDto"
+            }
+          },
+          "alternatives": {
+            "description": "Ближайшее свободное время в тот же день, если мест нет",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlternativeTimeDto"
+            }
+          }
+        },
+        "required": [
+          "branchId",
+          "date",
+          "time",
+          "guests",
+          "available",
+          "venues",
+          "alternatives"
         ]
       },
       "DepositPaymentDto": {
@@ -26375,7 +27493,8 @@
             }
           },
           "canReschedule": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Можно перенести / пересадить"
           },
           "rules": {
             "description": "Правила брони (снимок на момент брони / переноса)",
@@ -26791,36 +27910,6 @@
           "rules",
           "position",
           "photos"
-        ]
-      },
-      "AlternativeTimeDto": {
-        "type": "object",
-        "properties": {
-          "date": {
-            "type": "string",
-            "example": "2026-10-25"
-          },
-          "time": {
-            "type": "string",
-            "example": "18:30"
-          },
-          "start": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "venueIds": {
-            "description": "Свободные места на это время",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "date",
-          "time",
-          "start",
-          "venueIds"
         ]
       },
       "AvailabilityDto": {
@@ -27772,7 +28861,16 @@
         "type": "object",
         "properties": {
           "branchId": {
-            "type": "string"
+            "type": "string",
+            "nullable": true,
+            "description": "Филиал запроса; null — все доступные филиалы"
+          },
+          "branchIds": {
+            "description": "Филиалы, попавшие в календарь",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "from": {
             "type": "string"
@@ -27801,7 +28899,7 @@
           }
         },
         "required": [
-          "branchId",
+          "branchIds",
           "from",
           "to",
           "venues",
@@ -28334,6 +29432,14 @@
           "refunded": {
             "$ref": "#/components/schemas/MoneyDto"
           },
+          "refundable": {
+            "description": "Сколько ещё можно вернуть (сумма минус прошедшие и ожидающие возвраты)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyDto"
+              }
+            ]
+          },
           "documentNumber": {
             "type": "string",
             "nullable": true
@@ -28351,9 +29457,53 @@
           "method",
           "amount",
           "refunded",
+          "refundable",
           "documentNumber",
           "paidAt",
           "recordedByName"
+        ]
+      },
+      "BanquetInvoiceRefundDto": {
+        "type": "object",
+        "properties": {
+          "refundId": {
+            "type": "string"
+          },
+          "paymentId": {
+            "type": "string"
+          },
+          "amount": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "succeeded",
+              "failed"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "refundId",
+          "paymentId",
+          "amount",
+          "status",
+          "reason",
+          "createdAt",
+          "completedAt"
         ]
       },
       "BanquetInvoiceDto": {
@@ -28466,6 +29616,28 @@
             "items": {
               "$ref": "#/components/schemas/BanquetInvoicePaymentDto"
             }
+          },
+          "paymentUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "Ссылка на онлайн-оплату (физлицо), пока текущий платёж ждёт оплату"
+          },
+          "paymentStatus": {
+            "type": "string",
+            "nullable": true,
+            "example": "created",
+            "description": "Статус текущего онлайн-платежа"
+          },
+          "canResendPaymentLink": {
+            "type": "boolean",
+            "description": "Можно отправить / перевыпустить ссылку на оплату (POST invoices/:id/payment-link)"
+          },
+          "refunds": {
+            "description": "Возвраты по поступлениям счёта со статусами",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanquetInvoiceRefundDto"
+            }
           }
         },
         "required": [
@@ -28494,7 +29666,11 @@
           "paidAt",
           "cancelledAt",
           "cancelReason",
-          "payments"
+          "payments",
+          "paymentUrl",
+          "paymentStatus",
+          "canResendPaymentLink",
+          "refunds"
         ]
       },
       "BanquetEsfDto": {
@@ -28574,6 +29750,10 @@
           "esf": {
             "$ref": "#/components/schemas/BanquetEsfDto"
           },
+          "esfRetryable": {
+            "type": "boolean",
+            "description": "ЭСФ можно отправить повторно (POST acts/:actId/esf/retry)"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -28588,6 +29768,7 @@
           "amount",
           "vat",
           "esf",
+          "esfRetryable",
           "createdAt"
         ]
       },
@@ -28939,6 +30120,22 @@
             "items": {
               "$ref": "#/components/schemas/BanquetActivityDto"
             }
+          },
+          "canEditQuote": {
+            "type": "boolean",
+            "description": "Можно сохранить новую версию сметы"
+          },
+          "canSendLatestQuote": {
+            "type": "boolean",
+            "description": "Можно отправить клиенту последнюю версию сметы"
+          },
+          "canIssueInvoice": {
+            "type": "boolean",
+            "description": "Можно выставить счёт (смета согласована, есть невыставленный остаток)"
+          },
+          "canIssueAct": {
+            "type": "boolean",
+            "description": "Можно оформить акт (банкет проведён, акта ещё нет)"
           }
         },
         "required": [
@@ -28982,7 +30179,11 @@
           "invoices",
           "act",
           "documents",
-          "timeline"
+          "timeline",
+          "canEditQuote",
+          "canSendLatestQuote",
+          "canIssueInvoice",
+          "canIssueAct"
         ]
       },
       "BanquetUpdateRequestDto": {
@@ -29216,6 +30417,12 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Возврат завершён (прошёл или не прошёл)"
           }
         },
         "required": [
@@ -29596,6 +30803,73 @@
           "isLatest"
         ]
       },
+      "BanquetQuotePreviewDto": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string"
+          },
+          "branchId": {
+            "type": "string",
+            "nullable": true
+          },
+          "guests": {
+            "type": "number"
+          },
+          "discount": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BanquetDiscountDto"
+              }
+            ]
+          },
+          "serviceChargeBp": {
+            "type": "number"
+          },
+          "vatPayer": {
+            "type": "boolean"
+          },
+          "vatRateBp": {
+            "type": "number"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanquetQuoteLineDto"
+            }
+          },
+          "totals": {
+            "$ref": "#/components/schemas/BanquetQuoteTotalsDto"
+          },
+          "validUntil": {
+            "type": "string",
+            "example": "2026-10-15"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "seller": {
+            "$ref": "#/components/schemas/BanquetPartyShortDto"
+          }
+        },
+        "required": [
+          "requestId",
+          "branchId",
+          "guests",
+          "discount",
+          "serviceChargeBp",
+          "vatPayer",
+          "vatRateBp",
+          "lines",
+          "totals",
+          "validUntil",
+          "notes",
+          "seller"
+        ]
+      },
       "BanquetSignedLinkDto": {
         "type": "object",
         "properties": {
@@ -29770,6 +31044,28 @@
               "$ref": "#/components/schemas/BanquetInvoicePaymentDto"
             }
           },
+          "paymentUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "Ссылка на онлайн-оплату (физлицо), пока текущий платёж ждёт оплату"
+          },
+          "paymentStatus": {
+            "type": "string",
+            "nullable": true,
+            "example": "created",
+            "description": "Статус текущего онлайн-платежа"
+          },
+          "canResendPaymentLink": {
+            "type": "boolean",
+            "description": "Можно отправить / перевыпустить ссылку на оплату (POST invoices/:id/payment-link)"
+          },
+          "refunds": {
+            "description": "Возвраты по поступлениям счёта со статусами",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BanquetInvoiceRefundDto"
+            }
+          },
           "requestNumber": {
             "type": "string"
           }
@@ -29801,6 +31097,10 @@
           "cancelledAt",
           "cancelReason",
           "payments",
+          "paymentUrl",
+          "paymentStatus",
+          "canResendPaymentLink",
+          "refunds",
           "requestNumber"
         ]
       },
@@ -29906,6 +31206,15 @@
           "paymentId",
           "duplicate"
         ]
+      },
+      "BanquetResendPaymentLinkDto": {
+        "type": "object",
+        "properties": {
+          "regenerate": {
+            "type": "boolean",
+            "description": "Принудительно новая ссылка: прежний неоплаченный платёж отменяется"
+          }
+        }
       },
       "BanquetCancelInvoiceDto": {
         "type": "object",

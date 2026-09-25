@@ -52,10 +52,16 @@ describe('admin feed filtering', () => {
       stream: 'orders',
       kind: 'created',
       entityId: 'o1',
+      entityType: 'order',
       title: 'Новый заказ',
       sound: true,
     });
     expect(normalizeFeedEvent({ branchId: null, stream: 'orders', kind: 'updated', entityId: 'o1', title: 'x' }).sound).toBe(false);
+    // Тип сущности: явный или по потоку; у системных событий без типа — null; неизвестный — ошибка.
+    expect(normalizeFeedEvent({ branchId: null, stream: 'orders', kind: 'updated', entityId: 'd1', entityType: 'dish', title: 'x' }).entityType).toBe('dish');
+    expect(normalizeFeedEvent({ branchId: null, stream: 'banquets', kind: 'updated', entityId: 'b1', title: 'x' }).entityType).toBe('banquet_request');
+    expect(normalizeFeedEvent({ branchId: null, stream: 'system', kind: 'created', entityId: 'j1', title: 'x' }).entityType).toBeNull();
+    expect(() => normalizeFeedEvent({ branchId: null, stream: 'orders', kind: 'created', entityId: 'o1', entityType: 'x' as never, title: 'x' })).toThrow();
     expect(() => normalizeFeedEvent({ branchId: null, stream: 'x' as never, kind: 'created', entityId: 'o1', title: 'x' })).toThrow();
     expect(() => normalizeFeedEvent({ branchId: null, stream: 'orders', kind: 'created', entityId: ' ', title: 'x' })).toThrow();
   });

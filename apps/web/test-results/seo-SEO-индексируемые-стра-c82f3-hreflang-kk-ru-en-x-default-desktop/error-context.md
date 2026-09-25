@@ -1,0 +1,809 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - link "Перейти к содержимому" [ref=e2] [cursor=pointer]:
+    - /url: "#main"
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link "AULA — на главную" [ref=e5] [cursor=pointer]:
+        - /url: /ru
+        - generic [ref=e6]:
+          - img [ref=e8]
+          - generic [ref=e12]: AULA
+      - navigation "Основная навигация" [ref=e13]:
+        - list [ref=e14]:
+          - listitem [ref=e15]:
+            - link "Меню" [ref=e16] [cursor=pointer]:
+              - /url: /ru/menu
+          - listitem [ref=e17]:
+            - link "Бронь" [ref=e18] [cursor=pointer]:
+              - /url: /ru/booking
+          - listitem [ref=e19]:
+            - link "Банкеты" [ref=e20] [cursor=pointer]:
+              - /url: /ru/banquets
+          - listitem [ref=e21]:
+            - link "Сертификаты" [ref=e22] [cursor=pointer]:
+              - /url: /ru/certificates
+          - listitem [ref=e23]:
+            - link "Филиалы" [ref=e24] [cursor=pointer]:
+              - /url: /ru/branches
+      - generic [ref=e25]:
+        - generic [ref=e26]:
+          - generic [ref=e27]: Филиал
+          - img
+          - combobox "Филиал" [ref=e28]:
+            - option "AULA GreenLine Aqua" [selected]
+            - option "AULA Garden View"
+          - img
+        - group [ref=e29]:
+          - generic "Язык" [ref=e30] [cursor=pointer]:
+            - img [ref=e31]
+            - text: ru
+        - 'link "Корзина: пусто" [ref=e34] [cursor=pointer]':
+          - /url: /ru/cart
+          - img [ref=e35]
+  - main [ref=e39]:
+    - generic [ref=e40]:
+      - navigation "Навигационная цепочка" [ref=e41]:
+        - list [ref=e42]:
+          - listitem [ref=e43]:
+            - link "Главная" [ref=e44] [cursor=pointer]:
+              - /url: /ru
+          - listitem [ref=e45]: /
+          - listitem [ref=e46]:
+            - generic [ref=e47]: Меню — AULA GreenLine Aqua
+      - generic [ref=e48]:
+        - heading "Меню — AULA GreenLine Aqua" [level=1] [ref=e49]
+        - paragraph [ref=e50]:
+          - link "Адрес и часы работы филиала" [ref=e51] [cursor=pointer]:
+            - /url: /ru/branches/greenline
+        - img [ref=e54]
+      - list [ref=e59]:
+        - listitem [ref=e60]:
+          - article [ref=e61]:
+            - generic [ref=e62]:
+              - paragraph [ref=e63]: Бизнес-ланч в GreenLine Aqua
+              - paragraph [ref=e64]: По будням с 12:00 до 16:00
+              - link "Подробнее" [ref=e65] [cursor=pointer]:
+                - /url: /ru/promotions/biznes-lanch
+                - text: Подробнее
+                - img [ref=e66]
+      - search "Поиск и фильтры" [ref=e68]:
+        - generic [ref=e69]:
+          - generic [ref=e70]: Поиск по меню
+          - generic [ref=e71]:
+            - img
+            - searchbox "Поиск по меню" [ref=e72]
+          - button "Найти" [ref=e73]:
+            - generic [ref=e74]: Найти
+        - group [ref=e75]:
+          - generic "Фильтры" [ref=e76] [cursor=pointer]:
+            - img [ref=e77]
+            - text: Фильтры
+          - option "Все разделы" [selected]
+          - option "Салаты"
+          - option "Супы"
+          - option "Казахская кухня"
+          - option "Горячие блюда"
+          - option "Шашлык и гриль"
+          - option "Выпечка"
+          - option "Десерты"
+          - option "Напитки"
+      - navigation "Разделы меню" [ref=e80]:
+        - list [ref=e81]:
+          - listitem [ref=e82]:
+            - link "Салаты" [ref=e83] [cursor=pointer]:
+              - /url: "#section-salaty"
+          - listitem [ref=e84]:
+            - link "Супы" [ref=e85] [cursor=pointer]:
+              - /url: "#section-supy"
+          - listitem [ref=e86]:
+            - link "Казахская кухня" [ref=e87] [cursor=pointer]:
+              - /url: "#section-kazakhskaya-kukhnya"
+          - listitem [ref=e88]:
+            - link "Горячие блюда" [ref=e89] [cursor=pointer]:
+              - /url: "#section-goryachie-blyuda"
+          - listitem [ref=e90]:
+            - link "Шашлык и гриль" [ref=e91] [cursor=pointer]:
+              - /url: "#section-shashlyk"
+          - listitem [ref=e92]:
+            - link "Выпечка" [ref=e93] [cursor=pointer]:
+              - /url: "#section-vypechka"
+          - listitem [ref=e94]:
+            - link "Десерты" [ref=e95] [cursor=pointer]:
+              - /url: "#section-deserty"
+          - listitem [ref=e96]:
+            - link "Напитки" [ref=e97] [cursor=pointer]:
+              - /url: "#section-napitki"
+      - region "Салаты" [ref=e98]:
+        - generic [ref=e99]:
+          - heading "Салаты" [level=2] [ref=e100]
+          - link "Открыть раздел «Салаты»" [ref=e101] [cursor=pointer]:
+            - /url: /ru/greenline/menu/salaty
+            - text: Весь раздел · 4 блюда
+            - img [ref=e102]
+        - paragraph [ref=e104]: Свежие салаты и закуски
+        - list [ref=e105]:
+          - listitem [ref=e106]:
+            - article [ref=e107]:
+              - img [ref=e110]
+              - generic [ref=e114]:
+                - heading "Ачичук" [level=3] [ref=e115]:
+                  - link "Ачичук" [ref=e116] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/salaty/achichuk
+                - paragraph [ref=e117]: 250 г
+                - paragraph [ref=e118]: Классический салат к плову и мясу
+                - list [ref=e119]:
+                  - listitem [ref=e120]:
+                    - img [ref=e121]
+                    - text: Вегетарианское
+                  - 'listitem "Острота: 1 из 3" [ref=e124]':
+                    - img [ref=e126]
+                    - text: Острое
+                    - generic [ref=e128]: ". Острота: 1 из 3"
+                  - listitem [ref=e129]: Халал
+                - generic [ref=e130]:
+                  - paragraph [ref=e131]: 1 900 ₸
+                  - button "Добавить «Ачичук» в корзину" [ref=e132]:
+                    - img [ref=e133]
+                    - text: В корзину
+                  - status [ref=e135]
+          - listitem [ref=e136]:
+            - article [ref=e137]:
+              - img [ref=e140]
+              - generic [ref=e144]:
+                - heading "Салат с казы" [level=3] [ref=e145]:
+                  - link "Салат с казы" [ref=e146] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/salaty/salat-s-kazy
+                - paragraph [ref=e147]: 250 г
+                - paragraph [ref=e148]: Сытный салат с домашней конской колбасой
+                - list [ref=e149]:
+                  - listitem [ref=e150]: Халал
+                - generic [ref=e151]:
+                  - paragraph [ref=e152]: 3 400 ₸
+                  - button "Добавить «Салат с казы» в корзину" [ref=e153]:
+                    - img [ref=e154]
+                    - text: В корзину
+                  - status [ref=e156]
+          - listitem [ref=e157]:
+            - article [ref=e158]:
+              - img [ref=e161]
+              - generic [ref=e165]:
+                - heading "Цезарь с курицей" [level=3] [ref=e166]:
+                  - link "Цезарь с курицей" [ref=e167] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/salaty/cezar-s-kuricey
+                - paragraph [ref=e168]: 280 г
+                - paragraph [ref=e169]: Романо, куриное филе гриль, пармезан и соус цезарь
+                - list [ref=e170]:
+                  - listitem [ref=e171]: Халал
+                - generic [ref=e172]:
+                  - paragraph [ref=e173]: 3 200 ₸
+                  - button "Добавить «Цезарь с курицей» в корзину" [ref=e174]:
+                    - img [ref=e175]
+                    - text: В корзину
+                  - status [ref=e177]
+          - listitem [ref=e178]:
+            - article [ref=e179]:
+              - img [ref=e182]
+              - generic [ref=e186]:
+                - heading "Греческий" [level=3] [ref=e187]:
+                  - link "Греческий" [ref=e188] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/salaty/grecheskiy
+                - paragraph [ref=e189]: 270 г
+                - paragraph [ref=e190]: Свежие овощи с фетой и оливками
+                - list [ref=e191]:
+                  - listitem [ref=e192]:
+                    - img [ref=e193]
+                    - text: Вегетарианское
+                  - listitem [ref=e196]: Халал
+                - generic [ref=e197]:
+                  - paragraph [ref=e198]: 2 600 ₸
+                  - button "Добавить «Греческий» в корзину" [ref=e199]:
+                    - img [ref=e200]
+                    - text: В корзину
+                  - status [ref=e202]
+      - region "Супы" [ref=e203]:
+        - generic [ref=e204]:
+          - heading "Супы" [level=2] [ref=e205]
+          - link "Открыть раздел «Супы»" [ref=e206] [cursor=pointer]:
+            - /url: /ru/greenline/menu/supy
+            - text: Весь раздел · 4 блюда
+            - img [ref=e207]
+        - paragraph [ref=e209]: Наваристые супы на домашнем бульоне
+        - list [ref=e210]:
+          - listitem [ref=e211]:
+            - article [ref=e212]:
+              - img [ref=e215]
+              - generic [ref=e219]:
+                - heading "Сорпа" [level=3] [ref=e220]:
+                  - link "Сорпа" [ref=e221] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/supy/sorpa
+                - paragraph [ref=e222]: 400 г
+                - paragraph [ref=e223]: Крепкий бульон из баранины с зеленью
+                - list [ref=e224]:
+                  - listitem [ref=e225]: Халал
+                - generic [ref=e226]:
+                  - paragraph [ref=e227]: 2 400 ₸
+                  - button "Добавить «Сорпа» в корзину" [ref=e228]:
+                    - img [ref=e229]
+                    - text: В корзину
+                  - status [ref=e231]
+          - listitem [ref=e232]:
+            - article [ref=e233]:
+              - img [ref=e236]
+              - generic [ref=e240]:
+                - heading "Шурпа из баранины" [level=3] [ref=e241]:
+                  - link "Шурпа из баранины" [ref=e242] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/supy/shurpa
+                - paragraph [ref=e243]: 450 г
+                - paragraph [ref=e244]: Густой суп с бараниной и овощами
+                - list [ref=e245]:
+                  - listitem [ref=e246]: Халал
+                - generic [ref=e247]:
+                  - paragraph [ref=e248]: 3 200 ₸
+                  - 'link "Выбрать добавки: Шурпа из баранины" [ref=e249] [cursor=pointer]':
+                    - /url: /ru/greenline/menu/supy/shurpa
+                    - text: Выбрать
+          - listitem [ref=e250]:
+            - article [ref=e251]:
+              - img [ref=e254]
+              - generic [ref=e258]:
+                - heading "Кеспе" [level=3] [ref=e259]:
+                  - link "Кеспе" [ref=e260] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/supy/kespe
+                - paragraph [ref=e261]: 400 г
+                - paragraph [ref=e262]: Суп с домашней лапшой и говядиной
+                - list [ref=e263]:
+                  - listitem [ref=e264]: Халал
+                - generic [ref=e265]:
+                  - paragraph [ref=e266]: 2 900 ₸
+                  - button "Добавить «Кеспе» в корзину" [ref=e267]:
+                    - img [ref=e268]
+                    - text: В корзину
+                  - status [ref=e270]
+          - listitem [ref=e271]:
+            - article [ref=e272]:
+              - img [ref=e275]
+              - generic [ref=e279]:
+                - heading "Крем-суп из тыквы" [level=3] [ref=e280]:
+                  - link "Крем-суп из тыквы" [ref=e281] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/supy/krem-sup-iz-tykvy
+                - paragraph [ref=e282]: 300 г
+                - paragraph [ref=e283]: Нежный суп-пюре со сливками и тыквенными семечками
+                - list [ref=e284]:
+                  - listitem [ref=e285]:
+                    - img [ref=e286]
+                    - text: Вегетарианское
+                  - listitem [ref=e289]: Халал
+                - generic [ref=e290]:
+                  - paragraph [ref=e291]: 2 400 ₸
+                  - button "Добавить «Крем-суп из тыквы» в корзину" [ref=e292]:
+                    - img [ref=e293]
+                    - text: В корзину
+                  - status [ref=e295]
+      - region "Казахская кухня" [ref=e296]:
+        - generic [ref=e297]:
+          - heading "Казахская кухня" [level=2] [ref=e298]
+          - link "Открыть раздел «Казахская кухня»" [ref=e299] [cursor=pointer]:
+            - /url: /ru/greenline/menu/kazakhskaya-kukhnya
+            - text: Весь раздел · 4 блюда
+            - img [ref=e300]
+        - paragraph [ref=e302]: Бешбармак, казы, куырдак и манты по семейным рецептам
+        - list [ref=e303]:
+          - listitem [ref=e304]:
+            - article [ref=e305]:
+              - img [ref=e308]
+              - generic [ref=e312]:
+                - heading "Бешбармак" [level=3] [ref=e313]:
+                  - link "Бешбармак" [ref=e314] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/kazakhskaya-kukhnya/beshbarmak
+                - paragraph [ref=e315]: 500 г
+                - paragraph [ref=e316]: "Главное блюдо казахского дастархана: отварная конина и баранина с тонким тестом и луком в сорпе"
+                - list [ref=e317]:
+                  - listitem [ref=e318]: Халал
+                - generic [ref=e319]:
+                  - paragraph [ref=e320]: 5 900 ₸
+                  - 'link "Выбрать добавки: Бешбармак" [ref=e321] [cursor=pointer]':
+                    - /url: /ru/greenline/menu/kazakhskaya-kukhnya/beshbarmak
+                    - text: Выбрать
+          - listitem [ref=e322]:
+            - article [ref=e323]:
+              - img [ref=e326]
+              - generic [ref=e330]:
+                - heading "Казы" [level=3] [ref=e331]:
+                  - link "Казы" [ref=e332] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/kazakhskaya-kukhnya/kazy
+                - paragraph [ref=e333]: 200 г
+                - paragraph [ref=e334]: Домашняя колбаса из конины, нарезка
+                - list [ref=e335]:
+                  - listitem [ref=e336]: Халал
+                - generic [ref=e337]:
+                  - paragraph [ref=e338]: 4 900 ₸
+                  - button "Добавить «Казы» в корзину" [ref=e339]:
+                    - img [ref=e340]
+                    - text: В корзину
+                  - status [ref=e342]
+          - listitem [ref=e343]:
+            - article [ref=e344]:
+              - img [ref=e347]
+              - generic [ref=e351]:
+                - heading "Куырдак" [level=3] [ref=e352]:
+                  - link "Куырдак" [ref=e353] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/kazakhskaya-kukhnya/kuyrdak
+                - paragraph [ref=e354]: 350 г
+                - paragraph [ref=e355]: Жаркое из баранины с субпродуктами и картофелем
+                - list [ref=e356]:
+                  - 'listitem "Острота: 1 из 3" [ref=e357]':
+                    - img [ref=e359]
+                    - text: Острое
+                    - generic [ref=e361]: ". Острота: 1 из 3"
+                  - listitem [ref=e362]: Халал
+                - generic [ref=e363]:
+                  - paragraph [ref=e364]: 4 300 ₸
+                  - 'link "Выбрать добавки: Куырдак" [ref=e365] [cursor=pointer]':
+                    - /url: /ru/greenline/menu/kazakhskaya-kukhnya/kuyrdak
+                    - text: Выбрать
+          - listitem [ref=e366]:
+            - article [ref=e367]:
+              - img [ref=e370]
+              - generic [ref=e374]:
+                - heading "Манты, 5 шт." [level=3] [ref=e375]:
+                  - link "Манты, 5 шт." [ref=e376] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/kazakhskaya-kukhnya/manty
+                - paragraph [ref=e377]: 400 г
+                - paragraph [ref=e378]: Сочные манты с говядиной и курдючным жиром на пару
+                - list [ref=e379]:
+                  - listitem [ref=e380]: Халал
+                - generic [ref=e381]:
+                  - paragraph [ref=e382]: 3 600 ₸
+                  - 'link "Выбрать добавки: Манты, 5 шт." [ref=e383] [cursor=pointer]':
+                    - /url: /ru/greenline/menu/kazakhskaya-kukhnya/manty
+                    - text: Выбрать
+      - region "Горячие блюда" [ref=e384]:
+        - generic [ref=e385]:
+          - heading "Горячие блюда" [level=2] [ref=e386]
+          - link "Открыть раздел «Горячие блюда»" [ref=e387] [cursor=pointer]:
+            - /url: /ru/greenline/menu/goryachie-blyuda
+            - text: Весь раздел · 4 блюда
+            - img [ref=e388]
+        - paragraph [ref=e390]: Лагман, плов, стейки и паста
+        - list [ref=e391]:
+          - listitem [ref=e392]:
+            - article [ref=e393]:
+              - img [ref=e396]
+              - generic [ref=e400]:
+                - heading "Лагман гуйру" [level=3] [ref=e401]:
+                  - link "Лагман гуйру" [ref=e402] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/goryachie-blyuda/lagman
+                - paragraph [ref=e403]: 450 г
+                - paragraph [ref=e404]: Тянутая лапша с говядиной и овощами
+                - list [ref=e405]:
+                  - 'listitem "Острота: 1 из 3" [ref=e406]':
+                    - img [ref=e408]
+                    - text: Острое
+                    - generic [ref=e410]: ". Острота: 1 из 3"
+                  - listitem [ref=e411]: Халал
+                - generic [ref=e412]:
+                  - paragraph [ref=e413]: 3 400 ₸
+                  - 'link "Выбрать добавки: Лагман гуйру" [ref=e414] [cursor=pointer]':
+                    - /url: /ru/greenline/menu/goryachie-blyuda/lagman
+                    - text: Выбрать
+          - listitem [ref=e415]:
+            - article [ref=e416]:
+              - img [ref=e419]
+              - generic [ref=e423]:
+                - heading "Плов с бараниной" [level=3] [ref=e424]:
+                  - link "Плов с бараниной" [ref=e425] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/goryachie-blyuda/plov
+                - paragraph [ref=e426]: 400 г
+                - paragraph [ref=e427]: Плов в казане с бараниной, жёлтой морковью и нутом
+                - list [ref=e428]:
+                  - listitem [ref=e429]: Халал
+                - generic [ref=e430]:
+                  - paragraph [ref=e431]: 3 500 ₸
+                  - 'link "Выбрать добавки: Плов с бараниной" [ref=e432] [cursor=pointer]':
+                    - /url: /ru/greenline/menu/goryachie-blyuda/plov
+                    - text: Выбрать
+          - listitem [ref=e433]:
+            - article [ref=e434]:
+              - img [ref=e437]
+              - generic [ref=e441]:
+                - heading "Стейк рибай" [level=3] [ref=e442]:
+                  - link "Стейк рибай" [ref=e443] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/goryachie-blyuda/steyk-ribay
+                - paragraph [ref=e444]: 300 г
+                - paragraph [ref=e445]: Мраморная говядина зернового откорма, прожарка на выбор
+                - list [ref=e446]:
+                  - listitem [ref=e447]: Халал
+                - generic [ref=e448]:
+                  - paragraph [ref=e449]: 12 900 ₸
+                  - 'link "Выбрать добавки: Стейк рибай" [ref=e450] [cursor=pointer]':
+                    - /url: /ru/greenline/menu/goryachie-blyuda/steyk-ribay
+                    - text: Выбрать
+          - listitem [ref=e451]:
+            - article [ref=e452]:
+              - img [ref=e455]
+              - generic [ref=e459]:
+                - heading "Паста карбонара с индейкой" [level=3] [ref=e460]:
+                  - link "Паста карбонара с индейкой" [ref=e461] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/goryachie-blyuda/pasta-karbonara
+                - paragraph [ref=e462]: 320 г
+                - paragraph [ref=e463]: Спагетти в сливочном соусе с копчёной индейкой (халал)
+                - list [ref=e464]:
+                  - listitem [ref=e465]: Халал
+                - generic [ref=e466]:
+                  - paragraph [ref=e467]: 3 600 ₸
+                  - button "Добавить «Паста карбонара с индейкой» в корзину" [ref=e468]:
+                    - img [ref=e469]
+                    - text: В корзину
+                  - status [ref=e471]
+      - region "Шашлык и гриль" [ref=e472]:
+        - generic [ref=e473]:
+          - heading "Шашлык и гриль" [level=2] [ref=e474]
+          - link "Открыть раздел «Шашлык и гриль»" [ref=e475] [cursor=pointer]:
+            - /url: /ru/greenline/menu/shashlyk
+            - text: Весь раздел · 4 блюда
+            - img [ref=e476]
+        - paragraph [ref=e478]: Мясо и овощи на мангале
+        - list [ref=e479]:
+          - listitem [ref=e480]:
+            - article [ref=e481]:
+              - img [ref=e484]
+              - generic [ref=e488]:
+                - heading "Шашлык из баранины" [level=3] [ref=e489]:
+                  - link "Шашлык из баранины" [ref=e490] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/shashlyk/shashlyk-iz-baraniny
+                - paragraph [ref=e491]: 200 г
+                - paragraph [ref=e492]: Мякоть баранины на мангале, 1 шампур
+                - list [ref=e493]:
+                  - listitem [ref=e494]: Халал
+                - generic [ref=e495]:
+                  - paragraph [ref=e496]: 4 200 ₸
+                  - 'link "Выбрать добавки: Шашлык из баранины" [ref=e497] [cursor=pointer]':
+                    - /url: /ru/greenline/menu/shashlyk/shashlyk-iz-baraniny
+                    - text: Выбрать
+          - listitem [ref=e498]:
+            - article [ref=e499]:
+              - img [ref=e502]
+              - generic [ref=e506]:
+                - heading "Шашлык из говядины" [level=3] [ref=e507]:
+                  - link "Шашлык из говядины" [ref=e508] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/shashlyk/shashlyk-iz-govyadiny
+                - paragraph [ref=e509]: 180 г
+                - paragraph [ref=e510]: Маринованная говяжья вырезка, 1 шампур
+                - list [ref=e511]:
+                  - listitem [ref=e512]: Халал
+                - generic [ref=e513]:
+                  - paragraph [ref=e514]: 3 800 ₸
+                  - 'link "Выбрать добавки: Шашлык из говядины" [ref=e515] [cursor=pointer]':
+                    - /url: /ru/greenline/menu/shashlyk/shashlyk-iz-govyadiny
+                    - text: Выбрать
+          - listitem [ref=e516]:
+            - article [ref=e517]:
+              - img [ref=e520]
+              - generic [ref=e524]:
+                - heading "Шашлык из курицы" [level=3] [ref=e525]:
+                  - link "Шашлык из курицы" [ref=e526] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/shashlyk/shashlyk-iz-kuricy
+                - paragraph [ref=e527]: 200 г
+                - paragraph [ref=e528]: Куриное бедро в пряном маринаде, 1 шампур
+                - list [ref=e529]:
+                  - 'listitem "Острота: 1 из 3" [ref=e530]':
+                    - img [ref=e532]
+                    - text: Острое
+                    - generic [ref=e534]: ". Острота: 1 из 3"
+                  - listitem [ref=e535]: Халал
+                - generic [ref=e536]:
+                  - paragraph [ref=e537]: 2 900 ₸
+                  - 'link "Выбрать добавки: Шашлык из курицы" [ref=e538] [cursor=pointer]':
+                    - /url: /ru/greenline/menu/shashlyk/shashlyk-iz-kuricy
+                    - text: Выбрать
+          - listitem [ref=e539]:
+            - article [ref=e540]:
+              - img [ref=e543]
+              - generic [ref=e547]:
+                - heading "Овощи на мангале" [level=3] [ref=e548]:
+                  - link "Овощи на мангале" [ref=e549] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/shashlyk/ovoshchi-na-mangale
+                - paragraph [ref=e550]: 250 г
+                - paragraph [ref=e551]: Баклажаны, перец, томаты и шампиньоны на углях
+                - list [ref=e552]:
+                  - listitem [ref=e553]:
+                    - img [ref=e554]
+                    - text: Вегетарианское
+                  - listitem [ref=e557]: Халал
+                - generic [ref=e558]:
+                  - paragraph [ref=e559]: 2 200 ₸
+                  - button "Добавить «Овощи на мангале» в корзину" [ref=e560]:
+                    - img [ref=e561]
+                    - text: В корзину
+                  - status [ref=e563]
+      - region "Выпечка" [ref=e564]:
+        - generic [ref=e565]:
+          - heading "Выпечка" [level=2] [ref=e566]
+          - link "Открыть раздел «Выпечка»" [ref=e567] [cursor=pointer]:
+            - /url: /ru/greenline/menu/vypechka
+            - text: Весь раздел · 2 блюда
+            - img [ref=e568]
+        - paragraph [ref=e570]: Баурсаки и лепёшки из тандыра
+        - list [ref=e571]:
+          - listitem [ref=e572]:
+            - article [ref=e573]:
+              - img [ref=e576]
+              - generic [ref=e580]:
+                - heading "Баурсаки, 10 шт." [level=3] [ref=e581]:
+                  - link "Баурсаки, 10 шт." [ref=e582] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/vypechka/baursaki
+                - paragraph [ref=e583]: 250 г
+                - paragraph [ref=e584]: Пышные баурсаки к чаю и сорпе
+                - list [ref=e585]:
+                  - listitem [ref=e586]:
+                    - img [ref=e587]
+                    - text: Вегетарианское
+                  - listitem [ref=e590]: Халал
+                - generic [ref=e591]:
+                  - paragraph [ref=e592]: 1 200 ₸
+                  - button "Добавить «Баурсаки, 10 шт.» в корзину" [ref=e593]:
+                    - img [ref=e594]
+                    - text: В корзину
+                  - status [ref=e596]
+          - listitem [ref=e597]:
+            - article [ref=e598]:
+              - img [ref=e601]
+              - generic [ref=e605]:
+                - heading "Лепёшка из тандыра" [level=3] [ref=e606]:
+                  - link "Лепёшка из тандыра" [ref=e607] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/vypechka/tandyr-nan
+                - paragraph [ref=e608]: 200 г
+                - paragraph [ref=e609]: Горячая лепёшка с кунжутом
+                - list [ref=e610]:
+                  - listitem [ref=e611]:
+                    - img [ref=e612]
+                    - text: Вегетарианское
+                  - listitem [ref=e615]: Халал
+                - generic [ref=e616]:
+                  - paragraph [ref=e617]: 600 ₸
+                  - button "Добавить «Лепёшка из тандыра» в корзину" [ref=e618]:
+                    - img [ref=e619]
+                    - text: В корзину
+                  - status [ref=e621]
+      - region "Десерты" [ref=e622]:
+        - generic [ref=e623]:
+          - heading "Десерты" [level=2] [ref=e624]
+          - link "Открыть раздел «Десерты»" [ref=e625] [cursor=pointer]:
+            - /url: /ru/greenline/menu/deserty
+            - text: Весь раздел · 3 блюда
+            - img [ref=e626]
+        - paragraph [ref=e628]: Восточные и европейские сладости
+        - list [ref=e629]:
+          - listitem [ref=e630]:
+            - article [ref=e631]:
+              - img [ref=e634]
+              - generic [ref=e638]:
+                - heading "Чак-чак" [level=3] [ref=e639]:
+                  - link "Чак-чак" [ref=e640] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/deserty/chak-chak
+                - paragraph [ref=e641]: 150 г
+                - paragraph [ref=e642]: Хрустящее тесто в медовом сиропе
+                - list [ref=e643]:
+                  - listitem [ref=e644]:
+                    - img [ref=e645]
+                    - text: Вегетарианское
+                  - listitem [ref=e648]: Халал
+                - generic [ref=e649]:
+                  - paragraph [ref=e650]: 1 800 ₸
+                  - button "Добавить «Чак-чак» в корзину" [ref=e651]:
+                    - img [ref=e652]
+                    - text: В корзину
+                  - status [ref=e654]
+          - listitem [ref=e655]:
+            - article [ref=e656]:
+              - img [ref=e659]
+              - generic [ref=e663]:
+                - heading "Жент" [level=3] [ref=e664]:
+                  - link "Жент" [ref=e665] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/deserty/zhent
+                - paragraph [ref=e666]: 120 г
+                - paragraph [ref=e667]: Традиционная сладость из толокна, масла и изюма
+                - list [ref=e668]:
+                  - listitem [ref=e669]:
+                    - img [ref=e670]
+                    - text: Вегетарианское
+                  - listitem [ref=e673]: Халал
+                - generic [ref=e674]:
+                  - paragraph [ref=e675]: 1 800 ₸
+                  - button "Добавить «Жент» в корзину" [ref=e676]:
+                    - img [ref=e677]
+                    - text: В корзину
+                  - status [ref=e679]
+          - listitem [ref=e680]:
+            - article [ref=e681]:
+              - img [ref=e684]
+              - generic [ref=e688]:
+                - heading "Медовик" [level=3] [ref=e689]:
+                  - link "Медовик" [ref=e690] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/deserty/medovik
+                - paragraph [ref=e691]: 150 г
+                - paragraph [ref=e692]: Медовые коржи со сметанным кремом
+                - list [ref=e693]:
+                  - listitem [ref=e694]:
+                    - img [ref=e695]
+                    - text: Вегетарианское
+                  - listitem [ref=e698]: Халал
+                - generic [ref=e699]:
+                  - paragraph [ref=e700]: 2 100 ₸
+                  - button "Добавить «Медовик» в корзину" [ref=e701]:
+                    - img [ref=e702]
+                    - text: В корзину
+                  - status [ref=e704]
+      - region "Напитки" [ref=e705]:
+        - generic [ref=e706]:
+          - heading "Напитки" [level=2] [ref=e707]
+          - link "Открыть раздел «Напитки»" [ref=e708] [cursor=pointer]:
+            - /url: /ru/greenline/menu/napitki
+            - text: Весь раздел · 5 блюд
+            - img [ref=e709]
+        - paragraph [ref=e711]: Кумыс, шубат, чай и домашние лимонады
+        - list [ref=e712]:
+          - listitem [ref=e713]:
+            - article [ref=e714]:
+              - img [ref=e717]
+              - generic [ref=e721]:
+                - heading "Кумыс, 0,5 л" [level=3] [ref=e722]:
+                  - link "Кумыс, 0,5 л" [ref=e723] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/napitki/kumys
+                - paragraph [ref=e724]: Кобылье молоко естественного брожения
+                - list [ref=e725]:
+                  - listitem [ref=e726]:
+                    - img [ref=e727]
+                    - text: Вегетарианское
+                  - listitem [ref=e730]: Халал
+                - generic [ref=e731]:
+                  - paragraph [ref=e732]: 1 900 ₸
+                  - button "Добавить «Кумыс, 0,5 л» в корзину" [ref=e733]:
+                    - img [ref=e734]
+                    - text: В корзину
+                  - status [ref=e736]
+          - listitem [ref=e737]:
+            - article [ref=e738]:
+              - img [ref=e741]
+              - generic [ref=e745]:
+                - heading "Шубат, 0,5 л" [level=3] [ref=e746]:
+                  - link "Шубат, 0,5 л" [ref=e747] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/napitki/shubat
+                - paragraph [ref=e748]: Кисломолочный напиток из верблюжьего молока
+                - list [ref=e749]:
+                  - listitem [ref=e750]:
+                    - img [ref=e751]
+                    - text: Вегетарианское
+                  - listitem [ref=e754]: Халал
+                - generic [ref=e755]:
+                  - paragraph [ref=e756]: 2 100 ₸
+                  - button "Добавить «Шубат, 0,5 л» в корзину" [ref=e757]:
+                    - img [ref=e758]
+                    - text: В корзину
+                  - status [ref=e760]
+          - listitem [ref=e761]:
+            - article [ref=e762]:
+              - img [ref=e765]
+              - generic [ref=e769]:
+                - heading "Чай с молоком" [level=3] [ref=e770]:
+                  - link "Чай с молоком" [ref=e771] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/napitki/chay-s-molokom
+                - paragraph [ref=e772]: Чёрный чай по-казахски со сливками
+                - list [ref=e773]:
+                  - listitem [ref=e774]:
+                    - img [ref=e775]
+                    - text: Вегетарианское
+                  - listitem [ref=e778]: Халал
+                - generic [ref=e779]:
+                  - paragraph [ref=e780]: 1 400 ₸
+                  - 'link "Выбрать добавки: Чай с молоком" [ref=e781] [cursor=pointer]':
+                    - /url: /ru/greenline/menu/napitki/chay-s-molokom
+                    - text: Выбрать
+          - listitem [ref=e782]:
+            - article [ref=e783]:
+              - img [ref=e786]
+              - generic [ref=e790]:
+                - heading "Лимонад облепиховый" [level=3] [ref=e791]:
+                  - link "Лимонад облепиховый" [ref=e792] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/napitki/limonad-oblepikha
+                - paragraph [ref=e793]: Домашний лимонад с облепихой и мятой
+                - list [ref=e794]:
+                  - listitem [ref=e795]:
+                    - img [ref=e796]
+                    - text: Вегетарианское
+                  - listitem [ref=e799]: Халал
+                - generic [ref=e800]:
+                  - paragraph [ref=e801]: 1 500 ₸
+                  - 'link "Выбрать добавки: Лимонад облепиховый" [ref=e802] [cursor=pointer]':
+                    - /url: /ru/greenline/menu/napitki/limonad-oblepikha
+                    - text: Выбрать
+          - listitem [ref=e803]:
+            - article [ref=e804]:
+              - img [ref=e807]
+              - generic [ref=e811]:
+                - heading "Лимонад манго-маракуйя" [level=3] [ref=e812]:
+                  - link "Лимонад манго-маракуйя" [ref=e813] [cursor=pointer]:
+                    - /url: /ru/greenline/menu/napitki/limonad-mango-marakuyya
+                - paragraph [ref=e814]: Тропический лимонад с пюре манго и маракуйи
+                - list [ref=e815]:
+                  - listitem [ref=e816]:
+                    - img [ref=e817]
+                    - text: Вегетарианское
+                  - listitem [ref=e820]: Халал
+                - generic [ref=e821]:
+                  - paragraph [ref=e822]: 1 600 ₸
+                  - 'link "Выбрать добавки: Лимонад манго-маракуйя" [ref=e823] [cursor=pointer]':
+                    - /url: /ru/greenline/menu/napitki/limonad-mango-marakuyya
+                    - text: Выбрать
+  - contentinfo [ref=e824]:
+    - img
+    - generic [ref=e825]:
+      - generic [ref=e826]:
+        - generic [ref=e827]:
+          - img [ref=e829]
+          - generic [ref=e833]: AULA
+        - paragraph [ref=e834]: Казахская кухня и гостеприимство в Астане
+        - paragraph [ref=e835]: Оплата онлайн или при получении
+      - region "Наши филиалы" [ref=e836]:
+        - heading "Наши филиалы" [level=2] [ref=e837]
+        - list [ref=e838]:
+          - listitem [ref=e839]:
+            - link "AULA GreenLine Aqua" [ref=e840] [cursor=pointer]:
+              - /url: /ru/branches/greenline
+            - generic [ref=e841]: Астана, ул. Е-899, 1/1 (ЖК GreenLine Aqua)
+            - link "+7 717 200 00 00" [ref=e843] [cursor=pointer]:
+              - /url: tel:+77172000000
+              - img [ref=e844]
+              - text: +7 717 200 00 00
+          - listitem [ref=e846]:
+            - link "AULA Garden View" [ref=e847] [cursor=pointer]:
+              - /url: /ru/branches/garden-view
+            - generic [ref=e848]: Астана, пр. Кабанбай батыра, 56 (ЖК Garden View)
+            - link "+7 717 200 00 00" [ref=e850] [cursor=pointer]:
+              - /url: tel:+77172000000
+              - img [ref=e851]
+              - text: +7 717 200 00 00
+      - navigation "Гостям" [ref=e853]:
+        - heading "Гостям" [level=2] [ref=e854]
+        - list [ref=e855]:
+          - listitem [ref=e856]:
+            - link "О ресторане" [ref=e857] [cursor=pointer]:
+              - /url: /ru/pages/about
+          - listitem [ref=e858]:
+            - link "Доставка" [ref=e859] [cursor=pointer]:
+              - /url: /ru/pages/delivery
+          - listitem [ref=e860]:
+            - link "Оплата" [ref=e861] [cursor=pointer]:
+              - /url: /ru/pages/payment
+          - listitem [ref=e862]:
+            - link "Контакты" [ref=e863] [cursor=pointer]:
+              - /url: /ru/pages/contacts
+          - listitem [ref=e864]:
+            - link "Акции" [ref=e865] [cursor=pointer]:
+              - /url: /ru/promotions
+          - listitem [ref=e866]:
+            - link "Сертификаты" [ref=e867] [cursor=pointer]:
+              - /url: /ru/certificates
+          - listitem [ref=e868]:
+            - link "Филиалы" [ref=e869] [cursor=pointer]:
+              - /url: /ru/branches
+      - navigation "Документы" [ref=e870]:
+        - heading "Документы" [level=2] [ref=e871]
+        - list [ref=e872]:
+          - listitem [ref=e873]:
+            - link "Публичная оферта" [ref=e874] [cursor=pointer]:
+              - /url: /ru/pages/offer
+          - listitem [ref=e875]:
+            - link "Политика конфиденциальности" [ref=e876] [cursor=pointer]:
+              - /url: /ru/pages/privacy
+          - listitem [ref=e877]:
+            - link "Согласие на обработку персональных данных" [ref=e878] [cursor=pointer]:
+              - /url: /ru/consents/personal-data
+    - generic [ref=e880]:
+      - paragraph [ref=e881]: © 2026 AULA. Все права защищены.
+      - paragraph [ref=e882]: ТОО «Express kitchen»
+  - alert [ref=e883]
+```

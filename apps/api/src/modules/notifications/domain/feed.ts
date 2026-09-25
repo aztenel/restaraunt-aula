@@ -1,7 +1,7 @@
 import { Actor } from '../../../shared/kernel/actor';
 import { ValidationError } from '../../../shared/kernel/errors';
 import { Permission } from '../../../shared/kernel/permissions';
-import { AdminFeedEvent, AdminFeedStream } from '../public';
+import { AdminFeedEntityType, AdminFeedEvent, AdminFeedStream } from '../public';
 
 /**
  * Лента событий админки: очереди новых заказов, броней, банкетных заявок (со звуком о новом)
@@ -9,6 +9,15 @@ import { AdminFeedEvent, AdminFeedStream } from '../public';
  */
 export const FEED_STREAMS: readonly AdminFeedStream[] = ['orders', 'reservations', 'banquets', 'system'];
 export const FEED_KINDS: ReadonlyArray<AdminFeedEvent['kind']> = ['created', 'updated'];
+export const FEED_ENTITY_TYPES: readonly AdminFeedEntityType[] = ['order', 'reservation', 'banquet_request', 'failed_job', 'branch', 'dish'];
+
+/** Тип сущности по умолчанию для потока (события без явного entityType, в т.ч. старые записи). */
+export const DEFAULT_FEED_ENTITY_TYPES: Readonly<Record<AdminFeedStream, AdminFeedEntityType | null>> = {
+  orders: 'order',
+  reservations: 'reservation',
+  banquets: 'banquet_request',
+  system: null,
+};
 
 export const FEED_STREAM_PERMISSIONS: Readonly<Record<AdminFeedStream, Permission>> = {
   orders: Permission.OrdersView,
@@ -49,7 +58,7 @@ export function visibleStreams(actor: Actor): AdminFeedStream[] {
 }
 
 /** Проверка и нормализация события от модулей: поток и вид — из перечня, заголовок обрезается, звук по умолчанию для нового. */
-export function normalizeFeedEvent(event: AdminFeedEvent): AdminFeedEvent & { sound: boolean } {
+export function normalizeFeedEvent(event: AdminFeedEvent): AdminFeedEvent & { sound: boolean; entityType: AdminFeedEntityType | null } {
   if (!FEED_STREAMS.includes(event.stream)) {
     throw new ValidationError('admin_feed.invalid_stream', `Unknown feed stream ${String(event.stream)}`);
   }
@@ -59,11 +68,15 @@ export function normalizeFeedEvent(event: AdminFeedEvent): AdminFeedEvent & { so
   const entityId = String(event.entityId ?? '').trim();
   if (!entityId) throw new ValidationError('admin_feed.entity_required', 'Feed event must reference an entity');
   const title = String(event.title ?? '').trim().slice(0, FEED_TITLE_MAX_LENGTH);
+  if (event.entityType && !FEED_ENTITY_TYPES.includes(event.entityType)) {
+    throw new ValidationError('admin_feed.invalid_entity_type', `Unknown feed entity type ${String(event.entityType)}`);
+  }
   return {
     branchId: event.branchId ?? null,
     stream: event.stream,
     kind: event.kind,
     entityId,
+    entityType: event.entityType ?? DEFAULT_FEED_ENTITY_TYPES[event.stream],
     title,
     sound: event.sound ?? event.kind === 'created',
   };

@@ -54,6 +54,14 @@
   html {
     -webkit-text-size-adjust: 100%;
     scroll-padding-top: 5rem;
+    /* Нижнее меню на телефоне (fixed, h-16) не должно закрывать поле, к которому прокрутили фокус. */
+    scroll-padding-bottom: 5.5rem;
+  }
+
+  @media (min-width: 48rem) {
+    html {
+      scroll-padding-bottom: 0;
+    }
   }
 
   body {

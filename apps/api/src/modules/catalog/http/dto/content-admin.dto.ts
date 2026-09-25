@@ -1,20 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {
-  ArrayMaxSize,
-  IsArray,
-  IsBoolean,
-  IsIn,
-  IsInt,
-  IsISO8601,
-  IsOptional,
-  IsString,
-  IsUUID,
-  Max,
-  MaxLength,
-  Min,
-  ValidateNested,
-} from 'class-validator';
+import { ArrayMaxSize, IsArray, IsBoolean, IsISO8601, IsIn, IsInt, IsObject, IsOptional, IsString, IsUUID, Max, MaxLength, Min, ValidateNested } from 'class-validator';
 import { TranslatableDto } from '../../../../shared/infrastructure/http/api-types';
 import { Translatable } from '../../../../shared/kernel/translatable';
 import { BANNER_PLACEMENTS } from '../../domain/content';
@@ -156,6 +142,19 @@ export class PageBodyDto implements Translatable {
   @ApiPropertyOptional({ description: 'Қазақша (HTML)' }) @IsOptional() @IsString() @MaxLength(200_000) kk?: string;
   @ApiPropertyOptional({ description: 'Русский (HTML)' }) @IsOptional() @IsString() @MaxLength(200_000) ru?: string;
   @ApiPropertyOptional({ description: 'English (HTML)' }) @IsOptional() @IsString() @MaxLength(200_000) en?: string;
+}
+
+export class PagePreviewInputDto {
+  @ApiProperty({ type: PageBodyDto, description: 'HTML по языкам — как в теле страницы' })
+  @IsObject()
+  @ValidateNested()
+  @Type(() => PageBodyDto)
+  body: PageBodyDto;
+}
+
+export class PagePreviewDto {
+  @ApiProperty({ type: PageBodyDto, description: 'HTML после санитизации (так он будет сохранён); пустые языки убраны' }) body: PageBodyDto;
+  @ApiProperty({ description: 'Санитайзер что-то убрал или изменил' }) changed: boolean;
 }
 
 export class PageInputDto {

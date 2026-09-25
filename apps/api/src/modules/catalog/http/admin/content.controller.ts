@@ -13,7 +13,10 @@ import {
   DeleteBanner,
   DeletePage,
   DeletePromotion,
+  PreviewPageHtml,
   PromotionInput,
+  RemoveBannerImage,
+  RemovePromotionImage,
   SetBannerImage,
   SetPromotionImage,
   UpdateBanner,
@@ -28,10 +31,12 @@ import {
   BannerListQueryDto,
   PageDto,
   PageInputDto,
+  PagePreviewDto,
+  PagePreviewInputDto,
   PromotionDto,
   PromotionInputDto,
 } from '../dto/content-admin.dto';
-import { requireImage, SINGLE_IMAGE_BODY } from '../uploads';
+import { ImageTooLargeInterceptor, requireImage, SINGLE_IMAGE_BODY } from '../uploads';
 
 function date(value: string | null | undefined): Date | null | undefined {
   if (value === undefined) return undefined;
@@ -56,6 +61,7 @@ export class AdminBannersController {
     private readonly updateBanner: UpdateBanner,
     private readonly deleteBanner: DeleteBanner,
     private readonly setImage: SetBannerImage,
+    private readonly removeImage: RemoveBannerImage,
   ) {}
 
   @RequirePermissions(Permission.ContentManage)
@@ -98,7 +104,7 @@ export class AdminBannersController {
 
   @RequirePermissions(Permission.ContentManage)
   @Post(':id/image')
-  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_IMAGE_BYTES, files: 1 } }))
+  @UseInterceptors(ImageTooLargeInterceptor, FileInterceptor('file', { limits: { fileSize: MAX_IMAGE_BYTES, files: 1 } }))
   @ApiConsumes('multipart/form-data')
   @ApiBody(SINGLE_IMAGE_BODY)
   @ApiCreatedResponse({ type: BannerDto, description: 'webp 1920/1200/600' })
@@ -108,6 +114,15 @@ export class AdminBannersController {
     @UploadedFile() file: UploadedImage | undefined,
   ): Promise<BannerDto> {
     await this.setImage.execute(actor, id, requireImage(file));
+    return this.queries.banner(actor, id);
+  }
+
+  /** Убрать изображение баннера. */
+  @RequirePermissions(Permission.ContentManage)
+  @Delete(':id/image')
+  @ApiOkResponse({ type: BannerDto })
+  async deleteImage(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string): Promise<BannerDto> {
+    await this.removeImage.execute(actor, id);
     return this.queries.banner(actor, id);
   }
 }
@@ -122,6 +137,7 @@ export class AdminPromotionsController {
     private readonly updatePromotion: UpdatePromotion,
     private readonly deletePromotion: DeletePromotion,
     private readonly setImage: SetPromotionImage,
+    private readonly removeImage: RemovePromotionImage,
   ) {}
 
   @RequirePermissions(Permission.ContentManage)
@@ -164,7 +180,7 @@ export class AdminPromotionsController {
 
   @RequirePermissions(Permission.ContentManage)
   @Post(':id/image')
-  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_IMAGE_BYTES, files: 1 } }))
+  @UseInterceptors(ImageTooLargeInterceptor, FileInterceptor('file', { limits: { fileSize: MAX_IMAGE_BYTES, files: 1 } }))
   @ApiConsumes('multipart/form-data')
   @ApiBody(SINGLE_IMAGE_BODY)
   @ApiCreatedResponse({ type: PromotionDto })
@@ -174,6 +190,15 @@ export class AdminPromotionsController {
     @UploadedFile() file: UploadedImage | undefined,
   ): Promise<PromotionDto> {
     await this.setImage.execute(actor, id, requireImage(file));
+    return this.queries.promotion(actor, id);
+  }
+
+  /** Убрать изображение акции. */
+  @RequirePermissions(Permission.ContentManage)
+  @Delete(':id/image')
+  @ApiOkResponse({ type: PromotionDto })
+  async deleteImage(@CurrentActor() actor: Actor, @Param('id', ParseUUIDPipe) id: string): Promise<PromotionDto> {
+    await this.removeImage.execute(actor, id);
     return this.queries.promotion(actor, id);
   }
 }
@@ -187,6 +212,7 @@ export class AdminPagesController {
     private readonly createPage: CreatePage,
     private readonly updatePage: UpdatePage,
     private readonly deletePage: DeletePage,
+    private readonly previewHtml: PreviewPageHtml,
   ) {}
 
   @RequirePermissions(Permission.ContentManage)
@@ -194,6 +220,15 @@ export class AdminPagesController {
   @ApiOkResponse({ type: [PageDto] })
   list(@CurrentActor() actor: Actor): Promise<PageDto[]> {
     return this.queries.pageList(actor);
+  }
+
+  /** Предпросмотр HTML страницы: санитизация как при сохранении, без записи. */
+  @RequirePermissions(Permission.ContentManage)
+  @Post('preview')
+  @HttpCode(200)
+  @ApiOkResponse({ type: PagePreviewDto })
+  preview(@CurrentActor() actor: Actor, @Body() dto: PagePreviewInputDto): PagePreviewDto {
+    return this.previewHtml.execute(actor, dto.body);
   }
 
   @RequirePermissions(Permission.ContentManage)

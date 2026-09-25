@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Expression, SqlBool } from 'kysely';
 import { Database } from '../../../shared/infrastructure/database/database';
-import { FeedItem } from '../domain/feed';
-import { AdminFeedEvent, AdminFeedStream } from '../public';
+import { DEFAULT_FEED_ENTITY_TYPES, FeedItem } from '../domain/feed';
+import { AdminFeedEntityType, AdminFeedEvent, AdminFeedStream } from '../public';
 import { NotificationsTables } from './notifications.tables';
 
 /** Доступ сотрудника к потоку: 'all' — все филиалы (и события без филиала), список — только эти филиалы. */
@@ -26,6 +26,7 @@ export class FeedRepository {
         stream: item.stream,
         kind: item.kind,
         entity_id: item.entityId,
+        entity_type: item.entityType ?? null,
         title: item.title,
         sound: item.sound,
       })
@@ -61,6 +62,7 @@ export class FeedRepository {
       stream: r.stream as AdminFeedStream,
       kind: r.kind as AdminFeedEvent['kind'],
       entityId: r.entity_id,
+      entityType: (r.entity_type as AdminFeedEntityType | null) ?? DEFAULT_FEED_ENTITY_TYPES[r.stream as AdminFeedStream] ?? null,
       title: r.title,
       sound: r.sound,
     }));

@@ -185,6 +185,62 @@ describe('E2E 6: reservation with deposit', () => {
     expect(revenue.totals.total).toEqual(money(0));
   });
 
+  it('manual-confirmation yurt: a paid deposit puts the booking into the attention queue; admin availability ignores web limits', async () => {
+    const { greenline } = ctx.seed.branches;
+    const operator = await ctx.staff([{ role: 'branch_operator', branchId: greenline }], 'Оператор GL', { phone: '+77010000556' });
+    const free = await ctx
+      .api()
+      .get('/api/v1/public/branches/greenline/reservation-availability')
+      .query({ date: '2026-10-05', time: '18:00', guests: 15, typeCode: 'yurt', locale: 'ru' })
+      .expect(200);
+    const yurtId = free.body.venues[0].venueId as string;
+    const booked = await book(yurtId, '2026-10-05', '18:00', 15);
+    expect(booked.status).toBe('awaiting_deposit');
+    await ctx.drain();
+    await sandboxPay(ctx, (await publicReservation(booked.token)).deposit.paymentUrl);
+    await ctx.drain();
+    expect(await publicReservation(booked.token)).toMatchObject({ status: 'pending', deposit: { state: 'paid' } });
+
+    // Депозит оплачен, но нужен сотрудник: в ленте — «новое» со звуком и ссылкой на бронь.
+    const admin = await adminReservationByNumber(booked.number, operator.auth);
+    expect(admin.allowedTransitions).toEqual(expect.arrayContaining(['confirmed', 'cancelled']));
+    const items = (await feed(ctx, operator.auth)).filter((f) => f.entityId === admin.id);
+    expect(items.at(-1)).toMatchObject({ stream: 'reservations', kind: 'created', sound: true, entityType: 'reservation' });
+    expect(items.at(-1)!.title).toContain('ждёт подтверждения');
+    // Список и календарь: действия, срок удержания и правила места.
+    const list = await ctx.api().get('/api/v1/admin/reservations').query({ q: booked.number }).set('Authorization', operator.auth).expect(200);
+    expect(list.body.items[0]).toMatchObject({ allowedTransitions: admin.allowedTransitions, canReschedule: admin.canReschedule, holdExpiresAt: admin.holdExpiresAt });
+    const timeline = await ctx.api().get('/api/v1/admin/reservations/timeline').query({ branchId: greenline, date: '2026-10-05' }).set('Authorization', operator.auth).expect(200);
+    const yurt = timeline.body.halls.flatMap((h: { venues: any[] }) => h.venues).find((v: { id: string }) => v.id === yurtId);
+    expect(yurt.rules).toMatchObject({ requiresManualConfirmation: true, durationMinutes: expect.any(Number), cleanupMinutes: expect.any(Number) });
+    expect(yurt.items).toEqual([expect.objectContaining({ status: 'pending', holdExpiresAt: admin.holdExpiresAt })]);
+
+    // Оператор бронирует через 30 минут (витрине рано) и видит занятую юрту занятой.
+    const web = await ctx.api().get('/api/v1/public/branches/greenline/reservation-availability').query({ date: '2026-10-01', time: '11:30', guests: 2 }).expect(200);
+    expect(web.body).toMatchObject({ available: false, reason: 'too_soon' });
+    const staffSlots = await ctx
+      .api()
+      .get('/api/v1/admin/reservations/availability')
+      .query({ branchId: greenline, date: '2026-10-01', time: '11:30', guests: 2 })
+      .set('Authorization', operator.auth)
+      .expect(200);
+    expect(staffSlots.body).toMatchObject({ available: true, reason: null });
+    const busy = await ctx
+      .api()
+      .get('/api/v1/admin/reservations/availability')
+      .query({ branchId: greenline, date: '2026-10-05', time: '18:00', guests: 15, typeCode: 'yurt' })
+      .set('Authorization', operator.auth)
+      .expect(200);
+    expect(busy.body).toMatchObject({ available: false, reason: 'occupied' });
+    await ctx
+      .api()
+      .post(`/api/v1/admin/reservations/${admin.id}/confirm`)
+      .set('Authorization', operator.auth)
+      .send({})
+      .expect(200);
+    expect((await adminReservationByNumber(booked.number, operator.auth)).status).toBe('confirmed');
+  });
+
   it('unpaid deposit hold expires after holdMinutes and the payment is cancelled', async () => {
     const free = await availability('2026-10-03', '18:00', 8);
     const vip1 = free.venues.find((v: any) => v.name === 'VIP-зал «Алтын»');

@@ -1048,6 +1048,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/catalog/branches/{branchId}/menu/bulk-add": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminBranchMenu_bulkAddItems"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/catalog/branches/{branchId}/menu/bulk-prices": {
         parameters: {
             query?: never;
@@ -1105,6 +1121,22 @@ export interface paths {
         };
         get?: never;
         put: operations["AdminBranchMenu_price"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/branches/{branchId}/menu/{dishId}/sku": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["AdminBranchMenu_sku"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1186,7 +1218,7 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["AdminBanners_uploadImage"];
-        delete?: never;
+        delete: operations["AdminBanners_deleteImage"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1234,7 +1266,7 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["AdminPromotions_uploadImage"];
-        delete?: never;
+        delete: operations["AdminPromotions_deleteImage"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1250,6 +1282,22 @@ export interface paths {
         get: operations["AdminPages_list"];
         put?: never;
         post: operations["AdminPages_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/content/pages/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminPages_preview"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1816,6 +1864,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/public/certificates/orders/{token}/pay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublicCertificates_pay"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/public/certificates/check": {
         parameters: {
             query?: never;
@@ -2016,6 +2080,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["AdminOrders_queue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/menu": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminOrders_orderMenu"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2400,6 +2480,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["AdminReservations_timeline"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reservations/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminReservations_adminAvailability"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2808,6 +2904,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/banquets/requests/{id}/quotes/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminBanquetQuotes_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/banquets/quotes/{quoteId}": {
         parameters: {
             query?: never;
@@ -2946,6 +3058,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["AdminBanquetInvoices_payment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/banquets/invoices/{invoiceId}/payment-link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminBanquetInvoices_paymentLink"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4595,6 +4723,11 @@ export interface components {
              */
             kind: "created" | "updated";
             entityId: string;
+            /**
+             * @description Что за сущность в entityId (куда вести по клику): order, reservation, banquet_request, failed_job, branch, dish
+             * @enum {string|null}
+             */
+            entityType?: "order" | "reservation" | "banquet_request" | "failed_job" | "branch" | "dish" | null;
             title: string;
             /** @description Проиграть звук */
             sound: boolean;
@@ -5200,6 +5333,11 @@ export interface components {
             label: string;
             field: string;
             missing: ("kk" | "ru" | "en")[];
+            /**
+             * Format: uuid
+             * @description Для modifier_option — группа модификаторов опции
+             */
+            groupId?: string | null;
         };
         TranslationReportDto: {
             locales: ("kk" | "ru" | "en")[];
@@ -5235,6 +5373,8 @@ export interface components {
             effectiveSku?: string | null;
             /** Format: uuid */
             updatedBy?: string | null;
+            /** @description Имя сотрудника, последним менявшего позицию */
+            updatedByName?: string | null;
             /** Format: date-time */
             updatedAt: string;
         };
@@ -5250,6 +5390,15 @@ export interface components {
             price: components["schemas"]["MoneyInputDto"];
             /** @description Код POS филиала (если отличается от общего кода блюда) */
             sku?: string | null;
+        };
+        BulkAddMenuItemsDto: {
+            /** @description Блюда с ценами филиала (всё или ничего), до 500 */
+            items: components["schemas"]["AddMenuItemDto"][];
+        };
+        BulkAddMenuItemsResultDto: {
+            added: number;
+            /** @description Добавленные блюда (в порядке запроса) */
+            dishIds: string[];
         };
         BulkPriceItemDto: {
             dishId: string;
@@ -5280,6 +5429,10 @@ export interface components {
             price: components["schemas"]["MoneyInputDto"];
             /** @description Код POS филиала; не передан — без изменений, null — сбросить */
             sku?: string | null;
+        };
+        SetSkuDto: {
+            /** @description Код POS филиала; null — сбросить (уходит общий код блюда) */
+            sku: string | null;
         };
         SetAvailabilityDto: {
             /** @description true — вернуть в продажу, false — поставить в стоп-лист */
@@ -5420,6 +5573,16 @@ export interface components {
             createdAt: string;
             /** Format: date-time */
             updatedAt: string;
+        };
+        PagePreviewInputDto: {
+            /** @description HTML по языкам — как в теле страницы */
+            body: components["schemas"]["PageBodyDto"];
+        };
+        PagePreviewDto: {
+            /** @description HTML после санитизации (так он будет сохранён); пустые языки убраны */
+            body: components["schemas"]["PageBodyDto"];
+            /** @description Санитайзер что-то убрал или изменил */
+            changed: boolean;
         };
         PageInputDto: {
             /**
@@ -6203,6 +6366,8 @@ export interface components {
             certificates: components["schemas"]["MaskedCertificateDto"][];
             /** Format: date-time */
             issuedAt?: string | null;
+            /** @description Можно повторить оплату (POST /public/certificates/orders/:token/pay) */
+            canPay: boolean;
         };
         CertificateBalanceDto: {
             /** @example ****-****-AB12 */
@@ -6262,7 +6427,7 @@ export interface components {
             /** @description Номер позиции в запросе */
             index: number;
             dishId: string;
-            /** @description Название на языке запроса (null — блюдо не найдено) */
+            /** @description Название на языке запроса; есть и у недоступной позиции (стоп-лист, нет в меню филиала). null — блюдо не найдено/удалено */
             name?: string | null;
             photoUrl?: string | null;
             quantity: number;
@@ -6643,6 +6808,12 @@ export interface components {
             lineTotal: components["schemas"]["MoneyDto"];
             modifiers: components["schemas"]["AdminOrderModifierDto"][];
         };
+        AdminQueueCourierDto: {
+            /** @enum {string} */
+            status: "requested" | "estimating" | "awaiting_confirmation" | "searching" | "courier_assigned" | "picked_up" | "delivered" | "cancelled" | "failed";
+            trackingUrl?: string | null;
+            courierName?: string | null;
+        };
         AdminQueueOrderDto: {
             id: string;
             number: string;
@@ -6673,6 +6844,14 @@ export interface components {
             allowedTransitions: ("draft" | "awaiting_payment" | "paid" | "accepted" | "cooking" | "ready" | "delivering" | "completed" | "cancelled" | "refunded")[];
             /** @description Обещанное время прошло */
             isLate: boolean;
+            /** @description Отмена доступна (awaiting_payment / accepted, право orders.manage) */
+            canCancel: boolean;
+            /** @description Отказ от оплаченного заказа доступен (paid → accepted → cancelled) */
+            canReject: boolean;
+            /** @description Заявка службы доставки (null — свои курьеры или заявки нет) */
+            courier?: components["schemas"]["AdminQueueCourierDto"] | null;
+            /** @description Получить с гостя при получении (0 — оплачено онлайн и/или сертификатом) */
+            amountDue: components["schemas"]["MoneyDto"];
         };
         AdminQueueGroupDto: {
             /** @enum {string} */
@@ -6684,6 +6863,57 @@ export interface components {
             /** Format: date-time */
             generatedAt: string;
             groups: components["schemas"]["AdminQueueGroupDto"][];
+        };
+        AdminOrderMenuCategoryDto: {
+            id: string;
+            slug: string;
+            name: components["schemas"]["TranslatableDto"];
+        };
+        AdminOrderMenuOptionDto: {
+            id: string;
+            name: components["schemas"]["TranslatableDto"];
+            price: components["schemas"]["MoneyDto"];
+            isDefault: boolean;
+        };
+        AdminOrderMenuModifierGroupDto: {
+            id: string;
+            name: components["schemas"]["TranslatableDto"];
+            minSelect: number;
+            maxSelect: number;
+            isRequired: boolean;
+            options: components["schemas"]["AdminOrderMenuOptionDto"][];
+        };
+        AdminOrderMenuDishDto: {
+            dishId: string;
+            slug: string;
+            categoryId: string;
+            name: components["schemas"]["TranslatableDto"];
+            /** @description Цена в филиале без модификаторов */
+            price: components["schemas"]["MoneyDto"];
+            /**
+             * @description Как блюдо видно на витрине (режим стоп-листа филиала)
+             * @enum {string}
+             */
+            availability: "available" | "stopped_shown" | "stopped_hidden";
+            /** @description В стоп-листе — к заказу недоступно */
+            stopped: boolean;
+            /**
+             * Format: date-time
+             * @description Стоп до (null — до ручного возврата)
+             */
+            stoppedUntil?: string | null;
+            stopReason?: string | null;
+            photoUrl?: string | null;
+            weightGrams?: number | null;
+            sku?: string | null;
+            modifierGroups: components["schemas"]["AdminOrderMenuModifierGroupDto"][];
+        };
+        AdminOrderMenuDto: {
+            branchId: string;
+            /** @description Категории, в которых есть блюда меню филиала (в порядке меню) */
+            categories: components["schemas"]["AdminOrderMenuCategoryDto"][];
+            /** @description Все блюда меню филиала, включая стоп-лист (stopped = true) */
+            dishes: components["schemas"]["AdminOrderMenuDishDto"][];
         };
         AdminCreateOrderDto: {
             branchId: string;
@@ -6889,6 +7119,12 @@ export interface components {
             refundable: components["schemas"]["MoneyDto"];
             /** @description Ссылка на страницу статуса для гостя */
             trackingUrl: string;
+            /** @description Можно повторно вызвать курьера службы доставки (POST :id/courier/retry) */
+            canRetryCourier: boolean;
+            /** @description Можно отменить активную заявку службы доставки (POST :id/courier/cancel) */
+            canCancelCourier: boolean;
+            /** @description Имя сотрудника, оформившего телефонный заказ */
+            createdByName?: string | null;
         };
         TransitionOrderDto: {
             /**
@@ -7360,6 +7596,10 @@ export interface components {
             needsMark: boolean;
             /** Format: date-time */
             createdAt: string;
+            /** @description Переходы, доступные сотруднику сейчас */
+            allowedTransitions: ("pending" | "awaiting_deposit" | "confirmed" | "arrived" | "no_show" | "cancelled" | "expired")[];
+            /** @description Можно перенести / пересадить */
+            canReschedule: boolean;
         };
         ReservationsPageDto: {
             items: components["schemas"]["ReservationSummaryDto"][];
@@ -7396,6 +7636,11 @@ export interface components {
             /** @enum {string} */
             depositState: "none" | "waived" | "pending" | "unpaid" | "paid" | "refund_pending" | "refunded" | "refund_failed" | "retained" | "applied";
             needsMark: boolean;
+            /**
+             * Format: date-time
+             * @description Бронь будет снята, если не подтвердят / не оплатят до этого момента
+             */
+            holdExpiresAt?: string | null;
         };
         TimelineVenueDto: {
             id: string;
@@ -7409,6 +7654,8 @@ export interface components {
             position: components["schemas"]["VenuePositionDto"];
             isActive: boolean;
             bookableOnline: boolean;
+            /** @description Действующие правила места: длительность, уборка, удержание, шаг сетки */
+            rules: components["schemas"]["VenueRulesDto"];
             items: components["schemas"]["TimelineItemDto"][];
         };
         TimelineHallDto: {
@@ -7418,6 +7665,8 @@ export interface components {
             planWidth: number;
             planHeight: number;
             isActive: boolean;
+            /** @description Подложка плана зала */
+            background?: components["schemas"]["VenueImageDto"] | null;
             venues: components["schemas"]["TimelineVenueDto"][];
         };
         TimelineDto: {
@@ -7439,6 +7688,63 @@ export interface components {
             /** @description Часы работы филиала в этот день */
             openingRanges: components["schemas"]["TimeRangeDto"][];
             halls: components["schemas"]["TimelineHallDto"][];
+        };
+        AdminVenueSlotDto: {
+            venueId: string;
+            hallId: string;
+            hallName: components["schemas"]["TranslatableDto"];
+            code: string;
+            name: components["schemas"]["TranslatableDto"];
+            typeCode: string;
+            typeName: components["schemas"]["TranslatableDto"];
+            capacityMin: number;
+            capacityMax: number;
+            /** @description Гостей меньше минимальной вместимости места (оператору разрешено) */
+            belowMinimum: boolean;
+            deposit?: components["schemas"]["MoneyDto"] | null;
+            /** Format: date-time */
+            start: string;
+            /** Format: date-time */
+            end: string;
+            /**
+             * Format: date-time
+             * @description Конец занятости места: конец брони + буфер уборки
+             */
+            blockedUntil: string;
+            durationMinutes: number;
+            /** @description Действующие правила места */
+            rules: components["schemas"]["VenueRulesDto"];
+            /** @description Можно бронировать на витрине (false — только через оператора) */
+            bookableOnline: boolean;
+            position: components["schemas"]["VenuePositionDto"];
+        };
+        AlternativeTimeDto: {
+            /** @example 2026-10-25 */
+            date: string;
+            /** @example 18:30 */
+            time: string;
+            /** Format: date-time */
+            start: string;
+            /** @description Свободные места на это время */
+            venueIds: string[];
+        };
+        AdminAvailabilityDto: {
+            branchId: string;
+            date: string;
+            time: string;
+            guests: number;
+            durationMinutes?: number | null;
+            /** @description Есть хотя бы одно свободное место */
+            available: boolean;
+            /**
+             * @description Почему мест нет (past / closed / occupied / no_capacity)
+             * @enum {string|null}
+             */
+            reason?: "no_capacity" | "occupied" | "past" | "too_soon" | "too_far" | "closed" | "not_accepting" | null;
+            /** @description Свободные места, включая места только для брони через оператора */
+            venues: components["schemas"]["AdminVenueSlotDto"][];
+            /** @description Ближайшее свободное время в тот же день, если мест нет */
+            alternatives: components["schemas"]["AlternativeTimeDto"][];
         };
         DepositPaymentDto: {
             id: string;
@@ -7520,6 +7826,7 @@ export interface components {
             createdAt: string;
             /** @description Переходы, доступные сотруднику сейчас */
             allowedTransitions: ("pending" | "awaiting_deposit" | "confirmed" | "arrived" | "no_show" | "cancelled" | "expired")[];
+            /** @description Можно перенести / пересадить */
             canReschedule: boolean;
             /** @description Правила брони (снимок на момент брони / переноса) */
             rules: components["schemas"]["VenueRulesDto"];
@@ -7658,16 +7965,6 @@ export interface components {
             rules: components["schemas"]["PublicVenueRulesDto"];
             position: components["schemas"]["VenuePositionDto"];
             photos: components["schemas"]["VenueImageDto"][];
-        };
-        AlternativeTimeDto: {
-            /** @example 2026-10-25 */
-            date: string;
-            /** @example 18:30 */
-            time: string;
-            /** Format: date-time */
-            start: string;
-            /** @description Свободные места на это время */
-            venueIds: string[];
         };
         AvailabilityDto: {
             branchId: string;
@@ -7936,7 +8233,10 @@ export interface components {
             banquetRequestId: string | null;
         };
         BanquetCalendarDto: {
-            branchId: string;
+            /** @description Филиал запроса; null — все доступные филиалы */
+            branchId?: string | null;
+            /** @description Филиалы, попавшие в календарь */
+            branchIds: string[];
             from: string;
             to: string;
             venues: components["schemas"]["BanquetCalendarVenueDto"][];
@@ -8092,10 +8392,24 @@ export interface components {
             method: string;
             amount: components["schemas"]["MoneyDto"];
             refunded: components["schemas"]["MoneyDto"];
+            /** @description Сколько ещё можно вернуть (сумма минус прошедшие и ожидающие возвраты) */
+            refundable: components["schemas"]["MoneyDto"];
             documentNumber: string | null;
             /** Format: date-time */
             paidAt: string;
             recordedByName: string;
+        };
+        BanquetInvoiceRefundDto: {
+            refundId: string;
+            paymentId: string;
+            amount: components["schemas"]["MoneyDto"];
+            /** @enum {string} */
+            status: "pending" | "succeeded" | "failed";
+            reason: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            completedAt: string | null;
         };
         BanquetInvoiceDto: {
             id: string;
@@ -8134,6 +8448,17 @@ export interface components {
             cancelledAt: string | null;
             cancelReason: string | null;
             payments: components["schemas"]["BanquetInvoicePaymentDto"][];
+            /** @description Ссылка на онлайн-оплату (физлицо), пока текущий платёж ждёт оплату */
+            paymentUrl: string | null;
+            /**
+             * @description Статус текущего онлайн-платежа
+             * @example created
+             */
+            paymentStatus: string | null;
+            /** @description Можно отправить / перевыпустить ссылку на оплату (POST invoices/:id/payment-link) */
+            canResendPaymentLink: boolean;
+            /** @description Возвраты по поступлениям счёта со статусами */
+            refunds: components["schemas"]["BanquetInvoiceRefundDto"][];
         };
         BanquetEsfDto: {
             /** @enum {string} */
@@ -8156,6 +8481,8 @@ export interface components {
             amount: components["schemas"]["MoneyDto"];
             vat: components["schemas"]["MoneyDto"];
             esf: components["schemas"]["BanquetEsfDto"];
+            /** @description ЭСФ можно отправить повторно (POST acts/:actId/esf/retry) */
+            esfRetryable: boolean;
             /** Format: date-time */
             createdAt: string;
         };
@@ -8245,6 +8572,14 @@ export interface components {
             act: components["schemas"]["BanquetActDto"] | null;
             documents: components["schemas"]["BanquetDocumentDto"][];
             timeline: components["schemas"]["BanquetActivityDto"][];
+            /** @description Можно сохранить новую версию сметы */
+            canEditQuote: boolean;
+            /** @description Можно отправить клиенту последнюю версию сметы */
+            canSendLatestQuote: boolean;
+            /** @description Можно выставить счёт (смета согласована, есть невыставленный остаток) */
+            canIssueInvoice: boolean;
+            /** @description Можно оформить акт (банкет проведён, акта ещё нет) */
+            canIssueAct: boolean;
         };
         BanquetUpdateRequestDto: {
             /** @example 2026-11-14 */
@@ -8327,6 +8662,11 @@ export interface components {
             reason: string;
             /** Format: date-time */
             createdAt: string;
+            /**
+             * Format: date-time
+             * @description Возврат завершён (прошёл или не прошёл)
+             */
+            completedAt?: string | null;
         };
         BanquetDiscountInputDto: {
             /** @enum {string} */
@@ -8421,6 +8761,21 @@ export interface components {
             acceptedAt: string | null;
             isLatest: boolean;
         };
+        BanquetQuotePreviewDto: {
+            requestId: string;
+            branchId: string | null;
+            guests: number;
+            discount: components["schemas"]["BanquetDiscountDto"] | null;
+            serviceChargeBp: number;
+            vatPayer: boolean;
+            vatRateBp: number;
+            lines: components["schemas"]["BanquetQuoteLineDto"][];
+            totals: components["schemas"]["BanquetQuoteTotalsDto"];
+            /** @example 2026-10-15 */
+            validUntil: string;
+            notes: string | null;
+            seller: components["schemas"]["BanquetPartyShortDto"];
+        };
         BanquetSignedLinkDto: {
             url: string;
             /** Format: date-time */
@@ -8474,6 +8829,17 @@ export interface components {
             cancelledAt: string | null;
             cancelReason: string | null;
             payments: components["schemas"]["BanquetInvoicePaymentDto"][];
+            /** @description Ссылка на онлайн-оплату (физлицо), пока текущий платёж ждёт оплату */
+            paymentUrl: string | null;
+            /**
+             * @description Статус текущего онлайн-платежа
+             * @example created
+             */
+            paymentStatus: string | null;
+            /** @description Можно отправить / перевыпустить ссылку на оплату (POST invoices/:id/payment-link) */
+            canResendPaymentLink: boolean;
+            /** @description Возвраты по поступлениям счёта со статусами */
+            refunds: components["schemas"]["BanquetInvoiceRefundDto"][];
             requestNumber: string;
         };
         BanquetInvoicesPageDto: {
@@ -8511,6 +8877,10 @@ export interface components {
             paymentId: string;
             /** @description Этот документ уже был зарегистрирован (повтор) */
             duplicate: boolean;
+        };
+        BanquetResendPaymentLinkDto: {
+            /** @description Принудительно новая ссылка: прежний неоплаченный платёж отменяется */
+            regenerate?: boolean;
         };
         BanquetCancelInvoiceDto: {
             reason?: string;
@@ -11560,6 +11930,31 @@ export interface operations {
             };
         };
     };
+    AdminBranchMenu_bulkAddItems: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                branchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkAddMenuItemsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkAddMenuItemsResultDto"];
+                };
+            };
+        };
+    };
     AdminBranchMenu_bulk: {
         parameters: {
             query?: never;
@@ -11665,6 +12060,32 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["SetPriceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchMenuItemDto"];
+                };
+            };
+        };
+    };
+    AdminBranchMenu_sku: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                branchId: string;
+                dishId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetSkuDto"];
             };
         };
         responses: {
@@ -11865,6 +12286,27 @@ export interface operations {
             };
         };
     };
+    AdminBanners_deleteImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BannerDto"];
+                };
+            };
+        };
+    };
     AdminPromotions_list: {
         parameters: {
             query?: never;
@@ -12000,6 +12442,27 @@ export interface operations {
             };
         };
     };
+    AdminPromotions_deleteImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromotionDto"];
+                };
+            };
+        };
+    };
     AdminPages_list: {
         parameters: {
             query?: never;
@@ -12038,6 +12501,29 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PageDto"];
+                };
+            };
+        };
+    };
+    AdminPages_preview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PagePreviewInputDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagePreviewDto"];
                 };
             };
         };
@@ -12961,6 +13447,29 @@ export interface operations {
             };
         };
     };
+    PublicCertificates_pay: {
+        parameters: {
+            query?: {
+                locale?: "kk" | "ru" | "en";
+            };
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CertificateOrderStatusDto"];
+                };
+            };
+        };
+    };
     PublicCertificates_check: {
         parameters: {
             query?: {
@@ -13334,6 +13843,28 @@ export interface operations {
             };
         };
     };
+    AdminOrders_orderMenu: {
+        parameters: {
+            query: {
+                /** @description Филиал телефонного заказа (право orders.manage в филиале) */
+                branchId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderMenuDto"];
+                };
+            };
+        };
+    };
     AdminOrders_quoteOrder: {
         parameters: {
             query?: never;
@@ -13635,6 +14166,8 @@ export interface operations {
                 page?: number;
                 perPage?: number;
                 branchId?: string;
+                /** @description network — только промокоды на всю сеть (branchId не учитывается), branch — только промокоды филиалов */
+                scope?: "network" | "branch";
                 /** @description Поиск по коду */
                 q?: string;
                 active?: boolean;
@@ -14298,6 +14831,40 @@ export interface operations {
             };
         };
     };
+    AdminReservations_adminAvailability: {
+        parameters: {
+            query: {
+                branchId: string;
+                /** @description Локальная дата филиала */
+                date: string;
+                /** @description Локальное время начала */
+                time: string;
+                guests: number;
+                /** @description Длительность, минут (по умолчанию — правило места) */
+                durationMinutes?: number;
+                /** @description Тип места */
+                typeCode?: string;
+                /** @description Только места зала */
+                hallId?: string;
+                /** @description Не учитывать занятость этой брони (перенос / пересадка) */
+                excludeReservationId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminAvailabilityDto"];
+                };
+            };
+        };
+    };
     AdminReservations_detail: {
         parameters: {
             query?: never;
@@ -14657,6 +15224,12 @@ export interface operations {
                 managerId?: string;
                 dateFrom?: string;
                 dateTo?: string;
+                /** @description Номер, имя или телефон */
+                q?: string;
+                /** @description Только выездные (true) / только в залах (false) */
+                offsite?: boolean;
+                /** @description Нарушен SLA первого ответа */
+                slaBreached?: boolean;
             };
             header?: never;
             path?: never;
@@ -14696,7 +15269,8 @@ export interface operations {
     AdminBanquetRequests_calendar: {
         parameters: {
             query: {
-                branchId: string;
+                /** @description Филиал; не задан — все филиалы, доступные сотруднику, и выездные заявки */
+                branchId?: string;
                 from: string;
                 to: string;
             };
@@ -15002,6 +15576,31 @@ export interface operations {
             };
         };
     };
+    AdminBanquetQuotes_preview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BanquetSaveQuoteDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetQuotePreviewDto"];
+                };
+            };
+        };
+    };
     AdminBanquetQuotes_get: {
         parameters: {
             query?: never;
@@ -15203,6 +15802,31 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BanquetBankTransferResultDto"];
+                };
+            };
+        };
+    };
+    AdminBanquetInvoices_paymentLink: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoiceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BanquetResendPaymentLinkDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BanquetInvoiceListItemDto"];
                 };
             };
         };

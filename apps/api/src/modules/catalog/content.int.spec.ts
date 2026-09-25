@@ -66,6 +66,22 @@ describe('Catalog content: banners, promotions, pages (integration)', () => {
       expect(image.status).toBe(201);
       expect(image.body.image.variants.map((v: { width: number }) => v.width)).toEqual([600, 1200, 1920]);
       expect(image.body.image.url).toMatch(/-1200\.webp$/);
+      // Слишком большой файл — 413 с кодом каталога.
+      const huge = await t
+        .http()
+        .post(`${API}/admin/content/banners/${hero.body.id}/image`)
+        .set('authorization', cm.auth)
+        .attach('file', Buffer.alloc(10 * 1024 * 1024 + 1), { filename: 'huge.png', contentType: 'image/png' });
+      expect(huge.status).toBe(413);
+      expect(huge.body.error.code).toBe('catalog.image_too_large');
+      // Изображение можно убрать; повтор ничего не меняет.
+      const removed = await t.http().delete(`${API}/admin/content/banners/${hero.body.id}/image`).set('authorization', cm.auth);
+      expect(removed.status).toBe(200);
+      expect(removed.body.image).toBeNull();
+      expect((await t.http().delete(`${API}/admin/content/banners/${hero.body.id}/image`).set('authorization', cm.auth)).status).toBe(200);
+      expect(await auditRows(t, 'content.banner_image_removed')).toHaveLength(1);
+      const bm = await branchManager(t, gl);
+      expect((await t.http().delete(`${API}/admin/content/banners/${hero.body.id}/image`).set('authorization', bm.auth)).status).toBe(403);
 
       const updated = await t
         .http()
@@ -124,6 +140,18 @@ describe('Catalog content: banners, promotions, pages (integration)', () => {
         .set('authorization', cm.auth)
         .send({ title: { ru: 'Сезон кумыса', kk: 'Қымыз маусымы' }, branchIds: [gv] });
       expect(upd.body.branchIds).toEqual([gv]);
+      const withImage = await t
+        .http()
+        .post(`${API}/admin/content/promotions/${season.body.id}/image`)
+        .set('authorization', cm.auth)
+        .attach('file', await testImage(1600, 900), { filename: 'kumys.png', contentType: 'image/png' });
+      expect(withImage.status).toBe(201);
+      expect(withImage.body.image).not.toBeNull();
+      const noImage = await t.http().delete(`${API}/admin/content/promotions/${season.body.id}/image`).set('authorization', cm.auth);
+      expect(noImage.status).toBe(200);
+      expect(noImage.body.image).toBeNull();
+      expect((await auditRows(t, 'content.promotion_image_removed'))[0]).toMatchObject({ entity_id: season.body.id, after: null });
+      expect((await publishedEvents(t, CatalogEvents.ContentChanged)).filter((e: any) => e.id === season.body.id).length).toBeGreaterThanOrEqual(3);
       expect((await t.http().delete(`${API}/admin/content/promotions/${lunch.body.id}`).set('authorization', cm.auth)).status).toBe(204);
       expect((await t.http().get(`${API}/public/content/promotions/biznes-lanch`)).status).toBe(404);
 
@@ -133,6 +161,22 @@ describe('Catalog content: banners, promotions, pages (integration)', () => {
   });
 
   describe('pages', () => {
+    it('previews sanitized HTML without saving', async () => {
+      const preview = await t
+        .http()
+        .post(`${API}/admin/content/pages/preview`)
+        .set('authorization', cm.auth)
+        .send({ body: { ru: '<h2 onclick="x()">Доставка</h2><script>alert(1)</script>', kk: '<p>Жеткізу</p>', en: '<script>x</script>' } });
+      expect(preview.status).toBe(200);
+      expect(preview.body).toEqual({ body: { ru: '<h2>Доставка</h2>', kk: '<p>Жеткізу</p>' }, changed: true });
+      const clean = await t.http().post(`${API}/admin/content/pages/preview`).set('authorization', cm.auth).send({ body: { ru: '<p>Текст</p>' } });
+      expect(clean.body).toEqual({ body: { ru: '<p>Текст</p>' }, changed: false });
+      expect((await t.http().get(`${API}/admin/content/pages`).set('authorization', cm.auth)).body).toEqual([]);
+      const bm = await branchManager(t, gl);
+      expect((await t.http().post(`${API}/admin/content/pages/preview`).set('authorization', bm.auth).send({ body: { ru: 'x' } })).status).toBe(403);
+      expect((await t.http().post(`${API}/admin/content/pages/preview`).set('authorization', cm.auth).send({})).status).toBe(400);
+    });
+
     it('stores sanitized HTML, publishes by slug, protects legal pages', async () => {
       const created = await t
         .http()

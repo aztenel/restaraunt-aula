@@ -73,6 +73,8 @@ const DOCUMENTED_CONSUMERS: Record<string, string[]> = {
   // Обезличивание гостя: модули, хранящие снимки контактов.
   [CustomersEvents.CustomerAnonymized]: ['OrderingModule', 'ReservationModule', 'BanquetModule', 'PaymentsModule', 'NotificationsModule'],
   [IdentityEvents.BranchChanged]: ['IdentityModule'],
+  // Стоп-лист → лента админки (поток заказов, без звука).
+  [CatalogEvents.StopListChanged]: ['CatalogModule'],
   // Очередь неудач → оповещение администраторов и системная лента.
   [PLATFORM_JOB_FAILED_EVENT]: ['NotificationsModule'],
 };

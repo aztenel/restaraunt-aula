@@ -243,6 +243,7 @@ export interface FeedItem {
   stream: string;
   kind: string;
   entityId: string;
+  entityType?: string | null;
   title: string;
   sound: boolean;
 }

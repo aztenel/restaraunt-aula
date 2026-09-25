@@ -14,6 +14,7 @@ import {
   Max,
   MaxLength,
   Min,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { MoneyDto, MoneyInputDto, PageDtoOf, PageQueryDto, TranslatableDto } from '../../../../shared/infrastructure/http/api-types';
@@ -331,7 +332,7 @@ export class SetPriceDto {
 
 export class SetSkuDto {
   @ApiProperty({ type: String, nullable: true, description: 'Код POS филиала; null — сбросить (уходит общий код блюда)' })
-  @IsOptional()
+  @ValidateIf((o: SetSkuDto) => o.sku !== null)
   @IsString()
   @MaxLength(64)
   sku: string | null;
@@ -451,6 +452,8 @@ export class TranslationGapDto {
   @ApiProperty() label: string;
   @ApiProperty() field: string;
   @ApiProperty({ type: [String], enum: ['kk', 'ru', 'en'] }) missing: string[];
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true, description: 'Для modifier_option — группа модификаторов опции' })
+  groupId: string | null;
 }
 
 export class TranslationSummaryDto {

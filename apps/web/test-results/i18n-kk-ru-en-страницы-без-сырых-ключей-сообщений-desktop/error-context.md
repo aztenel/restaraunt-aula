@@ -1,0 +1,233 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main"
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link "AULA — home" [ref=e5] [cursor=pointer]:
+        - /url: /en
+        - generic [ref=e6]:
+          - img [ref=e8]
+          - generic [ref=e12]: AULA
+      - navigation "Main navigation" [ref=e13]:
+        - list [ref=e14]:
+          - listitem [ref=e15]:
+            - link "Menu" [ref=e16] [cursor=pointer]:
+              - /url: /en/menu
+          - listitem [ref=e17]:
+            - link "Book" [ref=e18] [cursor=pointer]:
+              - /url: /en/booking
+          - listitem [ref=e19]:
+            - link "Banquets" [ref=e20] [cursor=pointer]:
+              - /url: /en/banquets
+          - listitem [ref=e21]:
+            - link "Certificates" [ref=e22] [cursor=pointer]:
+              - /url: /en/certificates
+          - listitem [ref=e23]:
+            - link "Locations" [ref=e24] [cursor=pointer]:
+              - /url: /en/branches
+      - generic [ref=e25]:
+        - generic [ref=e26]:
+          - generic [ref=e27]: Location
+          - img
+          - combobox "Location" [ref=e28]:
+            - option "AULA GreenLine Aqua" [selected]
+            - option "AULA Garden View"
+          - img
+        - group [ref=e29]:
+          - generic "Language" [ref=e30] [cursor=pointer]:
+            - img [ref=e31]
+            - text: en
+        - 'link "Cart: 1 item" [ref=e34] [cursor=pointer]':
+          - /url: /en/cart
+          - img [ref=e35]
+          - generic [ref=e39]: "1"
+  - main [ref=e40]:
+    - generic [ref=e41]:
+      - generic [ref=e42]:
+        - heading "Table and room reservations" [level=1] [ref=e43]
+        - paragraph [ref=e44]: Tables, VIP rooms and yurts
+        - img [ref=e47]
+      - generic [ref=e52]:
+        - form "When and how many guests" [ref=e54]:
+          - heading "When and how many guests" [level=2] [ref=e55]
+          - generic [ref=e56]:
+            - generic [ref=e57]: Location
+            - combobox "Location" [ref=e58]:
+              - option "AULA GreenLine Aqua — Astana, E-899 street 1/1 (GreenLine Aqua)"
+              - option "AULA Garden View — Astana, Kabanbay Batyr ave. 56 (Garden View)" [selected]
+          - generic [ref=e59]:
+            - generic [ref=e60]:
+              - generic [ref=e61]: Date
+              - textbox "Date" [ref=e62]: 2026-09-25
+            - generic [ref=e63]:
+              - generic [ref=e64]: Time
+              - combobox "Time" [ref=e65]:
+                - option "18:00"
+                - option "18:30"
+                - option "19:00" [selected]
+                - option "19:30"
+                - option "20:00"
+                - option "20:30"
+                - option "21:00"
+                - option "21:30"
+                - option "22:00"
+                - option "22:30"
+                - option "23:00"
+          - generic [ref=e66]:
+            - generic [ref=e67]:
+              - generic [ref=e68]: Guests
+              - generic [ref=e69]:
+                - button "Fewer guests" [ref=e70]:
+                  - img [ref=e71]
+                - spinbutton "Guests" [ref=e72]: "2"
+                - button "More guests" [ref=e73]:
+                  - img [ref=e74]
+              - paragraph [ref=e76]:
+                - text: More than 60 guests —
+                - link "send a banquet request" [ref=e77] [cursor=pointer]:
+                  - /url: /en/banquets
+                - text: .
+            - generic [ref=e78]:
+              - generic [ref=e79]:
+                - text: Seating type
+                - generic [ref=e80]: · optional
+              - combobox "Seating type · optional" [ref=e81]:
+                - option "Any" [selected]
+                - option "Table"
+                - option "VIP room"
+                - option "Yurt"
+          - button "Find available places" [ref=e82]:
+            - img [ref=e83]
+            - text: Find available places
+        - generic [active] [ref=e86]:
+          - paragraph [ref=e87]: "25 September 2026, 19:00 · guests: 2"
+          - group "6 places available" [ref=e89]:
+            - generic [ref=e90]: 6 places available
+            - radiogroup "6 places available" [ref=e91]:
+              - radio "Table 1 Table · Main hall 1 to 2 guests 19:00–21:00 no deposit" [ref=e92]:
+                - generic [ref=e93]:
+                  - generic [ref=e95]: Table 1
+                  - generic [ref=e96]: Table · Main hall
+                  - generic [ref=e97]: 1 to 2 guests
+                  - generic [ref=e98]:
+                    - img [ref=e99]
+                    - text: 19:00–21:00
+                  - generic [ref=e102]: no deposit
+              - radio "Table 2 Table · Main hall 1 to 2 guests 19:00–21:00 no deposit" [ref=e103]:
+                - generic [ref=e104]:
+                  - generic [ref=e106]: Table 2
+                  - generic [ref=e107]: Table · Main hall
+                  - generic [ref=e108]: 1 to 2 guests
+                  - generic [ref=e109]:
+                    - img [ref=e110]
+                    - text: 19:00–21:00
+                  - generic [ref=e113]: no deposit
+              - radio "Table 3 Table · Main hall 2 to 4 guests 19:00–21:00 no deposit" [ref=e114]:
+                - generic [ref=e115]:
+                  - generic [ref=e117]: Table 3
+                  - generic [ref=e118]: Table · Main hall
+                  - generic [ref=e119]: 2 to 4 guests
+                  - generic [ref=e120]:
+                    - img [ref=e121]
+                    - text: 19:00–21:00
+                  - generic [ref=e124]: no deposit
+              - radio "Table 4 Table · Main hall 2 to 4 guests 19:00–21:00 no deposit" [ref=e125]:
+                - generic [ref=e126]:
+                  - generic [ref=e128]: Table 4
+                  - generic [ref=e129]: Table · Main hall
+                  - generic [ref=e130]: 2 to 4 guests
+                  - generic [ref=e131]:
+                    - img [ref=e132]
+                    - text: 19:00–21:00
+                  - generic [ref=e135]: no deposit
+              - radio "Table 5 Table · Main hall 2 to 4 guests 19:00–21:00 no deposit" [ref=e136]:
+                - generic [ref=e137]:
+                  - generic [ref=e139]: Table 5
+                  - generic [ref=e140]: Table · Main hall
+                  - generic [ref=e141]: 2 to 4 guests
+                  - generic [ref=e142]:
+                    - img [ref=e143]
+                    - text: 19:00–21:00
+                  - generic [ref=e146]: no deposit
+              - radio "Table 8 Table · Main hall 1 to 2 guests 19:00–21:00 no deposit" [ref=e147]:
+                - generic [ref=e148]:
+                  - generic [ref=e150]: Table 8
+                  - generic [ref=e151]: Table · Main hall
+                  - generic [ref=e152]: 1 to 2 guests
+                  - generic [ref=e153]:
+                    - img [ref=e154]
+                    - text: 19:00–21:00
+                  - generic [ref=e157]: no deposit
+          - button "Show on the floor plan" [ref=e159]
+  - contentinfo [ref=e160]:
+    - img
+    - generic [ref=e161]:
+      - generic [ref=e162]:
+        - generic [ref=e163]:
+          - img [ref=e165]
+          - generic [ref=e169]: AULA
+        - paragraph [ref=e170]: Kazakh cuisine and hospitality in Astana
+        - paragraph [ref=e171]: Pay online or on delivery
+      - region "Our restaurants" [ref=e172]:
+        - heading "Our restaurants" [level=2] [ref=e173]
+        - list [ref=e174]:
+          - listitem [ref=e175]:
+            - link "AULA GreenLine Aqua" [ref=e176] [cursor=pointer]:
+              - /url: /en/branches/greenline
+            - generic [ref=e177]: Astana, E-899 street 1/1 (GreenLine Aqua)
+            - link "+7 717 200 00 00" [ref=e179] [cursor=pointer]:
+              - /url: tel:+77172000000
+              - img [ref=e180]
+              - text: +7 717 200 00 00
+          - listitem [ref=e182]:
+            - link "AULA Garden View" [ref=e183] [cursor=pointer]:
+              - /url: /en/branches/garden-view
+            - generic [ref=e184]: Astana, Kabanbay Batyr ave. 56 (Garden View)
+            - link "+7 717 200 00 00" [ref=e186] [cursor=pointer]:
+              - /url: tel:+77172000000
+              - img [ref=e187]
+              - text: +7 717 200 00 00
+      - navigation "For guests" [ref=e189]:
+        - heading "For guests" [level=2] [ref=e190]
+        - list [ref=e191]:
+          - listitem [ref=e192]:
+            - link "About us" [ref=e193] [cursor=pointer]:
+              - /url: /en/pages/about
+          - listitem [ref=e194]:
+            - link "Delivery" [ref=e195] [cursor=pointer]:
+              - /url: /en/pages/delivery
+          - listitem [ref=e196]:
+            - link "Payment" [ref=e197] [cursor=pointer]:
+              - /url: /en/pages/payment
+          - listitem [ref=e198]:
+            - link "Contacts" [ref=e199] [cursor=pointer]:
+              - /url: /en/pages/contacts
+          - listitem [ref=e200]:
+            - link "Offers" [ref=e201] [cursor=pointer]:
+              - /url: /en/promotions
+          - listitem [ref=e202]:
+            - link "Certificates" [ref=e203] [cursor=pointer]:
+              - /url: /en/certificates
+          - listitem [ref=e204]:
+            - link "Locations" [ref=e205] [cursor=pointer]:
+              - /url: /en/branches
+      - navigation "Legal" [ref=e206]:
+        - heading "Legal" [level=2] [ref=e207]
+        - list [ref=e208]:
+          - listitem [ref=e209]:
+            - link "Public offer" [ref=e210] [cursor=pointer]:
+              - /url: /en/pages/offer
+          - listitem [ref=e211]:
+            - link "Privacy policy" [ref=e212] [cursor=pointer]:
+              - /url: /en/pages/privacy
+          - listitem [ref=e213]:
+            - link "Personal data consent" [ref=e214] [cursor=pointer]:
+              - /url: /en/consents/personal-data
+    - generic [ref=e216]:
+      - paragraph [ref=e217]: © 2026 AULA. All rights reserved.
+      - paragraph [ref=e218]: Express kitchen LLP
+  - alert [ref=e219]
+```

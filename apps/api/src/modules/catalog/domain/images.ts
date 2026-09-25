@@ -1,4 +1,4 @@
-import { ValidationError } from '../../../shared/kernel/errors';
+import { PayloadTooLargeError, ValidationError } from '../../../shared/kernel/errors';
 
 /**
  * Изображения меню и контента: загрузка -> webp-варианты фиксированной ширины (публичное хранилище).
@@ -44,7 +44,10 @@ export function assertUploadableImage(file: { mimetype: string; size: number }):
       allowed: ALLOWED_IMAGE_TYPES,
     });
   }
-  if (file.size <= 0 || file.size > MAX_IMAGE_BYTES) {
+  if (file.size > MAX_IMAGE_BYTES) {
+    throw new PayloadTooLargeError('catalog.image_too_large', 'Image must be up to 10 MB', { size: file.size, max: MAX_IMAGE_BYTES });
+  }
+  if (file.size <= 0) {
     throw new ValidationError('catalog.image_too_large', 'Image must be up to 10 MB', { size: file.size, max: MAX_IMAGE_BYTES });
   }
 }

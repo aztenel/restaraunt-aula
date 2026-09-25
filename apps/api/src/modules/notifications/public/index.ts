@@ -128,12 +128,20 @@ export abstract class Notifier {
 
 export type AdminFeedStream = 'orders' | 'reservations' | 'banquets' | 'system';
 
+/**
+ * Что за сущность в entityId (куда вести по клику). Не задан — по потоку: orders → order,
+ * reservations → reservation, banquets → banquet_request.
+ */
+export type AdminFeedEntityType = 'order' | 'reservation' | 'banquet_request' | 'failed_job' | 'branch' | 'dish';
+
 export interface AdminFeedEvent {
   branchId: string | null;
   stream: AdminFeedStream;
   /** 'created' — новый элемент очереди (со звуком), 'updated' — изменение. */
   kind: 'created' | 'updated';
   entityId: string;
+  /** Тип сущности entityId; по умолчанию выводится из потока. */
+  entityType?: AdminFeedEntityType | null;
   title: string;
   sound?: boolean;
 }

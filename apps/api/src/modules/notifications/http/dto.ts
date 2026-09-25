@@ -20,7 +20,7 @@ import { PageDtoOf, PageQueryDto } from '../../../shared/infrastructure/http/api
 import { LOCALES } from '../../../shared/kernel/translatable';
 import { DELIVERY_STATUSES, MESSAGE_STATUSES } from '../domain/delivery';
 import { NOTIFICATION_CHANNELS } from '../domain/delivery-plan';
-import { FEED_KINDS, FEED_STREAMS } from '../domain/feed';
+import { FEED_ENTITY_TYPES, FEED_KINDS, FEED_STREAMS } from '../domain/feed';
 import { TEMPLATE_KEYS } from '../domain/templates';
 
 const AUDIENCES = ['guest', 'staff'];
@@ -286,6 +286,12 @@ export class FeedItemDto {
   @ApiProperty({ enum: FEED_STREAMS, description: 'Очередь: orders, reservations, banquets, system' }) stream: string;
   @ApiProperty({ enum: FEED_KINDS, description: 'created — новый элемент очереди, updated — изменение' }) kind: string;
   @ApiProperty() entityId: string;
+  @ApiPropertyOptional({
+    enum: FEED_ENTITY_TYPES,
+    nullable: true,
+    description: 'Что за сущность в entityId (куда вести по клику): order, reservation, banquet_request, failed_job, branch, dish',
+  })
+  entityType?: string | null;
   @ApiProperty() title: string;
   @ApiProperty({ description: 'Проиграть звук' }) sound: boolean;
 }

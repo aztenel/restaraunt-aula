@@ -389,13 +389,21 @@ describe('Catalog admin: categories, dishes, modifiers (integration)', () => {
       const category = await createCategory(t, cm.auth, { name: { ru: 'Десерты' } });
       await createDish(t, cm.auth, category, { name: { kk: 'Шақ-шақ' }, composition: null });
       await createGroup(t, cm.auth);
+      const sauces = await createGroup(t, cm.auth, {
+        name: { ru: 'Соусы', kk: 'Тұздықтар' },
+        minSelect: 0,
+        maxSelect: 2,
+        options: [{ name: { ru: 'Томатный' }, price: { amount: 0 } }],
+      });
       const report = await t.http().get(`${API}/admin/catalog/translations`).set('authorization', cm.auth);
       expect(report.status).toBe(200);
       expect(report.body.locales).toEqual(['kk', 'ru']);
       expect(report.body.items).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ entityType: 'category', entityId: category, field: 'name', missing: ['kk'], label: 'Десерты' }),
-          expect.objectContaining({ entityType: 'dish', field: 'name', missing: ['ru'], label: 'Шақ-шақ' }),
+          expect.objectContaining({ entityType: 'dish', field: 'name', missing: ['ru'], label: 'Шақ-шақ', groupId: null }),
+          // Опция модификатора ведёт в редактор своей группы.
+          { entityType: 'modifier_option', entityId: sauces.options[0]!.id, label: 'Томатный', field: 'name', missing: ['kk'], groupId: sauces.id },
         ]),
       );
       expect(report.body.summary.find((s: { entityType: string }) => s.entityType === 'category')).toEqual({ entityType: 'category', total: 1, incomplete: 1 });

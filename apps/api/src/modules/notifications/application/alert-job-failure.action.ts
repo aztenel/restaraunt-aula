@@ -33,6 +33,14 @@ export class AlertJobFailure {
         related: { type: 'failed_job', id: failure.failedJobId },
       });
     }
-    await this.feed.push({ branchId: null, stream: 'system', kind: 'created', entityId: failure.failedJobId, title, sound: true });
+    await this.feed.push({
+      branchId: null,
+      stream: 'system',
+      kind: 'created',
+      entityId: failure.failedJobId,
+      entityType: 'failed_job',
+      title,
+      sound: true,
+    });
   }
 }

@@ -42,6 +42,8 @@ export class AlertPosStaff {
       stream: alert.feed.stream,
       kind: 'updated',
       entityId: alert.feed.entityId,
+      // Поток заказов — ссылка на заказ; системное событие POS — на филиал (entityId = id филиала).
+      entityType: alert.feed.stream === 'orders' ? 'order' : 'branch',
       title: alert.title,
       sound: true,
     });

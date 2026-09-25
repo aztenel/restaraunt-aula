@@ -95,6 +95,7 @@ export interface AdminFeedTable {
   stream: string;
   kind: string;
   entity_id: string;
+  entity_type: string | null;
   title: string;
   sound: boolean;
 }

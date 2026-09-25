@@ -306,7 +306,15 @@ describe('POS: передача заказов на кухню (integration)', (
     });
     expect((ctx.fakes.notifier.staff[0]!.params as { title: string }).title).toBe(`Заказ ${order.number} не передан в POS`);
     expect(ctx.fakes.adminFeed.events).toEqual([
-      { branchId, stream: 'orders', kind: 'updated', entityId: order.orderId, title: `Заказ ${order.number} не передан в POS`, sound: true },
+      {
+        branchId,
+        stream: 'orders',
+        kind: 'updated',
+        entityId: order.orderId,
+        entityType: 'order',
+        title: `Заказ ${order.number} не передан в POS`,
+        sound: true,
+      },
     ]);
 
     t.clock.advance(60 * 60_000);

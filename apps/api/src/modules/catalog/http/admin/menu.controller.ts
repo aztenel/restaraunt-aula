@@ -51,7 +51,7 @@ import {
   TranslationReportDto,
   TranslationReportQueryDto,
 } from '../dto/menu-admin.dto';
-import { MULTI_IMAGE_BODY, requireImage, SINGLE_IMAGE_BODY } from '../uploads';
+import { ImageTooLargeInterceptor, MULTI_IMAGE_BODY, requireImage, SINGLE_IMAGE_BODY } from '../uploads';
 
 const READ = [Permission.MenuContent, Permission.MenuPrices, Permission.MenuStopList];
 
@@ -122,7 +122,7 @@ export class AdminCategoriesController {
 
   @RequirePermissions(Permission.MenuContent)
   @Post(':id/image')
-  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_IMAGE_BYTES, files: 1 } }))
+  @UseInterceptors(ImageTooLargeInterceptor, FileInterceptor('file', { limits: { fileSize: MAX_IMAGE_BYTES, files: 1 } }))
   @ApiConsumes('multipart/form-data')
   @ApiBody(SINGLE_IMAGE_BODY)
   @ApiCreatedResponse({ type: CategoryDto })
@@ -202,7 +202,7 @@ export class AdminDishesController {
 
   @RequirePermissions(Permission.MenuContent)
   @Post(':id/photos')
-  @UseInterceptors(FilesInterceptor('files', MAX_PHOTOS_PER_DISH, { limits: { fileSize: MAX_IMAGE_BYTES } }))
+  @UseInterceptors(ImageTooLargeInterceptor, FilesInterceptor('files', MAX_PHOTOS_PER_DISH, { limits: { fileSize: MAX_IMAGE_BYTES } }))
   @ApiConsumes('multipart/form-data')
   @ApiBody(MULTI_IMAGE_BODY)
   @ApiCreatedResponse({ type: DishDto, description: 'JPEG/PNG/WebP до 10 МБ, от 300 px по ширине; сохраняются webp 1200/600/300' })

@@ -93,6 +93,21 @@ describe('E2E extra: POS (iiko) ↔ Ordering ↔ Catalog', () => {
     const quote = await ctx.api().post('/api/v1/public/orders/quote').send({ branchId: greenline, type: 'pickup', items: [{ dishId: sorpa.id, quantity: 1 }] }).expect(200);
     expect(quote.body).toMatchObject({ canCheckout: false });
     expect(quote.body.lines[0].problem).toBe('catalog.dish_unavailable');
+    // Позиция в стопе остаётся узнаваемой: название блюда в расчёте корзины.
+    expect(quote.body.lines[0]).toMatchObject({ name: 'Сорпа', available: false, unitPrice: null });
+    // Оператор видит блюдо в меню телефонного заказа с флагом стопа.
+    const orderMenu = await ctx.api().get('/api/v1/admin/orders/menu').query({ branchId: greenline }).set('Authorization', operator.auth).expect(200);
+    expect(orderMenu.body.dishes.find((d: { dishId: string }) => d.dishId === sorpa.id)).toMatchObject({ stopped: true, name: { ru: 'Сорпа' } });
+    expect(orderMenu.body.dishes.find((d: { dishId: string }) => d.dishId === kazy.id)).toMatchObject({ stopped: false });
+    // Лента админки: стоп-лист в потоке заказов, без звука, со ссылкой на блюдо.
+    expect((await feed(ctx, operator.auth)).find((f) => f.entityId === sorpa.id)).toMatchObject({
+      branchId: greenline,
+      stream: 'orders',
+      kind: 'updated',
+      entityType: 'dish',
+      title: 'Стоп-лист: Сорпа — в стопе',
+      sound: false,
+    });
     // Другой филиал (manual) не затронут.
     expect((await storefrontMenu(ctx, 'garden-view')).get('sorpa')!.available).toBe(true);
   });

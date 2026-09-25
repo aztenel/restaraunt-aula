@@ -16,6 +16,9 @@ export class DomainError extends Error {
 /** Бизнес-правило нарушено входными данными (422). */
 export class ValidationError extends DomainError {}
 
+/** Слишком большой файл или тело запроса (413). */
+export class PayloadTooLargeError extends ValidationError {}
+
 /** Объект не найден (404). */
 export class NotFoundError extends DomainError {
   constructor(entity: string, id?: string, details?: Record<string, unknown>) {

@@ -109,6 +109,10 @@ describe('E2E 2: pay-on-receipt pickup order with SMS phone verification', () =>
     expect((await feed(ctx)).filter((f) => f.entityId === orderId && f.kind === 'created' && f.sound)).toHaveLength(1);
     const staffNew = await deliveries(ctx, { relatedId: orderId, template: 'staff.order_new' });
     expect(staffNew).toEqual([expect.objectContaining({ recipientName: 'Оператор GL', channel: 'whatsapp', status: 'sent' })]);
+    // Очередь оператора: сколько получить с гостя при выдаче и доступные действия.
+    const queue = await ctx.api().get('/api/v1/admin/orders/queue').query({ branchId: greenline }).set('Authorization', operator.auth).expect(200);
+    const card = queue.body.groups.flatMap((g: { orders: Array<{ id: string }> }) => g.orders).find((o: { id: string }) => o.id === orderId);
+    expect(card).toMatchObject({ status: 'paid', amountDue: money(8_200), canReject: true, canCancel: false, courier: null, allowedTransitions: ['accepted'] });
 
     await advanceOrder(ctx, orderId, operator.auth, 'accepted');
     await advanceOrder(ctx, orderId, operator.auth, 'cooking');

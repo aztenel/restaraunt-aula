@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { Fakes } from '../../../test/fakes';
 import { TestApp } from '../../../test/support/test-app';
 import { STOP_LIST_RESTORE_SCHEDULE } from './handlers/stop-list.scheduler';
 import { CatalogEvents } from './public';
@@ -28,12 +29,15 @@ describe('Catalog: branch menu, prices and stop-list (integration)', () => {
   let besh: string;
   let plov: string;
 
+  let fakes: Fakes;
+
   beforeAll(async () => {
-    ({ t } = await createCatalogTestApp());
+    ({ t, fakes } = await createCatalogTestApp());
   });
   afterAll(async () => t.close());
   beforeEach(async () => {
     await resetCatalogTest(t);
+    fakes.adminFeed.events = [];
     gl = await branch(t, 'gl');
     gv = await branch(t, 'gv', { stopListMode: 'hide' });
     cm = await contentManager(t);
@@ -140,6 +144,45 @@ describe('Catalog: branch menu, prices and stop-list (integration)', () => {
     expect(audit!.meta).toEqual({ bulk: true });
   });
 
+  it('bulk add of dishes to a branch menu is all-or-nothing; items show who changed them', async () => {
+    const manty = await createDish(t, cm.auth, category, { name: { ru: 'Манты', kk: 'Манты' } });
+    await addToMenu(t, cm.auth, gl, besh, 590_000);
+    const bm = await branchManager(t, gl);
+    const bulk = (items: unknown[], auth = bm.auth, branchId = gl) =>
+      t.http().post(`${API}/admin/catalog/branches/${branchId}/menu/bulk-add`).set('authorization', auth).send({ items });
+
+    // Одно блюдо уже в меню — ничего не добавляется.
+    const conflict = await bulk([
+      { dishId: plov, price: { amount: 350_000 } },
+      { dishId: besh, price: { amount: 600_000 } },
+    ]);
+    expect(conflict.status).toBe(409);
+    expect(conflict.body.error).toMatchObject({ code: 'catalog.dish_already_in_menu', details: { dishIds: [besh] } });
+    const unknown = await bulk([{ dishId: plov, price: { amount: 350_000 } }, { dishId: '01a0d872-0000-7000-8000-000000000000', price: { amount: 1 } }]);
+    expect(unknown.status).toBe(404);
+    expect((await bulk([{ dishId: plov, price: { amount: 1 } }, { dishId: plov, price: { amount: 2 } }])).status).toBe(422);
+    const skuTwice = await bulk([
+      { dishId: plov, price: { amount: 1 }, sku: 'X-1' },
+      { dishId: manty, price: { amount: 2 }, sku: 'X-1' },
+    ]);
+    expect(skuTwice.body.error.code).toBe('catalog.sku_taken');
+    expect((await bulk([{ dishId: plov, price: { amount: 350_000 } }], bm.auth, gv)).status).toBe(403);
+    expect((await menu(gl, bm.auth)).body.items.map((i: { dishId: string }) => i.dishId)).toEqual([besh]);
+
+    const ok = await bulk([
+      { dishId: plov, price: { amount: 350_000 } },
+      { dishId: manty, price: { amount: 250_000 }, sku: 'GL-MANTY' },
+    ]);
+    expect(ok.status).toBe(200);
+    expect(ok.body).toEqual({ added: 2, dishIds: [plov, manty] });
+    const items = (await menu(gl, bm.auth)).body.items as Array<{ dishId: string; sku: string | null; updatedByName: string | null; updatedBy: string }>;
+    expect(items.map((i) => i.dishId).sort()).toEqual([besh, plov, manty].sort());
+    expect(items.find((i) => i.dishId === manty)).toMatchObject({ sku: 'GL-MANTY', updatedBy: bm.userId, updatedByName: 'Управляющий' });
+    expect(items.find((i) => i.dishId === besh)).toMatchObject({ updatedBy: cm.userId, updatedByName: 'Контент-менеджер' });
+    expect((await auditRows(t, 'menu.item_added')).filter((a) => a.meta?.bulk)).toHaveLength(2);
+    expect((await publishedEvents(t, CatalogEvents.MenuChanged)).at(-1)).toEqual({ branchId: gl });
+  });
+
   it('copies menu between branches: adds missing, overwrites prices on request, does not copy stop-list', async () => {
     await addToMenu(t, cm.auth, gl, besh, 590_000);
     await addToMenu(t, cm.auth, gl, plov, 350_000);
@@ -205,6 +248,20 @@ describe('Catalog: branch menu, prices and stop-list (integration)', () => {
     const cleared = await t.http().put(`${API}/admin/catalog/branches/${gl}/menu/${besh}/price`).set('authorization', cm.auth).send({ price: { amount: 590_000 }, sku: null });
     expect(cleared.body.sku).toBeNull();
     expect((await auditRows(t, 'menu.item_sku_changed'))[0]).toMatchObject({ before: { sku: 'GL-100' }, after: { sku: null } });
+
+    // Только код POS, без цены.
+    const skuOnly = await t.http().put(`${API}/admin/catalog/branches/${gl}/menu/${besh}/sku`).set('authorization', cm.auth).send({ sku: ' gl-200 ' });
+    expect(skuOnly.status).toBe(200);
+    expect(skuOnly.body).toMatchObject({ sku: 'gl-200', effectiveSku: 'gl-200', price: { amount: 590_000 } });
+    expect((await auditRows(t, 'menu.price_changed')).filter((a) => a.entity_id === besh)).toHaveLength(0);
+    const skuTaken = await t.http().put(`${API}/admin/catalog/branches/${gl}/menu/${plov}/sku`).set('authorization', cm.auth).send({ sku: 'gl-200' });
+    expect(skuTaken.status).toBe(409);
+    expect((await t.http().put(`${API}/admin/catalog/branches/${gl}/menu/${besh}/sku`).set('authorization', cm.auth).send({})).status).toBe(400);
+    const reset = await t.http().put(`${API}/admin/catalog/branches/${gl}/menu/${besh}/sku`).set('authorization', cm.auth).send({ sku: null });
+    expect(reset.body).toMatchObject({ sku: null, effectiveSku: null });
+    const bmGv = await branchManager(t, gv);
+    expect((await t.http().put(`${API}/admin/catalog/branches/${gl}/menu/${besh}/sku`).set('authorization', bmGv.auth).send({ sku: 'X' })).status).toBe(403);
+    expect((await t.http().put(`${API}/admin/catalog/branches/${gl}/menu/${besh}/sku`).set('authorization', cm.auth).send({ sku: 5 })).status).toBe(400);
   });
 
   describe('stop-list', () => {
@@ -257,6 +314,13 @@ describe('Catalog: branch menu, prices and stop-list (integration)', () => {
       const restoreAudit = (await auditRows(t, 'menu.stop_list_changed')).at(-1)!;
       expect(restoreAudit).toMatchObject({ actor_kind: 'system', meta: { auto: true, source: 'manual' }, after: { availability: 'available' } });
       expect((await publishedEvents(t, CatalogEvents.StopListChanged)).at(-1)).toMatchObject({ availability: 'available' });
+
+      // Лента админки (поток заказов, без звука): блюдо встало в стоп и вернулось в продажу.
+      await t.drain();
+      expect(fakes.adminFeed.events).toEqual([
+        { branchId: gl, stream: 'orders', kind: 'updated', entityId: besh, entityType: 'dish', title: 'Стоп-лист: Бешбармак — в стопе', sound: false },
+        { branchId: gl, stream: 'orders', kind: 'updated', entityId: besh, entityType: 'dish', title: 'Стоп-лист: Бешбармак — снова в продаже', sound: false },
+      ]);
     });
 
     it('stop until end of local day, hide-mode display, validation of until, manual restore', async () => {

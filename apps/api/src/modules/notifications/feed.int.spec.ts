@@ -231,6 +231,28 @@ describe('Admin feed (integration)', () => {
     expect(stream.events().map((e) => JSON.parse(e.data).entityId)).toEqual(['bq-1', 'r1']);
   });
 
+  it('each item carries the entity type for deep links: explicit or derived from the stream', async () => {
+    const branchA = await createBranch(t);
+    const owner = await tokenFor(t, [{ role: 'owner' }]);
+    await feed().push(orderEvent(branchA, 'order-1'));
+    await feed().push({ branchId: branchA, stream: 'reservations', kind: 'created', entityId: 'res-1', title: 'Бронь' });
+    await feed().push({ branchId: branchA, stream: 'banquets', kind: 'updated', entityId: 'bq-1', title: 'Банкет' });
+    await feed().push({ branchId: branchA, stream: 'orders', kind: 'updated', entityId: 'dish-1', entityType: 'dish', title: 'Стоп-лист: Плов', sound: false });
+    await feed().push({ branchId: null, stream: 'system', kind: 'created', entityId: 'job-1', entityType: 'failed_job', title: 'Сбой' });
+    await feed().push({ branchId: null, stream: 'system', kind: 'created', entityId: 'x-1', title: 'Без типа' });
+    // Неизвестный тип — событие отбрасывается (лента не ломает бизнес-операцию).
+    await feed().push({ branchId: branchA, stream: 'orders', kind: 'updated', entityId: 'bad', entityType: 'unknown' as never, title: 'X' });
+    const recent = await t.http().get('/api/v1/admin/feed/recent').set('authorization', owner.auth);
+    expect(recent.body.map((i: Row) => [i.entityId, i.entityType])).toEqual([
+      ['order-1', 'order'],
+      ['res-1', 'reservation'],
+      ['bq-1', 'banquet_request'],
+      ['dish-1', 'dish'],
+      ['job-1', 'failed_job'],
+      ['x-1', null],
+    ]);
+  });
+
   it('cleans up old feed history on schedule', async () => {
     await feed().push(orderEvent(null, 'old'));
     t.clock.advance(8 * 24 * 3600_000);
