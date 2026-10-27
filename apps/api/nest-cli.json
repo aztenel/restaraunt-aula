@@ -6,6 +6,9 @@
     "builder": "swc",
     "typeCheck": false,
     "deleteOutDir": true,
-    "assets": [{ "include": "**/*.sql", "watchAssets": true }, { "include": "assets/**/*", "watchAssets": true }]
+    "assets": [
+      { "include": "**/*.sql", "outDir": "dist/src", "watchAssets": true },
+      { "include": "assets/**/*", "outDir": "dist/src", "watchAssets": true }
+    ]
   }
 }

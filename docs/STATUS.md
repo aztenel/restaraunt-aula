@@ -90,6 +90,14 @@ cd ../.. && pnpm --filter @aula/admin test && pnpm --filter @aula/web test
 # браузерные e2e витрины — см. apps/web/e2e/stack.md
 ```
 
+Без Docker (например, Windows без WSL 2): PostgreSQL 16 из zip-архива EnterpriseDB
+(`initdb -D pgdata -U aula --auth=trust -E UTF8 --locale=C`, `pg_ctl -D pgdata start`, `createdb -U aula aula`)
+и Redis для Windows (сборка redis-windows) на портах по умолчанию — дальше те же шаги, начиная с `migrate`.
+
+Исправлено 27.10.2026 при демо-прогоне: витрина в `next dev` без `apps/web/.env.local` обращается к API на
+`http://localhost:3000` (раньше корзина и оформление не работали без этого файла); `nest start` копирует шрифты
+PDF и SQL рядом с собранным кодом (`dist/src`) — раньше сметы, счета и договоры в режиме разработки падали с ENOENT.
+
 Правила разработки — `docs/development/backend-guide.md` и `docs/development/frontend-guide.md`.
 Решения по гипотезам ТЗ — `docs/decisions.md` (после discovery с клиентом обновить в первую очередь).
 
